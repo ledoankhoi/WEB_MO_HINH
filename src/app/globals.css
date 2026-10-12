@@ -1,0 +1,94 @@
+@import "tailwindcss";
+
+/* Phông chữ do next/font nạp trong layout gốc (có đủ bộ ký tự tiếng Việt). */
+@theme inline {
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Bảng màu của giao diện sáng. Dùng qua các lớp như bg-surface, text-muted, border-line, text-brand. */
+@theme {
+  --color-bg: #fafaf8;
+  --color-surface: #ffffff;
+  --color-raised: #f2f3f4;
+  --color-line: #e6e7e9;
+  --color-fg: #191a1c;
+  --color-muted: #737780;
+  --color-brand: #00a6c7;
+  --color-brand-strong: #007f99;
+  --color-brand-ink: #04252c;
+  --color-sale: #c2410c;
+  --color-danger: #dc2626;
+  --color-success: #047857;
+  --color-warning: #b45309;
+
+  --animate-toast-in: toast-in 0.25s ease-out;
+
+  @keyframes toast-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.5rem);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    /* Tránh nội dung chui dưới thanh đầu trang dính khi nhảy tới neo. */
+    scroll-padding-top: 5rem;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+  }
+
+  ::selection {
+    background-color: color-mix(in srgb, var(--color-brand) 35%, transparent);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+  }
+
+  /* Ô màu của trình duyệt mặc định có viền và đệm thừa. */
+  input[type="color"] {
+    padding: 0;
+  }
+}
+
+@layer components {
+  /* Nền "sân khấu" phía sau ảnh và mô hình sản phẩm. */
+  .product-stage {
+    background: radial-gradient(ellipse 85% 75% at 50% 42%, #ffffff 0%, #f2f3f4 62%, #e8eaed 100%);
+  }
+
+  /* Lưới mờ trang trí cho các khối giới thiệu. */
+  .grid-backdrop {
+    background-image:
+      linear-gradient(to right, rgb(25 26 28 / 0.045) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(25 26 28 / 0.045) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse 80% 70% at 50% 30%, black 20%, transparent 75%);
+  }
+
+  /* Vuốt dọc trên mô hình 3D vẫn cuộn trang; vuốt ngang mới xoay mô hình. Phải dùng !important vì
+     OrbitControls tự đặt touch-action: none bằng style nội tuyến. */
+  .viewer-surface canvas {
+    touch-action: pan-y !important;
+  }
+
+  .prose-store p + p {
+    margin-top: 0.9em;
+  }
+}
