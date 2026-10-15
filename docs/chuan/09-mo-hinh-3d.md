@@ -159,31 +159,30 @@ Thời gian giải nén nhỏ hơn rất nhiều so với thời gian tải đư
 - Bản giải mã trong three-stdlib chạy đồng bộ trên luồng chính, không dùng Web Worker. Với khoảng 5 ms mỗi file thì không thấy được.
 - WebP chỉ giảm dung lượng **tải về**. Trên GPU, texture vẫn chiếm bộ nhớ như ảnh chưa nén. Muốn giảm cả bộ nhớ GPU thì phải dùng KTX2/Basis Universal (`KHR_texture_basisu`).
 
-### 4.4. Biến hình, hợp thể và tạo dáng (cập nhật 15/10/2026)
+### 4.4. Biến hình, hợp thể và chọn dáng (cập nhật 15/10/2026)
 
-Ba tính năng đều dựa trên **hoạt ảnh và khung xương có sẵn trong file `.glb`**, không dựng lại mô hình.
+Các tính năng đều dựa trên **hoạt ảnh có sẵn trong file `.glb`**, không dựng lại mô hình. Người xem chỉ có một nút đổi dạng và vài dáng cố định để chọn. Bản đầu từng có thanh kéo và chế độ chỉnh từng khớp, nhưng đã bỏ để giao diện đơn giản và không ai làm "gãy" mô hình.
 
 **Nguồn mô hình.** Bộ Transformers Earth Wars G2 và Transformers Alliance (người đăng `orangesauceu`, CC BY). Mỗi file có sẵn clip biến hình. Bản hợp thể Bruticus có clip 5 xe bay vào ghép thành robot. Bộ Alliance có thêm khoảng 20 động tác (vui, giận, tấn công…).
 
 | Sản phẩm | Tính năng |
 | --- | --- |
-| Bruticus (bộ 5) | Hợp thể: 5 xe ghép thành Bruticus; liên kết tới 5 thành viên |
-| Onslaught, Brawl, Swindle, Vortex, Blast Off | Biến hình xe ↔ robot; liên kết về Bruticus |
-| Optimus Prime, Megatron, Starscream, Bumblebee (G1) | Biến hình xe ↔ robot, 6 dáng có sẵn, chỉnh từng khớp |
-| Soundwave (G1) | 4 dáng có sẵn, chỉnh từng khớp (clip biến hình trong file bị lỗi xoay nên không dùng) |
-| 9 mô hình cũ có khung xương (Exia, Strike Freedom, Megatron 2007…) | Chỉnh từng khớp |
+| Bruticus (bộ 5) | Nút "Hợp thể" / "Tách ra"; liên kết tới 5 thành viên |
+| Onslaught, Brawl, Swindle, Vortex, Blast Off | Nút "Biến thành robot" / "Về dạng xe"; liên kết về Bruticus |
+| Optimus Prime, Bumblebee (G1) | Nút đổi dạng; dáng Đứng, Thủ thế, Tấn công, Chiến thắng |
+| Megatron, Starscream (G1) | Nút đổi dạng; dáng Đứng, Tấn công, Chiến thắng (file không có clip thủ thế) |
+| Soundwave (G1) | Dáng Đứng, Chiến thắng, Giận dữ (clip biến hình trong file bị lỗi xoay nên không dùng) |
 
 **Khai báo.** `src/lib/model-features.ts` ghi cho từng file: clip biến hình (tên clip, dạng đầu, dạng cuối, loại "biến hình" hay "hợp thể"), các dáng có sẵn (tên clip và vị trí 0–1 trong clip), quan hệ thành viên ↔ dạng hợp thể. Tra theo tên file trong `model_url`, nên không phải đổi CSDL.
 
 **Cách hoạt động** (`src/components/three/Stage.tsx`, `RobotViewer.tsx`):
 
-- **Thanh kéo**: vị trí 0–1 được đổi thành thời điểm trong clip rồi đặt bằng `AnimationMixer.setTime`. Mô hình đứng yên đúng khung đó, không phát liên tục. Nút phát chạy thanh kéo theo đúng thời lượng thật của clip, và tôn trọng thiết lập "giảm chuyển động" của hệ điều hành.
+- **Nút đổi dạng**: chạy clip biến hình về dạng còn lại theo đúng thời lượng thật của clip. Mỗi khung hình, tiến trình 0–1 được đổi thành thời điểm trong clip rồi đặt bằng `AnimationMixer.setTime`. Bấm lại khi đang chạy thì quay ngược từ đúng vị trí đó. Nếu hệ điều hành bật "giảm chuyển động" thì mô hình nhảy thẳng sang dạng đích.
 - **Căn khung khi biến hình**: lúc tải, clip được đo hộp bao ở 13 mốc đều nhau. Với biến hình, vị trí được nội suy giữa các mốc để mô hình luôn ở giữa khung và chạm sàn (máy bay không lơ lửng). Với hợp thể, khung giữ cố định theo dạng đã ghép, vì có mảnh phụ chờ sẵn dưới sàn. Tỉ lệ được thu nhỏ vừa đủ để cả quá trình nằm trong khung, nhưng không dưới 55%.
-- **Dáng có sẵn**: mỗi lần chọn, mô hình về tư thế gốc rồi đặt vào khung đã chọn của clip động tác. Vị trí từng dáng được đo trước lúc tải.
-- **Chỉnh từng khớp**: bấm vào mô hình, tia chọn trúng một tam giác, lấy khúc xương có trọng số ảnh hưởng lớn nhất tại 3 đỉnh của tam giác đó, rồi gắn `TransformControls` ở chế độ xoay. Vùng bao của mesh có xương được tính lại sau mỗi lần đổi dáng hoặc xoay, để cú bấm không trượt. Nút "Đặt lại" bỏ mọi khớp đã chỉnh.
-- **Ảnh đại diện** của các mẫu này chụp ở dáng đứng đầu tiên.
+- **Dáng cố định**: mỗi dáng là một khung đã chọn sẵn trong một clip động tác của file (ví dụ "Tấn công" là khung ở 45% clip `attack01`). Khi chọn, mô hình về tư thế gốc rồi đặt vào khung đó. Vị trí từng dáng được đo trước lúc tải để mô hình luôn ở giữa khung và chạm sàn. Trang mở ra ở dáng đầu tiên (Đứng). Chọn dáng khi đang ở dạng xe thì mô hình chuyển ngay về dạng robot.
+- **Ảnh đại diện** của các mẫu này chụp ở dáng Đứng.
 
-**Giới hạn:** không giới hạn góc xoay của khớp (có thể xoay "gãy" tay); các dáng chỉnh tay không được lưu; mô hình Earth Wars là đồ hoạ game, kém chi tiết hơn bộ Gundam.
+**Giới hạn:** chuyển giữa các dáng là đổi tức thì, không có chuyển động chuyển tiếp; các mô hình cũ (Gundam…) không có clip động tác nên không có dáng để chọn; mô hình Earth Wars là đồ hoạ game, kém chi tiết hơn bộ Gundam.
 
 ## 5. Vì sao chọn cách lưu này
 
