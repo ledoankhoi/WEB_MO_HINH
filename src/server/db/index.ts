@@ -1,5 +1,6 @@
 import "server-only";
 import { readFileSync } from "node:fs";
+import path from "node:path";
 import { Pool } from "pg";
 import { foldText } from "@/lib/format";
 import { hashPassword, isValidPassword } from "../auth/password";
@@ -29,7 +30,11 @@ export type Db = {
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const INIT_LOCK = 7291801;
-const SEED_KEY = "seed:catalog";
+// v1 là 12 robot tự dựng ban đầu; v2 là danh mục Gundam, Transformers... có mô hình .glb thật;
+// v3 thêm các mô hình biến hình và hợp thể được (Combaticons, Bruticus, bộ G1).
+const SEED_KEY = "seed:catalog-v3";
+const V1_SEED_KEY = "seed:catalog";
+const V2_SEED_KEY = "seed:catalog-v2";
 
 type DbState = { backend?: Backend; ready?: Promise<Db> };
 const globalState = globalThis as unknown as { __robostoreDb?: DbState };
@@ -40,12 +45,22 @@ function connect(): Backend {
   if (!connectionString) {
     throw new Error("Thiếu biến môi trường DATABASE_URL (chuỗi kết nối PostgreSQL). Xem hướng dẫn trong README.md.");
   }
-  const caFile = process.env.DATABASE_CA_CERT?.trim();
+  // Máy chủ ở xa luôn phải dùng TLS có xác minh chứng chỉ: mặc định `pg` gửi mật khẩu không mã hoá.
+  // Supabase ký chứng chỉ bằng CA riêng (certs/supabase-ca.crt); nơi khác dùng CA của hệ thống
+  // hoặc file chỉ định trong DATABASE_CA_CERT.
+  const { hostname } = new URL(connectionString);
+  const isLocal = ["localhost", "127.0.0.1", "[::1]"].includes(hostname);
+  const caFile =
+    process.env.DATABASE_CA_CERT?.trim() ||
+    (/\.supabase\.(com|co)$/.test(hostname) ? path.join(process.cwd(), "certs/supabase-ca.crt") : "");
   const pool = new Pool({
     connectionString,
     // Mỗi tiến trình giữ ít kết nối để nhiều worker của `next build` không vượt giới hạn của máy chủ CSDL.
     max: 3,
-    ...(caFile ? { ssl: { ca: readFileSync(caFile, "utf8") } } : {}),
+    // Mặc định `pg` đóng kết nối rảnh sau 10 giây; mở lại kết nối TLS tới máy chủ ở xa mất gần 1 giây,
+    // nên người dùng thao tác thưa sẽ luôn gặp độ trễ đó. Giữ kết nối rảnh 5 phút.
+    idleTimeoutMillis: 5 * 60 * 1000,
+    ssl: isLocal ? false : caFile ? { ca: readFileSync(caFile, "utf8") } : true,
   });
   // Kết nối rảnh bị máy chủ ngắt sẽ phát sự kiện lỗi; không bắt thì tiến trình Node dừng hẳn.
   pool.on("error", (error) => console.error("[robotica] Lỗi kết nối CSDL:", error.message));
@@ -110,6 +125,9 @@ export function isConstraintError(error: unknown): error is Error & { statementI
 async function migrateAndSeed(backend: Backend) {
   await backend.transaction(async (query) => {
     const exec = (statement: InStatement) => run(query, statement);
+    // Tiến trình bị tắt giữa chừng thì bộ đệm kết nối (Supavisor) vẫn giữ giao dịch và khoá bên dưới;
+    // giới hạn này để máy chủ CSDL tự huỷ giao dịch bỏ dở thay vì chặn lần khởi động sau.
+    await exec("SET LOCAL idle_in_transaction_session_timeout = '30s'");
     await exec({ sql: "SELECT pg_advisory_xact_lock(?)", args: [INIT_LOCK] });
     await exec("CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)");
     const done = new Set((await exec("SELECT key FROM meta")).rows.map((row) => String(row.key)));
@@ -124,16 +142,25 @@ async function migrateAndSeed(backend: Backend) {
     }
 
     if (done.has(SEED_KEY)) return;
-    // Mốc thời gian cố định để thứ tự "mới nhất" của dữ liệu mẫu luôn giống nhau.
-    const base = Date.UTC(2026, 8, 1);
+    // Ẩn danh mục v1 thay vì xoá, để các đơn hàng cũ vẫn trỏ được tới sản phẩm.
+    if (done.has(V1_SEED_KEY) && !done.has(V2_SEED_KEY)) {
+      await exec("UPDATE products SET is_active = 0, is_featured = 0");
+    }
+    // Mô hình và ảnh nằm trên Supabase Storage (npm run media); không khai báo thì trỏ vào public/ của trang.
+    const media = process.env.MEDIA_BASE_URL?.trim().replace(/\/$/, "") ?? "";
+    // Mốc thời gian cố định để thứ tự "mới nhất" của dữ liệu mẫu luôn giống nhau. Sản phẩm đã có (trùng slug)
+    // được giữ nguyên; mốc này dời theo 11 sản phẩm v3 ở đầu danh sách để 28 sản phẩm v2 có cùng ngày tạo
+    // như trong các CSDL đã nạp v2.
+    const base = Date.UTC(2026, 8, 12);
     for (const [index, p] of SEED_PRODUCTS.entries()) {
       const createdAt = base - index * DAY_MS;
       await exec({
         sql: `INSERT INTO products (
                 id, slug, name, tagline, description, category, price, compare_at_price, stock,
-                model, color_primary, color_secondary, color_accent, specs, image, search_text,
+                model, model_url, color_primary, color_secondary, color_accent, specs, image, search_text,
                 is_featured, is_active, sold, created_at, updated_at
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0, ?, ?)`,
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0, ?, ?)
+              ON CONFLICT (slug) DO NOTHING`,
         args: [
           newId(),
           p.slug,
@@ -145,11 +172,12 @@ async function migrateAndSeed(backend: Backend) {
           p.compareAtPrice,
           p.stock,
           p.model,
+          `${media}/models/${p.slug}.glb`,
           p.colors.primary,
           p.colors.secondary,
           p.colors.accent,
           JSON.stringify(p.specs),
-          `/products/${p.slug}.webp`,
+          `${media}/products/${p.slug}.webp`,
           foldText(`${p.name} ${p.tagline} ${p.description}`),
           p.featured ? 1 : 0,
           createdAt,

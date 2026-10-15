@@ -256,12 +256,19 @@ export async function updateProduct(id: string, input: ProductInput): Promise<bo
   return result.rowsAffected > 0;
 }
 
+// Sản phẩm đã có trong đơn hàng thì không xoá (đơn cũ còn trỏ tới nó): trả về false, hãy ẩn thay vì xoá.
 export async function deleteProduct(id: string): Promise<boolean> {
   const db = await getDb();
-  const [, removed] = await db.batch(
+  const [removed] = await db.batch(
     [
-      { sql: "DELETE FROM product_images WHERE product_id = ?", args: [id] },
-      { sql: "DELETE FROM products WHERE id = ?", args: [id] },
+      {
+        sql: "DELETE FROM products WHERE id = ? AND NOT EXISTS (SELECT 1 FROM order_items WHERE product_id = ?)",
+        args: [id, id],
+      },
+      {
+        sql: "DELETE FROM product_images WHERE product_id = ? AND NOT EXISTS (SELECT 1 FROM products WHERE id = ?)",
+        args: [id, id],
+      },
     ]
   );
   return removed.rowsAffected > 0;

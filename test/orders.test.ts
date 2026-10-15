@@ -33,20 +33,20 @@ afterAll(cleanup);
 describe("dữ liệu mẫu", () => {
   it("chỉ được nạp một lần", async () => {
     const first = await products.queryProducts({ pageSize: 100 });
-    expect(first.total).toBe(12);
-    expect(first.items[0].slug).toBe("aegis-x1");
+    expect(first.total).toBe(39);
+    expect(first.items[0].slug).toBe("bruticus");
 
     const db = await getDb();
-    const marks = await db.execute("SELECT COUNT(*) AS n FROM meta WHERE key = 'seed:catalog'");
+    const marks = await db.execute("SELECT COUNT(*) AS n FROM meta WHERE key = 'seed:catalog-v3'");
     expect(Number(marks.rows[0].n)).toBe(1);
   });
 
   it("tìm kiếm không phân biệt dấu và lọc theo danh mục", async () => {
-    const byText = await products.queryProducts({ q: "nhen may" });
-    expect(byText.items.map((p) => p.slug)).toEqual(["arachne-h6"]);
+    const byText = await products.queryProducts({ q: "tuong quan" });
+    expect(byText.items.map((p) => p.slug)).toEqual(["muteki-shogun"]);
 
-    const byCategory = await products.queryProducts({ category: "transformers", sort: "gia-tang" });
-    expect(byCategory.items.map((p) => p.slug)).toEqual(["skyline-q4", "terra-r6", "bolt-k9"]);
+    const byCategory = await products.queryProducts({ category: "super-sentai", sort: "gia-tang" });
+    expect(byCategory.items.map((p) => p.slug)).toEqual(["muteki-shogun", "wild-force-megazord"]);
 
     const wildcard = await products.queryProducts({ q: "%" });
     expect(wildcard.total).toBe(0);
@@ -54,14 +54,14 @@ describe("dữ liệu mẫu", () => {
 
   it("phân trang đúng tổng số", async () => {
     const page2 = await products.queryProducts({ page: 2, pageSize: 5 });
-    expect(page2.total).toBe(12);
+    expect(page2.total).toBe(39);
     expect(page2.items).toHaveLength(5);
   });
 });
 
 describe("tạo đơn hàng", () => {
   it("trừ kho, tính tổng và lưu giá tại thời điểm đặt", async () => {
-    const nova = (await products.findProductBySlug("nova-mini"))!;
+    const nova = (await products.findProductBySlug("strike-freedom-gundam"))!;
     const result = await orders.createOrder({
       ...customer,
       items: [
@@ -81,12 +81,12 @@ describe("tạo đơn hàng", () => {
     expect(saved.subtotal).toBe(1_980_000);
     expect(saved.shippingFee).toBe(0);
     expect(saved.items).toEqual([
-      { productId: nova.id, name: "Nova Mini", slug: "nova-mini", image: nova.image, unitPrice: nova.price, quantity: 2 },
+      { productId: nova.id, name: "RG ZGMF-X20A Strike Freedom Gundam", slug: "strike-freedom-gundam", image: nova.image, unitPrice: nova.price, quantity: 2 },
     ]);
   });
 
   it("từ chối khi giá đã đổi so với giỏ hàng", async () => {
-    const retro = (await products.findProductBySlug("retro-tin-58"))!;
+    const retro = (await products.findProductBySlug("chars-zaku-ii"))!;
     const result = await orders.createOrder({
       ...customer,
       items: [{ productId: retro.id, quantity: 1, expectedPrice: retro.price - 1 }],
@@ -96,7 +96,7 @@ describe("tạo đơn hàng", () => {
   });
 
   it("từ chối khi vượt tồn kho hoặc sản phẩm không tồn tại", async () => {
-    const orion = (await products.findProductBySlug("orion-s"))!;
+    const orion = (await products.findProductBySlug("gundam-phenex"))!;
     const result = await orders.createOrder({
       ...customer,
       items: [
@@ -117,8 +117,8 @@ describe("tạo đơn hàng", () => {
   });
 
   it("ràng buộc trong CSDL huỷ toàn bộ đơn nếu kho bị bán hết giữa chừng", async () => {
-    const titan = (await products.findProductBySlug("titan-mk2"))!;
-    const axis = (await products.findProductBySlug("axis-a6"))!;
+    const titan = (await products.findProductBySlug("sazabi"))!;
+    const axis = (await products.findProductBySlug("wing-gundam"))!;
     const db = await getDb();
     const before = Number((await db.execute("SELECT COUNT(*) AS n FROM orders")).rows[0].n);
 
@@ -143,7 +143,7 @@ describe("tạo đơn hàng", () => {
 
 describe("vòng đời đơn hàng", () => {
   it("chỉ cho chuyển trạng thái theo đúng thứ tự và đánh dấu COD đã thu khi hoàn tất", async () => {
-    const pico = (await products.findProductBySlug("pico-mint"))!;
+    const pico = (await products.findProductBySlug("gundam-exia"))!;
     const created = await orders.createOrder({
       ...customer,
       items: [{ productId: pico.id, quantity: 1, expectedPrice: pico.price }],
@@ -166,7 +166,7 @@ describe("vòng đời đơn hàng", () => {
   });
 
   it("huỷ đơn trả hàng về kho đúng một lần", async () => {
-    const bolt = (await products.findProductBySlug("bolt-k9"))!;
+    const bolt = (await products.findProductBySlug("bumblebee"))!;
     const created = await orders.createOrder({
       ...customer,
       items: [{ productId: bolt.id, quantity: 3, expectedPrice: bolt.price }],
@@ -183,7 +183,7 @@ describe("vòng đời đơn hàng", () => {
   });
 
   it("tra cứu đơn cần khớp cả mã lẫn số điện thoại", async () => {
-    const terra = (await products.findProductBySlug("terra-r6"))!;
+    const terra = (await products.findProductBySlug("arcee"))!;
     const created = await orders.createOrder({
       ...customer,
       customerPhone: "0987654321",
@@ -195,13 +195,35 @@ describe("vòng đời đơn hàng", () => {
     expect(await orders.findOrderTokenByCodeAndPhone(created.order.code, "0900000000")).toBeNull();
   });
 
+  it("trang quản trị lọc đơn theo mã, và không xoá sản phẩm đã có trong đơn", async () => {
+    const product = (await products.findProductBySlug("arcee"))!;
+    const created = await orders.createOrder({
+      ...customer,
+      items: [{ productId: product.id, quantity: 1, expectedPrice: product.price }],
+    });
+    if (!created.ok) throw new Error("không tạo được đơn");
+
+    const byCode = await orders.listOrders({ code: created.order.code });
+    expect(byCode.items.map((o) => o.id)).toEqual([created.order.id]);
+    expect((await orders.listOrders({ code: created.order.code, status: "completed" })).total).toBe(0);
+    expect((await orders.listOrders({ userId: "khong-co" })).total).toBe(0);
+    expect((await orders.listOrders({})).total).toBeGreaterThan(1);
+
+    expect(await products.deleteProduct(product.id)).toBe(false);
+    expect(await products.findProductById(product.id)).not.toBeNull();
+
+    const unsold = (await products.findProductBySlug("muteki-shogun"))!;
+    expect(await products.deleteProduct(unsold.id)).toBe(true);
+    expect(await products.findProductById(unsold.id)).toBeNull();
+  });
+
   it("thống kê đếm đơn theo trạng thái và doanh thu đơn hoàn tất", async () => {
     const stats = await orders.getOrderStats();
     expect(stats.byStatus.completed).toBe(1);
     expect(stats.byStatus.cancelled).toBe(1);
     expect(stats.revenue).toBe(1_090_000);
     expect(stats.totalOrders).toBe(Object.values(stats.byStatus).reduce((a, b) => a + b, 0));
-    expect(stats.lowStock.map((p) => p.name)).toContain("Titan MK-II");
+    expect(stats.lowStock.map((p) => p.name)).toContain("RG MSN-04 Sazabi");
   });
 });
 

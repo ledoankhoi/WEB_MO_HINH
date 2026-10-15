@@ -16,11 +16,13 @@ function toUser(row: Row): CurrentUser {
 }
 
 // Chỉ dùng khi đăng nhập: đây là hàm duy nhất trả về password_hash.
-export async function findCredentialsByEmail(email: string): Promise<{ id: string; passwordHash: string } | null> {
+export async function findCredentialsByEmail(
+  email: string,
+): Promise<{ id: string; passwordHash: string; isAdmin: boolean } | null> {
   const db = await getDb();
-  const result = await db.execute({ sql: "SELECT id, password_hash FROM users WHERE email = ?", args: [email] });
+  const result = await db.execute({ sql: "SELECT id, password_hash, role FROM users WHERE email = ?", args: [email] });
   const row = result.rows[0];
-  return row ? { id: String(row.id), passwordHash: String(row.password_hash) } : null;
+  return row ? { id: String(row.id), passwordHash: String(row.password_hash), isAdmin: row.role === "admin" } : null;
 }
 
 export async function findPasswordHash(userId: string): Promise<string | null> {
@@ -86,6 +88,47 @@ export async function findSessionUser(sessionId: string): Promise<CurrentUser | 
 export async function deleteSession(sessionId: string): Promise<void> {
   const db = await getDb();
   await db.execute({ sql: "DELETE FROM sessions WHERE id = ?", args: [sessionId] });
+}
+
+export type CustomerSummary = Pick<CurrentUser, "id" | "email" | "name" | "phone" | "city"> & {
+  createdAt: number;
+  orderCount: number;
+  // Chỉ tính các đơn đã hoàn tất, giống doanh thu ở getOrderStats.
+  spent: number;
+};
+
+export async function listCustomers(query: {
+  page?: number;
+  pageSize?: number;
+}): Promise<{ items: CustomerSummary[]; total: number }> {
+  const pageSize = Math.min(Math.max(query.pageSize ?? 20, 1), 100);
+  const page = Math.max(query.page ?? 1, 1);
+  const db = await getDb();
+  const [count, rows] = await db.batch(
+    [
+      "SELECT COUNT(*) AS total FROM users WHERE role = 'customer'",
+      {
+        sql: `SELECT u.id, u.email, u.name, u.phone, u.city, u.created_at,
+                (SELECT COUNT(*) FROM orders WHERE user_id = u.id) AS order_count,
+                (SELECT COALESCE(SUM(total), 0) FROM orders WHERE user_id = u.id AND status = 'completed') AS spent
+              FROM users u WHERE u.role = 'customer' ORDER BY u.created_at DESC, u.id LIMIT ? OFFSET ?`,
+        args: [pageSize, (page - 1) * pageSize],
+      },
+    ]
+  );
+  return {
+    items: rows.rows.map((row) => ({
+      id: String(row.id),
+      email: String(row.email),
+      name: String(row.name),
+      phone: String(row.phone),
+      city: String(row.city),
+      createdAt: Number(row.created_at),
+      orderCount: Number(row.order_count),
+      spent: Number(row.spent),
+    })),
+    total: Number(count.rows[0].total),
+  };
 }
 
 export async function countUsers(): Promise<number> {

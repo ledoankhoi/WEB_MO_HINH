@@ -12,10 +12,14 @@ Website thương mại điện tử bán mô hình robot sưu tầm, có xem và
 - `npm run dev`: chạy máy chủ phát triển
 - `npm run build`: build production
 - `npm run lint`, `npm run typecheck`, `npm test`
+- `npm run models`: tải mô hình `.glb` gốc từ Sketchfab theo `scripts/sketchfab-models.json` vào `data/models-raw/` (cần `SKETCHFAB_API_TOKEN`); tác giả và giấy phép ghi vào `src/data/model-credits.json`, hiện dưới khung 3D
+- `npm run media`: nén mô hình (meshopt, texture WebP) rồi tải mô hình và ảnh `data/products/*.webp` lên Supabase Storage, bucket công khai `media` (cần `SUPABASE_URL`, `SUPABASE_SECRET_KEY`)
 
 ## Cấu trúc
-- `src/app/`: trang, Server Action (`actions/`), Route Handler (`api/`, `media/`)
-- `src/components/`: `layout/`, `product/`, `cart/`, `account/`, `order/`, `ui/`, `three/` (khung xem 3D và các robot trong `three/robots/`)
+- `src/app/`: Server Action (`actions/`), Route Handler (`api/`, `media/`) và hai khu trang có khung riêng. Layout gốc chỉ có `<html>`, `<body>`, không vẽ đầu trang hay chân trang.
+- `src/app/(store)/`: mọi trang của cửa hàng, bọc trong `StoreFrame` (đầu trang, chân trang). Tên nhóm không xuất hiện trên URL.
+- `src/app/admin/`: website quản trị, không dùng thành phần nào của cửa hàng. `(panel)/` là các trang có thanh bên (tổng quan, sản phẩm, đơn hàng, khách hàng), layout và từng trang đều gọi `requireAdmin()`; `dang-nhap/` là trang đăng nhập riêng. Phiên quản trị dùng cookie riêng `rs_admin` (chỉ gửi tới `/admin`), tách khỏi phiên `rs_session` của cửa hàng; mỗi cửa đăng nhập chỉ nhận đúng loại tài khoản của nó. Tài khoản quản trị tạo từ `ADMIN_EMAIL`, `ADMIN_PASSWORD`.
+- `src/components/`: `layout/`, `product/`, `cart/`, `account/`, `order/`, `admin/`, `ui/`, `three/` (khung xem 3D và các robot trong `three/robots/`)
 - `src/lib/`: mã dùng chung cho máy chủ và trình duyệt (`catalog.ts`, `cart.ts`, `format.ts`, `pricing.ts`, `vietqr.ts`)
 - `src/server/`: mã chỉ chạy ở máy chủ. `db/` (kết nối, migration, dữ liệu mẫu), `repo/` (truy vấn), `auth/`, `catalog.ts` (truy vấn có cache)
 - `src/config/site.ts`: tên cửa hàng, phí vận chuyển, giới hạn số lượng
@@ -29,7 +33,7 @@ Website thương mại điện tử bán mô hình robot sưu tầm, có xem và
 - Không gọi `Date.now()` trong lúc dựng trang (Next.js báo lỗi prerender); dùng đồng hồ CSDL hoặc gọi trong Server Action.
 - Truy vấn viết bằng SQL với dấu `?` cho tham số qua `getDb()` (`execute`, `batch`); `batch` chạy trong một giao dịch.
 - Mọi Server Action tự kiểm tra quyền và dữ liệu đầu vào.
-- Mô hình `.glb`: đặt vào `public/models/` và ghi đường dẫn vào cột `model_url` của sản phẩm.
+- Mô hình `.glb` và ảnh sản phẩm không nằm trong git: để ở `data/` (đã bỏ qua trong git) rồi `npm run media` đưa lên Supabase Storage; cột `model_url`, `image` lưu đường dẫn đầy đủ theo `MEDIA_BASE_URL`. Mô hình CC BY phải có mục trong `src/data/model-credits.json`. Clip biến hình/hợp thể và dáng có sẵn của từng file khai báo trong `src/lib/model-features.ts`.
 
 ## Chưa làm
-Trang quản trị (Server Action đã có trong `src/app/actions/admin.ts`, chưa có giao diện), danh sách yêu thích, lọc theo hãng và khoảng giá, cổng thanh toán trực tuyến, gửi email, sitemap.
+Các trang quản trị còn thiếu (kho, danh mục/thương hiệu, đánh giá, nhân viên và vai trò, nhật ký thao tác: đều cần thêm bảng trước, xem `docs/chuan/01-dac-ta-yeu-cau.md` mục 3.8), danh sách yêu thích, lọc theo hãng và khoảng giá, cổng thanh toán trực tuyến, gửi email, sitemap.

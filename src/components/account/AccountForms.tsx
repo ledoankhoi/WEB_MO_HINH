@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useTransition } from "react";
-import { changePasswordAction, logoutAction, updateProfileAction } from "@/app/actions/auth";
+import { adminLogoutAction, changePasswordAction, logoutAction, updateProfileAction } from "@/app/actions/auth";
 import { Button } from "@/components/ui/Button";
 import { Field, SelectField } from "@/components/ui/Field";
 import { Notice } from "@/components/ui/Notice";
@@ -57,7 +57,8 @@ export function PasswordForm() {
   );
 }
 
-export function LogoutButton() {
+// admin: đăng xuất phiên của khu quản trị (cookie riêng), không đụng tới phiên ở cửa hàng.
+export function LogoutButton({ admin = false }: { admin?: boolean }) {
   const [pending, startTransition] = useTransition();
   return (
     <Button
@@ -66,10 +67,9 @@ export function LogoutButton() {
       pending={pending}
       onClick={() =>
         startTransition(async () => {
-          await logoutAction();
+          await (admin ? adminLogoutAction() : logoutAction());
           // Tải lại toàn bộ trang để xoá mọi trạng thái còn giữ của tài khoản vừa đăng xuất.
-          // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- cố ý tải lại cả trang
-          window.location.assign("/");
+          window.location.assign(admin ? "/admin/dang-nhap" : "/");
         })
       }
     >

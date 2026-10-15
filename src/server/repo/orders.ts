@@ -239,11 +239,19 @@ export async function listOrdersByUser(userId: string): Promise<OrderSummary[]> 
 
 export async function listOrders(query: {
   status?: OrderStatus;
+  // Mã đơn khớp chính xác (nội dung chuyển khoản của khách chính là mã này).
+  code?: string;
+  userId?: string;
   page?: number;
   pageSize?: number;
 }): Promise<{ items: OrderSummary[]; total: number }> {
-  const where = query.status ? "WHERE o.status = ?" : "";
-  const args: InValue[] = query.status ? [query.status] : [];
+  const filters = [
+    ["o.status = ?", query.status],
+    ["o.code = ?", query.code],
+    ["o.user_id = ?", query.userId],
+  ].filter((filter): filter is [string, string] => Boolean(filter[1]));
+  const where = filters.length ? `WHERE ${filters.map(([sql]) => sql).join(" AND ")}` : "";
+  const args: InValue[] = filters.map(([, value]) => value);
   const pageSize = Math.min(Math.max(query.pageSize ?? 20, 1), 100);
   const page = Math.max(query.page ?? 1, 1);
 

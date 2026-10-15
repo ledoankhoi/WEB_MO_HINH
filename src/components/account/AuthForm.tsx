@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import Link from "next/link";
-import { loginAction, registerAction } from "@/app/actions/auth";
+import { adminLoginAction, loginAction, registerAction } from "@/app/actions/auth";
 import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { Notice } from "@/components/ui/Notice";
@@ -10,9 +10,12 @@ import type { FormState } from "@/lib/types";
 
 const INITIAL: FormState = {};
 
-export function AuthForm({ mode, next }: { mode: "login" | "register"; next: string }) {
-  const isLogin = mode === "login";
-  const [state, action, pending] = useActionState(isLogin ? loginAction : registerAction, INITIAL);
+const ACTIONS = { login: loginAction, register: registerAction, admin: adminLoginAction };
+
+// mode "admin" là cửa đăng nhập của khu quản trị: phiên riêng, không mời tạo tài khoản.
+export function AuthForm({ mode, next }: { mode: keyof typeof ACTIONS; next: string }) {
+  const isLogin = mode !== "register";
+  const [state, action, pending] = useActionState(ACTIONS[mode], INITIAL);
   const other = `${isLogin ? "/dang-ky" : "/dang-nhap"}${next ? `?next=${encodeURIComponent(next)}` : ""}`;
 
   return (
@@ -41,12 +44,14 @@ export function AuthForm({ mode, next }: { mode: "login" | "register"; next: str
       <Button type="submit" size="lg" full pending={pending}>
         {isLogin ? "Đăng nhập" : "Tạo tài khoản"}
       </Button>
-      <p className="text-center text-sm text-muted">
-        {isLogin ? "Chưa có tài khoản? " : "Đã có tài khoản? "}
-        <Link href={other} className="font-medium text-brand-strong hover:underline">
-          {isLogin ? "Đăng ký" : "Đăng nhập"}
-        </Link>
-      </p>
+      {mode !== "admin" && (
+        <p className="text-center text-sm text-muted">
+          {isLogin ? "Chưa có tài khoản? " : "Đã có tài khoản? "}
+          <Link href={other} className="font-medium text-brand-strong hover:underline">
+            {isLogin ? "Đăng ký" : "Đăng nhập"}
+          </Link>
+        </p>
+      )}
     </form>
   );
 }

@@ -72,10 +72,12 @@ export async function registerAction(_prev: FormState, form: FormData): Promise<
   redirect(next);
 }
 
-export async function loginAction(_prev: FormState, form: FormData): Promise<FormState> {
+// Hai cửa đăng nhập tách biệt: cửa hàng chỉ nhận tài khoản khách, khu quản trị chỉ nhận quản trị viên.
+// Vào sai cửa nhận cùng một thông báo như sai mật khẩu, để không lộ tài khoản nào là quản trị viên.
+async function signIn(form: FormData, admin: boolean): Promise<FormState> {
   const email = readText(form, "email").toLowerCase();
   const password = readPassword(form, "password");
-  const next = safeRedirectPath(readText(form, "next"), "/tai-khoan");
+  const next = safeRedirectPath(readText(form, "next"), admin ? "/admin" : "/tai-khoan");
   const values = { email };
 
   if (!isEmail(email) || password.length === 0) {
@@ -94,19 +96,31 @@ export async function loginAction(_prev: FormState, form: FormData): Promise<For
 
   const credentials = await findCredentialsByEmail(email);
   const valid = await verifyPassword(password, credentials?.passwordHash ?? (await getDummyHash()));
-  if (!credentials || !valid) {
+  if (!credentials || !valid || credentials.isAdmin !== admin) {
     return { message: "Email hoặc mật khẩu không đúng.", values };
   }
 
   await resetRateLimit(emailKey);
-  await startSession(credentials.id);
+  await startSession(credentials.id, admin);
   redirect(next);
+}
+
+export async function loginAction(_prev: FormState, form: FormData): Promise<FormState> {
+  return signIn(form, false);
+}
+
+export async function adminLoginAction(_prev: FormState, form: FormData): Promise<FormState> {
+  return signIn(form, true);
 }
 
 // Không chuyển hướng ở đây: phía trình duyệt sẽ tải lại toàn bộ trang để xoá mọi trạng thái còn giữ
 // của tài khoản vừa đăng xuất.
 export async function logoutAction(): Promise<void> {
   await endSession();
+}
+
+export async function adminLogoutAction(): Promise<void> {
+  await endSession(true);
 }
 
 export async function updateProfileAction(_prev: FormState, form: FormData): Promise<FormState> {

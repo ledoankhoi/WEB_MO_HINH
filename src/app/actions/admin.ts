@@ -121,8 +121,10 @@ export async function saveProductAction(_prev: FormState, form: FormData): Promi
   const stock = /^\d{1,6}$/.test(stockInput) ? Number(stockInput) : null;
   if (stock === null) errors.stock = "Tồn kho phải là số nguyên từ 0 đến 999.999.";
   if (!isRobotModelKey(model)) errors.model = "Vui lòng chọn kiểu dáng mô hình.";
-  if (modelUrl && !/^\/models\/[A-Za-z0-9._-]{1,100}\.glb$/.test(modelUrl)) {
-    errors.modelUrl = "Đường dẫn phải có dạng /models/ten-file.glb (file đặt trong public/models).";
+  const mediaBase = process.env.MEDIA_BASE_URL?.trim().replace(/\/$/, "") ?? "";
+  const modelPath = mediaBase && modelUrl.startsWith(mediaBase) ? modelUrl.slice(mediaBase.length) : modelUrl;
+  if (modelUrl && !/^\/models\/[A-Za-z0-9._-]{1,100}\.glb$/.test(modelPath)) {
+    errors.modelUrl = "Đường dẫn phải có dạng /models/ten-file.glb, trong public/models hoặc trên kho media (MEDIA_BASE_URL).";
   }
   if (!isHexColor(colors.primary) || !isHexColor(colors.secondary) || !isHexColor(colors.accent)) {
     errors.colors = "Màu phải ở dạng #rrggbb.";
@@ -185,7 +187,9 @@ export async function saveProductAction(_prev: FormState, form: FormData): Promi
 export async function deleteProductAction(id: string): Promise<FormState> {
   await requireAdmin();
   if (!isId(id)) return { message: "Sản phẩm không hợp lệ." };
-  await deleteProduct(id);
+  if (!(await deleteProduct(id))) {
+    return { message: "Không xoá được vì sản phẩm đã có trong đơn hàng. Hãy bỏ chọn “Đang bán” để ẩn sản phẩm." };
+  }
   updateTag(PRODUCTS_TAG);
   redirect("/admin/san-pham");
 }

@@ -113,4 +113,13 @@ export const MIGRATIONS: Migration[] = [
       )`,
     ],
   },
+  {
+    // Supabase tự mở mọi bảng trong schema public qua API REST. Bật RLS mà không khai báo policy nào
+    // thì các khoá API (anon, authenticated) không đọc ghi được gì. Ứng dụng nối bằng vai trò chủ sở hữu
+    // bảng nên không bị ảnh hưởng. Bảng mới thêm sau này cũng phải bật RLS.
+    id: "002_enable_rls",
+    statements: ["meta", "products", "product_images", "users", "sessions", "orders", "order_items", "rate_limits"].map(
+      (table) => `ALTER TABLE ${table} ENABLE ROW LEVEL SECURITY`,
+    ),
+  },
 ];
