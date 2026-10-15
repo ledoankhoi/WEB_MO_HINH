@@ -303,7 +303,7 @@ Mỗi kịch bản có ít nhất một test Vitest (trên PGlite), tên test b�
 
 ## 8. Việc cần người thật làm
 
-Những việc mà chạy tự động không thay được, cần làm trước khi mở bán thật:
+Những việc mà Claude Code không thay được, cần làm trước khi mở bán thật:
 
 - Nội dung thật cho các trang thông tin, chính sách đổi trả (số ngày, điều kiện), thông tin liên hệ.
 - Rà soát pháp lý theo phụ lục B của kế hoạch (Luật Thương mại điện tử 122/2025/QH15, Nghị định 248/2026/NĐ-CP, bảo vệ dữ liệu cá nhân, thuế, sở hữu trí tuệ).

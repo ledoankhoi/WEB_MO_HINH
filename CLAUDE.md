@@ -14,7 +14,6 @@ Website thương mại điện tử bán mô hình robot sưu tầm, có xem và
 - `npm run lint`, `npm run typecheck`, `npm test`
 - `npm run models`: tải mô hình `.glb` gốc từ Sketchfab theo `scripts/sketchfab-models.json` vào `data/models-raw/` (cần `SKETCHFAB_API_TOKEN`); tác giả và giấy phép ghi vào `src/data/model-credits.json`, hiện dưới khung 3D
 - `npm run media`: nén mô hình (meshopt, texture WebP) rồi tải mô hình và ảnh `data/products/*.webp` lên Supabase Storage, bucket công khai `media` (cần `SUPABASE_URL`, `SUPABASE_SECRET_KEY`)
-- `npm run auto`: chạy tự động các việc trong `docs/ke-hoach/backlog-quan-tri-kho.md`, mỗi việc một phiên `claude -p` mới (`scripts/auto-run.ps1`, nhật ký ở `data/auto-logs/`)
 
 ## Cấu trúc
 - `src/app/`: Server Action (`actions/`), Route Handler (`api/`, `media/`) và hai khu trang có khung riêng. Layout gốc chỉ có `<html>`, `<body>`, không vẽ đầu trang hay chân trang.
@@ -37,7 +36,7 @@ Website thương mại điện tử bán mô hình robot sưu tầm, có xem và
 - Mô hình `.glb` và ảnh sản phẩm không nằm trong git: để ở `data/` (đã bỏ qua trong git) rồi `npm run media` đưa lên Supabase Storage; cột `model_url`, `image` lưu đường dẫn đầy đủ theo `MEDIA_BASE_URL`. Mô hình CC BY phải có mục trong `src/data/model-credits.json`. Clip biến hình/hợp thể và dáng có sẵn của từng file khai báo trong `src/lib/model-features.ts`.
 
 ## Giai đoạn hiện tại
-Đang làm phần quản trị website và quản lý kho trên nhánh `auto/quan-tri-kho`. Đặc tả: `docs/chuan/10-quan-tri-va-kho.md`; thứ tự việc và quy tắc chạy tự động: `docs/ke-hoach/backlog-quan-tri-kho.md`. Khi tài liệu chuẩn và mã nguồn khác nhau, `docs/chuan/` đúng.
+Đang làm phần quản trị website và quản lý kho trên nhánh `auto/quan-tri-kho`. Đặc tả: `docs/chuan/10-quan-tri-va-kho.md`; thứ tự việc và quy tắc làm việc: `docs/ke-hoach/backlog-quan-tri-kho.md`. Khi tài liệu chuẩn và mã nguồn khác nhau, `docs/chuan/` đúng. **Không dùng chạy tự động** (`claude -p` theo vòng lặp, `/loop`): chủ dự án đã bỏ vì tốn hạn mức; mỗi việc làm trong phiên có người theo dõi.
 
 ## Chưa làm
 Xem danh sách việc ở `docs/ke-hoach/backlog-quan-tri-kho.md`. Ngoài danh sách đó: cổng thanh toán trực tuyến, gửi email, sitemap, ghi nhận hành vi người dùng và phần AI (`docs/chuan/00-quyet-dinh-nen-tang.md`).

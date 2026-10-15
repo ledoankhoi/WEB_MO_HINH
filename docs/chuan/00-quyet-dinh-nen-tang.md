@@ -90,4 +90,4 @@ Mã giảm giá; đổi trả và hoàn tiền; cổng thanh toán; hàng đặt
 | Vai trò | Thêm `warehouse_manager` (quản lý kho: ghi sổ phiếu kho, xem giá vốn) và `viewer` (chỉ xem, che thông tin cá nhân). Vẫn mỗi tài khoản một vai trò | Bảng vai trò ở mục 3 |
 | Giá vốn | Bình quân gia quyền di động | Chưa có |
 | CSDL | Supabase chỉ có dữ liệu mẫu; cho phép migration xoá và tạo lại bảng | |
-| Chạy tự động | Phần này được làm bằng Claude Code chạy không người giám sát, theo [../ke-hoach/backlog-quan-tri-kho.md](../ke-hoach/backlog-quan-tri-kho.md) trên nhánh `auto/quan-tri-kho` | |
+| Cách làm | Làm từng việc theo [../ke-hoach/backlog-quan-tri-kho.md](../ke-hoach/backlog-quan-tri-kho.md) trên nhánh `auto/quan-tri-kho`, trong phiên có người theo dõi. Đã thử chạy tự động (T00–T03) rồi **bỏ hẳn** vì tốn hạn mức | |

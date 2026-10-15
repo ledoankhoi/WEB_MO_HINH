@@ -4,14 +4,14 @@
 
 Ký hiệu: `- [ ]` chưa làm, `- [x]` xong, `- [!]` bị chặn (lý do ở mục Vướng mắc).
 
-## Quy tắc chạy tự động
+## Quy tắc làm việc
 
-Áp dụng cho mọi phiên Claude Code chạy theo file này, kể cả khi không có người giám sát.
+Áp dụng cho mọi phiên Claude Code làm theo file này. **Không chạy tự động** (vòng lặp `claude -p`, `/loop`): đã bỏ ngày 15/10/2026 vì tốn hạn mức. Mỗi lần người dùng yêu cầu thì làm một việc.
 
 1. **Kiểm tra đầu phiên.** Chạy `git branch --show-current` và `git status`. Nếu nhánh hiện tại không phải `auto/quan-tri-kho` thì dừng ngay, ghi lý do vào mục Vướng mắc, không làm gì khác. Nếu còn thay đổi chưa commit thì đó là việc dở của phiên trước: đọc `git diff` và làm tiếp đúng việc đó. Nhưng nếu có file thay đổi rõ ràng không thuộc việc nào trong danh sách (ví dụ một phiên khác đang sửa phần 3D), thì không commit lẫn: chỉ `git add` đúng các file của việc mình đang làm, và ghi tên các file lạ vào mục Vướng mắc.
 2. **Chọn việc.** Lấy việc `- [ ]` đầu tiên từ trên xuống, bỏ qua việc mà mục "Cần" của nó trỏ tới một việc chưa `[x]`. Mỗi phiên làm **một** việc.
 3. **Đọc trước khi viết code.** `CLAUDE.md`, `AGENTS.md` (đọc tài liệu Next.js trong `node_modules/next/dist/docs/` cho API sắp dùng), các mục của tài liệu chuẩn mà việc đó trỏ tới, và mã nguồn liên quan. Viết code giống mã xung quanh: cách đặt tên, mật độ chú thích, giao diện tiếng Việt, màu lấy từ biến trong `globals.css`, các thành phần ở `src/components/ui` và `src/components/admin/parts.tsx`.
-4. **Không hỏi người dùng.** Gặp lựa chọn nhỏ mà tài liệu chưa nói thì chọn phương án đơn giản nhất, khớp với tài liệu chuẩn, rồi ghi vào mục "Quyết định tự chọn" (ngày, mã việc, quyết định, lý do). Chỉ dừng khi việc thật sự không làm được (xem quy tắc 8).
+4. **Hỏi ít.** Gặp lựa chọn nhỏ mà tài liệu chưa nói thì chọn phương án đơn giản nhất, khớp với tài liệu chuẩn, rồi ghi vào mục "Quyết định tự chọn" (ngày, mã việc, quyết định, lý do). Chỉ dừng khi việc thật sự không làm được (xem quy tắc 8).
 5. **Điều kiện xong.** Tất cả phải đạt:
    - `npm run typecheck`, `npm run lint`, `npm test`, `npm run build` đều qua.
    - Từ khi có T00: `npm run smoke` qua, và mọi trang mới đã được thêm vào danh sách trang của script.
