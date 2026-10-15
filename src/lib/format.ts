@@ -51,3 +51,14 @@ export function discountPercent(price: number, compareAtPrice: number | null): n
   if (!compareAtPrice || compareAtPrice <= price) return null;
   return Math.round(((compareAtPrice - price) / compareAtPrice) * 100);
 }
+
+// Ngày "YYYY-MM-DD" (ô nhập kiểu date) thành mốc 00:00 giờ Việt Nam, tính bằng mili giây UTC.
+export function parseVnDate(value: string): number | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return null;
+  const [year, month, day] = match.slice(1).map(Number);
+  const ms = Date.UTC(year, month - 1, day);
+  // Date.UTC tự cộng dồn ngày sai (31/02 thành 03/03); so lại để từ chối.
+  const date = new Date(ms);
+  return date.getUTCDate() === day && date.getUTCMonth() === month - 1 ? ms - VN_OFFSET_MS : null;
+}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { discountPercent, foldText, formatDate, formatDateTime, formatVnd, slugify } from "@/lib/format";
+import { discountPercent, foldText, formatDate, formatDateTime, formatVnd, parseVnDate, slugify } from "@/lib/format";
 import { clampQuantity, orderTotals, shippingFee } from "@/lib/pricing";
 
 describe("formatVnd", () => {
@@ -17,6 +17,14 @@ describe("ngày giờ Việt Nam", () => {
     const ms = Date.UTC(2026, 9, 9, 17, 30);
     expect(formatDate(ms)).toBe("10/10/2026");
     expect(formatDateTime(ms)).toBe("00:30 10/10/2026");
+  });
+
+  it("đọc ngày của ô nhập thành 00:00 giờ Việt Nam, từ chối ngày không có thật", () => {
+    expect(parseVnDate("2026-10-10")).toBe(Date.UTC(2026, 9, 9, 17));
+    expect(parseVnDate("2026-02-31")).toBeNull();
+    expect(parseVnDate("2026-00-10")).toBeNull();
+    expect(parseVnDate("2026-13-01")).toBeNull();
+    expect(parseVnDate("10/10/2026")).toBeNull();
   });
 });
 

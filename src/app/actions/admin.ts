@@ -13,9 +13,10 @@ import {
   type ProductSpec,
 } from "@/lib/catalog";
 import { slugify } from "@/lib/format";
-import type { Permission } from "@/lib/permissions";
+import { ROLE_LABELS, isStaffRole, type Permission } from "@/lib/permissions";
 import type { FormState } from "@/lib/types";
-import { isHexColor, parseMoney, readText } from "@/lib/validation";
+import { isEmail, isHexColor, parseMoney, readText } from "@/lib/validation";
+import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH, hashPassword, isValidPassword } from "@/server/auth/password";
 import { authorize } from "@/server/auth/session";
 import { PRODUCTS_TAG } from "@/server/catalog";
 import { isConstraintError } from "@/server/db";
@@ -29,6 +30,7 @@ import {
   updateProduct,
   type ProductInput,
 } from "@/server/repo/products";
+import { findStaffById, insertStaff, updateStaff } from "@/server/repo/staff";
 
 const MAX_POSTER_BYTES = 800 * 1024;
 const isId = (value: unknown): value is string => typeof value === "string" && /^[a-f0-9]{20}$/.test(value);
@@ -296,4 +298,79 @@ export async function setPaymentStatusAction(id: string, status: PaymentStatus):
   const changed = await setPaymentStatus(id, status, entry);
   refresh();
   return changed ? { ok: true, message: "Đã cập nhật thanh toán." } : { message: "Không tìm thấy đơn hàng." };
+}
+
+export async function createStaffAction(_prev: FormState, form: FormData): Promise<FormState> {
+  const audit = await staffWith("staff.manage");
+  if (!audit) return FORBIDDEN;
+
+  const name = readText(form, "name");
+  const email = readText(form, "email").toLowerCase();
+  const role = readText(form, "role");
+  // Mật khẩu không cắt khoảng trắng như các ô khác.
+  const password = typeof form.get("password") === "string" ? String(form.get("password")) : "";
+  const values = { name, email, role };
+
+  const errors: Record<string, string> = {};
+  if (name.length < 2 || name.length > 80) errors.name = "Họ tên cần từ 2 đến 80 ký tự.";
+  if (!isEmail(email)) errors.email = "Email không hợp lệ.";
+  if (!isStaffRole(role)) errors.role = "Vui lòng chọn vai trò.";
+  if (!isValidPassword(password)) errors.password = `Mật khẩu tạm cần từ ${PASSWORD_MIN_LENGTH} đến ${PASSWORD_MAX_LENGTH} ký tự.`;
+  if (Object.keys(errors).length > 0 || !isStaffRole(role)) return { errors, values };
+
+  try {
+    await insertStaff(
+      { email, name, role, passwordHash: await hashPassword(password) },
+      audit({ action: "staff.create", entity: "users", summary: `Tạo tài khoản nhân viên ${email}`, detail: { after: { role } } }),
+    );
+  } catch (error) {
+    if (isConstraintError(error)) return { errors: { email: "Email này đã được dùng cho tài khoản khác." }, values };
+    throw error;
+  }
+  refresh();
+  return { ok: true, message: `Đã tạo tài khoản ${email}. Gửi mật khẩu tạm cho nhân viên qua kênh riêng.` };
+}
+
+// Đổi vai trò (`role`) hoặc khoá, mở khoá (`isActive`) một nhân viên; mọi phiên của người đó bị xoá.
+export async function updateStaffAction(id: string, change: { role: string } | { isActive: boolean }): Promise<FormState> {
+  const user = await authorize("staff.manage");
+  if (!user) return FORBIDDEN;
+  const valid =
+    isId(id) &&
+    typeof change === "object" &&
+    change !== null &&
+    ("role" in change ? isStaffRole(change.role) : typeof change.isActive === "boolean");
+  if (!valid) return { message: "Yêu cầu không hợp lệ." };
+
+  const target = await findStaffById(id);
+  if (!target) return { message: "Tài khoản nhân viên không tồn tại." };
+  if (user.id === id) return { message: "Bạn không thể tự đổi vai trò hoặc tự khoá tài khoản của mình." };
+
+  const actor = { id: user.id, role: user.role };
+  let ok: boolean;
+  if ("role" in change && isStaffRole(change.role)) {
+    if (change.role === target.role) return { ok: true, message: "Vai trò không thay đổi." };
+    ok = await updateStaff(user.id, id, { role: change.role }, {
+      actor,
+      entity: "users",
+      action: "staff.role_change",
+      summary: `Đổi vai trò ${target.email} từ ${ROLE_LABELS[target.role]} sang ${ROLE_LABELS[change.role]}`,
+      detail: { before: { role: target.role }, after: { role: change.role } },
+    });
+  } else {
+    const isActive = "isActive" in change && change.isActive;
+    if (isActive === target.isActive) return { ok: true, message: "Trạng thái không thay đổi." };
+    ok = await updateStaff(user.id, id, { isActive }, {
+      actor,
+      entity: "users",
+      action: isActive ? "staff.unlock" : "staff.lock",
+      summary: `${isActive ? "Mở khoá" : "Khoá"} tài khoản ${target.email}`,
+      detail: { before: { isActive: target.isActive }, after: { isActive } },
+    });
+  }
+  refresh();
+  // Bước kiểm tra duy nhất còn lại ở CSDL là còn ít nhất một admin đang hoạt động.
+  return ok
+    ? { ok: true, message: "Đã cập nhật. Các phiên đăng nhập của tài khoản này đã bị đăng xuất." }
+    : { message: "Không thực hiện được: phải còn ít nhất một quản trị viên đang hoạt động." };
 }

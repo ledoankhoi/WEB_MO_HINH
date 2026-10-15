@@ -44,7 +44,7 @@ Ghi nhớ kỹ thuật của dự án:
   Migration mới: `users.role` mở rộng, `is_active`, `marketing_consent`, `marketing_consent_at`; bảng `audit_logs`; bật RLS. `src/lib/permissions.ts` chứa đúng ma trận ở mục 3 của tài liệu 10 và hàm kiểm tra. Thay `requireAdmin()` bằng hàm kiểm tra theo quyền (ví dụ `requireStaff(permission)`), đăng nhập quản trị nhận mọi vai trò nhân viên đang hoạt động, tài khoản bị khoá mất phiên. Thanh bên lọc theo quyền và nhóm theo menu ở mục 5. Các action quản trị hiện có ghi nhật ký. Cập nhật CLAUDE.md phần mô tả `requireAdmin()`.
   Xong khi: test ma trận quyền (mỗi vai trò, mỗi quyền), SEC-01 (gọi thẳng action thiếu quyền bị từ chối), SEC-04, đăng nhập quản trị sai mật khẩu có dòng nhật ký.
 
-- [ ] **T02 — Quản lý nhân viên và trang nhật ký.** Cần T01. YC-QTN-05, 06; SEC-06.
+- [x] **T02 — Quản lý nhân viên và trang nhật ký.** Cần T01. YC-QTN-05, 06; SEC-06.
   `/admin/nhan-vien` (danh sách, tạo, đổi vai trò, khoá, mở khoá; xoá phiên khi đổi vai trò hoặc khoá), `/admin/nhat-ky` (lọc, phân trang).
   Xong khi: test các ràng buộc ở mục 3 (không tự đổi vai trò, không khoá admin cuối cùng), trang có trong smoke.
 
@@ -164,6 +164,10 @@ Ghi nhớ kỹ thuật của dự án:
 | 15/10/2026 | T01 | Tạm phân quyền action đơn hiện có: xác nhận, hoàn tất, huỷ cần `orders.process`; giao vận chuyển cần `orders.fulfil`; đổi thanh toán cần `payments.manage`. Nút ở trang đơn chưa ẩn theo quyền | Dãy trạng thái cũ chưa có L1–L14; T05 thay bằng luật và nút đúng quyền |
 | 15/10/2026 | T01 | Nhật ký ghi bằng `WITH changed AS (UPDATE ... RETURNING id) INSERT INTO audit_logs ...` (`withAudit` trong `src/server/repo/audit.ts`) | Cùng câu lệnh với thay đổi nên chỉ ghi khi thật sự có dòng đổi; bấm hai lần không thêm nhật ký |
 | 15/10/2026 | T01 | Đăng nhập quản trị thành công cũng ghi `auth.admin_login`; khách huỷ đơn ở cửa hàng không ghi nhật ký | Đặc tả chỉ bắt buộc ghi lần thất bại; nhật ký dành cho thao tác của nhân viên |
+| 15/10/2026 | T02 | Danh sách nhân viên không phân trang | Chỉ vài chục tài khoản; đã ghi `shortcut:` trong `src/server/repo/staff.ts` |
+| 15/10/2026 | T02 | Ràng buộc "không tự đổi mình" và "còn ít nhất một admin hoạt động" nằm ngay trong câu `UPDATE`, sau khi khoá các dòng admin bằng `FOR UPDATE`; action kiểm tra trước chỉ để báo lý do rõ ràng | Hai admin hạ quyền nhau cùng lúc thì chỉ một lệnh thành công |
+| 15/10/2026 | T02 | Tạo nhân viên cũng ghi nhật ký (`staff.create`). Trang nhân viên chỉ khoá, mở khoá tài khoản nhân viên; khoá tài khoản khách để T17 (`customers.manage`) | Tách đúng quyền theo mục 3 |
+| 15/10/2026 | T02 | Bộ lọc nhật ký: người làm chọn trong danh sách nhân viên, hành động và đối tượng chọn trong các giá trị đã có trong `audit_logs`, mã đối tượng nhập tay, khoảng ngày theo giờ Việt Nam (`parseVnDate`), 50 dòng mỗi trang | Đơn giản, không cần bảng mã hành động riêng |
 
 ## Vướng mắc
 

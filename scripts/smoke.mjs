@@ -27,6 +27,9 @@ const PAGES = [
   { path: "/admin/don-hang" },
   { path: "/admin/don-hang/:order" },
   { path: "/admin/khach-hang" },
+  { path: "/admin/nhan-vien" },
+  { path: "/admin/nhat-ky" },
+  { path: "/admin/nhat-ky?hanh-dong=auth.admin_login&tu=2026-01-01&den=2026-12-31" },
   { path: "/admin/dang-nhap", status: 307 },
 ];
 
