@@ -23,6 +23,7 @@ Tài liệu nghiệp vụ ban đầu cho website bán mô hình robot sưu tầm
 | [13-nghiep-vu-dac-thu.md](13-nghiep-vu-dac-thu.md) | Nghiệp vụ riêng của cửa hàng mô hình robot |
 | [14-pham-vi-uu-tien.md](14-pham-vi-uu-tien.md) | Phân chia P0, P1, P2 và thứ tự triển khai |
 | [15-nghiem-thu.md](15-nghiem-thu.md) | Checklist nghiệm thu mức MVP |
+| [16-ke-hoach-quan-tri-kho.md](16-ke-hoach-quan-tri-kho.md) | Kế hoạch quản lý kho và quản trị website (bản chữ của file Word, 15/10/2026) |
 
 ## Điểm khác với dự án hiện tại
 

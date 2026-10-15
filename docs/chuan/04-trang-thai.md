@@ -80,19 +80,19 @@ Mỗi dòng là một thao tác. Cả dòng xảy ra trong một giao dịch: ho
 
 | # | Thao tác | Ai được làm | Điều kiện | Kết quả |
 | --- | --- | --- | --- | --- |
-| L1 | Đặt hàng | Khách đã đăng nhập | Mọi dòng: biến thể đang bán, giá khớp, số lượng ≤ số có thể bán | Tạo đơn `pending` / `unpaid` / `not_created`. Kho: `reserve` |
+| L1 | Đặt hàng | Khách (tạm thời cả khách vãng lai, xem [10](10-quan-tri-va-kho.md) mục 1) | Mọi dòng: biến thể đang bán, giá khớp, số lượng ≤ số có thể bán; `idempotency_key` chưa dùng | Tạo đơn `pending` / `unpaid` / `not_created`. Kho: `reserve`. Có mã giảm giá thì thêm `coupon_redemptions`, tăng `used_count` |
 | L2 | Ghi nhận đã thu tiền | Kế toán, quản trị viên | `payment_status = unpaid`; đơn chưa `cancelled` | `payment_status → paid`; thêm `payments` loại `charge` |
 | L3 | Xác nhận đơn | Nhân viên đơn hàng, quản trị viên | `status = pending`. Đơn chuyển khoản phải `paid` trước | `status → confirmed` |
 | L4 | Bắt đầu đóng gói | Nhân viên đơn hàng, nhân viên kho | `status = confirmed` | `status → processing` |
 | L5 | Đóng gói xong | Nhân viên kho, nhân viên đơn hàng | `status = processing`; `shipping_status = not_created` | `shipping_status → ready` |
-| L6 | Bàn giao vận chuyển | Nhân viên đơn hàng, nhân viên kho | `shipping_status = ready`; đã nhập hãng và mã vận đơn | `shipping_status → in_transit`. Kho: `ship` |
+| L6 | Bàn giao vận chuyển | Nhân viên đơn hàng, nhân viên kho | `shipping_status = ready`; đã nhập hãng và mã vận đơn; đủ hàng ở các vị trí `storage` | `shipping_status → in_transit`. Kho: `ship` từ các vị trí chọn theo Q7 của [10](10-quan-tri-va-kho.md) |
 | L7 | Giao thành công | Nhân viên đơn hàng | `shipping_status = in_transit` | `shipping_status → delivered` |
 | L8 | Hoàn tất đơn | Hệ thống, tự động | `shipping_status = delivered` và `payment_status = paid` | `status → completed` |
 | L9 | Giao thất bại | Nhân viên đơn hàng | `shipping_status = in_transit` | `shipping_status → failed` |
 | L10 | Giao lại | Nhân viên đơn hàng | `shipping_status = failed` | `shipping_status → in_transit` |
-| L11 | Nhận hàng hoàn | Nhân viên kho | `shipping_status = failed` | `shipping_status → returned`; `status → cancelled`. Kho: `return_in` |
-| L12 | Khách huỷ đơn | Chủ đơn | `status = pending` | `status → cancelled`. Kho: `release` |
-| L13 | Nhân viên huỷ đơn | Nhân viên đơn hàng, quản trị viên | `status` là `pending`, `confirmed` hoặc `processing`; `shipping_status` là `not_created` hoặc `ready` | `status → cancelled`. Kho: `release` |
+| L11 | Nhận hàng hoàn | Nhân viên kho | `shipping_status = failed` | `shipping_status → returned`; `status → cancelled`. Kho: `return_in` vào vị trí cách ly |
+| L12 | Khách huỷ đơn | Chủ đơn | `status = pending` | `status → cancelled`. Kho: `release`. Trả lượt mã giảm giá |
+| L13 | Nhân viên huỷ đơn | Nhân viên đơn hàng, quản trị viên | `status` là `pending`, `confirmed` hoặc `processing`; `shipping_status` là `not_created` hoặc `ready` | `status → cancelled`. Kho: `release`. Trả lượt mã giảm giá |
 | L14 | Hoàn tiền | Kế toán, quản trị viên | `status = cancelled`; `payment_status = paid` | `payment_status → refunded`; thêm `payments` loại `refund` |
 
 Ghi chú:
@@ -102,19 +102,43 @@ Ghi chú:
 
 ## 6. Tồn kho
 
-| Biến động | `on_hand` | `reserved` | Xảy ra ở |
-| --- | --- | --- | --- |
-| `receive` | + | | Nhập kho (ngoài luồng đơn hàng) |
-| `reserve` | | + | L1 |
-| `release` | | − | L12, L13 |
-| `ship` | − | − | L6 |
-| `return_in` | + | | L11 |
-| `adjust_in` | + | | Kiểm kê (bắt buộc ghi lý do) |
-| `adjust_out` | − | | Kiểm kê, hàng hỏng (bắt buộc ghi lý do) |
+Loại biến động, dấu và bất biến nằm ở [03](03-co-so-du-lieu.md) mục 4 (viết lại 15/10/2026 theo vị trí). Tóm tắt: `on_hand` là hàng bán được ở vị trí `storage`, `quarantined` là hàng ở vị trí cách ly, `reserved` là hàng đã giữ cho đơn. Bất biến luôn đúng: `0 ≤ reserved ≤ on_hand`. Số có thể bán là `on_hand − reserved`.
 
-Bất biến luôn đúng: `0 ≤ reserved ≤ on_hand`. Số có thể bán là `on_hand − reserved`.
+Kiểm tra chéo: số dư mỗi vị trí bằng tổng `qty_delta` trong `stock_movements`; số tổng của biến thể bằng tổng các vị trí theo loại; `reserved` bằng tổng `reserved_delta`. Hàm đối soát (YC-KHO-18) và test WH-10 kiểm điều này.
 
-Kiểm tra chéo: với mỗi biến thể, `on_hand` phải bằng tổng các biến động cộng trừ tổng các biến động trừ trong `stock_movements`. Có test tự động cho điều này.
+### 6.1. Phiếu kho (`stock_documents.status`)
+
+```mermaid
+stateDiagram-v2
+  [*] --> draft: Tạo phiếu
+  draft --> submitted: Gửi ghi sổ
+  submitted --> draft: Trả lại để sửa
+  draft --> posted: Ghi sổ (người có inventory.post)
+  submitted --> posted: Ghi sổ
+  draft --> cancelled: Huỷ
+  submitted --> cancelled: Huỷ
+  posted --> [*]
+  cancelled --> [*]
+```
+
+| # | Thao tác | Quyền | Điều kiện | Kết quả |
+| --- | --- | --- | --- | --- |
+| K1 | Tạo, sửa phiếu | `inventory.draft` | `status = draft`; người tạo, hoặc có `inventory.post` | Lưu dòng phiếu; chưa tác động tồn |
+| K2 | Gửi ghi sổ | `inventory.draft` | `status = draft`; có ít nhất một dòng hợp lệ | `status → submitted` |
+| K3 | Trả lại | `inventory.post` | `status = submitted` | `status → draft` |
+| K4 | Ghi sổ | `inventory.post` | `status` là `draft` hoặc `submitted`; kiểm soát kép theo Q10 với điều chỉnh, kiểm kê; mọi kiểm tra tồn qua; kiểm kê: vị trí không có biến động sau lúc chụp | `status → posted`; thêm `stock_movements`, cập nhật `stock_levels`, `inventory`, giá vốn; nhật ký |
+| K5 | Huỷ | Người tạo (`inventory.draft`) hoặc `inventory.post` | `status` là `draft` hoặc `submitted` | `status → cancelled` |
+
+Tác động khi ghi sổ (K4):
+
+| Loại phiếu | Biến động |
+| --- | --- |
+| `receipt` | `receive` SL tốt vào vị trí nhận, `receive` SL cách ly vào vị trí cách ly; cập nhật `avg_cost`, `last_received_at` |
+| `issue` | `issue` từ vị trí trên dòng |
+| `transfer` | `transfer_out` ở vị trí nguồn, `transfer_in` ở vị trí đích |
+| `adjustment` | `adjust_in` hoặc `adjust_out` theo dấu của `qty` |
+| `stocktake` | Với mỗi dòng có `qty ≠ system_qty`: `adjust_in` hoặc `adjust_out` phần chênh |
+| `return` | `return_in` vào vị trí cách ly |
 
 ## 7. Sản phẩm và đánh giá
 
@@ -123,10 +147,13 @@ Kiểm tra chéo: với mỗi biến thể, `on_hand` phải bằng tổng các 
 | Sản phẩm | `draft` → `published` ⇄ `archived` | Chỉ `published` hiện cho khách. Sản phẩm đã có đơn không xoá, chỉ `archived` |
 | Biến thể | `is_active` đúng hoặc sai | Tắt thì không thêm được vào giỏ; đơn cũ không đổi |
 | Đánh giá | `pending` → `approved` hoặc `hidden`; `approved` ⇄ `hidden` | Chỉ khách có dòng đơn thuộc đơn `completed` mới được gửi. Chăm sóc khách hàng và quản trị viên duyệt |
+| Banner, trang thông tin | `draft` ⇄ `published` | Chỉ `published` hiện cho khách; banner còn phải trong khung thời gian. Xuất bản trang thì thêm một `page_revisions` |
+| Mã giảm giá | `is_active`; khung thời gian; lượt dùng | Hết hạn, hết lượt hoặc tắt thì không áp được; đơn đã áp không đổi |
+| Tài khoản | `is_active` | Khoá thì xoá mọi phiên, không đăng nhập được |
 
 ## 8. Các điểm đã chốt (13/10/2026)
 
 1. **Đơn chuyển khoản phải thu tiền trước khi xác nhận** (L3). Cách khác: cho xác nhận trước, thu sau.
 2. **Khách chỉ tự huỷ được khi đơn còn `pending`** (L12).
-3. **Hàng hoàn về thì đơn chuyển thành `cancelled`** (L11), và hàng được cộng lại vào kho như hàng bán được. Hàng hoàn bị hỏng do nhân viên kho xử lý bằng `adjust_out`.
+3. **Hàng hoàn về thì đơn chuyển thành `cancelled`** (L11). *Đổi ngày 15/10/2026:* hàng hoàn vào vị trí cách ly, không cộng thẳng vào hàng bán được; nhân viên kho kiểm tra rồi chuyển sang vị trí `storage` hoặc huỷ bằng phiếu điều chỉnh ([10](10-quan-tri-va-kho.md) Q15).
 4. **Đánh giá phải được duyệt trước khi hiện.** Cách khác: hiện ngay, ẩn khi vi phạm.

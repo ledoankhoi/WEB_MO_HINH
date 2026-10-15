@@ -13,7 +13,8 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "models": "node --env-file-if-exists=.env.local scripts/sketchfab.mjs",
-    "media": "node --env-file-if-exists=.env.local scripts/media.mjs"
+    "media": "node --env-file-if-exists=.env.local scripts/media.mjs",
+    "auto": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/auto-run.ps1"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",

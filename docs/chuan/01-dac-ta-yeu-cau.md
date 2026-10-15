@@ -104,6 +104,8 @@ Ngoài phạm vi bước 1: cổng thanh toán trực tuyến, tích hợp hãng
 
 ### 3.8. Quản trị (QT)
 
+Cập nhật 15/10/2026: phần quản trị và kho được đặc tả chi tiết ở [10-quan-tri-va-kho.md](10-quan-tri-va-kho.md) (vai trò mới, quyền, phiếu kho, nội dung cửa hàng, mã giảm giá, nghiệm thu). Bảng dưới vẫn đúng; tài liệu 10 chi tiết hơn và đúng hơn khi khác nhau.
+
 | Mã | Yêu cầu | Vai trò | Hiện trạng |
 | --- | --- | --- | --- |
 | YC-QT-01 | Trang quản trị chỉ mở cho nhân viên; mỗi chức năng kiểm tra vai trò ở máy chủ | Tất cả | Chưa |

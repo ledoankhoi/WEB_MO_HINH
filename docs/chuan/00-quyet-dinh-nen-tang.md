@@ -80,3 +80,14 @@ Mã giảm giá; đổi trả và hoàn tiền; cổng thanh toán; hàng đặt
 - Chưa chọn nơi lưu file 3D và ảnh (đề xuất: Supabase Storage, vì đã dùng Supabase).
 - Chính sách đổi trả (số ngày, điều kiện) chưa được chủ dự án cung cấp.
 - Dùng tên sản phẩm thật: cần ghi rõ trong luận văn là dữ liệu minh hoạ, và không gắn nhãn "chính hãng" khi chưa có căn cứ.
+
+## 6. Thay đổi ngày 15/10/2026
+
+| Chủ đề | Quyết định mới | Thay cho |
+| --- | --- | --- |
+| Thứ tự làm | **Làm trang quản trị (quản trị website và quản lý kho) trước**, theo kế hoạch trong file Word `Ke_hoach_quan_ly_kho_va_quan_tri_website_robot_collectibles`. Phạm vi: các mục P0 và P1 của kế hoạch. Đặc tả: [10-quan-tri-va-kho.md](10-quan-tri-va-kho.md) | Mục 4: nghiệp vụ mở rộng sau AI |
+| Phần cửa hàng | Chỉ sửa những gì cần để khớp dữ liệu mới (biến thể, giữ hàng, mã giảm giá, đánh giá, yêu thích, nội dung từ CSDL). Bắt buộc đăng nhập khi đặt hàng, sổ địa chỉ, bỏ trang tra cứu đơn để giai đoạn cửa hàng | |
+| Vai trò | Thêm `warehouse_manager` (quản lý kho: ghi sổ phiếu kho, xem giá vốn) và `viewer` (chỉ xem, che thông tin cá nhân). Vẫn mỗi tài khoản một vai trò | Bảng vai trò ở mục 3 |
+| Giá vốn | Bình quân gia quyền di động | Chưa có |
+| CSDL | Supabase chỉ có dữ liệu mẫu; cho phép migration xoá và tạo lại bảng | |
+| Chạy tự động | Phần này được làm bằng Claude Code chạy không người giám sát, theo [../ke-hoach/backlog-quan-tri-kho.md](../ke-hoach/backlog-quan-tri-kho.md) trên nhánh `auto/quan-tri-kho` | |

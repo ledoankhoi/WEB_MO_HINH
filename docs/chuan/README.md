@@ -16,6 +16,7 @@ Nguồn đúng duy nhất cho dự án ROBOTICA (luận văn, đồng thời là
 | 07-kiem-thu.md | Kế hoạch và kết quả kiểm thử | Chưa viết |
 | 08-tich-hop-ai.md | Tính năng AI, dữ liệu, mô hình, đánh giá (đóng góp chính của luận văn) | Chưa chốt hướng |
 | [09-mo-hinh-3d.md](09-mo-hinh-3d.md) | Nguồn, xử lý, lưu trữ và hiển thị mô hình 3D | Đã làm |
+| [10-quan-tri-va-kho.md](10-quan-tri-va-kho.md) | Quản trị website và quản lý kho: phạm vi, quyết định, quyền, yêu cầu, nghiệm thu | Đã chốt 15/10/2026, chưa cài đặt |
 
 ## Quy ước
 
