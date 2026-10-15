@@ -906,3 +906,10 @@ export const SEED_PRODUCTS: SeedProduct[] = [
     featured: false,
   },
 ];
+
+const specValues = (...labels: string[]) =>
+  SEED_PRODUCTS.flatMap((p) => p.specs.filter((spec) => labels.includes(spec.label)).map((spec) => spec.value));
+
+// Thương hiệu và series suy ra từ thông số của dữ liệu mẫu ("Hasbro, Takara Tomy" là hai thương hiệu).
+export const SEED_BRANDS = [...new Set(specValues("Hãng sản xuất").flatMap((value) => value.split(", ")))].sort();
+export const SEED_SERIES = [...new Set(specValues("Dòng phim", "Dòng"))].sort();

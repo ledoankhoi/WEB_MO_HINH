@@ -31,6 +31,7 @@ import {
   type ProductInput,
 } from "@/server/repo/products";
 import { findStaffById, insertStaff, updateStaff } from "@/server/repo/staff";
+import { deleteTaxonomy, isTaxonomyKind, listTaxonomy, saveTaxonomy, type TaxonomyKind } from "@/server/repo/taxonomy";
 
 const MAX_POSTER_BYTES = 800 * 1024;
 const isId = (value: unknown): value is string => typeof value === "string" && /^[a-f0-9]{20}$/.test(value);
@@ -373,4 +374,74 @@ export async function updateStaffAction(id: string, change: { role: string } | {
   return ok
     ? { ok: true, message: "Đã cập nhật. Các phiên đăng nhập của tài khoản này đã bị đăng xuất." }
     : { message: "Không thực hiện được: phải còn ít nhất một quản trị viên đang hoạt động." };
+}
+
+const TAXONOMY_LABELS = { categories: "danh mục", brands: "thương hiệu", series: "series" } as const;
+const TAXONOMY_PATHS = { categories: "/admin/danh-muc", brands: "/admin/thuong-hieu", series: "/admin/series" } as const;
+
+// Tạo hoặc sửa danh mục, thương hiệu, series (`kind` gắn sẵn ở form bằng bind).
+export async function saveTaxonomyAction(kind: TaxonomyKind, _prev: FormState, form: FormData): Promise<FormState> {
+  const audit = await staffWith("catalog.edit");
+  if (!audit) return FORBIDDEN;
+  if (!isTaxonomyKind(kind)) return { message: "Yêu cầu không hợp lệ." };
+
+  const id = readText(form, "id");
+  const name = readText(form, "name");
+  const slug = readText(form, "slug") || slugify(name);
+  const description = kind === "categories" ? readText(form, "description") : "";
+  const parentId = kind === "categories" ? readText(form, "parentId") : "";
+  const sortInput = kind === "categories" ? readText(form, "sortOrder") || "0" : "0";
+  const values = { id, name, slug, description, parentId, sortOrder: sortInput };
+
+  if (id && !isId(id)) return { message: "Yêu cầu không hợp lệ.", values };
+  const items = await listTaxonomy(kind);
+  const old = id ? items.find((item) => item.id === id) : undefined;
+  if (id && !old) return { message: `Không tìm thấy ${TAXONOMY_LABELS[kind]} này.`, values };
+
+  const errors: Record<string, string> = {};
+  if (name.length < 2 || name.length > 80) errors.name = "Tên cần từ 2 đến 80 ký tự.";
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || slug.length > 80) {
+    errors.slug = "Đường dẫn chỉ gồm chữ thường không dấu, số và gạch nối (tối đa 80 ký tự).";
+  } else if (old && old.slug !== slug && kind === "categories" && old.productCount > 0) {
+    errors.slug = "Không đổi được đường dẫn khi danh mục còn sản phẩm.";
+  }
+  if (description.length > 500) errors.description = "Mô tả tối đa 500 ký tự.";
+  if (!/^\d{1,4}$/.test(sortInput)) errors.sortOrder = "Thứ tự là số nguyên từ 0 đến 9999.";
+  if (parentId) {
+    const parent = items.find((item) => item.id === parentId);
+    if (!parent || parent.parentId || parent.id === id) errors.parentId = "Danh mục cha phải là một danh mục gốc khác.";
+    else if (id && items.some((item) => item.parentId === id)) errors.parentId = "Danh mục đang có danh mục con nên phải là danh mục gốc (tối đa 2 cấp).";
+  }
+  if (Object.keys(errors).length > 0) return { errors, values, message: "Vui lòng kiểm tra lại các ô được đánh dấu." };
+
+  const input = { slug, name, description, parentId: parentId || null, sortOrder: Number(sortInput) };
+  const label = TAXONOMY_LABELS[kind];
+  const detail = changes(old ? { slug: old.slug, name: old.name, description: old.description, parentId: old.parentId, sortOrder: old.sortOrder } : {}, input);
+  try {
+    const saved = await saveTaxonomy(
+      kind,
+      id || null,
+      input,
+      audit({ action: `${kind}.${id ? "update" : "create"}`, entity: kind, summary: `${id ? "Sửa" : "Tạo"} ${label} ${name}`, detail }),
+    );
+    if (!saved) return { message: "Dữ liệu vừa thay đổi ở nơi khác, vui lòng tải lại trang và thử lại.", values };
+  } catch (error) {
+    if (isConstraintError(error)) return { errors: { slug: `Đường dẫn này đã được dùng cho ${label} khác.` }, values };
+    throw error;
+  }
+  refresh();
+  return { ok: true, message: id ? "Đã lưu thay đổi." : `Đã tạo ${label} ${name}.` };
+}
+
+export async function deleteTaxonomyAction(kind: TaxonomyKind, id: string): Promise<FormState> {
+  const audit = await staffWith("catalog.edit");
+  if (!audit) return FORBIDDEN;
+  if (!isTaxonomyKind(kind) || !isId(id)) return { message: "Yêu cầu không hợp lệ." };
+  const item = (await listTaxonomy(kind)).find((value) => value.id === id);
+  if (!item) return { message: "Mục này không còn tồn tại." };
+  const entry = audit({ action: `${kind}.delete`, entity: kind, summary: `Xoá ${TAXONOMY_LABELS[kind]} ${item.name}` });
+  if (!(await deleteTaxonomy(kind, id, entry))) {
+    return { message: `Không xoá được vì ${TAXONOMY_LABELS[kind]} này còn sản phẩm${kind === "categories" ? " hoặc danh mục con" : ""}.` };
+  }
+  redirect(TAXONOMY_PATHS[kind]);
 }

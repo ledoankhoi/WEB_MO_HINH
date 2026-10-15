@@ -152,4 +152,24 @@ export const MIGRATIONS: Migration[] = [
       "ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY",
     ],
   },
+  {
+    // Danh mục (tối đa 2 cấp, kiểm tra ở src/server/repo/taxonomy.ts), thương hiệu, series theo mục 3 của
+    // docs/chuan/03. Bảng `products` cũ vẫn nối danh mục qua cột `category` (slug) cho tới T04.
+    id: "004_taxonomy",
+    statements: [
+      `CREATE TABLE categories (
+        id TEXT PRIMARY KEY,
+        slug TEXT NOT NULL UNIQUE,
+        name TEXT NOT NULL,
+        description TEXT NOT NULL DEFAULT '',
+        parent_id TEXT REFERENCES categories (id),
+        sort_order INTEGER NOT NULL DEFAULT 0,
+        CONSTRAINT parent_not_self CHECK (parent_id <> id)
+      )`,
+      "CREATE INDEX idx_categories_parent ON categories (parent_id)",
+      "CREATE TABLE brands (id TEXT PRIMARY KEY, slug TEXT NOT NULL UNIQUE, name TEXT NOT NULL)",
+      "CREATE TABLE series (id TEXT PRIMARY KEY, slug TEXT NOT NULL UNIQUE, name TEXT NOT NULL)",
+      ...["categories", "brands", "series"].map((table) => `ALTER TABLE ${table} ENABLE ROW LEVEL SECURITY`),
+    ],
+  },
 ];

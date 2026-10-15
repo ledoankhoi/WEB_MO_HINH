@@ -2,11 +2,12 @@ import "server-only";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { Pool } from "pg";
-import { foldText } from "@/lib/format";
+import { CATEGORIES } from "@/lib/catalog";
+import { foldText, slugify } from "@/lib/format";
 import { hashPassword, isValidPassword } from "../auth/password";
 import { newId } from "../ids";
 import { MIGRATIONS } from "./migrations";
-import { SEED_PRODUCTS } from "./seed-data";
+import { SEED_BRANDS, SEED_PRODUCTS, SEED_SERIES } from "./seed-data";
 
 export type InValue = string | number | boolean | null | Uint8Array;
 export type Row = Record<string, unknown>;
@@ -35,6 +36,7 @@ const INIT_LOCK = 7291801;
 const SEED_KEY = "seed:catalog-v3";
 const V1_SEED_KEY = "seed:catalog";
 const V2_SEED_KEY = "seed:catalog-v2";
+const TAXONOMY_SEED_KEY = "seed:taxonomy-v1";
 
 type DbState = { backend?: Backend; ready?: Promise<Db> };
 const globalState = globalThis as unknown as { __robostoreDb?: DbState };
@@ -139,6 +141,25 @@ async function migrateAndSeed(backend: Backend) {
       if (done.has(key)) continue;
       for (const statement of migration.statements) await exec(statement);
       await mark(key);
+    }
+
+    if (!done.has(TAXONOMY_SEED_KEY)) {
+      for (const [index, c] of CATEGORIES.entries()) {
+        await exec({
+          sql: `INSERT INTO categories (id, slug, name, description, sort_order) VALUES (?, ?, ?, ?, ?)
+                ON CONFLICT (slug) DO NOTHING`,
+          args: [newId(), c.slug, c.name, c.description, index],
+        });
+      }
+      for (const [table, names] of [["brands", SEED_BRANDS], ["series", SEED_SERIES]] as const) {
+        for (const name of names) {
+          await exec({
+            sql: `INSERT INTO ${table} (id, slug, name) VALUES (?, ?, ?) ON CONFLICT (slug) DO NOTHING`,
+            args: [newId(), slugify(name), name],
+          });
+        }
+      }
+      await mark(TAXONOMY_SEED_KEY);
     }
 
     if (done.has(SEED_KEY)) return;

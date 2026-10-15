@@ -8,7 +8,7 @@ import path from "node:path";
 import pg from "pg";
 
 // Danh sách trang. `status` mặc định 200; trang chuyển hướng ghi mã mong đợi (Next.js dùng 307).
-// Đường dẫn có :product, :productId, :order, :orderToken được thay bằng dữ liệu thật trong CSDL.
+// Đường dẫn có :product, :productId, :order, :orderToken, :categoryId được thay bằng dữ liệu thật trong CSDL.
 const PAGES = [
   { path: "/" },
   { path: "/san-pham" },
@@ -24,6 +24,10 @@ const PAGES = [
   { path: "/admin/san-pham" },
   { path: "/admin/san-pham/moi" },
   { path: "/admin/san-pham/:productId" },
+  { path: "/admin/danh-muc" },
+  { path: "/admin/danh-muc?sua=:categoryId" },
+  { path: "/admin/thuong-hieu" },
+  { path: "/admin/series" },
   { path: "/admin/don-hang" },
   { path: "/admin/don-hang/:order" },
   { path: "/admin/khach-hang" },
@@ -96,10 +100,6 @@ try {
     Date.now(),
   ]);
 
-  const product = await one("SELECT id, slug FROM products ORDER BY created_at DESC LIMIT 1");
-  const order = await one("SELECT id, token FROM orders ORDER BY created_at DESC LIMIT 1");
-  const params = { product: product?.slug, productId: product?.id, order: order?.id, orderToken: order?.token };
-
   // Chờ máy chủ trả lời (lần đầu biên dịch có thể lâu).
   const deadline = Date.now() + 120_000;
   for (;;) {
@@ -112,6 +112,12 @@ try {
     if (ok) break;
     await new Promise((resolve) => setTimeout(resolve, 1000));
   }
+
+  // Đọc sau khi máy chủ đã trả lời: lần gọi đầu tiên chạy migration (bảng mới như categories).
+  const product = await one("SELECT id, slug FROM products ORDER BY created_at DESC LIMIT 1");
+  const order = await one("SELECT id, token FROM orders ORDER BY created_at DESC LIMIT 1");
+  const category = await one("SELECT id FROM categories ORDER BY sort_order LIMIT 1");
+  const params = { product: product?.slug, productId: product?.id, order: order?.id, orderToken: order?.token, categoryId: category?.id };
 
   for (const page of PAGES) {
     const missing = page.path.match(/:(\w+)/g)?.find((key) => !params[key.slice(1)]);

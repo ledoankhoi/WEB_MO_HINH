@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Package, ReceiptText, ScrollText, UserCog, Users } from "lucide-react";
+import { FolderTree, LayoutDashboard, Library, Package, ReceiptText, ScrollText, Tag, UserCog, Users } from "lucide-react";
 import { can, type Permission, type Role } from "@/lib/permissions";
 
 // Nhóm theo menu ở mục 5 của docs/chuan/10. Mỗi mục chỉ hiện với vai trò có quyền mở trang đó; quyền
@@ -11,7 +11,12 @@ const GROUPS: { label?: string; links: { href: string; label: string; icon: type
   { links: [{ href: "/admin", label: "Tổng quan", icon: LayoutDashboard, permission: "dashboard.view" }] },
   {
     label: "Danh mục hàng",
-    links: [{ href: "/admin/san-pham", label: "Sản phẩm", icon: Package, permission: "catalog.view" }],
+    links: [
+      { href: "/admin/san-pham", label: "Sản phẩm", icon: Package, permission: "catalog.view" },
+      { href: "/admin/danh-muc", label: "Danh mục", icon: FolderTree, permission: "catalog.view" },
+      { href: "/admin/thuong-hieu", label: "Thương hiệu", icon: Tag, permission: "catalog.view" },
+      { href: "/admin/series", label: "Series", icon: Library, permission: "catalog.view" },
+    ],
   },
   {
     label: "Bán hàng",

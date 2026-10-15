@@ -48,7 +48,7 @@ Ghi nhớ kỹ thuật của dự án:
   `/admin/nhan-vien` (danh sách, tạo, đổi vai trò, khoá, mở khoá; xoá phiên khi đổi vai trò hoặc khoá), `/admin/nhat-ky` (lọc, phân trang).
   Xong khi: test các ràng buộc ở mục 3 (không tự đổi vai trò, không khoá admin cuối cùng), trang có trong smoke.
 
-- [ ] **T03 — Danh mục, thương hiệu, series.** Cần T01. YC-SP-01.
+- [x] **T03 — Danh mục, thương hiệu, series.** Cần T01. YC-SP-01.
   Migration tạo `categories` (2 cấp), `brands`, `series`; nạp danh mục từ `CATEGORIES` hiện có và thương hiệu, series suy ra từ dữ liệu mẫu. Trang quản trị `/admin/danh-muc`, `/admin/thuong-hieu`, `/admin/series` (tạo, sửa, sắp xếp; không xoá khi còn sản phẩm). Bảng `products` cũ chưa đổi ở việc này.
   Xong khi: test ràng buộc 2 cấp và chặn xoá; trang có trong smoke.
 
@@ -168,6 +168,10 @@ Ghi nhớ kỹ thuật của dự án:
 | 15/10/2026 | T02 | Ràng buộc "không tự đổi mình" và "còn ít nhất một admin hoạt động" nằm ngay trong câu `UPDATE`, sau khi khoá các dòng admin bằng `FOR UPDATE`; action kiểm tra trước chỉ để báo lý do rõ ràng | Hai admin hạ quyền nhau cùng lúc thì chỉ một lệnh thành công |
 | 15/10/2026 | T02 | Tạo nhân viên cũng ghi nhật ký (`staff.create`). Trang nhân viên chỉ khoá, mở khoá tài khoản nhân viên; khoá tài khoản khách để T17 (`customers.manage`) | Tách đúng quyền theo mục 3 |
 | 15/10/2026 | T02 | Bộ lọc nhật ký: người làm chọn trong danh sách nhân viên, hành động và đối tượng chọn trong các giá trị đã có trong `audit_logs`, mã đối tượng nhập tay, khoảng ngày theo giờ Việt Nam (`parseVnDate`), 50 dòng mỗi trang | Đơn giản, không cần bảng mã hành động riêng |
+| 15/10/2026 | T03 | Thương hiệu lấy từ thông số "Hãng sản xuất" (tách "Hasbro, Takara Tomy" thành hai), series lấy từ "Dòng phim"/"Dòng" giữ nguyên tên kèm năm; nạp ở khoá dữ liệu mẫu mới `seed:taxonomy-v1` | Đúng "suy ra từ dữ liệu mẫu"; danh sách ở `SEED_BRANDS`, `SEED_SERIES` để T04 gán cho sản phẩm |
+| 15/10/2026 | T03 | "Sắp xếp" chỉ áp cho danh mục (ô Thứ tự, `sort_order`); thương hiệu, series xếp theo tên | Tài liệu 03 không có `sort_order` ở `brands`, `series` |
+| 15/10/2026 | T03 | Tới T04: danh mục đếm sản phẩm và chặn xoá qua `products.category = slug`, không đổi được slug danh mục còn sản phẩm. Thương hiệu, series chưa nối sản phẩm nên xoá được; khoá ngoại ở T04 sẽ chặn (repo đã bắt lỗi ràng buộc). T04 phải đổi `PRODUCTS_OF` trong `src/server/repo/taxonomy.ts` | Bảng `products` cũ chưa đổi ở việc này; đổi slug sẽ làm sản phẩm mất danh mục |
+| 15/10/2026 | T03 | Ba trang dùng chung `TaxonomyPage`; sửa bằng `?sua=<id>` mở form dưới bảng | Ít mã nhất, không cần trang con |
 
 ## Vướng mắc
 
