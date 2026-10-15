@@ -122,4 +122,34 @@ export const MIGRATIONS: Migration[] = [
       (table) => `ALTER TABLE ${table} ENABLE ROW LEVEL SECURITY`,
     ),
   },
+  {
+    // Vai trò nhân viên theo mục 3 của docs/chuan/10 (danh sách khớp ROLES trong src/lib/permissions.ts),
+    // khoá tài khoản, đồng ý nhận tin và nhật ký thao tác (chỉ thêm, QT-19).
+    id: "003_roles_audit",
+    statements: [
+      "ALTER TABLE users DROP CONSTRAINT role_valid",
+      `ALTER TABLE users ADD CONSTRAINT role_valid CHECK (role IN (
+        'customer', 'admin', 'product_manager', 'warehouse_manager', 'warehouse',
+        'order_staff', 'support', 'marketing', 'accountant', 'viewer'
+      ))`,
+      "ALTER TABLE users ADD COLUMN is_active BOOLEAN NOT NULL DEFAULT true",
+      "ALTER TABLE users ADD COLUMN marketing_consent BOOLEAN NOT NULL DEFAULT false",
+      "ALTER TABLE users ADD COLUMN marketing_consent_at BIGINT",
+      `CREATE TABLE audit_logs (
+        id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+        actor_id TEXT REFERENCES users (id),
+        actor_role TEXT NOT NULL DEFAULT '',
+        action TEXT NOT NULL,
+        entity TEXT NOT NULL,
+        entity_id TEXT NOT NULL DEFAULT '',
+        summary TEXT NOT NULL,
+        detail TEXT NOT NULL DEFAULT '{}',
+        created_at BIGINT NOT NULL
+      )`,
+      "CREATE INDEX idx_audit_entity ON audit_logs (entity, entity_id)",
+      "CREATE INDEX idx_audit_actor ON audit_logs (actor_id, created_at)",
+      "CREATE INDEX idx_audit_created ON audit_logs (created_at)",
+      "ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY",
+    ],
+  },
 ];

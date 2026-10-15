@@ -21,7 +21,7 @@ describe("tài khoản và phiên đăng nhập", () => {
     expect(await users.findSessionUser("con-han")).toMatchObject({ id, email: "a@example.com", role: "customer" });
     expect(await users.findSessionUser("het-han")).toBeNull();
     // Cửa đăng nhập dựa vào cờ này để tách tài khoản khách với quản trị viên.
-    expect(await users.findCredentialsByEmail("a@example.com")).toMatchObject({ id, isAdmin: false });
+    expect(await users.findCredentialsByEmail("a@example.com")).toMatchObject({ id, role: "customer", isActive: true });
 
     // Đổi mật khẩu đăng xuất mọi phiên khác.
     await users.insertSession("thiet-bi-khac", id, Date.now() + 60_000);

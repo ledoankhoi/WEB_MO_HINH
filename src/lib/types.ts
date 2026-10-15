@@ -6,6 +6,7 @@ import type {
   RobotColors,
   RobotModelKey,
 } from "./catalog";
+import type { Role } from "./permissions";
 
 export type Product = {
   id: string;
@@ -48,7 +49,7 @@ export type CurrentUser = {
   phone: string;
   address: string;
   city: string;
-  role: "customer" | "admin";
+  role: Role;
 };
 
 export type OrderItem = {

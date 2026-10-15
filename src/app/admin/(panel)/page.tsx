@@ -1,14 +1,14 @@
 import Link from "next/link";
 import { ORDER_STATUSES, ORDER_STATUS_LABELS } from "@/lib/catalog";
 import { formatNumber, formatVnd } from "@/lib/format";
-import { requireAdmin } from "@/server/auth/session";
+import { requireStaff } from "@/server/auth/session";
 import { getOrderStats } from "@/server/repo/orders";
 import { countUsers } from "@/server/repo/users";
 
 const card = "rounded-xl border border-line bg-surface p-5";
 
 export default async function AdminDashboardPage() {
-  await requireAdmin();
+  await requireStaff("dashboard.view");
   const [stats, customers] = await Promise.all([getOrderStats(), countUsers()]);
 
   return (

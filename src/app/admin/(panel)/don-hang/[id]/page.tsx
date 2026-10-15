@@ -5,12 +5,12 @@ import { isId } from "@/components/admin/parts";
 import { OrderSummary } from "@/components/cart/CartView";
 import { ORDER_STATUS_LABELS, PAYMENT_METHOD_LABELS, PAYMENT_STATUS_LABELS } from "@/lib/catalog";
 import { formatDateTime, formatVnd } from "@/lib/format";
-import { requireAdmin } from "@/server/auth/session";
+import { requireStaff } from "@/server/auth/session";
 import { findOrderById } from "@/server/repo/orders";
 
 export default async function AdminOrderPage({ params }: PageProps<"/admin/don-hang/[id]">) {
   const { id } = await params;
-  await requireAdmin(`/admin/don-hang/${id}`);
+  await requireStaff("orders.view", `/admin/don-hang/${id}`);
   const order = isId(id) ? await findOrderById(id) : null;
   if (!order) notFound();
 

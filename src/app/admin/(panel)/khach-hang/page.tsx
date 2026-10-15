@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { Empty, Pager, TABLE, TABLE_WRAP, pageNumber } from "@/components/admin/parts";
 import { formatDate, formatNumber, formatVnd } from "@/lib/format";
-import { requireAdmin } from "@/server/auth/session";
+import { requireStaff } from "@/server/auth/session";
 import { listCustomers } from "@/server/repo/users";
 
 const PAGE_SIZE = 20;
 
 export default async function AdminCustomersPage({ searchParams }: PageProps<"/admin/khach-hang">) {
-  await requireAdmin("/admin/khach-hang");
+  await requireStaff("customers.view", "/admin/khach-hang");
   const page = pageNumber((await searchParams).trang);
   const { items, total } = await listCustomers({ page, pageSize: PAGE_SIZE });
 

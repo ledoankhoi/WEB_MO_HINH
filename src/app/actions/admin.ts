@@ -5,20 +5,25 @@ import { redirect } from "next/navigation";
 import {
   isCategorySlug,
   isPaymentStatus,
+  ORDER_STATUS_LABELS,
+  PAYMENT_STATUS_LABELS,
   isRobotModelKey,
   type OrderStatus,
   type PaymentStatus,
   type ProductSpec,
 } from "@/lib/catalog";
 import { slugify } from "@/lib/format";
+import type { Permission } from "@/lib/permissions";
 import type { FormState } from "@/lib/types";
 import { isHexColor, parseMoney, readText } from "@/lib/validation";
-import { requireAdmin } from "@/server/auth/session";
+import { authorize } from "@/server/auth/session";
 import { PRODUCTS_TAG } from "@/server/catalog";
 import { isConstraintError } from "@/server/db";
-import { advanceOrder, cancelOrder, setPaymentStatus } from "@/server/repo/orders";
+import type { AuditEntry } from "@/server/repo/audit";
+import { advanceOrder, cancelOrder, findOrderById, setPaymentStatus } from "@/server/repo/orders";
 import {
   deleteProduct,
+  findProductById,
   insertProduct,
   saveProductImage,
   updateProduct,
@@ -27,6 +32,23 @@ import {
 
 const MAX_POSTER_BYTES = 800 * 1024;
 const isId = (value: unknown): value is string => typeof value === "string" && /^[a-f0-9]{20}$/.test(value);
+const FORBIDDEN: FormState = { message: "Bạn không có quyền thực hiện thao tác này." };
+
+// Kiểm tra phiên và quyền trước mọi thao tác; trả về hàm tạo dòng nhật ký mang người làm và vai trò.
+async function staffWith(permission: Permission) {
+  const user = await authorize(permission);
+  if (!user) return null;
+  return (entry: Omit<AuditEntry, "actor">): AuditEntry => ({ actor: { id: user.id, role: user.role }, ...entry });
+}
+
+// Chỉ giữ các trường có đổi, dạng { before, after }.
+function changes(before: Record<string, unknown>, after: Record<string, unknown>) {
+  const keys = Object.keys(after).filter((key) => before[key] !== after[key]);
+  return {
+    before: Object.fromEntries(keys.map((key) => [key, before[key]])),
+    after: Object.fromEntries(keys.map((key) => [key, after[key]])),
+  };
+}
 
 // Mỗi dòng có dạng "Nhãn: giá trị".
 function parseSpecs(raw: string): ProductSpec[] | null {
@@ -59,7 +81,8 @@ async function readPoster(form: FormData): Promise<{ data: ArrayBuffer; contentT
 }
 
 export async function saveProductAction(_prev: FormState, form: FormData): Promise<FormState> {
-  await requireAdmin();
+  const audit = await staffWith("catalog.edit");
+  if (!audit) return FORBIDDEN;
 
   const id = readText(form, "id");
   const name = readText(form, "name");
@@ -166,9 +189,27 @@ export async function saveProductAction(_prev: FormState, form: FormData): Promi
   let productId = id;
   try {
     if (id) {
-      if (!(await updateProduct(id, input))) return { message: "Sản phẩm không còn tồn tại.", values };
+      const old = await findProductById(id);
+      if (!old) return { message: "Sản phẩm không còn tồn tại.", values };
+      const pick = (p: { price: number; compareAtPrice: number | null; isActive: boolean }) => ({
+        price: p.price,
+        compareAtPrice: p.compareAtPrice,
+        isActive: p.isActive,
+      });
+      const detail = changes(pick(old), pick(input));
+      const priceChanged = "price" in detail.after || "compareAtPrice" in detail.after;
+      const entry = audit({
+        action: priceChanged ? "product.price_change" : "product.update",
+        entity: "products",
+        summary: priceChanged ? `Đổi giá sản phẩm ${name}` : `Sửa sản phẩm ${name}`,
+        detail,
+      });
+      if (!(await updateProduct(id, input, entry))) return { message: "Sản phẩm không còn tồn tại.", values };
     } else {
-      productId = await insertProduct(input);
+      productId = await insertProduct(
+        input,
+        audit({ action: "product.create", entity: "products", summary: `Tạo sản phẩm ${name}`, detail: { after: { price, isActive } } }),
+      );
     }
   } catch (error) {
     if (isConstraintError(error)) {
@@ -185,21 +226,35 @@ export async function saveProductAction(_prev: FormState, form: FormData): Promi
 }
 
 export async function deleteProductAction(id: string): Promise<FormState> {
-  await requireAdmin();
+  const audit = await staffWith("catalog.edit");
+  if (!audit) return FORBIDDEN;
   if (!isId(id)) return { message: "Sản phẩm không hợp lệ." };
-  if (!(await deleteProduct(id))) {
+  const product = await findProductById(id);
+  const entry = audit({ action: "product.delete", entity: "products", summary: `Xoá sản phẩm ${product?.name ?? id}` });
+  if (!(await deleteProduct(id, entry))) {
     return { message: "Không xoá được vì sản phẩm đã có trong đơn hàng. Hãy bỏ chọn “Đang bán” để ẩn sản phẩm." };
   }
   updateTag(PRODUCTS_TAG);
   redirect("/admin/san-pham");
 }
 
+// Bàn giao vận chuyển thuộc nhóm thực hiện đơn (L6); xác nhận và hoàn tất thuộc nhóm xử lý đơn.
+const ADVANCE_PERMISSION = { confirmed: "orders.process", shipping: "orders.fulfil", completed: "orders.process" } as const;
+
 export async function advanceOrderAction(id: string, to: OrderStatus): Promise<FormState> {
-  await requireAdmin();
   if (!isId(id) || (to !== "confirmed" && to !== "shipping" && to !== "completed")) {
     return { message: "Yêu cầu không hợp lệ." };
   }
-  const changed = await advanceOrder(id, to);
+  const audit = await staffWith(ADVANCE_PERMISSION[to]);
+  if (!audit) return FORBIDDEN;
+  const order = await findOrderById(id);
+  const entry = audit({
+    action: `order.${to}`,
+    entity: "orders",
+    summary: `Chuyển đơn ${order?.code ?? id} sang ${ORDER_STATUS_LABELS[to]}`,
+    detail: { before: { status: order?.status }, after: { status: to } },
+  });
+  const changed = await advanceOrder(id, to, entry);
   refresh();
   return changed
     ? { ok: true, message: "Đã cập nhật trạng thái đơn hàng." }
@@ -207,9 +262,17 @@ export async function advanceOrderAction(id: string, to: OrderStatus): Promise<F
 }
 
 export async function cancelOrderAsAdminAction(id: string): Promise<FormState> {
-  await requireAdmin();
+  const audit = await staffWith("orders.process");
+  if (!audit) return FORBIDDEN;
   if (!isId(id)) return { message: "Yêu cầu không hợp lệ." };
-  const cancelled = await cancelOrder(id, ["pending", "confirmed", "shipping"]);
+  const order = await findOrderById(id);
+  const entry = audit({
+    action: "order.cancel",
+    entity: "orders",
+    summary: `Huỷ đơn ${order?.code ?? id}`,
+    detail: { before: { status: order?.status }, after: { status: "cancelled" } },
+  });
+  const cancelled = await cancelOrder(id, ["pending", "confirmed", "shipping"], entry);
   if (cancelled) updateTag(PRODUCTS_TAG);
   refresh();
   return cancelled
@@ -218,11 +281,19 @@ export async function cancelOrderAsAdminAction(id: string): Promise<FormState> {
 }
 
 export async function setPaymentStatusAction(id: string, status: PaymentStatus): Promise<FormState> {
-  await requireAdmin();
+  const audit = await staffWith("payments.manage");
+  if (!audit) return FORBIDDEN;
   if (!isId(id) || typeof status !== "string" || !isPaymentStatus(status)) {
     return { message: "Yêu cầu không hợp lệ." };
   }
-  const changed = await setPaymentStatus(id, status);
+  const order = await findOrderById(id);
+  const entry = audit({
+    action: `payment.${status}`,
+    entity: "orders",
+    summary: `Đổi thanh toán đơn ${order?.code ?? id} sang ${PAYMENT_STATUS_LABELS[status]}`,
+    detail: { before: { paymentStatus: order?.paymentStatus }, after: { paymentStatus: status } },
+  });
+  const changed = await setPaymentStatus(id, status, entry);
   refresh();
   return changed ? { ok: true, message: "Đã cập nhật thanh toán." } : { message: "Không tìm thấy đơn hàng." };
 }

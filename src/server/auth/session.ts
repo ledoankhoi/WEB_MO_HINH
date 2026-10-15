@@ -1,7 +1,8 @@
 import "server-only";
 import { cache } from "react";
 import { cookies, headers } from "next/headers";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { can, isStaffRole, type Permission } from "@/lib/permissions";
 import type { CurrentUser } from "@/lib/types";
 import { newToken, sha256 } from "../ids";
 import { deleteSession, findSessionUser, insertSession } from "../repo/users";
@@ -54,10 +55,17 @@ const readUser = cache(async (cookie: string): Promise<CurrentUser | null> => {
 
 export const getCurrentUser = () => readUser(SESSION_COOKIE);
 
-// Kiểm tra vai trò ở mỗi yêu cầu: tài khoản bị hạ quyền sau khi đăng nhập mất quyền ngay.
-export async function getAdminUser(): Promise<CurrentUser | null> {
+// Kiểm tra vai trò ở mỗi yêu cầu: tài khoản bị đổi vai trò hoặc bị khoá sau khi đăng nhập mất quyền ngay.
+export async function getStaffUser(): Promise<CurrentUser | null> {
   const user = await readUser(ADMIN_COOKIE);
-  return user?.role === "admin" ? user : null;
+  return user && isStaffRole(user.role) ? user : null;
+}
+
+// Dùng trong Server Action và Route Handler: trả về null khi thiếu phiên hoặc thiếu quyền, để nơi gọi
+// trả lỗi mà không ghi gì.
+export async function authorize(permission: Permission): Promise<CurrentUser | null> {
+  const user = await getStaffUser();
+  return user && can(user.role, permission) ? user : null;
 }
 
 export async function requireUser(returnTo: string): Promise<CurrentUser> {
@@ -66,9 +74,11 @@ export async function requireUser(returnTo: string): Promise<CurrentUser> {
   return user;
 }
 
-// Ai chưa có phiên quản trị (kể cả khách đang đăng nhập ở cửa hàng) đều về trang đăng nhập quản trị.
-export async function requireAdmin(returnTo = "/admin"): Promise<CurrentUser> {
-  const user = await getAdminUser();
+// Dùng trong trang quản trị. Ai chưa có phiên quản trị (kể cả khách đang đăng nhập ở cửa hàng) đều về
+// trang đăng nhập quản trị; nhân viên thiếu quyền nhận trang 404.
+export async function requireStaff(permission: Permission, returnTo = "/admin"): Promise<CurrentUser> {
+  const user = await getStaffUser();
   if (!user) redirect(`/admin/dang-nhap?next=${encodeURIComponent(returnTo)}`);
+  if (!can(user.role, permission)) notFound();
   return user;
 }

@@ -3,11 +3,12 @@ import { BADGE, Empty, TABLE, TABLE_WRAP } from "@/components/admin/parts";
 import { ButtonLink } from "@/components/ui/Button";
 import { getCategory } from "@/lib/catalog";
 import { formatNumber, formatVnd } from "@/lib/format";
-import { requireAdmin } from "@/server/auth/session";
+import { can } from "@/lib/permissions";
+import { requireStaff } from "@/server/auth/session";
 import { listAllProducts } from "@/server/repo/products";
 
 export default async function AdminProductsPage() {
-  await requireAdmin("/admin/san-pham");
+  const user = await requireStaff("catalog.view", "/admin/san-pham");
   // shortcut: tải toàn bộ sản phẩm vào một bảng, chuyển sang queryProducts (tìm kiếm, phân trang) khi vượt vài trăm sản phẩm.
   const products = await listAllProducts();
 
@@ -15,9 +16,11 @@ export default async function AdminProductsPage() {
     <>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-3xl font-bold tracking-tight">Sản phẩm ({formatNumber(products.length)})</h1>
-        <ButtonLink href="/admin/san-pham/moi" size="sm">
-          Thêm sản phẩm
-        </ButtonLink>
+        {can(user.role, "catalog.edit") && (
+          <ButtonLink href="/admin/san-pham/moi" size="sm">
+            Thêm sản phẩm
+          </ButtonLink>
+        )}
       </div>
 
       {products.length === 0 ? (

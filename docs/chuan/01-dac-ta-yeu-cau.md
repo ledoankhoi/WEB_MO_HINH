@@ -70,7 +70,7 @@ Ngoài phạm vi bước 1: cổng thanh toán trực tuyến, tích hợp hãng
 | YC-TKH-01 | Đăng ký bằng email và mật khẩu; đăng nhập; đăng xuất | Có |
 | YC-TKH-02 | Sửa họ tên, số điện thoại; đổi mật khẩu (đăng xuất các thiết bị khác) | Có |
 | YC-TKH-03 | Sổ địa chỉ: thêm, sửa, xoá, chọn địa chỉ mặc định | Chưa |
-| YC-TKH-04 | Tài khoản bị khoá không đăng nhập được | Chưa |
+| YC-TKH-04 | Tài khoản bị khoá không đăng nhập được | Có một phần (chặn đăng nhập và phiên; chưa có nút khoá) |
 
 ### 3.5. Giỏ hàng và đặt hàng (GH)
 
@@ -108,7 +108,7 @@ Cập nhật 15/10/2026: phần quản trị và kho được đặc tả chi ti
 
 | Mã | Yêu cầu | Vai trò | Hiện trạng |
 | --- | --- | --- | --- |
-| YC-QT-01 | Trang quản trị chỉ mở cho nhân viên; mỗi chức năng kiểm tra vai trò ở máy chủ | Tất cả | Chưa |
+| YC-QT-01 | Trang quản trị chỉ mở cho nhân viên; mỗi chức năng kiểm tra vai trò ở máy chủ | Tất cả | Có |
 | YC-QT-02 | Tạo, sửa, xuất bản, lưu trữ sản phẩm; quản lý biến thể | Quản lý sản phẩm | Chưa (có sẵn một phần xử lý ở máy chủ) |
 | YC-QT-03 | Quản lý danh mục, thương hiệu, series | Quản lý sản phẩm | Chưa |
 | YC-QT-04 | Chụp ảnh đại diện từ mô hình 3D khi lưu sản phẩm | Quản lý sản phẩm | Chưa (có sẵn phần chụp) |

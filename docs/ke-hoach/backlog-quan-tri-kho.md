@@ -40,7 +40,7 @@ Ghi nhớ kỹ thuật của dự án:
 
 ### Giai đoạn 1: nền dữ liệu và quyền
 
-- [ ] **T01 — Vai trò, quyền, nhật ký thao tác.** YC-QTN-01, 02, 03, 04; SEC-01, SEC-04, AUD-01 (phần hiện có).
+- [x] **T01 — Vai trò, quyền, nhật ký thao tác.** YC-QTN-01, 02, 03, 04; SEC-01, SEC-04, AUD-01 (phần hiện có).
   Migration mới: `users.role` mở rộng, `is_active`, `marketing_consent`, `marketing_consent_at`; bảng `audit_logs`; bật RLS. `src/lib/permissions.ts` chứa đúng ma trận ở mục 3 của tài liệu 10 và hàm kiểm tra. Thay `requireAdmin()` bằng hàm kiểm tra theo quyền (ví dụ `requireStaff(permission)`), đăng nhập quản trị nhận mọi vai trò nhân viên đang hoạt động, tài khoản bị khoá mất phiên. Thanh bên lọc theo quyền và nhóm theo menu ở mục 5. Các action quản trị hiện có ghi nhật ký. Cập nhật CLAUDE.md phần mô tả `requireAdmin()`.
   Xong khi: test ma trận quyền (mỗi vai trò, mỗi quyền), SEC-01 (gọi thẳng action thiếu quyền bị từ chối), SEC-04, đăng nhập quản trị sai mật khẩu có dòng nhật ký.
 
@@ -159,6 +159,11 @@ Ghi nhớ kỹ thuật của dự án:
 
 | Ngày | Việc | Quyết định | Lý do |
 | --- | --- | --- | --- |
+| 15/10/2026 | T01 | `/admin/khach-hang` tạm chỉ mở cho `customers.view`, chưa cho `viewer` | Che thông tin khách cho `viewer` (SEC-02) thuộc T17; mở trước thì lộ email, số điện thoại thật |
+| 15/10/2026 | T01 | `/admin/san-pham/moi` cần `catalog.edit`; `/admin/san-pham/[id]` cần `catalog.view` (lưu, xoá vẫn bị action chặn) | Danh sách sản phẩm trỏ tới trang chi tiết; vai trò chỉ xem không gặp 404. T06 làm lại màn hình này |
+| 15/10/2026 | T01 | Tạm phân quyền action đơn hiện có: xác nhận, hoàn tất, huỷ cần `orders.process`; giao vận chuyển cần `orders.fulfil`; đổi thanh toán cần `payments.manage`. Nút ở trang đơn chưa ẩn theo quyền | Dãy trạng thái cũ chưa có L1–L14; T05 thay bằng luật và nút đúng quyền |
+| 15/10/2026 | T01 | Nhật ký ghi bằng `WITH changed AS (UPDATE ... RETURNING id) INSERT INTO audit_logs ...` (`withAudit` trong `src/server/repo/audit.ts`) | Cùng câu lệnh với thay đổi nên chỉ ghi khi thật sự có dòng đổi; bấm hai lần không thêm nhật ký |
+| 15/10/2026 | T01 | Đăng nhập quản trị thành công cũng ghi `auth.admin_login`; khách huỷ đơn ở cửa hàng không ghi nhật ký | Đặc tả chỉ bắt buộc ghi lần thất bại; nhật ký dành cho thao tác của nhân viên |
 
 ## Vướng mắc
 

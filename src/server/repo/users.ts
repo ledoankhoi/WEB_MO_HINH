@@ -1,4 +1,5 @@
 import "server-only";
+import { isRole, type Role } from "@/lib/permissions";
 import type { CurrentUser } from "@/lib/types";
 import { getDb, type Row } from "../db";
 import { newId } from "../ids";
@@ -11,18 +12,28 @@ function toUser(row: Row): CurrentUser {
     phone: String(row.phone),
     address: String(row.address),
     city: String(row.city),
-    role: row.role === "admin" ? "admin" : "customer",
+    role: isRole(row.role) ? row.role : "customer",
   };
 }
 
 // Chỉ dùng khi đăng nhập: đây là hàm duy nhất trả về password_hash.
 export async function findCredentialsByEmail(
   email: string,
-): Promise<{ id: string; passwordHash: string; isAdmin: boolean } | null> {
+): Promise<{ id: string; passwordHash: string; role: Role; isActive: boolean } | null> {
   const db = await getDb();
-  const result = await db.execute({ sql: "SELECT id, password_hash, role FROM users WHERE email = ?", args: [email] });
+  const result = await db.execute({
+    sql: "SELECT id, password_hash, role, is_active FROM users WHERE email = ?",
+    args: [email],
+  });
   const row = result.rows[0];
-  return row ? { id: String(row.id), passwordHash: String(row.password_hash), isAdmin: row.role === "admin" } : null;
+  return row
+    ? {
+        id: String(row.id),
+        passwordHash: String(row.password_hash),
+        role: isRole(row.role) ? row.role : "customer",
+        isActive: row.is_active === true,
+      }
+    : null;
 }
 
 export async function findPasswordHash(userId: string): Promise<string | null> {
@@ -78,7 +89,7 @@ export async function findSessionUser(sessionId: string): Promise<CurrentUser | 
   const result = await db.execute({
     sql: `SELECT u.id, u.email, u.name, u.phone, u.address, u.city, u.role
           FROM sessions s JOIN users u ON u.id = s.user_id
-          WHERE s.id = ? AND s.expires_at > extract(epoch from now()) * 1000`,
+          WHERE s.id = ? AND s.expires_at > extract(epoch from now()) * 1000 AND u.is_active`,
     // Dùng đồng hồ của CSDL: Date.now() trong lúc dựng trang bị Next.js coi là giá trị không ổn định.
     args: [sessionId],
   });

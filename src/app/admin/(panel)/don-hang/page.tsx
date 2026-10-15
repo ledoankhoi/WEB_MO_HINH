@@ -3,13 +3,13 @@ import Link from "next/link";
 import { BADGE, Empty, Pager, TABLE, TABLE_WRAP, chip, first, isId, pageNumber } from "@/components/admin/parts";
 import { ORDER_STATUSES, ORDER_STATUS_LABELS, PAYMENT_STATUS_LABELS, isOrderStatus } from "@/lib/catalog";
 import { formatDateTime, formatNumber, formatVnd } from "@/lib/format";
-import { requireAdmin } from "@/server/auth/session";
+import { requireStaff } from "@/server/auth/session";
 import { listOrders } from "@/server/repo/orders";
 
 const PAGE_SIZE = 20;
 
 export default async function AdminOrdersPage({ searchParams }: PageProps<"/admin/don-hang">) {
-  await requireAdmin("/admin/don-hang");
+  await requireStaff("orders.view", "/admin/don-hang");
   const params = await searchParams;
   const statusParam = first(params["trang-thai"]);
   const status = isOrderStatus(statusParam) ? statusParam : undefined;

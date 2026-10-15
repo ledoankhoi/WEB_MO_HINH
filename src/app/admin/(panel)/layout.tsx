@@ -4,12 +4,13 @@ import { LogoutButton } from "@/components/account/AccountForms";
 import { AdminNav } from "@/components/admin/AdminNav";
 import { LogoMark } from "@/components/layout/Logo";
 import { site } from "@/config/site";
-import { requireAdmin } from "@/server/auth/session";
+import { ROLE_LABELS } from "@/lib/permissions";
+import { requireStaff } from "@/server/auth/session";
 
 // Kiểm tra quyền trước khi vẽ khung để người ngoài không thấy gì của khu quản trị. Layout không chạy lại
-// khi chuyển trang trong khu này, nên mỗi trang vẫn tự gọi requireAdmin().
+// khi chuyển trang trong khu này, nên mỗi trang vẫn tự gọi requireStaff().
 async function Shell({ children }: { children: React.ReactNode }) {
-  const user = await requireAdmin();
+  const user = await requireStaff("dashboard.view");
 
   return (
     <div className="flex flex-1 flex-col lg:flex-row">
@@ -20,11 +21,11 @@ async function Shell({ children }: { children: React.ReactNode }) {
           <span className="rounded-full bg-raised px-2 py-0.5 text-xs font-medium text-muted">Quản trị</span>
         </Link>
 
-        <AdminNav />
+        <AdminNav role={user.role} />
 
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm lg:mt-auto lg:flex-col lg:items-stretch lg:border-t lg:border-line lg:pt-4">
           <p className="min-w-0 flex-1 truncate">
-            <span className="font-medium">{user.name}</span> <span className="text-muted">{user.email}</span>
+            <span className="font-medium">{user.name}</span> <span className="text-muted">{ROLE_LABELS[user.role]}</span>
           </p>
           <Link href="/" className="font-medium text-brand-strong hover:underline">
             Xem cửa hàng

@@ -13,6 +13,7 @@ import { orderTotals } from "@/lib/pricing";
 import type { Order, OrderItem, OrderSummary } from "@/lib/types";
 import { getDb, isConstraintError, type InStatement, type InValue, type Row } from "../db";
 import { newId, newOrderCode, newToken } from "../ids";
+import { withAudit, type AuditEntry } from "./audit";
 import { findCartProducts } from "./products";
 
 const MAX_LINES = 50;
@@ -302,11 +303,15 @@ const placeholders = (values: readonly unknown[]) => values.map(() => "?").join(
 
 // Chuyển đơn sang trạng thái kế tiếp (không dùng cho huỷ đơn). Điều kiện trạng thái hiện tại nằm ngay
 // trong câu UPDATE nên hai quản trị viên bấm cùng lúc cũng không thể nhảy sai bước.
-export async function advanceOrder(id: string, to: Exclude<OrderStatus, "cancelled" | "pending">): Promise<boolean> {
+export async function advanceOrder(
+  id: string,
+  to: Exclude<OrderStatus, "cancelled" | "pending">,
+  audit?: AuditEntry,
+): Promise<boolean> {
   const from = ORDER_STATUSES.filter((s) => ORDER_TRANSITIONS[s].includes(to));
   if (from.length === 0) return false;
   const db = await getDb();
-  const result = await db.execute({
+  const result = await db.execute(withAudit({
     // Đơn COD coi như đã thu tiền khi giao hàng hoàn tất.
     sql: `UPDATE orders SET
             status = ?,
@@ -315,13 +320,13 @@ export async function advanceOrder(id: string, to: Exclude<OrderStatus, "cancell
             updated_at = ?
           WHERE id = ? AND status IN (${placeholders(from)})`,
     args: [to, to, Date.now(), id, ...from],
-  });
+  }, audit));
   return result.rowsAffected > 0;
 }
 
 // Huỷ đơn và trả hàng về kho trong cùng một giao dịch. Lệnh hoàn kho chạy TRƯỚC và chỉ khi đơn còn ở
 // trạng thái cho phép, nên huỷ hai lần cũng không cộng kho hai lần.
-export async function cancelOrder(id: string, allowedFrom: readonly OrderStatus[]): Promise<boolean> {
+export async function cancelOrder(id: string, allowedFrom: readonly OrderStatus[], audit?: AuditEntry): Promise<boolean> {
   const from = allowedFrom.filter((s) => ORDER_TRANSITIONS[s].includes("cancelled"));
   if (from.length === 0) return false;
   const db = await getDb();
@@ -340,20 +345,22 @@ export async function cancelOrder(id: string, allowedFrom: readonly OrderStatus[
                 AND EXISTS (SELECT 1 FROM orders WHERE id = ? AND status IN (${placeholders(from)}))`,
         args: [id, id, now, id, id, ...from],
       },
-      {
-        sql: `UPDATE orders SET status = 'cancelled', updated_at = ? WHERE id = ? AND status IN (${placeholders(from)})`,
-        args: [now, id, ...from],
-      },
+      withAudit(
+        {
+          sql: `UPDATE orders SET status = 'cancelled', updated_at = ? WHERE id = ? AND status IN (${placeholders(from)})`,
+          args: [now, id, ...from],
+        },
+        audit,
+      ),
     ]
   );
   return updated.rowsAffected > 0;
 }
 
-export async function setPaymentStatus(id: string, status: PaymentStatus): Promise<boolean> {
+export async function setPaymentStatus(id: string, status: PaymentStatus, audit?: AuditEntry): Promise<boolean> {
   const db = await getDb();
-  const result = await db.execute({
-    sql: "UPDATE orders SET payment_status = ?, updated_at = ? WHERE id = ?",
-    args: [status, Date.now(), id],
-  });
+  const result = await db.execute(
+    withAudit({ sql: "UPDATE orders SET payment_status = ?, updated_at = ? WHERE id = ?", args: [status, Date.now(), id] }, audit),
+  );
   return result.rowsAffected > 0;
 }

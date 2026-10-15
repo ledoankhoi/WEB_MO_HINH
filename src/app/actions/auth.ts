@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { isProvince } from "@/lib/catalog";
+import { isStaffRole } from "@/lib/permissions";
 import type { FormState } from "@/lib/types";
 import { isEmail, normalizePhone, readText, safeRedirectPath } from "@/lib/validation";
 import {
@@ -13,6 +14,7 @@ import {
 } from "@/server/auth/password";
 import { endSession, getCurrentUser, getSessionId, startSession } from "@/server/auth/session";
 import { isConstraintError } from "@/server/db";
+import { writeAudit } from "@/server/repo/audit";
 import { consumeRateLimit, resetRateLimit } from "@/server/repo/rate-limit";
 import {
   findCredentialsByEmail,
@@ -72,8 +74,9 @@ export async function registerAction(_prev: FormState, form: FormData): Promise<
   redirect(next);
 }
 
-// Hai cửa đăng nhập tách biệt: cửa hàng chỉ nhận tài khoản khách, khu quản trị chỉ nhận quản trị viên.
-// Vào sai cửa nhận cùng một thông báo như sai mật khẩu, để không lộ tài khoản nào là quản trị viên.
+// Hai cửa đăng nhập tách biệt: cửa hàng chỉ nhận tài khoản khách, khu quản trị chỉ nhận nhân viên; cả hai
+// chỉ nhận tài khoản đang hoạt động. Vào sai cửa hoặc tài khoản bị khoá nhận cùng một thông báo như sai
+// mật khẩu, để không lộ tài khoản nào là nhân viên. Mọi lần đăng nhập quản trị đều ghi nhật ký.
 async function signIn(form: FormData, admin: boolean): Promise<FormState> {
   const email = readText(form, "email").toLowerCase();
   const password = readPassword(form, "password");
@@ -96,10 +99,30 @@ async function signIn(form: FormData, admin: boolean): Promise<FormState> {
 
   const credentials = await findCredentialsByEmail(email);
   const valid = await verifyPassword(password, credentials?.passwordHash ?? (await getDummyHash()));
-  if (!credentials || !valid || credentials.isAdmin !== admin) {
+  const allowed =
+    credentials && valid && credentials.isActive && (admin ? isStaffRole(credentials.role) : credentials.role === "customer");
+  if (!allowed) {
+    if (admin) {
+      await writeAudit({
+        actor: { id: null, role: "" },
+        action: "auth.admin_login_failed",
+        entity: "users",
+        entityId: credentials?.id,
+        summary: `Đăng nhập quản trị thất bại với email ${email}`,
+      });
+    }
     return { message: "Email hoặc mật khẩu không đúng.", values };
   }
 
+  if (admin) {
+    await writeAudit({
+      actor: { id: credentials.id, role: credentials.role },
+      action: "auth.admin_login",
+      entity: "users",
+      entityId: credentials.id,
+      summary: `Đăng nhập quản trị với email ${email}`,
+    });
+  }
   await resetRateLimit(emailKey);
   await startSession(credentials.id, admin);
   redirect(next);

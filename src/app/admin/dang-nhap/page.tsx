@@ -5,14 +5,14 @@ import { AuthForm } from "@/components/account/AuthForm";
 import { first } from "@/components/admin/parts";
 import { LogoMark } from "@/components/layout/Logo";
 import { safeRedirectPath } from "@/lib/validation";
-import { getAdminUser } from "@/server/auth/session";
+import { getStaffUser } from "@/server/auth/session";
 
 export const metadata: Metadata = { title: "Đăng nhập quản trị" };
 
 // Đã có phiên quản trị thì vào thẳng trang đích. Phiên đăng nhập ở cửa hàng không được tính.
 async function Gate({ searchParams }: Pick<PageProps<"/admin/dang-nhap">, "searchParams">) {
   const next = safeRedirectPath(first((await searchParams).next), "/admin");
-  if (await getAdminUser()) redirect(next);
+  if (await getStaffUser()) redirect(next);
   return <AuthForm mode="admin" next={next} />;
 }
 

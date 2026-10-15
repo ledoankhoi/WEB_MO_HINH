@@ -4,6 +4,7 @@ import { foldText } from "@/lib/format";
 import type { CartProduct, Product, ProductSummary } from "@/lib/types";
 import { getDb, type InValue, type Row } from "../db";
 import { newId } from "../ids";
+import { auditStatement, withAudit, type AuditEntry } from "./audit";
 
 const SUMMARY_COLUMNS = "id, slug, name, tagline, category, price, compare_at_price, stock, image, is_featured";
 
@@ -228,43 +229,54 @@ function inputArgs(input: ProductInput): InValue[] {
 }
 
 // Ném lỗi ràng buộc (xem isConstraintError) nếu slug đã tồn tại.
-export async function insertProduct(input: ProductInput): Promise<string> {
+export async function insertProduct(input: ProductInput, audit?: AuditEntry): Promise<string> {
   const db = await getDb();
   const id = newId();
   const now = Date.now();
-  await db.execute({
-    sql: `INSERT INTO products (
-            slug, name, tagline, description, category, price, compare_at_price, stock, model, model_url,
-            color_primary, color_secondary, color_accent, specs, search_text, is_featured, is_active,
-            id, sold, created_at, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)`,
-    args: [...inputArgs(input), id, now, now],
-  });
+  await db.batch([
+    {
+      sql: `INSERT INTO products (
+              slug, name, tagline, description, category, price, compare_at_price, stock, model, model_url,
+              color_primary, color_secondary, color_accent, specs, search_text, is_featured, is_active,
+              id, sold, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)`,
+      args: [...inputArgs(input), id, now, now],
+    },
+    ...(audit ? [auditStatement({ ...audit, entityId: id })] : []),
+  ]);
   return id;
 }
 
-export async function updateProduct(id: string, input: ProductInput): Promise<boolean> {
+export async function updateProduct(id: string, input: ProductInput, audit?: AuditEntry): Promise<boolean> {
   const db = await getDb();
-  const result = await db.execute({
-    sql: `UPDATE products SET
-            slug = ?, name = ?, tagline = ?, description = ?, category = ?, price = ?, compare_at_price = ?,
-            stock = ?, model = ?, model_url = ?, color_primary = ?, color_secondary = ?, color_accent = ?,
-            specs = ?, search_text = ?, is_featured = ?, is_active = ?, updated_at = ?
-          WHERE id = ?`,
-    args: [...inputArgs(input), Date.now(), id],
-  });
+  const result = await db.execute(
+    withAudit(
+      {
+        sql: `UPDATE products SET
+                slug = ?, name = ?, tagline = ?, description = ?, category = ?, price = ?, compare_at_price = ?,
+                stock = ?, model = ?, model_url = ?, color_primary = ?, color_secondary = ?, color_accent = ?,
+                specs = ?, search_text = ?, is_featured = ?, is_active = ?, updated_at = ?
+              WHERE id = ?`,
+        args: [...inputArgs(input), Date.now(), id],
+      },
+      audit,
+    ),
+  );
   return result.rowsAffected > 0;
 }
 
 // Sản phẩm đã có trong đơn hàng thì không xoá (đơn cũ còn trỏ tới nó): trả về false, hãy ẩn thay vì xoá.
-export async function deleteProduct(id: string): Promise<boolean> {
+export async function deleteProduct(id: string, audit?: AuditEntry): Promise<boolean> {
   const db = await getDb();
   const [removed] = await db.batch(
     [
-      {
-        sql: "DELETE FROM products WHERE id = ? AND NOT EXISTS (SELECT 1 FROM order_items WHERE product_id = ?)",
-        args: [id, id],
-      },
+      withAudit(
+        {
+          sql: "DELETE FROM products WHERE id = ? AND NOT EXISTS (SELECT 1 FROM order_items WHERE product_id = ?)",
+          args: [id, id],
+        },
+        audit,
+      ),
       {
         sql: "DELETE FROM product_images WHERE product_id = ? AND NOT EXISTS (SELECT 1 FROM products WHERE id = ?)",
         args: [id, id],
