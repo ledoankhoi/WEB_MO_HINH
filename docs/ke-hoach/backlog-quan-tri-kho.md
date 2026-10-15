@@ -34,7 +34,7 @@ Ghi nhớ kỹ thuật của dự án:
 
 ### Giai đoạn 0: công cụ kiểm tra
 
-- [ ] **T00 — Script kiểm tra trang (`npm run smoke`).** YC-VH-02.
+- [x] **T00 — Script kiểm tra trang (`npm run smoke`).** YC-VH-02.
   Tạo `scripts/smoke.mjs` và script `smoke` trong `package.json`. Script đọc `.env.local`, tự bật `next dev` ở cổng 3100 (tiến trình con), chờ trả lời, tạo một phiên quản trị bằng cách thêm thẳng dòng `sessions` cho tài khoản `ADMIN_EMAIL` (token ngẫu nhiên, lưu SHA-256 như `src/server/auth/session.ts`), mở từng trang trong danh sách (cửa hàng và `/admin`) với cookie `rs_admin`, báo lỗi nếu trang không trả 200 (trang cần chuyển hướng ghi rõ mã mong đợi) hoặc HTML chứa dấu hiệu lỗi của Next.js. Cuối cùng xoá phiên, tắt máy chủ (trên Windows tắt cả cây tiến trình). Danh sách trang để ở đầu file cho các việc sau thêm vào.
   Xong khi: `npm run smoke` qua với các trang hiện có; cố ý làm hỏng một trang thì script báo lỗi (thử rồi hoàn tác).
 
