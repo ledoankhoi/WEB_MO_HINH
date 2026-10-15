@@ -1,5 +1,5 @@
 // Khả năng tương tác của từng mô hình .glb, tra theo tên file (trùng với slug sản phẩm mẫu).
-// Mô hình không có trong bảng vẫn xem và xoay được; nếu có khung xương thì chỉnh được từng khớp.
+// Mô hình không có trong bảng vẫn xem và xoay được, chỉ không có nút đổi dạng và chọn dáng.
 
 export type ModelPose = {
   label: string;
@@ -9,7 +9,7 @@ export type ModelPose = {
 };
 
 export type ModelFeatures = {
-  // Clip chạy từ dạng `from` sang dạng `to`. Thanh kéo 0..1 đi theo đúng clip này.
+  // Clip chạy từ dạng `from` sang dạng `to`. Nút đổi dạng phát clip này xuôi hoặc ngược.
   transform?: {
     kind: "transform" | "combine";
     clip: string;
