@@ -12,6 +12,7 @@
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
+    "smoke": "node --env-file-if-exists=.env.local scripts/smoke.mjs",
     "models": "node --env-file-if-exists=.env.local scripts/sketchfab.mjs",
     "media": "node --env-file-if-exists=.env.local scripts/media.mjs",
     "auto": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/auto-run.ps1"

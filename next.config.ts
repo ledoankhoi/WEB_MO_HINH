@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // `npm run smoke` dùng thư mục riêng để chạy được cả khi `npm run dev` đang bật (mỗi distDir một khoá).
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,
