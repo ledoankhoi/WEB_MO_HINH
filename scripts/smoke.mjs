@@ -4,10 +4,12 @@
 import { spawn, execFileSync } from "node:child_process";
 import { createHash, randomBytes } from "node:crypto";
 import { readFileSync } from "node:fs";
+import http from "node:http";
 import path from "node:path";
 import pg from "pg";
 
 // Danh sách trang. `status` mặc định 200; trang chuyển hướng ghi mã mong đợi (Next.js dùng 307).
+// Trang /admin mở qua tên miền quản trị (src/proxy.ts); `host` ghi đè để kiểm tra hai tên miền chặn lẫn nhau.
 // Đường dẫn có :product, :productId, :order, :orderToken, :categoryId được thay bằng dữ liệu thật trong CSDL.
 const PAGES = [
   { path: "/" },
@@ -35,10 +37,16 @@ const PAGES = [
   { path: "/admin/nhat-ky" },
   { path: "/admin/nhat-ky?hanh-dong=auth.admin_login&tu=2026-01-01&den=2026-12-31" },
   { path: "/admin/dang-nhap", status: 307 },
+  { path: "/admin", host: "store", status: 404 },
+  { path: "/", host: "admin", status: 307 },
+  { path: "/san-pham", host: "admin", status: 404 },
 ];
 
 const PORT = 3100;
 const BASE = `http://localhost:${PORT}`;
+// Node không tự trỏ admin.localhost về máy này như trình duyệt, nên gửi tới localhost kèm header Host
+// (fetch bỏ qua header Host, nên dùng node:http).
+const ADMIN_HOST = `${process.env.ADMIN_HOST?.trim() || "admin.localhost"}:${PORT}`;
 // Trang lỗi của Next.js và trang lỗi riêng của dự án (src/app/error.tsx).
 const ERROR_MARKERS = [/id="__next_error__"/, /Đã có lỗi xảy ra/, /Unhandled Runtime Error/, /Internal Server Error/];
 
@@ -129,14 +137,16 @@ try {
     const expected = page.status ?? 200;
     const started = Date.now();
     try {
-      const response = await fetch(`${BASE}${url}`, { redirect: "manual", headers: { cookie: `rs_admin=${token}` } });
-      const html = await response.text();
+      const response = await get(`${BASE}${url}`, {
+        headers: { cookie: `rs_admin=${token}`, ...((page.host ?? (url.startsWith("/admin") ? "admin" : "store")) === "admin" && { host: ADMIN_HOST }) },
+      });
+      const html = response.text;
       // redirect() trong <Suspense> chạy sau khi mã 200 đã gửi; Next.js chuyển hướng bằng thẻ meta refresh.
       const status = response.status === 200 && /id="__next-page-redirect"/.test(html) ? 307 : response.status;
       const marker = ERROR_MARKERS.find((pattern) => pattern.test(html));
       const problem = status !== expected ? `mã ${status}, mong đợi ${expected}` : marker ? `HTML có dấu hiệu lỗi ${marker}` : null;
       if (problem) failures.push(`${url}: ${problem}`);
-      console.log(`${problem ? "LỖI" : "ok "} ${status} ${url} (${Date.now() - started} ms)${problem ? ` — ${problem}` : ""}`);
+      console.log(`${problem ? "LỖI" : "ok "} ${status} ${page.host ? `[${page.host}] ` : ""}${url} (${Date.now() - started} ms)${problem ? ` — ${problem}` : ""}`);
     } catch (error) {
       failures.push(`${url}: ${error.message}`);
       console.log(`LỖI ${url} — ${error.message}`);
@@ -156,3 +166,15 @@ if (failures.length > 0) {
   process.exit(1);
 }
 console.log("\nMọi trang đều ổn.");
+
+function get(url, { headers }) {
+  return new Promise((resolve, reject) => {
+    const request = http.get(url, { headers }, (response) => {
+      let text = "";
+      response.setEncoding("utf8");
+      response.on("data", (chunk) => (text += chunk));
+      response.on("end", () => resolve({ status: response.statusCode, text }));
+    });
+    request.on("error", reject);
+  });
+}

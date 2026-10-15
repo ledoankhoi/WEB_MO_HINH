@@ -56,6 +56,7 @@ Cột "So với kế hoạch" ghi chỗ khác với file Word.
 | Q23 | Mã vạch | Ô nhập trên phiếu kho nhận SKU hoặc mã vạch; Enter thì thêm dòng hoặc cộng 1. Máy quét kiểu bàn phím dùng được ngay. Không quét bằng camera | |
 | Q24 | Sao lưu | Supabase tự sao lưu theo gói. Thêm `npm run backup` xuất toàn bộ bảng ra JSON trong `data/backups/`, và một test khôi phục bản sao lưu vào PGlite rồi kiểm tra tính nhất quán | Kế hoạch yêu cầu diễn tập khôi phục |
 | Q25 | Thời gian, tiền | Thời gian lưu mili giây UTC, hiển thị giờ Việt Nam. Tiền VND kiểu `BIGINT`, chưa có cột mã tiền tệ (để dành P3) | Kế hoạch khuyến nghị lưu mã tiền tệ khi mở rộng quốc tế |
+| Q27 | Tên miền | Cửa hàng và quản trị tách tên miền, chung một ứng dụng: quản trị ở `admin.localhost:3000` khi phát triển, `ADMIN_HOST` (ví dụ `admin.robotica.vn`) khi đưa lên mạng. `src/proxy.ts` chặn chéo hai bên (15/10/2026) | |
 | Q26 | Thư viện | Không thêm thư viện mới nếu nền tảng hoặc thư viện đã cài làm được. Biểu đồ, nếu có, dùng SVG hoặc CSS tự vẽ | |
 
 ## 3. Vai trò và quyền

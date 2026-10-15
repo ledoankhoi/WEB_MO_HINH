@@ -27,9 +27,10 @@ async function Shell({ children }: { children: React.ReactNode }) {
           <p className="min-w-0 flex-1 truncate">
             <span className="font-medium">{user.name}</span> <span className="text-muted">{ROLE_LABELS[user.role]}</span>
           </p>
-          <Link href="/" className="font-medium text-brand-strong hover:underline">
+          {/* Cửa hàng ở tên miền khác (src/proxy.ts) nên dùng thẻ a thường. */}
+          <a href={site.url} className="font-medium text-brand-strong hover:underline">
             Xem cửa hàng
-          </Link>
+          </a>
           <LogoutButton admin />
         </div>
       </aside>
