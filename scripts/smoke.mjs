@@ -35,6 +35,11 @@ const PAGES = [
   { path: "/admin/don-hang?van-chuyen=not_created&thanh-toan=unpaid&q=RB" },
   { path: "/admin/don-hang/cho-hoan-tien" },
   { path: "/admin/kho/lay-hang" },
+  { path: "/admin/kho" },
+  { path: "/admin/kho?loc=low&q=RB" },
+  { path: "/admin/kho/the-kho/:variantId" },
+  { path: "/admin/kho/doi-soat" },
+  { path: "/admin/xuat/ton-kho" },
   { path: "/admin/kho/phieu" },
   { path: "/admin/kho/phieu?loai=receipt&trang-thai=posted" },
   { path: "/admin/kho/phieu/:documentId" },
@@ -135,7 +140,8 @@ try {
   const order = await one("SELECT id, token FROM orders ORDER BY created_at DESC LIMIT 1");
   const category = await one("SELECT id FROM categories ORDER BY sort_order LIMIT 1");
   const document = await one("SELECT id FROM stock_documents ORDER BY created_at DESC LIMIT 1");
-  const params = { product: product?.slug, productId: product?.id, order: order?.id, orderToken: order?.token, categoryId: category?.id, documentId: document?.id };
+  const variant = await one("SELECT variant_id FROM stock_movements ORDER BY id LIMIT 1");
+  const params = { product: product?.slug, productId: product?.id, order: order?.id, orderToken: order?.token, categoryId: category?.id, documentId: document?.id, variantId: variant?.variant_id };
 
   for (const page of PAGES) {
     const missing = page.path.match(/:(\w+)/g)?.find((key) => !params[key.slice(1)]);

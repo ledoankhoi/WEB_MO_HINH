@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState, useTransition } from "react";
-import { saveLocationAction, saveSupplierAction, setLocationActiveAction, setSupplierActiveAction } from "@/app/actions/inventory";
+import { saveLocationAction, saveSupplierAction, setLocationActiveAction, setSupplierActiveAction, setThresholdAction } from "@/app/actions/inventory";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Field, SelectField, TextAreaField } from "@/components/ui/Field";
 import { Notice } from "@/components/ui/Notice";
@@ -114,5 +114,28 @@ export function ActiveToggle({ kind, id, active }: { kind: "location" | "supplie
       </Button>
       {result.message && !result.ok && <Notice tone="error">{result.message}</Notice>}
     </div>
+  );
+}
+
+export function ThresholdForm({ variantId, threshold }: { variantId: string; threshold: number }) {
+  const [value, setValue] = useState(String(threshold));
+  const [pending, startTransition] = useTransition();
+  const [result, setResult] = useState<FormState>({});
+  return (
+    <form
+      className="flex flex-wrap items-end gap-3"
+      onSubmit={(event) => {
+        event.preventDefault();
+        startTransition(async () => setResult(await setThresholdAction(variantId, Number(value))));
+      }}
+    >
+      <div className="w-40">
+        <Field label="Ngưỡng sắp hết" name="threshold" inputMode="numeric" value={value} onChange={(e) => setValue(e.target.value.replace(/\D/g, ""))} />
+      </div>
+      <Button type="submit" size="sm" variant="secondary" pending={pending}>
+        Lưu ngưỡng
+      </Button>
+      {result.message && <Notice tone={result.ok ? "success" : "error"}>{result.message}</Notice>}
+    </form>
   );
 }

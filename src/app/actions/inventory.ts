@@ -8,7 +8,9 @@ import { DOCUMENT_REASONS, DOCUMENT_TYPE_LABELS, MAX_LINE_QTY, isDocumentType, t
 import type { FormState } from "@/lib/types";
 import { isEmail, readText } from "@/lib/validation";
 import { PRODUCTS_TAG } from "@/server/catalog";
+import { writeAudit } from "@/server/repo/audit";
 import { findOrderIdByCode } from "@/server/repo/orders";
+import { setLowStockThreshold } from "@/server/repo/stock-reports";
 import { isConstraintError } from "@/server/db";
 import {
   changeDocumentStatus,
@@ -397,4 +399,15 @@ export async function startStocktakeAction(id: string, locationIds: string[]): P
   );
   refresh();
   return started ? { ok: true, message: "Đã chụp số sổ sách. Bắt đầu đếm." } : { message: "Phiếu vừa được bắt đầu ở nơi khác. Trang vừa được tải lại." };
+}
+
+// YC-KHO-13: ngưỡng sắp hết theo từng biến thể.
+export async function setThresholdAction(variantId: string, threshold: number): Promise<FormState> {
+  const audit = await staffWith("inventory.setup");
+  if (!audit) return FORBIDDEN;
+  if (!isId(variantId) || !Number.isInteger(threshold) || threshold < 0 || threshold > MAX_LINE_QTY) return { message: "Ngưỡng là số nguyên từ 0 đến 9999." };
+  await setLowStockThreshold(variantId, threshold);
+  await writeAudit(audit({ action: "inventory.threshold", entity: "inventory", entityId: variantId, summary: "Đổi ngưỡng sắp hết", detail: { after: { threshold } } }));
+  refresh();
+  return { ok: true, message: "Đã lưu ngưỡng." };
 }

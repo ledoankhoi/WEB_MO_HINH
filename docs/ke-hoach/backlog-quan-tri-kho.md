@@ -90,7 +90,7 @@ Ghi nhớ kỹ thuật của dự án:
   Phiếu `adjustment` (lý do bắt buộc) và `stocktake` (chọn vị trí, chụp số sổ sách, màn hình đếm không hiện số sổ sách, ghi sổ tạo điều chỉnh, từ chối khi vị trí có biến động sau lúc chụp). Kiểm soát kép theo Q10.
   Xong khi: test WH-04, WH-06, WH-09, một vị trí không thuộc hai phiếu kiểm kê mở.
 
-- [ ] **T12 — Tồn kho, thẻ kho, đối soát, xuất CSV.** Cần T10, T11. YC-KHO-10, 11, 12, 13, 14, 15, 18, 19; YC-BC-02; SEC-03; WH-10; PERF-01.
+- [x] **T12 — Tồn kho, thẻ kho, đối soát, xuất CSV.** Cần T10, T11. YC-KHO-10, 11, 12, 13, 14, 15, 18, 19; YC-BC-02; SEC-03; WH-10; PERF-01.
   `/admin/kho` (tìm, lọc, phân trang ở máy chủ, giá vốn chỉ khi có `cost.view`), `/admin/kho/the-kho/[variantId]`, phiếu chờ xử lý, sắp hết, tuổi tồn, giá trị tồn, `/admin/kho/doi-soat`, Route Handler `/admin/xuat/[loai]` cho CSV (UTF-8 có BOM).
   Xong khi: test SEC-03 (dữ liệu trả về không có giá vốn), WH-10 (chuỗi thao tác ngẫu nhiên có hạt giống cố định, đối soát rỗng), PERF-01 (1.000 biến thể, trang đầu dưới 300 ms trên PGlite), CSV đúng định dạng.
 
@@ -206,6 +206,12 @@ Ghi nhớ kỹ thuật của dự án:
 | 16/10/2026 | T11 | Kiểm soát kép (Q10) áp cho phiếu điều chỉnh và phiếu kiểm kê có ít nhất một dòng chênh; quản trị viên được tự ghi sổ (vẫn có nhật ký) | Đúng Q10 |
 | 16/10/2026 | T11 | Điều chỉnh giảm bắt buộc ghi chú ở phần đầu phiếu | YC-KHO-06 |
 | 16/10/2026 | T11 | QT-16 kiểm ở action khi chụp số (đã ghi `shortcut:` trong repo) | Một kho, ít người kiểm kê cùng lúc |
+| 16/10/2026 | T12 | Báo cáo kho ở `src/server/repo/stock-reports.ts`; giá vốn chỉ được đọc khi gọi với `withCost` (trang, CSV đều tính từ `cost.view`), nên dữ liệu không có cột này khi thiếu quyền | SEC-03 |
+| 16/10/2026 | T12 | Tuổi tồn và bộ lọc “tồn trên 90 ngày” tính bằng giờ CSDL (`now()`) theo `last_received_at` | Không gọi `Date.now()` lúc dựng trang |
+| 16/10/2026 | T12 | Trang Đối soát gộp: kết quả đối soát sổ kho, việc chờ xử lý (YC-KHO-12, kèm phiếu nhập nhận thiếu) và giá trị tồn theo danh mục (chỉ cost.view) | Một chỗ xem tình trạng kho |
+| 16/10/2026 | T12 | CSV qua Route Handler `/admin/xuat/[loai]` (`ton-kho`, `the-kho`), UTF-8 có BOM, tối đa 20.000 dòng; ô chữ bắt đầu bằng =, +, @, - (không phải số) được thêm dấu nháy để Excel không chạy công thức | Q22; chống chèn công thức |
+| 16/10/2026 | T12 | Ngưỡng sắp hết sửa ở trang thẻ kho (quyền inventory.setup), có nhật ký | YC-KHO-13 |
+| 16/10/2026 | T12 | Chưa sửa CLAUDE.md phần mô tả trang kho: file đang có thay đổi chưa commit của một phiên khác (tài liệu AI) | Tránh commit lẫn |
 
 ## Vướng mắc
 

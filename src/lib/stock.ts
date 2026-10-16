@@ -45,3 +45,17 @@ export const isDocumentStatus = (value: unknown): value is StockDocumentStatus =
 
 // Số lượng trên một dòng phiếu (QT-17).
 export const MAX_LINE_QTY = 9999;
+
+// Loại dòng sổ kho (docs/chuan/03 mục 4).
+export const MOVEMENT_LABELS: Record<string, string> = {
+  receive: "Nhập kho",
+  reserve: "Giữ cho đơn",
+  release: "Giải phóng",
+  ship: "Xuất giao hàng",
+  return_in: "Nhận hàng hoàn",
+  issue: "Xuất khác",
+  transfer_out: "Chuyển đi",
+  transfer_in: "Chuyển đến",
+  adjust_in: "Điều chỉnh tăng",
+  adjust_out: "Điều chỉnh giảm",
+};
