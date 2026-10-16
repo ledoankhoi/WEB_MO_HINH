@@ -108,7 +108,7 @@ Ghi nhớ kỹ thuật của dự án:
   Bảng `nav_items`, `site_settings`; `/admin/noi-dung/menu`, `/admin/noi-dung/cai-dat`; đầu trang, chân trang và thanh thông báo của cửa hàng đọc từ CSDL (không có dữ liệu thì dùng `src/config/site.ts`).
   Xong khi: test kiểm tra liên kết nội bộ, giá trị mặc định khi bảng rỗng.
 
-- [ ] **T16 — Trang thông tin.** Cần T15. YC-CMS-04, 07; Q19; EC-08.
+- [x] **T16 — Trang thông tin.** Cần T15. YC-CMS-04, 07; Q19; EC-08.
   Bảng `pages`, `page_revisions`; `/admin/noi-dung/trang` (soạn văn bản thuần, xem trước, xuất bản, xem và khôi phục phiên bản); cửa hàng `/trang/[slug]` hiện văn bản thuần, không hiện HTML; nạp sẵn các trang mẫu ở trạng thái nháp với nội dung ghi rõ "nội dung mẫu".
   Xong khi: test xuất bản thêm phiên bản, khôi phục, bản nháp không công khai, nội dung có thẻ HTML được hiện ra như chữ.
 
@@ -237,6 +237,11 @@ Ghi nhớ kỹ thuật của dự án:
 | 16/10/2026 | T15 | Liên kết nội bộ của menu phải là đường dẫn cố định, `/san-pham?...` hoặc sản phẩm đã xuất bản (`internalLinkExists`); T16 thêm `/trang/<slug>` | YC-CMS-03 |
 | 16/10/2026 | T15 | Chân trang chỉ hiện liên hệ khi đã lưu trong cài đặt; giá trị mẫu trong `site.ts` chỉ điền sẵn vào form | Tài liệu 01 mục 6: không hiện liên hệ mẫu |
 | 16/10/2026 | T15 | Thanh thông báo so khung giờ bằng đồng hồ CSDL, cache theo phút | Q21 |
+| 16/10/2026 | T16 | Migration 011 `pages`, `page_revisions`; nạp sẵn 7 trang (giới thiệu, liên hệ, câu hỏi, vận chuyển, đổi trả, bảo mật, điều khoản) ở trạng thái nháp, nội dung mở đầu bằng “NỘI DUNG MẪU” | Chủ dự án thay nội dung thật rồi mới xuất bản |
+| 16/10/2026 | T16 | Mỗi lần xuất bản, sửa trang đang xuất bản hoặc khôi phục đều thêm một phiên bản; khôi phục giữ nguyên trạng thái trang | YC-CMS-04 |
+| 16/10/2026 | T16 | Trang hiện ở `/trang/<slug>` dạng văn bản thuần (xuống dòng giữ nguyên), thẻ HTML hiện như chữ; menu được trỏ tới trang đã xuất bản | Q19 |
+| 16/10/2026 | T16 | Trang không tồn tại trả về trang 404 nhưng mã 200 vì `notFound()` nằm trong `<Suspense>` (cùng cách với trang sản phẩm); smoke không kiểm mã 404 | Hành vi stream của Next 16 |
+| 16/10/2026 | T16 | Vitest: `testTimeout`, `hookTimeout` 30 giây | Test đầu mỗi file dựng CSDL và chạy 11 migration, chạy song song có lúc quá 5 giây |
 
 ## Vướng mắc
 

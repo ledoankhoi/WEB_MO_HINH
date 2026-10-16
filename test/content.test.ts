@@ -109,3 +109,34 @@ describe("menu, thanh thông báo, liên hệ (T15)", () => {
     expect((await actions.saveSettingsAction("policy", {}, formOf({ returnDays: "400", warrantyMonths: "12" }))).errors?.returnDays).toBeDefined();
   });
 });
+
+describe("trang thông tin (T16)", () => {
+  it("trang mẫu nạp ở trạng thái nháp, ghi rõ là nội dung mẫu, chưa công khai", async () => {
+    const pages = await content.listPages();
+    expect(pages.map((p) => p.slug).toSorted()).toEqual(["bao-mat", "cau-hoi-thuong-gap", "dieu-khoan", "doi-tra", "gioi-thieu", "lien-he", "van-chuyen"]);
+    expect(pages.every((p) => p.status === "draft" && p.body.startsWith("NỘI DUNG MẪU"))).toBe(true);
+    expect(await content.findPublishedPage("gioi-thieu")).toBeNull();
+    expect(await content.internalLinkExists("/trang/gioi-thieu")).toBe(false);
+  });
+
+  it("EC-08: xuất bản thêm phiên bản; sửa trang đang xuất bản lưu phiên bản mới; khôi phục phiên bản cũ", async () => {
+    await signInAs((await createUser("marketing")).id);
+    const page = (await content.listPages()).find((p) => p.slug === "gioi-thieu")!;
+    const body = "ROBOTICA bán mô hình robot.\n<script>alert(1)</script> vẫn chỉ là chữ.";
+    expect((await actions.savePageAction({}, formOf({ id: page.id, title: "Giới thiệu", slug: "gioi-thieu", body }))).ok).toBe(true);
+    expect(await content.findPublishedPage("gioi-thieu")).toBeNull();
+    expect((await actions.pageAction(page.id, "publish")).ok).toBe(true);
+    expect(await content.findPublishedPage("gioi-thieu")).toMatchObject({ body });
+    expect(await content.internalLinkExists("/trang/gioi-thieu")).toBe(true);
+
+    expect((await actions.savePageAction({}, formOf({ id: page.id, title: "Về ROBOTICA", slug: "gioi-thieu", body: "Bản mới" }))).ok).toBe(true);
+    const revisions = await content.listPageRevisions(page.id);
+    expect(revisions.map((r) => r.title)).toEqual(["Về ROBOTICA", "Giới thiệu"]);
+    expect((await actions.pageAction(page.id, { restore: revisions[1].id })).ok).toBe(true);
+    expect(await content.findPublishedPage("gioi-thieu")).toMatchObject({ title: "Giới thiệu", body });
+
+    expect((await actions.pageAction(page.id, "unpublish")).ok).toBe(true);
+    expect(await content.findPublishedPage("gioi-thieu")).toBeNull();
+    expect((await actions.savePageAction({}, formOf({ title: "Trùng", slug: "gioi-thieu", body: "x" }))).errors?.slug).toMatch(/đã có trang/);
+  });
+});

@@ -559,4 +559,47 @@ export const MIGRATIONS: Migration[] = [
       "ALTER TABLE site_settings ENABLE ROW LEVEL SECURITY",
     ],
   },
+  {
+    // Trang thông tin (YC-CMS-04). Nạp sẵn các trang cần có ở trạng thái nháp, nội dung ghi rõ là mẫu:
+    // chủ dự án thay bằng nội dung thật rồi mới xuất bản.
+    id: "011_pages",
+    statements: [
+      `CREATE TABLE pages (
+        id TEXT PRIMARY KEY,
+        slug TEXT NOT NULL UNIQUE,
+        title TEXT NOT NULL,
+        body TEXT NOT NULL,
+        meta_description TEXT NOT NULL DEFAULT '',
+        status TEXT NOT NULL DEFAULT 'draft',
+        published_at BIGINT,
+        created_at BIGINT NOT NULL,
+        updated_at BIGINT NOT NULL,
+        CONSTRAINT status_valid CHECK (status IN ('draft', 'published'))
+      )`,
+      `CREATE TABLE page_revisions (
+        id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+        page_id TEXT NOT NULL REFERENCES pages (id),
+        title TEXT NOT NULL,
+        body TEXT NOT NULL,
+        created_by TEXT REFERENCES users (id),
+        created_at BIGINT NOT NULL
+      )`,
+      "CREATE INDEX idx_page_revisions_page ON page_revisions (page_id, id)",
+      `INSERT INTO pages (id, slug, title, body, created_at, updated_at)
+       SELECT substr(md5(v.slug), 1, 20), v.slug, v.title,
+              'NỘI DUNG MẪU, chưa phải chính sách thật của cửa hàng. Thay bằng nội dung thật trước khi xuất bản.' || chr(10) || chr(10) || v.body,
+              (extract(epoch FROM now()) * 1000)::bigint, (extract(epoch FROM now()) * 1000)::bigint
+       FROM (VALUES
+         ('gioi-thieu', 'Giới thiệu', 'ROBOTICA là cửa hàng mô hình robot sưu tầm, cho khách xem và xoay mô hình 3D trước khi mua.'),
+         ('lien-he', 'Liên hệ', 'Điện thoại, email, địa chỉ và giờ làm việc của cửa hàng.'),
+         ('cau-hoi-thuong-gap', 'Câu hỏi thường gặp', 'Cách đặt hàng, thanh toán, thời gian giao hàng, tình trạng hộp và phụ kiện.'),
+         ('van-chuyen', 'Chính sách vận chuyển', 'Phí vận chuyển, khu vực giao hàng và thời gian dự kiến.'),
+         ('doi-tra', 'Chính sách đổi trả và bảo hành', 'Thời hạn, điều kiện và cách thức đổi trả, bảo hành.'),
+         ('bao-mat', 'Chính sách bảo mật', 'Dữ liệu cá nhân được thu thập, mục đích sử dụng và quyền của khách hàng.'),
+         ('dieu-khoan', 'Điều khoản sử dụng', 'Quy định khi sử dụng website và đặt hàng.')
+       ) AS v (slug, title, body)`,
+      "ALTER TABLE pages ENABLE ROW LEVEL SECURITY",
+      "ALTER TABLE page_revisions ENABLE ROW LEVEL SECURITY",
+    ],
+  },
 ];

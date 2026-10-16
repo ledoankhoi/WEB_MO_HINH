@@ -14,5 +14,8 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["test/**/*.test.ts"],
+    // Lần đầu mỗi file tạo CSDL PGlite và chạy toàn bộ migration, dữ liệu mẫu; chạy song song có thể quá 5 giây.
+    testTimeout: 30_000,
+    hookTimeout: 30_000,
   },
 });

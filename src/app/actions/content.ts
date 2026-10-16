@@ -1,15 +1,20 @@
 "use server";
 
 import { refresh, updateTag } from "next/cache";
-import { parseVnDateTime } from "@/lib/format";
+import { parseVnDateTime, slugify } from "@/lib/format";
 import type { FormState } from "@/lib/types";
 import { isEmail, isSafeLink, readText } from "@/lib/validation";
 import { CONTENT_TAG } from "@/server/catalog";
+import { isConstraintError } from "@/server/db";
 import {
   deleteBanner,
   deleteNavItem,
   internalLinkExists,
   listBanners,
+  listPages,
+  restorePageRevision,
+  savePage,
+  setPageStatus,
   saveBanner,
   saveNavItem,
   saveSetting,
@@ -154,4 +159,54 @@ export async function saveSettingsAction(key: SettingKey, _prev: FormState, form
   updateTag(CONTENT_TAG);
   refresh();
   return { ok: true, message: "Đã lưu." };
+}
+
+// YC-CMS-04: trang thông tin, văn bản thuần (Q19).
+export async function savePageAction(_prev: FormState, form: FormData): Promise<FormState> {
+  const audit = await staffWith("content.edit");
+  if (!audit) return FORBIDDEN;
+  const id = readText(form, "id");
+  const values = { id, title: readText(form, "title"), slug: readText(form, "slug"), metaDescription: readText(form, "metaDescription"), body: readText(form, "body").replace(/\r\n/g, "\n") };
+  if (id && !isId(id)) return { message: "Yêu cầu không hợp lệ.", values };
+  const slug = values.slug || slugify(values.title);
+  const errors: Record<string, string> = {};
+  if (values.title.length < 2 || values.title.length > 120) errors.title = "Tiêu đề cần từ 2 đến 120 ký tự.";
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || slug.length > 80) errors.slug = "Đường dẫn chỉ gồm chữ thường không dấu, số và gạch nối.";
+  if (values.body.length < 1 || values.body.length > 20000) errors.body = "Nội dung cần từ 1 đến 20.000 ký tự.";
+  if (values.metaDescription.length > 160) errors.metaDescription = "Mô tả meta tối đa 160 ký tự.";
+  if (Object.keys(errors).length > 0) return { errors, values, message: "Vui lòng kiểm tra lại các ô được đánh dấu." };
+  try {
+    const saved = await savePage(
+      id || null,
+      { slug, title: values.title, body: values.body, metaDescription: values.metaDescription },
+      audit({ action: id ? "page.update" : "page.create", entity: "pages", summary: `${id ? "Sửa" : "Tạo"} trang ${values.title}` }),
+    );
+    if (!saved) return { message: "Trang không còn tồn tại.", values };
+  } catch (error) {
+    if (isConstraintError(error)) return { errors: { slug: "Đường dẫn này đã có trang khác dùng." }, values };
+    throw error;
+  }
+  updateTag(CONTENT_TAG);
+  refresh();
+  return { ok: true, message: id ? "Đã lưu trang." : `Đã tạo trang ${values.title} (bản nháp).` };
+}
+
+export async function pageAction(id: string, action: "publish" | "unpublish" | { restore: number }): Promise<FormState> {
+  const audit = await staffWith("content.edit");
+  if (!audit) return FORBIDDEN;
+  const restore = typeof action === "object" && action !== null && Number.isInteger(action.restore) ? action.restore : null;
+  if (!isId(id) || (restore === null && action !== "publish" && action !== "unpublish")) return { message: "Yêu cầu không hợp lệ." };
+  const page = (await listPages()).find((item) => item.id === id);
+  if (!page) return { message: "Trang không còn tồn tại." };
+  const done =
+    restore !== null
+      ? await restorePageRevision(id, restore, audit({ action: "page.restore", entity: "pages", summary: `Khôi phục phiên bản của trang ${page.title}` }))
+      : await setPageStatus(
+          id,
+          action === "publish" ? "published" : "draft",
+          audit({ action: `page.${action}`, entity: "pages", summary: `${action === "publish" ? "Xuất bản" : "Gỡ xuống"} trang ${page.title}` }),
+        );
+  updateTag(CONTENT_TAG);
+  refresh();
+  return done ? { ok: true } : { message: "Trang đã ở trạng thái này hoặc phiên bản không tồn tại." };
 }

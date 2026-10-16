@@ -2,7 +2,7 @@ import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import type { SortValue } from "@/lib/catalog";
 import type { Product, ProductSummary } from "@/lib/types";
-import { activeAnnouncement, getSettings, listActiveBanners, listNavItems, type AnnouncementSettings, type Banner, type NavItem, type SiteSettings } from "./repo/content";
+import { activeAnnouncement, findPublishedPage, getSettings, listActiveBanners, listNavItems, type InfoPage, type AnnouncementSettings, type Banner, type NavItem, type SiteSettings } from "./repo/content";
 import {
   countProductsByCategory,
   findProductBySlug,
@@ -108,4 +108,11 @@ export async function getAnnouncement(): Promise<AnnouncementSettings | null> {
   cacheLife("minutes");
   cacheTag(CONTENT_TAG);
   return activeAnnouncement();
+}
+
+export async function getPublishedPage(slug: string): Promise<InfoPage | null> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(CONTENT_TAG);
+  return findPublishedPage(slug);
 }

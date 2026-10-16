@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Boxes, Image as ImageIcon, Menu, Settings, ClipboardList, FileText, Scale, ShieldAlert, FolderTree, MapPin, Truck, LayoutDashboard, Library, Package, ReceiptText, ScrollText, Tag, Undo2, UserCog, Users } from "lucide-react";
+import { Boxes, Image as ImageIcon, Menu, NotebookText, Settings, ClipboardList, FileText, Scale, ShieldAlert, FolderTree, MapPin, Truck, LayoutDashboard, Library, Package, ReceiptText, ScrollText, Tag, Undo2, UserCog, Users } from "lucide-react";
 import { can, type Permission, type Role } from "@/lib/permissions";
 
 // Nhóm theo menu ở mục 5 của docs/chuan/10. Mỗi mục chỉ hiện với vai trò có quyền mở trang đó; quyền
@@ -35,6 +35,7 @@ const GROUPS: { label?: string; links: { href: string; label: string; icon: type
     links: [
       { href: "/admin/noi-dung/banner", label: "Banner", icon: ImageIcon, permission: "content.edit" },
       { href: "/admin/noi-dung/menu", label: "Menu", icon: Menu, permission: "content.edit" },
+      { href: "/admin/noi-dung/trang", label: "Trang thông tin", icon: NotebookText, permission: "content.edit" },
       { href: "/admin/noi-dung/cai-dat", label: "Cài đặt hiển thị", icon: Settings, permission: "content.edit" },
     ],
   },

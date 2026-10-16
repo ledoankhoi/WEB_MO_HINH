@@ -1,12 +1,12 @@
 "use client";
 
 import { useActionState, useState, useTransition } from "react";
-import { deleteNavItemAction, saveNavItemAction, saveSettingsAction } from "@/app/actions/content";
+import { deleteNavItemAction, pageAction, saveNavItemAction, savePageAction, saveSettingsAction } from "@/app/actions/content";
 import { Button, ButtonLink } from "@/components/ui/Button";
-import { Field, SelectField } from "@/components/ui/Field";
+import { Field, SelectField, TextAreaField } from "@/components/ui/Field";
 import { Notice } from "@/components/ui/Notice";
 import type { FormState } from "@/lib/types";
-import type { NavItem, SettingKey } from "@/server/repo/content";
+import type { InfoPage, NavItem, SettingKey } from "@/server/repo/content";
 
 const INITIAL: FormState = {};
 const card = "space-y-4 rounded-xl border border-line bg-surface p-5 sm:p-6";
@@ -95,5 +95,71 @@ export function SettingsForm({ settingKey, title, fields }: { settingKey: Settin
         Lưu
       </Button>
     </form>
+  );
+}
+
+export function PageForm({ page }: { page?: InfoPage }) {
+  const [state, action, pending] = useActionState(savePageAction, INITIAL);
+  const values = state.ok && !page ? {} : (state.values ?? {});
+  const value = (key: string, fallback: string) => values[key] ?? fallback;
+  const errors = state.errors ?? {};
+  return (
+    <form action={action} key={state.ok && !page ? state.message : "form"} className={card}>
+      <h2 className="text-lg font-semibold">{page ? `Sửa trang ${page.title}` : "Thêm trang"}</h2>
+      {state.message && <Notice tone={state.ok ? "success" : "error"}>{state.message}</Notice>}
+      {page && <input type="hidden" name="id" value={page.id} />}
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label="Tiêu đề" name="title" required maxLength={120} defaultValue={value("title", page?.title ?? "")} error={errors.title} />
+        <Field label="Đường dẫn (slug)" name="slug" maxLength={80} defaultValue={value("slug", page?.slug ?? "")} error={errors.slug} hint="Trang hiện ở /trang/<slug>. Để trống thì tạo từ tiêu đề." />
+        <div className="sm:col-span-2">
+          <Field label="Mô tả meta (SEO)" name="metaDescription" maxLength={160} defaultValue={value("metaDescription", page?.metaDescription ?? "")} error={errors.metaDescription} />
+        </div>
+        <div className="sm:col-span-2">
+          <TextAreaField label="Nội dung" name="body" rows={14} maxLength={20000} defaultValue={value("body", page?.body ?? "")} error={errors.body} hint="Văn bản thuần, xuống dòng được giữ nguyên. Không dùng HTML." />
+        </div>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <Button type="submit" pending={pending}>
+          {page ? "Lưu" : "Thêm trang"}
+        </Button>
+        {page && (
+          <ButtonLink href="/admin/noi-dung/trang" variant="secondary">
+            Đóng
+          </ButtonLink>
+        )}
+      </div>
+    </form>
+  );
+}
+
+export function PageButtons({ id, status }: { id: string; status: "draft" | "published" }) {
+  const [pending, startTransition] = useTransition();
+  const [result, setResult] = useState<FormState>({});
+  return (
+    <div className="space-y-1">
+      <Button
+        size="sm"
+        variant={status === "draft" ? "primary" : "secondary"}
+        disabled={pending}
+        onClick={() => startTransition(async () => setResult(await pageAction(id, status === "draft" ? "publish" : "unpublish")))}
+      >
+        {status === "draft" ? "Xuất bản" : "Gỡ xuống"}
+      </Button>
+      {result.message && <Notice tone="error">{result.message}</Notice>}
+    </div>
+  );
+}
+
+export function RestoreRevisionButton({ pageId, revisionId }: { pageId: string; revisionId: number }) {
+  const [pending, startTransition] = useTransition();
+  return (
+    <Button
+      size="sm"
+      variant="secondary"
+      disabled={pending}
+      onClick={() => window.confirm("Khôi phục tiêu đề và nội dung của phiên bản này?") && startTransition(async () => void (await pageAction(pageId, { restore: revisionId })))}
+    >
+      Khôi phục
+    </Button>
   );
 }
