@@ -146,9 +146,9 @@ describe("kiểm tra quyền ở máy chủ", () => {
     await signInAs(marketing.id);
 
     const forbidden = { message: "Bạn không có quyền thực hiện thao tác này." };
-    expect(await admin.advanceOrderAction(orderId, "confirmed")).toEqual(forbidden);
-    expect(await admin.cancelOrderAsAdminAction(orderId)).toEqual(forbidden);
-    expect(await admin.setPaymentStatusAction(orderId, "paid")).toEqual(forbidden);
+    expect(await admin.orderAction(orderId, "confirm")).toEqual(forbidden);
+    expect(await admin.orderAction(orderId, "cancel")).toEqual(forbidden);
+    expect(await admin.orderAction(orderId, "mark_paid")).toEqual(forbidden);
     const product = (await products.findProductBySlug("strike-freedom-gundam"))!;
     expect(await admin.deleteProductAction(product.id)).toEqual(forbidden);
     const form = new FormData();
@@ -165,10 +165,10 @@ describe("kiểm tra quyền ở máy chủ", () => {
 
   it("chưa đăng nhập quản trị hoặc chỉ có phiên khách thì action cũng bị từ chối", async () => {
     const orderId = await placeOrder();
-    expect((await admin.advanceOrderAction(orderId, "confirmed")).ok).toBeUndefined();
+    expect((await admin.orderAction(orderId, "confirm")).ok).toBeUndefined();
     const customer = await createUser("customer");
     await signInAs(customer.id);
-    expect((await admin.advanceOrderAction(orderId, "confirmed")).ok).toBeUndefined();
+    expect((await admin.orderAction(orderId, "confirm")).ok).toBeUndefined();
     expect((await orders.findOrderById(orderId))!.status).toBe("pending");
   });
 
@@ -177,20 +177,20 @@ describe("kiểm tra quyền ở máy chủ", () => {
     const staff = await createUser("order_staff");
     await signInAs(staff.id);
 
-    expect((await admin.advanceOrderAction(orderId, "confirmed")).ok).toBe(true);
+    expect((await admin.orderAction(orderId, "confirm")).ok).toBe(true);
     // Lần bấm thứ hai không đổi gì nên không ghi thêm nhật ký.
-    expect((await admin.advanceOrderAction(orderId, "confirmed")).ok).toBeUndefined();
-    const rows = await auditRows("order.confirmed");
+    expect((await admin.orderAction(orderId, "confirm")).ok).toBeUndefined();
+    const rows = await auditRows("order.confirm");
     expect(rows).toHaveLength(1);
     expect(rows[0]).toMatchObject({ actor_id: staff.id, actor_role: "order_staff", entity: "orders", entity_id: orderId });
     expect(JSON.parse(String(rows[0].detail))).toEqual({ before: { status: "pending" }, after: { status: "confirmed" } });
 
     // Nhân viên đơn hàng không có quyền thu tiền.
-    expect((await admin.setPaymentStatusAction(orderId, "paid")).ok).toBeUndefined();
+    expect((await admin.orderAction(orderId, "mark_paid")).ok).toBeUndefined();
     const accountant = await createUser("accountant");
     await signInAs(accountant.id);
-    expect((await admin.setPaymentStatusAction(orderId, "paid")).ok).toBe(true);
-    expect(await auditRows("payment.paid")).toHaveLength(1);
+    expect((await admin.orderAction(orderId, "mark_paid")).ok).toBe(true);
+    expect(await auditRows("order.mark_paid")).toHaveLength(1);
   });
 
   it("trang quản trị: thiếu phiên thì về đăng nhập, thiếu quyền thì 404", async () => {

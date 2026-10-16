@@ -441,4 +441,50 @@ export const MIGRATIONS: Migration[] = [
        JOIN product_variants v ON v.product_id = p.id AND v.is_default`,
     ],
   },
+  {
+    // Ba trạng thái độc lập và luật L1–L14 (docs/chuan/04). Đơn cũ: "shipping" thành đang xử lý + đang giao,
+    // "completed" thành hoàn tất + đã giao.
+    id: "007_order_lifecycle",
+    statements: [
+      "ALTER TABLE orders DROP CONSTRAINT status_valid",
+      "ALTER TABLE orders ADD COLUMN shipping_status TEXT NOT NULL DEFAULT 'not_created'",
+      "ALTER TABLE orders ADD COLUMN tracking_carrier TEXT",
+      "ALTER TABLE orders ADD COLUMN tracking_code TEXT",
+      `UPDATE orders SET
+         shipping_status = CASE status WHEN 'shipping' THEN 'in_transit' WHEN 'completed' THEN 'delivered' ELSE 'not_created' END,
+         status = CASE status WHEN 'shipping' THEN 'processing' ELSE status END`,
+      "ALTER TABLE orders ADD CONSTRAINT status_valid CHECK (status IN ('pending', 'confirmed', 'processing', 'completed', 'cancelled'))",
+      `ALTER TABLE orders ADD CONSTRAINT shipping_status_valid
+         CHECK (shipping_status IN ('not_created', 'ready', 'in_transit', 'delivered', 'failed', 'returned'))`,
+      "CREATE INDEX idx_orders_shipping ON orders (shipping_status, created_at)",
+      `CREATE TABLE order_events (
+        id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+        order_id TEXT NOT NULL REFERENCES orders (id),
+        field TEXT NOT NULL,
+        from_value TEXT NOT NULL,
+        to_value TEXT NOT NULL,
+        note TEXT NOT NULL DEFAULT '',
+        actor_id TEXT REFERENCES users (id),
+        created_at BIGINT NOT NULL,
+        CONSTRAINT field_valid CHECK (field IN ('status', 'payment_status', 'shipping_status'))
+      )`,
+      "CREATE INDEX idx_order_events_order ON order_events (order_id, id)",
+      `CREATE TABLE payments (
+        id TEXT PRIMARY KEY,
+        order_id TEXT NOT NULL REFERENCES orders (id),
+        kind TEXT NOT NULL,
+        method TEXT NOT NULL,
+        amount BIGINT NOT NULL,
+        reference TEXT NOT NULL DEFAULT '',
+        confirmed_by TEXT REFERENCES users (id),
+        created_at BIGINT NOT NULL,
+        CONSTRAINT kind_valid CHECK (kind IN ('charge', 'refund')),
+        CONSTRAINT method_valid CHECK (method IN ('cod', 'bank')),
+        CONSTRAINT amount_positive CHECK (amount > 0),
+        UNIQUE (order_id, kind)
+      )`,
+      "ALTER TABLE order_events ENABLE ROW LEVEL SECURITY",
+      "ALTER TABLE payments ENABLE ROW LEVEL SECURITY",
+    ],
+  },
 ];

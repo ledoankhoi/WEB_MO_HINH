@@ -9,7 +9,7 @@ import { getCurrentUser } from "@/server/auth/session";
 import { PRODUCTS_TAG } from "@/server/catalog";
 import { getPaymentMethods } from "@/server/payment";
 import {
-  cancelOrder,
+  applyOrderAction,
   createOrder,
   findOrderByToken,
   findOrderTokenByCodeAndPhone,
@@ -135,7 +135,7 @@ export async function cancelOrderAction(token: string): Promise<FormState> {
   const order = await findOrderByToken(token);
   if (!order) return { message: "Không tìm thấy đơn hàng." };
 
-  const cancelled = await cancelOrder(order.id, ["pending"]);
+  const cancelled = await applyOrderAction(order.id, "customer_cancel");
   if (!cancelled) {
     refresh();
     return { message: "Đơn hàng đã được xử lý nên không thể tự huỷ. Vui lòng liên hệ cửa hàng." };

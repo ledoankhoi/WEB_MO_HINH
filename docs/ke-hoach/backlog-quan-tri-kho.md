@@ -58,7 +58,7 @@ Ghi nhớ kỹ thuật của dự án:
   Cửa hàng: trang sản phẩm chọn biến thể (giá, tồn, màu mô hình 3D đổi theo), giỏ hàng theo `variantId` (đổi khoá lưu trong trình duyệt để giỏ cũ không làm lỗi), đặt hàng giữ hàng (`reserve`) với `idempotency_key`, huỷ giải phóng (`release`), chuyển sang trạng thái giao hàng hiện có thì ghi `ship` từ vị trí theo Q7. Trang sản phẩm quản trị hiện có tạm thời sửa được thông tin chung và biến thể mặc định (T06 làm đầy đủ).
   Xong khi: test EC-01, EC-02 (hai lệnh đặt song song cho món cuối cùng), EC-03, EC-05, WH-03 khi đặt hàng, đối soát không có sai lệch sau các test đặt và huỷ; build và smoke qua; trang sản phẩm, giỏ, thanh toán ở cửa hàng hoạt động.
 
-- [ ] **T05 — Đơn hàng ba trạng thái (L1 đến L14).** Cần T04. YC-BH-01, 02, 03, 04; YC-KHO-16; YC-DH-01 (phần hiển thị); QT-08.
+- [x] **T05 — Đơn hàng ba trạng thái (L1 đến L14).** Cần T04. YC-BH-01, 02, 03, 04; YC-KHO-16; YC-DH-01 (phần hiển thị); QT-08.
   Migration chuyển `orders` sang `status`/`payment_status`/`shipping_status`, thêm `tracking_carrier`, `tracking_code`, bảng `order_events`, `payments`. Cài đủ L1 đến L14 theo tài liệu 04 với quyền ở mục 3 của tài liệu 10 (L8 tự chạy sau L2 và L7; L11 đưa hàng vào vị trí cách ly). Trang quản trị đơn: lọc, chi tiết, nút thao tác đúng điều kiện, lịch sử; `/admin/don-hang/cho-hoan-tien`; `/admin/kho/lay-hang` (in được). Trang đơn của khách hiện ba trạng thái và mã vận đơn.
   Xong khi: mỗi luật L có test (đúng điều kiện thì chạy, sai điều kiện hoặc sai quyền thì từ chối), WH-05 cho L11, đối soát không sai lệch, nhật ký có cho từng thao tác.
 
@@ -180,6 +180,14 @@ Ghi nhớ kỹ thuật của dự án:
 | 16/10/2026 | T04 | Chọn biến thể ở trang sản phẩm không đổi màu mô hình 3D dựng sẵn | Hầu hết sản phẩm dùng file `.glb` (màu không áp dụng); đồng bộ màu cần nâng state khỏi khung 3D |
 | 16/10/2026 | T04 | Form sản phẩm tạm thời: SKU chỉ nhập khi tạo, tồn chỉ hiển thị, trạng thái nháp/xuất bản/lưu trữ; danh mục vẫn chọn trong `CATEGORIES` | T06 làm màn hình biến thể và chọn danh mục, thương hiệu, series từ CSDL |
 | 16/10/2026 | T04 | `idempotencyKey` 32 ký tự hex sinh bằng `crypto.getRandomValues` khi mở trang thanh toán | `randomUUID` không có khi mở web qua địa chỉ IP (không phải ngữ cảnh an toàn) |
+| 16/10/2026 | T05 | Bảng luật L2–L14 duy nhất ở `src/lib/order-flow.ts` (quyền, điều kiện, kết quả, biến động kho, thanh toán); giao diện dùng `canApply`, máy chủ dựng điều kiện SQL bằng `conditionSql` từ cùng bảng; một hàm `applyOrderAction` và một Server Action `orderAction` thay ba hàm cũ | Hai bên không lệch nhau; thêm luật chỉ sửa một chỗ |
+| 16/10/2026 | T05 | L8 chạy trong cùng giao dịch sau mọi thao tác (đơn đang xử lý, đã giao, đã thu tiền thì hoàn tất), ghi lịch sử với ghi chú "L8" | Đúng "chạy ngay sau L2 và L7" mà không cần tác vụ nền |
+| 16/10/2026 | T05 | `payments` có UNIQUE (order_id, kind): một lần thu, một lần hoàn mỗi đơn | Hoàn tiền một phần để bước 3; thêm lớp chống ghi trùng |
+| 16/10/2026 | T05 | L6 bắt buộc hãng (≥ 2 ký tự) và mã vận đơn (chữ, số, gạch nối, 4–60 ký tự); L2, L14 có ô mã giao dịch không bắt buộc | YC-BH-03 |
+| 16/10/2026 | T05 | Danh sách đơn lọc theo ba trạng thái, phương thức, khoảng ngày; ô tìm khớp đúng mã đơn hoặc một phần tên, số điện thoại | YC-BH-01 |
+| 16/10/2026 | T05 | Danh sách lấy hàng tính vị trí lúc xem (không lưu nhiệm vụ lấy hàng), tối đa 50 đơn cũ nhất; in bằng `window.print()` | Q7 |
+| 16/10/2026 | T05 | Bỏ liên kết "Xem trang khách thấy" ở trang đơn quản trị | Từ khi tách tên miền, `/don-hang/...` không mở trên tên miền quản trị |
+| 16/10/2026 | T05 | Tạo một đơn thử COD (RX-78-2, "Khách thử") trên Supabase để kiểm tra trang chi tiết đơn với dữ liệu thật | Smoke bỏ qua trang đơn khi CSDL chưa có đơn |
 
 ## Vướng mắc
 

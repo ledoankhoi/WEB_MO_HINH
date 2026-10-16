@@ -4,15 +4,11 @@ import { refresh, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import {
   isCategorySlug,
-  isPaymentStatus,
-  ORDER_STATUS_LABELS,
-  PAYMENT_STATUS_LABELS,
   isRobotModelKey,
-  type OrderStatus,
-  type PaymentStatus,
   type ProductSpec,
 } from "@/lib/catalog";
 import { slugify } from "@/lib/format";
+import { ORDER_ACTIONS, isOrderActionKey, type OrderActionKey } from "@/lib/order-flow";
 import { ROLE_LABELS, isStaffRole, type Permission } from "@/lib/permissions";
 import type { FormState, ProductStatus } from "@/lib/types";
 import { isEmail, isHexColor, parseMoney, readText } from "@/lib/validation";
@@ -21,7 +17,7 @@ import { authorize } from "@/server/auth/session";
 import { PRODUCTS_TAG } from "@/server/catalog";
 import { isConstraintError } from "@/server/db";
 import type { AuditEntry } from "@/server/repo/audit";
-import { advanceOrder, cancelOrder, findOrderById, setPaymentStatus } from "@/server/repo/orders";
+import { applyOrderAction, findOrderById } from "@/server/repo/orders";
 import {
   deleteProduct,
   findProductById,
@@ -243,64 +239,45 @@ export async function deleteProductAction(id: string): Promise<FormState> {
   redirect("/admin/san-pham");
 }
 
-// Bàn giao vận chuyển thuộc nhóm thực hiện đơn (L6); xác nhận và hoàn tất thuộc nhóm xử lý đơn.
-const ADVANCE_PERMISSION = { confirmed: "orders.process", shipping: "orders.fulfil", completed: "orders.process" } as const;
-
-export async function advanceOrderAction(id: string, to: OrderStatus): Promise<FormState> {
-  if (!isId(id) || (to !== "confirmed" && to !== "shipping" && to !== "completed")) {
+// Một action cho mọi thao tác L2–L14 (src/lib/order-flow.ts): quyền và điều kiện lấy từ cùng một bảng luật.
+export async function orderAction(
+  id: string,
+  key: OrderActionKey,
+  extra: { carrier?: string; code?: string; reference?: string } = {},
+): Promise<FormState> {
+  if (!isId(id) || !isOrderActionKey(key) || key === "customer_cancel" || typeof extra !== "object" || extra === null) {
     return { message: "Yêu cầu không hợp lệ." };
   }
-  const audit = await staffWith(ADVANCE_PERMISSION[to]);
+  const action = ORDER_ACTIONS[key];
+  if (!action.permission) return { message: "Yêu cầu không hợp lệ." };
+  const audit = await staffWith(action.permission);
   if (!audit) return FORBIDDEN;
+
+  const text = (value: unknown, max: number) => (typeof value === "string" ? value.trim().slice(0, max) : "");
+  const carrier = text(extra.carrier, 60);
+  const code = text(extra.code, 60);
+  if (key === "hand_over" && (carrier.length < 2 || !/^[A-Za-z0-9-]{4,60}$/.test(code))) {
+    return { message: "Nhập hãng vận chuyển và mã vận đơn (chữ, số, gạch nối) trước khi bàn giao." };
+  }
+
   const order = await findOrderById(id);
+  const current = { status: order?.status, payment: order?.paymentStatus, shipping: order?.shippingStatus };
   const entry = audit({
-    action: `order.${to}`,
+    action: `order.${key}`,
     entity: "orders",
-    summary: `Chuyển đơn ${order?.code ?? id} sang ${ORDER_STATUS_LABELS[to]}`,
-    detail: { before: { status: order?.status }, after: { status: to } },
+    summary: `${action.rule} ${action.label}: đơn ${order?.code ?? id}`,
+    // Chỉ các trường luật này đổi, dạng { before, after }.
+    detail: { before: Object.fromEntries(Object.keys(action.set).map((field) => [field, current[field as keyof typeof current]])), after: action.set },
   });
-  const changed = await advanceOrder(id, to, entry);
+  const changed = await applyOrderAction(id, key, entry, {
+    tracking: key === "hand_over" ? { carrier, code } : undefined,
+    reference: text(extra.reference, 120),
+  });
+  if (changed && "stock" in action) updateTag(PRODUCTS_TAG);
   refresh();
   return changed
-    ? { ok: true, message: "Đã cập nhật trạng thái đơn hàng." }
-    : { message: "Đơn hàng đã thay đổi trạng thái trước đó. Trang vừa được tải lại." };
-}
-
-export async function cancelOrderAsAdminAction(id: string): Promise<FormState> {
-  const audit = await staffWith("orders.process");
-  if (!audit) return FORBIDDEN;
-  if (!isId(id)) return { message: "Yêu cầu không hợp lệ." };
-  const order = await findOrderById(id);
-  const entry = audit({
-    action: "order.cancel",
-    entity: "orders",
-    summary: `Huỷ đơn ${order?.code ?? id}`,
-    detail: { before: { status: order?.status }, after: { status: "cancelled" } },
-  });
-  const cancelled = await cancelOrder(id, ["pending", "confirmed"], entry);
-  if (cancelled) updateTag(PRODUCTS_TAG);
-  refresh();
-  return cancelled
-    ? { ok: true, message: "Đã huỷ đơn và trả hàng đang giữ về kho." }
-    : { message: "Không thể huỷ đơn ở trạng thái hiện tại." };
-}
-
-export async function setPaymentStatusAction(id: string, status: PaymentStatus): Promise<FormState> {
-  const audit = await staffWith("payments.manage");
-  if (!audit) return FORBIDDEN;
-  if (!isId(id) || typeof status !== "string" || !isPaymentStatus(status)) {
-    return { message: "Yêu cầu không hợp lệ." };
-  }
-  const order = await findOrderById(id);
-  const entry = audit({
-    action: `payment.${status}`,
-    entity: "orders",
-    summary: `Đổi thanh toán đơn ${order?.code ?? id} sang ${PAYMENT_STATUS_LABELS[status]}`,
-    detail: { before: { paymentStatus: order?.paymentStatus }, after: { paymentStatus: status } },
-  });
-  const changed = await setPaymentStatus(id, status, entry);
-  refresh();
-  return changed ? { ok: true, message: "Đã cập nhật thanh toán." } : { message: "Không tìm thấy đơn hàng." };
+    ? { ok: true, message: `Đã thực hiện: ${action.label}.` }
+    : { message: "Đơn hàng không còn ở trạng thái cho phép thao tác này. Trang vừa được tải lại." };
 }
 
 export async function createStaffAction(_prev: FormState, form: FormData): Promise<FormState> {

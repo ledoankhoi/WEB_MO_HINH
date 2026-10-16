@@ -12,7 +12,7 @@ const rateLimit = await import("@/server/repo/rate-limit");
 
 const customer = {
   userId: null,
-  paymentMethod: "cod" as const,
+  paymentMethod: "cod" as "cod" | "bank",
   customerName: "Nguyễn Văn A",
   customerPhone: "0901234567",
   customerEmail: "",
@@ -226,45 +226,122 @@ describe("tạo đơn hàng", () => {
     expect(saved.items[0].unitPrice).toBe(product.price);
     expect(saved.total).toBe(created.total);
     await db.execute({ sql: "UPDATE product_variants SET price = ? WHERE id = ?", args: [product.price, product.variantId] });
-    await orders.cancelOrder(created.id, ["pending"]);
+    await orders.applyOrderAction(created.id, "cancel");
   });
 });
 
 describe("vòng đời đơn hàng", () => {
-  it("chuyển trạng thái đúng thứ tự, xuất kho khi giao, đánh dấu COD đã thu khi hoàn tất", async () => {
+  it("L2–L8: đơn COD đi hết vòng đời, xuất kho khi bàn giao, tự hoàn tất khi đã giao và đã thu tiền", async () => {
     const { product, order: created } = await order("gundam-exia");
     const { id } = created;
     const before = await balanceOf(product.variantId);
+    const apply = (key: Parameters<typeof orders.applyOrderAction>[1], options = {}) => orders.applyOrderAction(id, key, undefined, options);
 
-    expect(await orders.advanceOrder(id, "shipping")).toBe(false);
-    expect(await orders.advanceOrder(id, "confirmed")).toBe(true);
-    expect(await orders.advanceOrder(id, "confirmed")).toBe(false);
-    expect(await orders.advanceOrder(id, "shipping")).toBe(true);
-    // Xuất kho: tồn thực và số đang giữ cùng giảm; bàn giao lần hai không xuất thêm.
+    expect(await apply("start_packing")).toBe(false);
+    expect(await apply("confirm")).toBe(true);
+    expect(await apply("confirm")).toBe(false);
+    expect(await apply("start_packing")).toBe(true);
+    expect(await apply("packed")).toBe(true);
+    // L6 bắt buộc có mã vận đơn.
+    expect(await apply("hand_over")).toBe(false);
+    const [first, second] = await Promise.all([
+      apply("hand_over", { tracking: { carrier: "GHN", code: "GHN123456" } }),
+      apply("hand_over", { tracking: { carrier: "GHN", code: "GHN123456" } }),
+    ]);
+    expect([first, second].filter(Boolean)).toHaveLength(1);
+    // Xuất kho đúng một lần: tồn thực và số đang giữ cùng giảm.
     expect(await balanceOf(product.variantId)).toEqual({ onHand: before.onHand - 1, reserved: before.reserved - 1 });
-    expect(await orders.advanceOrder(id, "shipping")).toBe(false);
-    expect(await orders.advanceOrder(id, "completed")).toBe(true);
+    // Đã rời kho thì không huỷ thẳng được (L13).
+    expect(await apply("cancel")).toBe(false);
+    expect(await apply("delivered")).toBe(true);
+    expect((await orders.findOrderById(id))!.status).toBe("processing");
+    expect(await apply("mark_paid", { reference: "Shipper nộp tiền" })).toBe(true);
 
     const done = (await orders.findOrderById(id))!;
-    expect(done.status).toBe("completed");
-    expect(done.paymentStatus).toBe("paid");
-    // Đơn đã hoàn tất hoặc đã xuất kho thì không huỷ được nữa.
-    expect(await orders.cancelOrder(id, ["pending", "confirmed", "shipping", "completed"])).toBe(false);
+    expect(done).toMatchObject({ status: "completed", paymentStatus: "paid", shippingStatus: "delivered", trackingCode: "GHN123456" });
+    expect(done.payments).toMatchObject([{ kind: "charge", amount: done.total, reference: "Shipper nộp tiền" }]);
+    expect(done.events.map((e) => `${e.note} ${e.field} ${e.to}`)).toEqual([
+      "L3 status confirmed",
+      "L4 status processing",
+      "L5 shipping_status ready",
+      "L6 shipping_status in_transit",
+      "L7 shipping_status delivered",
+      "L2 payment_status paid",
+      "L8 status completed",
+    ]);
+    expect(await apply("mark_paid")).toBe(false);
     expect(await stockOf(product.id)).toBe(product.stock - 1);
   });
 
-  it("huỷ đơn giải phóng hàng đã giữ đúng một lần, kể cả khi huỷ song song", async () => {
+  it("L3, L8: đơn chuyển khoản phải thu tiền trước khi xác nhận; giao xong là hoàn tất ngay", async () => {
+    const { order: created } = await order("acguy", 1, { paymentMethod: "bank" });
+    const apply = (key: Parameters<typeof orders.applyOrderAction>[1], options = {}) => orders.applyOrderAction(created.id, key, undefined, options);
+    expect(await apply("confirm")).toBe(false);
+    expect(await apply("mark_paid")).toBe(true);
+    for (const key of ["confirm", "start_packing", "packed"] as const) expect(await apply(key)).toBe(true);
+    expect(await apply("hand_over", { tracking: { carrier: "GHTK", code: "S12345" } })).toBe(true);
+    expect(await apply("delivered")).toBe(true);
+    expect((await orders.findOrderById(created.id))!.status).toBe("completed");
+  });
+
+  it("L9–L11, WH-05: giao thất bại, giao lại, nhận hàng hoàn vào khu cách ly (khả dụng không tăng)", async () => {
+    const { product, order: created } = await order("zaku-machine-gun", 2);
+    const apply = (key: Parameters<typeof orders.applyOrderAction>[1], options = {}) => orders.applyOrderAction(created.id, key, undefined, options);
+    for (const key of ["confirm", "start_packing", "packed"] as const) expect(await apply(key)).toBe(true);
+    expect(await apply("receive_return")).toBe(false);
+    expect(await apply("hand_over", { tracking: { carrier: "GHN", code: "GHN777" } })).toBe(true);
+    expect(await apply("delivery_failed")).toBe(true);
+    expect(await apply("redeliver")).toBe(true);
+    expect(await apply("delivery_failed")).toBe(true);
+
+    const db = await getDb();
+    const before = (await db.execute({ sql: "SELECT on_hand, quarantined, reserved FROM inventory WHERE variant_id = ?", args: [product.variantId] })).rows[0];
+    expect(await apply("receive_return")).toBe(true);
+    expect(await apply("receive_return")).toBe(false);
+    const after = (await db.execute({ sql: "SELECT on_hand, quarantined, reserved FROM inventory WHERE variant_id = ?", args: [product.variantId] })).rows[0];
+    expect(after).toEqual({ on_hand: before.on_hand, quarantined: Number(before.quarantined) + 2, reserved: before.reserved });
+    expect(await stockOf(product.id)).toBe(product.stock - 2);
+    expect(await orders.findOrderById(created.id)).toMatchObject({ status: "cancelled", shippingStatus: "returned" });
+  });
+
+  it("L12, L13: khách chỉ huỷ khi chờ xác nhận; nhân viên huỷ được tới lúc chờ bàn giao; huỷ song song chỉ giải phóng một lần", async () => {
     const { product, order: created } = await order("bumblebee", 3);
     expect(await stockOf(product.id)).toBe(product.stock - 3);
-
     const results = await Promise.all([
-      orders.cancelOrder(created.id, ["pending"]),
-      orders.cancelOrder(created.id, ["pending"]),
+      orders.applyOrderAction(created.id, "customer_cancel"),
+      orders.applyOrderAction(created.id, "customer_cancel"),
     ]);
     expect(results.filter(Boolean)).toHaveLength(1);
-    expect(await orders.cancelOrder(created.id, ["pending"])).toBe(false);
     expect(await stockOf(product.id)).toBe(product.stock);
-    expect((await orders.findOrderById(created.id))!.status).toBe("cancelled");
+
+    const { order: packed } = await order("bumblebee", 1);
+    for (const key of ["confirm", "start_packing", "packed"] as const) expect(await orders.applyOrderAction(packed.id, key)).toBe(true);
+    expect(await orders.applyOrderAction(packed.id, "customer_cancel")).toBe(false);
+    expect(await orders.applyOrderAction(packed.id, "cancel")).toBe(true);
+    expect(await stockOf(product.id)).toBe(product.stock);
+  });
+
+  it("L14: đơn chuyển khoản huỷ sau khi đã thu tiền nằm ở danh sách chờ hoàn, hoàn tiền đúng một lần", async () => {
+    const { order: created } = await order("acguy", 1, { paymentMethod: "bank" });
+    expect(await orders.applyOrderAction(created.id, "refund")).toBe(false);
+    expect(await orders.applyOrderAction(created.id, "mark_paid")).toBe(true);
+    expect(await orders.applyOrderAction(created.id, "cancel")).toBe(true);
+    expect((await orders.listOrders({ refundPending: true })).items.map((o) => o.id)).toContain(created.id);
+    expect(await orders.applyOrderAction(created.id, "refund", undefined, { reference: "CK hoàn 01" })).toBe(true);
+    expect(await orders.applyOrderAction(created.id, "refund")).toBe(false);
+    const saved = (await orders.findOrderById(created.id))!;
+    expect(saved.paymentStatus).toBe("refunded");
+    expect(saved.payments.map((p) => p.kind)).toEqual(["charge", "refund"]);
+    expect((await orders.listOrders({ refundPending: true })).items.map((o) => o.id)).not.toContain(created.id);
+  });
+
+  it("danh sách lấy hàng: đơn đang đóng gói kèm vị trí gợi ý", async () => {
+    const { order: created } = await order("grimlock", 1);
+    await orders.applyOrderAction(created.id, "confirm");
+    await orders.applyOrderAction(created.id, "start_packing");
+    const picking = await orders.listPickingOrders();
+    expect(picking.find((o) => o.id === created.id)?.lines).toMatchObject([{ sku: "RB-GRIMLOCK", quantity: 1, picks: [{ code: "A-01", qty: 1 }] }]);
+    await orders.applyOrderAction(created.id, "cancel");
   });
 
   it("tra cứu đơn cần khớp cả mã lẫn số điện thoại", async () => {
@@ -276,9 +353,9 @@ describe("vòng đời đơn hàng", () => {
   it("trang quản trị lọc đơn theo mã; không xoá sản phẩm đã có trong đơn hoặc sổ kho", async () => {
     const { product, order: created } = await order("arcee");
 
-    const byCode = await orders.listOrders({ code: created.code });
+    const byCode = await orders.listOrders({ search: created.code });
     expect(byCode.items.map((o) => o.id)).toEqual([created.id]);
-    expect((await orders.listOrders({ code: created.code, status: "completed" })).total).toBe(0);
+    expect((await orders.listOrders({ search: created.code, status: "completed" })).total).toBe(0);
     expect((await orders.listOrders({ userId: "khong-co" })).total).toBe(0);
     expect((await orders.listOrders({})).total).toBeGreaterThan(1);
 
@@ -318,9 +395,11 @@ describe("vòng đời đơn hàng", () => {
 
   it("thống kê đếm đơn theo trạng thái và doanh thu đơn hoàn tất", async () => {
     const stats = await orders.getOrderStats();
-    expect(stats.byStatus.completed).toBe(1);
-    expect(stats.byStatus.cancelled).toBe(2);
-    expect(stats.revenue).toBe(1_090_000);
+    const completed = await orders.listOrders({ status: "completed", pageSize: 100 });
+    expect(stats.byStatus.completed).toBe(completed.total);
+    expect(stats.byStatus.cancelled).toBe((await orders.listOrders({ status: "cancelled" })).total);
+    expect(stats.revenue).toBe(completed.items.reduce((sum, o) => sum + o.total, 0));
+    expect(stats.revenue).toBeGreaterThan(0);
     expect(stats.totalOrders).toBe(Object.values(stats.byStatus).reduce((a, b) => a + b, 0));
     expect(stats.lowStock.map((p) => p.name)).toContain("RG MSN-04 Sazabi");
   });

@@ -89,7 +89,7 @@ Ngoài phạm vi bước 1: cổng thanh toán trực tuyến, tích hợp hãng
 
 | Mã | Yêu cầu | Hiện trạng |
 | --- | --- | --- |
-| YC-DH-01 | Khách xem danh sách và chi tiết đơn của mình: sản phẩm, tiền, ba trạng thái, mã vận đơn, lịch sử | Sửa |
+| YC-DH-01 | Khách xem danh sách và chi tiết đơn của mình: sản phẩm, tiền, ba trạng thái, mã vận đơn, lịch sử | Có (trang đơn theo liên kết; danh sách trong tài khoản chưa hiện ba trạng thái) |
 | YC-DH-02 | Khách không xem được đơn của người khác | Sửa (đang dùng liên kết có token) |
 | YC-DH-03 | Khách huỷ đơn khi đơn còn `pending` | Có |
 | YC-DH-04 | Đơn chuyển khoản chưa thanh toán hiện mã VietQR kèm số tiền và nội dung | Có |
@@ -113,8 +113,8 @@ Cập nhật 15/10/2026: phần quản trị và kho được đặc tả chi ti
 | YC-QT-03 | Quản lý danh mục, thương hiệu, series | Quản lý sản phẩm | Có |
 | YC-QT-04 | Chụp ảnh đại diện từ mô hình 3D khi lưu sản phẩm | Quản lý sản phẩm | Chưa (có sẵn phần chụp) |
 | YC-QT-05 | Xem tồn kho, nhập kho, điều chỉnh có lý do, xem lịch sử biến động, danh sách sắp hết | Nhân viên kho | Chưa |
-| YC-QT-06 | Danh sách đơn lọc theo trạng thái, tìm theo mã đơn; thực hiện các thao tác L2 đến L14 theo đúng vai trò | Theo bảng ở tài liệu 04 | Chưa |
-| YC-QT-07 | Danh sách các đơn đã huỷ nhưng đã thu tiền, chờ hoàn | Kế toán | Chưa |
+| YC-QT-06 | Danh sách đơn lọc theo trạng thái, tìm theo mã đơn; thực hiện các thao tác L2 đến L14 theo đúng vai trò | Theo bảng ở tài liệu 04 | Có |
+| YC-QT-07 | Danh sách các đơn đã huỷ nhưng đã thu tiền, chờ hoàn | Kế toán | Có |
 | YC-QT-08 | Duyệt, ẩn đánh giá | Chăm sóc khách hàng | Chưa |
 | YC-QT-09 | Xem danh sách khách hàng và đơn của từng người | Chăm sóc khách hàng | Chưa |
 | YC-QT-10 | Tạo tài khoản nhân viên, đổi vai trò, khoá tài khoản; không ai tự đổi vai trò của mình | Quản trị viên | Có |

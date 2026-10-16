@@ -6,7 +6,8 @@ import QRCode from "qrcode";
 import { OrderSummary } from "@/components/cart/CartView";
 import { CancelOrderButton } from "@/components/order/CancelOrderButton";
 import { Notice } from "@/components/ui/Notice";
-import { ORDER_STATUS_LABELS, PAYMENT_METHOD_LABELS, PAYMENT_STATUS_LABELS } from "@/lib/catalog";
+import { ORDER_STATUS_LABELS, PAYMENT_METHOD_LABELS, PAYMENT_STATUS_LABELS, SHIPPING_STATUS_LABELS } from "@/lib/catalog";
+import { OrderHistory } from "@/components/order/OrderHistory";
 import { formatDateTime, formatVnd } from "@/lib/format";
 import type { Order } from "@/lib/types";
 import { buildVietQrPayload } from "@/lib/vietqr";
@@ -76,27 +77,38 @@ async function OrderDetail({ params }: Pick<PageProps<"/don-hang/[token]">, "par
       <div className="flex flex-wrap gap-2 text-sm">
         <span className="rounded-full bg-fg px-3 py-1 font-medium text-bg">{ORDER_STATUS_LABELS[order.status]}</span>
         <span className="rounded-full border border-line bg-surface px-3 py-1">{PAYMENT_STATUS_LABELS[order.paymentStatus]}</span>
+        <span className="rounded-full border border-line bg-surface px-3 py-1">{SHIPPING_STATUS_LABELS[order.shippingStatus]}</span>
         <span className="rounded-full border border-line bg-surface px-3 py-1">{PAYMENT_METHOD_LABELS[order.paymentMethod]}</span>
       </div>
+
+      {order.trackingCode && (
+        <p className="text-sm">
+          Mã vận đơn: <strong>{order.trackingCode}</strong> ({order.trackingCarrier})
+        </p>
+      )}
 
       {order.paymentMethod === "bank" && order.paymentStatus === "unpaid" && order.status !== "cancelled" && (
         <BankTransfer order={order} />
       )}
 
       <div className="grid gap-8 lg:grid-cols-[1fr_22rem]">
-        <ul className="divide-y divide-line rounded-xl border border-line bg-surface">
-          {order.items.map((item) => (
-            <li key={item.productId} className="flex justify-between gap-4 p-4 text-sm">
-              <span>
-                <Link href={`/san-pham/${item.slug}`} className="font-medium hover:underline">
-                  {item.name}
-                </Link>{" "}
-                <span className="text-muted">× {item.quantity}</span>
-              </span>
-              <span className="shrink-0 tabular-nums">{formatVnd(item.unitPrice * item.quantity)}</span>
-            </li>
-          ))}
-        </ul>
+        <div className="space-y-6">
+          <ul className="divide-y divide-line rounded-xl border border-line bg-surface">
+            {order.items.map((item) => (
+              <li key={item.variantId} className="flex justify-between gap-4 p-4 text-sm">
+                <span>
+                  <Link href={`/san-pham/${item.slug}`} className="font-medium hover:underline">
+                    {item.name}
+                  </Link>{" "}
+                  {item.variantName !== "Bản thường" && <span className="text-muted">({item.variantName}) </span>}
+                  <span className="text-muted">× {item.quantity}</span>
+                </span>
+                <span className="shrink-0 tabular-nums">{formatVnd(item.unitPrice * item.quantity)}</span>
+              </li>
+            ))}
+          </ul>
+          <OrderHistory order={order} />
+        </div>
         <aside className="h-fit space-y-4 rounded-xl border border-line bg-surface p-5 text-sm">
           <OrderSummary totals={{ subtotal: order.subtotal, shipping: order.shippingFee, total: order.total }} />
           <div className="space-y-1 border-t border-line pt-4">

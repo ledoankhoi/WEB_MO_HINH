@@ -3,6 +3,7 @@ import type {
   PaymentMethod,
   PaymentStatus,
   ProductSpec,
+  ShippingStatus,
   RobotColors,
   RobotModelKey,
 } from "./catalog";
@@ -94,6 +95,9 @@ export type Order = {
   status: OrderStatus;
   paymentMethod: PaymentMethod;
   paymentStatus: PaymentStatus;
+  shippingStatus: ShippingStatus;
+  trackingCarrier: string | null;
+  trackingCode: string | null;
   customerName: string;
   customerPhone: string;
   customerEmail: string;
@@ -106,9 +110,23 @@ export type Order = {
   createdAt: number;
   updatedAt: number;
   items: OrderItem[];
+  events: OrderEvent[];
+  payments: OrderPayment[];
 };
 
-export type OrderSummary = Omit<Order, "items"> & { itemCount: number };
+// Một lần đổi trạng thái (bảng order_events).
+export type OrderEvent = {
+  field: "status" | "payment_status" | "shipping_status";
+  from: string;
+  to: string;
+  note: string;
+  actorName: string | null;
+  createdAt: number;
+};
+
+export type OrderPayment = { kind: "charge" | "refund"; amount: number; reference: string; createdAt: number };
+
+export type OrderSummary = Omit<Order, "items" | "events" | "payments"> & { itemCount: number };
 
 // Kết quả trả về cho form dùng useActionState.
 export type FormState = {

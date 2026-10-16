@@ -2,15 +2,17 @@ import "server-only";
 import { site } from "@/config/site";
 import {
   ORDER_STATUSES,
-  ORDER_TRANSITIONS,
   isOrderStatus,
   isPaymentStatus,
+  isShippingStatus,
   type OrderStatus,
   type PaymentMethod,
   type PaymentStatus,
+  type ShippingStatus,
 } from "@/lib/catalog";
+import { ORDER_ACTIONS, conditionSql, type OrderActionKey } from "@/lib/order-flow";
 import { orderTotals } from "@/lib/pricing";
-import type { Order, OrderItem, OrderSummary } from "@/lib/types";
+import type { Order, OrderEvent, OrderItem, OrderSummary } from "@/lib/types";
 import { getDb, isConstraintError, type InStatement, type InValue, type Row } from "../db";
 import { newId, newOrderCode, newToken } from "../ids";
 import { withAudit, type AuditEntry } from "./audit";
@@ -45,9 +47,10 @@ export type CreateOrderResult =
   | { ok: true; order: { id: string; code: string; token: string; total: number } }
   | { ok: false; reason: "empty" | "cart_changed"; issues: CartIssue[] };
 
-function toOrderBase(row: Row): Omit<Order, "items"> {
+function toOrderBase(row: Row): Omit<Order, "items" | "events" | "payments"> {
   const status = String(row.status);
   const paymentStatus = String(row.payment_status);
+  const shippingStatus = String(row.shipping_status);
   return {
     id: String(row.id),
     code: String(row.code),
@@ -56,6 +59,9 @@ function toOrderBase(row: Row): Omit<Order, "items"> {
     status: isOrderStatus(status) ? status : "pending",
     paymentMethod: row.payment_method === "bank" ? "bank" : "cod",
     paymentStatus: isPaymentStatus(paymentStatus) ? paymentStatus : "unpaid",
+    shippingStatus: isShippingStatus(shippingStatus) ? shippingStatus : "not_created",
+    trackingCarrier: row.tracking_carrier === null ? null : String(row.tracking_carrier),
+    trackingCode: row.tracking_code === null ? null : String(row.tracking_code),
     customerName: String(row.customer_name),
     customerPhone: String(row.customer_phone),
     customerEmail: String(row.customer_email),
@@ -223,11 +229,36 @@ async function loadOrder(where: string, arg: InValue): Promise<Order | null> {
   const result = await db.execute({ sql: `SELECT * FROM orders WHERE ${where}`, args: [arg] });
   const row = result.rows[0];
   if (!row) return null;
-  const items = await db.execute({
-    sql: "SELECT * FROM order_items WHERE order_id = ? ORDER BY id",
-    args: [String(row.id)],
-  });
-  return { ...toOrderBase(row), items: items.rows.map(toOrderItem) };
+  const id = String(row.id);
+  const [items, events, payments] = await db.batch([
+    { sql: "SELECT * FROM order_items WHERE order_id = ? ORDER BY id", args: [id] },
+    {
+      sql: `SELECT e.*, u.name AS actor_name FROM order_events e LEFT JOIN users u ON u.id = e.actor_id
+            WHERE e.order_id = ? ORDER BY e.id`,
+      args: [id],
+    },
+    { sql: "SELECT kind, amount, reference, created_at FROM payments WHERE order_id = ? ORDER BY created_at", args: [id] },
+  ]);
+  return {
+    ...toOrderBase(row),
+    items: items.rows.map(toOrderItem),
+    events: events.rows.map(
+      (e): OrderEvent => ({
+        field: String(e.field) as OrderEvent["field"],
+        from: String(e.from_value),
+        to: String(e.to_value),
+        note: String(e.note),
+        actorName: e.actor_name === null ? null : String(e.actor_name),
+        createdAt: Number(e.created_at),
+      }),
+    ),
+    payments: payments.rows.map((p) => ({
+      kind: p.kind === "refund" ? "refund" : "charge",
+      amount: Number(p.amount),
+      reference: String(p.reference),
+      createdAt: Number(p.created_at),
+    })),
+  };
 }
 
 export function findOrderByToken(token: string): Promise<Order | null> {
@@ -262,19 +293,35 @@ export async function listOrdersByUser(userId: string): Promise<OrderSummary[]> 
 
 export async function listOrders(query: {
   status?: OrderStatus;
-  // Mã đơn khớp chính xác (nội dung chuyển khoản của khách chính là mã này).
-  code?: string;
+  shippingStatus?: ShippingStatus;
+  paymentStatus?: PaymentStatus;
+  paymentMethod?: PaymentMethod;
+  // Mã đơn khớp chính xác (nội dung chuyển khoản của khách chính là mã này), hoặc một phần tên, số điện thoại.
+  search?: string;
   userId?: string;
+  // Khoảng thời gian đặt [from, to), mili giây.
+  from?: number;
+  to?: number;
+  // Đơn đã huỷ nhưng đã thu tiền, chờ hoàn (YC-BH-04).
+  refundPending?: boolean;
   page?: number;
   pageSize?: number;
 }): Promise<{ items: OrderSummary[]; total: number }> {
-  const filters = [
-    ["o.status = ?", query.status],
-    ["o.code = ?", query.code],
-    ["o.user_id = ?", query.userId],
-  ].filter((filter): filter is [string, string] => Boolean(filter[1]));
+  const filters: [string, InValue[]][] = [];
+  if (query.status) filters.push(["o.status = ?", [query.status]]);
+  if (query.shippingStatus) filters.push(["o.shipping_status = ?", [query.shippingStatus]]);
+  if (query.paymentStatus) filters.push(["o.payment_status = ?", [query.paymentStatus]]);
+  if (query.paymentMethod) filters.push(["o.payment_method = ?", [query.paymentMethod]]);
+  if (query.userId) filters.push(["o.user_id = ?", [query.userId]]);
+  if (query.from !== undefined) filters.push(["o.created_at >= ?", [query.from]]);
+  if (query.to !== undefined) filters.push(["o.created_at < ?", [query.to]]);
+  if (query.refundPending) filters.push(["o.status = 'cancelled' AND o.payment_status = 'paid'", []]);
+  if (query.search) {
+    const like = `%${query.search.replace(/[\\%_]/g, "\\$&")}%`;
+    filters.push(["(o.code = ? OR o.customer_name ILIKE ? ESCAPE '\\' OR o.customer_phone LIKE ? ESCAPE '\\')", [query.search.toUpperCase(), like, like]]);
+  }
   const where = filters.length ? `WHERE ${filters.map(([sql]) => sql).join(" AND ")}` : "";
-  const args: InValue[] = filters.map(([, value]) => value);
+  const args: InValue[] = filters.flatMap(([, values]) => values);
   const pageSize = Math.min(Math.max(query.pageSize ?? 20, 1), 100);
   const page = Math.max(query.page ?? 1, 1);
 
@@ -321,114 +368,142 @@ export async function getOrderStats(): Promise<OrderStats> {
   };
 }
 
-const placeholders = (values: readonly unknown[]) => values.map(() => "?").join(", ");
-
-const guardStatus = (id: string, from: readonly OrderStatus[]): Guard => ({
-  sql: `EXISTS (SELECT 1 FROM orders WHERE id = ? AND status IN (${placeholders(from)}))`,
-  args: [id, ...from],
-});
-
 async function orderLines(id: string): Promise<{ variantId: string; quantity: number }[]> {
   const db = await getDb();
   const result = await db.execute({ sql: "SELECT variant_id, quantity FROM order_items WHERE order_id = ? ORDER BY variant_id", args: [id] });
   return result.rows.map((row) => ({ variantId: String(row.variant_id), quantity: Number(row.quantity) }));
 }
 
-// Chuyển đơn sang trạng thái kế tiếp (không dùng cho huỷ đơn). Điều kiện trạng thái hiện tại nằm ngay
-// trong câu UPDATE nên hai quản trị viên bấm cùng lúc cũng không thể nhảy sai bước. Sang `shipping` là bàn
-// giao vận chuyển: xuất kho (`ship`) từ các vị trí chọn theo Q7, cùng giao dịch.
-export async function advanceOrder(
-  id: string,
-  to: Exclude<OrderStatus, "cancelled" | "pending">,
-  audit?: AuditEntry,
-): Promise<boolean> {
-  const from = ORDER_STATUSES.filter((s) => ORDER_TRANSITIONS[s].includes(to));
-  if (from.length === 0) return false;
-  const now = Date.now();
+const COLUMN = { status: "status", payment: "payment_status", shipping: "shipping_status" } as const;
+
+export type OrderActionOptions = {
+  // L6: hãng vận chuyển và mã vận đơn (bắt buộc).
+  tracking?: { carrier: string; code: string };
+  // L2, L14: mã giao dịch ngân hàng, ghi chú đối soát.
+  reference?: string;
+};
+
+// Thực hiện một thao tác L2–L14 trong một giao dịch: khoá dòng đơn, mọi lệnh ghi (kho, thanh toán, lịch sử,
+// nhật ký) chỉ chạy khi đơn còn thoả điều kiện của luật, rồi mới đổi trạng thái. Gửi lặp hoặc hai người bấm
+// cùng lúc thì lần sau không ghi gì và trả về false. Sau L2 và L7 tự chạy L8 (đã giao và đã thu tiền thì hoàn tất).
+export async function applyOrderAction(id: string, key: OrderActionKey, audit?: AuditEntry, options: OrderActionOptions = {}): Promise<boolean> {
+  const action = ORDER_ACTIONS[key];
+  if (key === "hand_over" && !options.tracking) return false;
+  const condition = conditionSql(key);
+  const guard: Guard = { sql: `EXISTS (SELECT 1 FROM orders WHERE id = ? AND ${condition.sql})`, args: [id, ...condition.args] };
   const actorId = audit?.actor.id ?? null;
+  const now = Date.now();
+  const db = await getDb();
   const statements: InStatement[] = [{ sql: "SELECT id FROM orders WHERE id = ? FOR UPDATE", args: [id] }];
-  if (to === "shipping") {
+
+  if ("stock" in action) {
+    const quarantine =
+      action.stock === "return_in"
+        ? String((await db.execute("SELECT id FROM locations WHERE type = 'quarantine' AND is_active ORDER BY code LIMIT 1")).rows[0]?.id ?? "")
+        : "";
+    if (action.stock === "return_in" && !quarantine) return false;
     for (const line of await orderLines(id)) {
-      const picks = await allocateStorage(line.variantId, line.quantity);
-      if (!picks) return false;
-      for (const pick of picks) {
-        statements.push(
-          ...movementStatements(
-            { variantId: line.variantId, locationId: pick.locationId, type: "ship", qtyDelta: -pick.qty, reservedDelta: -pick.qty, orderId: id, actorId, now },
-            guardStatus(id, from),
-          ),
-        );
+      const base = { variantId: line.variantId, orderId: id, actorId, now };
+      if (action.stock === "release") {
+        statements.push(...movementStatements({ ...base, locationId: null, type: "release", qtyDelta: 0, reservedDelta: -line.quantity }, guard));
+      } else if (action.stock === "return_in") {
+        // Hàng hoàn vào khu cách ly, chưa bán lại được (Q15).
+        statements.push(...movementStatements({ ...base, locationId: quarantine, type: "return_in", qtyDelta: line.quantity }, guard));
+      } else {
+        const picks = await allocateStorage(line.variantId, line.quantity);
+        if (!picks) return false;
+        for (const pick of picks) {
+          statements.push(
+            ...movementStatements({ ...base, locationId: pick.locationId, type: "ship", qtyDelta: -pick.qty, reservedDelta: -pick.qty }, guard),
+          );
+        }
       }
     }
   }
+
+  if ("payment" in action) {
+    statements.push({
+      sql: `INSERT INTO payments (id, order_id, kind, method, amount, reference, confirmed_by, created_at)
+            SELECT ?, id, ?, payment_method, total, ?, ?, ? FROM orders WHERE id = ? AND ${condition.sql}`,
+      args: [newId(), action.payment, options.reference ?? "", actorId, now, id, ...condition.args],
+    });
+  }
+
+  const sets: string[] = [];
+  const setArgs: InValue[] = [];
+  for (const [field, value] of Object.entries(action.set) as [keyof typeof COLUMN, string][]) {
+    // Lịch sử ghi trước khi đổi để còn giá trị cũ.
+    statements.push({
+      sql: `INSERT INTO order_events (order_id, field, from_value, to_value, note, actor_id, created_at)
+            SELECT id, ?, ${COLUMN[field]}, ?, ?, ?, ? FROM orders WHERE id = ? AND ${condition.sql}`,
+      args: [COLUMN[field], value, action.rule, actorId, now, id, ...condition.args],
+    });
+    sets.push(`${COLUMN[field]} = ?`);
+    setArgs.push(value);
+  }
+  if (options.tracking) {
+    sets.push("tracking_carrier = ?", "tracking_code = ?");
+    setArgs.push(options.tracking.carrier, options.tracking.code);
+  }
   statements.push(
     withAudit(
-      {
-        // Đơn COD coi như đã thu tiền khi giao hàng hoàn tất.
-        sql: `UPDATE orders SET
-                status = ?,
-                payment_status = CASE WHEN ? = 'completed' AND payment_method = 'cod' AND payment_status = 'unpaid'
-                                      THEN 'paid' ELSE payment_status END,
-                updated_at = ?
-              WHERE id = ? AND status IN (${placeholders(from)})`,
-        args: [to, to, now, id, ...from],
-      },
+      { sql: `UPDATE orders SET ${sets.join(", ")}, updated_at = ? WHERE id = ? AND ${condition.sql}`, args: [...setArgs, now, id, ...condition.args] },
       audit,
     ),
   );
-  const db = await getDb();
+  const changedIndex = statements.length - 1;
+
+  const completable = "id = ? AND status = 'processing' AND shipping_status = 'delivered' AND payment_status = 'paid'";
+  statements.push(
+    {
+      sql: `INSERT INTO order_events (order_id, field, from_value, to_value, note, created_at)
+            SELECT id, 'status', status, 'completed', 'L8', ? FROM orders WHERE ${completable}`,
+      args: [now, id],
+    },
+    { sql: `UPDATE orders SET status = 'completed', updated_at = ? WHERE ${completable}`, args: [now, id] },
+  );
+
   try {
     const results = await db.batch(statements);
-    return results[results.length - 1].rowsAffected > 0;
+    return results[changedIndex].rowsAffected > 0;
   } catch (error) {
-    // Lần bàn giao thứ hai trùng khoá duy nhất của sổ kho, hoặc tồn vị trí vừa đổi: không ghi gì.
+    // Ghi trùng (khoá duy nhất của sổ kho, payments) hoặc tồn vị trí vừa đổi: không ghi gì.
     if (isConstraintError(error)) return false;
     throw error;
   }
 }
 
-// Huỷ đơn và giải phóng hàng đã giữ (`release`) trong cùng một giao dịch. Lệnh kho chạy TRƯỚC và chỉ khi đơn
-// còn ở trạng thái cho phép, nên huỷ hai lần cũng không giải phóng hai lần.
-export async function cancelOrder(id: string, allowedFrom: readonly OrderStatus[], audit?: AuditEntry): Promise<boolean> {
-  const from = allowedFrom.filter((s) => ORDER_TRANSITIONS[s].includes("cancelled"));
-  if (from.length === 0) return false;
-  const now = Date.now();
-  const actorId = audit?.actor.id ?? null;
-  const statements: InStatement[] = [
-    // Khoá dòng đơn hàng: lần huỷ đến sau phải chờ, rồi thấy đơn đã huỷ và không giải phóng nữa.
-    { sql: "SELECT id FROM orders WHERE id = ? FOR UPDATE", args: [id] },
-  ];
-  for (const line of await orderLines(id)) {
-    statements.push(
-      ...movementStatements(
-        { variantId: line.variantId, locationId: null, type: "release", qtyDelta: 0, reservedDelta: -line.quantity, orderId: id, actorId, now },
-        guardStatus(id, from),
-      ),
-    );
-  }
-  statements.push(
-    withAudit(
-      {
-        sql: `UPDATE orders SET status = 'cancelled', updated_at = ? WHERE id = ? AND status IN (${placeholders(from)})`,
-        args: [now, id, ...from],
-      },
-      audit,
-    ),
-  );
-  const db = await getDb();
-  try {
-    const results = await db.batch(statements);
-    return results[results.length - 1].rowsAffected > 0;
-  } catch (error) {
-    if (isConstraintError(error)) return false;
-    throw error;
-  }
-}
+export type PickingOrder = Pick<Order, "id" | "code" | "customerName" | "createdAt"> & {
+  lines: { sku: string; name: string; quantity: number; picks: { code: string; qty: number }[] | null }[];
+};
 
-export async function setPaymentStatus(id: string, status: PaymentStatus, audit?: AuditEntry): Promise<boolean> {
+// Danh sách lấy hàng (YC-KHO-16): đơn đang xử lý chưa đóng gói, mỗi dòng kèm vị trí gợi ý theo Q7.
+// Vị trí tính lúc xem, không lưu; L6 tính lại đúng cách này khi xuất kho.
+export async function listPickingOrders(limit = 50): Promise<PickingOrder[]> {
   const db = await getDb();
-  const result = await db.execute(
-    withAudit({ sql: "UPDATE orders SET payment_status = ?, updated_at = ? WHERE id = ?", args: [status, Date.now(), id] }, audit),
-  );
-  return result.rowsAffected > 0;
+  const [orders, items] = await db.batch([
+    {
+      sql: `SELECT id, code, customer_name, created_at FROM orders
+            WHERE status = 'processing' AND shipping_status = 'not_created' ORDER BY created_at LIMIT ?`,
+      args: [limit],
+    },
+    `SELECT oi.order_id, oi.variant_id, oi.sku, oi.product_name, oi.variant_name, oi.quantity FROM order_items oi
+     JOIN orders o ON o.id = oi.order_id
+     WHERE o.status = 'processing' AND o.shipping_status = 'not_created' ORDER BY oi.sku`,
+  ]);
+  const result: PickingOrder[] = [];
+  for (const row of orders.rows) {
+    const lines = [];
+    for (const item of items.rows.filter((i) => i.order_id === row.id)) {
+      const picks = await allocateStorage(String(item.variant_id), Number(item.quantity));
+      lines.push({
+        sku: String(item.sku),
+        name: `${item.product_name} (${item.variant_name})`,
+        quantity: Number(item.quantity),
+        picks: picks && picks.map(({ code, qty }) => ({ code, qty })),
+      });
+    }
+    result.push({ id: String(row.id), code: String(row.code), customerName: String(row.customer_name), createdAt: Number(row.created_at), lines });
+  }
+  return result;
 }

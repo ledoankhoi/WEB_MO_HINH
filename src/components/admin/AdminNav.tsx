@@ -2,13 +2,17 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FolderTree, LayoutDashboard, Library, Package, ReceiptText, ScrollText, Tag, UserCog, Users } from "lucide-react";
+import { ClipboardList, FolderTree, LayoutDashboard, Library, Package, ReceiptText, ScrollText, Tag, Undo2, UserCog, Users } from "lucide-react";
 import { can, type Permission, type Role } from "@/lib/permissions";
 
 // Nhóm theo menu ở mục 5 của docs/chuan/10. Mỗi mục chỉ hiện với vai trò có quyền mở trang đó; quyền
 // vẫn được kiểm tra lại ở máy chủ.
 const GROUPS: { label?: string; links: { href: string; label: string; icon: typeof Package; permission: Permission }[] }[] = [
   { links: [{ href: "/admin", label: "Tổng quan", icon: LayoutDashboard, permission: "dashboard.view" }] },
+  {
+    label: "Kho",
+    links: [{ href: "/admin/kho/lay-hang", label: "Lấy hàng", icon: ClipboardList, permission: "orders.fulfil" }],
+  },
   {
     label: "Danh mục hàng",
     links: [
@@ -20,7 +24,10 @@ const GROUPS: { label?: string; links: { href: string; label: string; icon: type
   },
   {
     label: "Bán hàng",
-    links: [{ href: "/admin/don-hang", label: "Đơn hàng", icon: ReceiptText, permission: "orders.view" }],
+    links: [
+      { href: "/admin/don-hang", label: "Đơn hàng", icon: ReceiptText, permission: "orders.view" },
+      { href: "/admin/don-hang/cho-hoan-tien", label: "Chờ hoàn tiền", icon: Undo2, permission: "payments.manage" },
+    ],
   },
   {
     label: "Khách hàng",
@@ -40,6 +47,11 @@ export function AdminNav({ role }: { role: Role }) {
   const groups = GROUPS.map((group) => ({ ...group, links: group.links.filter((link) => can(role, link.permission)) })).filter(
     (group) => group.links.length > 0,
   );
+  // Mục khớp dài nhất là mục đang mở (/admin/don-hang/cho-hoan-tien không làm sáng cả /admin/don-hang).
+  const current = groups
+    .flatMap((group) => group.links.map((link) => link.href))
+    .filter((href) => pathname === href || (href !== "/admin" && pathname.startsWith(`${href}/`)))
+    .sort((a, b) => b.length - a.length)[0];
 
   return (
     <nav aria-label="Trình đơn quản trị" className="-mx-4 flex gap-1 overflow-x-auto px-4 lg:mx-0 lg:flex-col lg:gap-4 lg:overflow-visible lg:px-0">
@@ -49,7 +61,7 @@ export function AdminNav({ role }: { role: Role }) {
             <p className="hidden px-3 text-xs font-semibold tracking-wide text-muted uppercase lg:block">{group.label}</p>
           )}
           {group.links.map(({ href, label, icon: Icon }) => {
-            const active = href === "/admin" ? pathname === href : pathname.startsWith(href);
+            const active = href === current;
             return (
               <Link
                 key={href}

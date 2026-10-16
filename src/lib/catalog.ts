@@ -62,26 +62,33 @@ export function isSortValue(value: string): value is SortValue {
   return SORT_OPTIONS.some((o) => o.value === value);
 }
 
-export const ORDER_STATUSES = ["pending", "confirmed", "shipping", "completed", "cancelled"] as const;
+// Ba trạng thái độc lập của đơn (docs/chuan/04); luật chuyển nằm ở src/lib/order-flow.ts.
+export const ORDER_STATUSES = ["pending", "confirmed", "processing", "completed", "cancelled"] as const;
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
 
 export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   pending: "Chờ xác nhận",
   confirmed: "Đã xác nhận",
-  shipping: "Đang giao",
+  processing: "Đang xử lý",
   completed: "Hoàn tất",
   cancelled: "Đã huỷ",
 };
 
-// Các bước chuyển trạng thái hợp lệ của đơn hàng.
-export const ORDER_TRANSITIONS: Record<OrderStatus, readonly OrderStatus[]> = {
-  pending: ["confirmed", "cancelled"],
-  confirmed: ["shipping", "cancelled"],
-  // Hàng đã xuất kho thì không huỷ thẳng được; T05 thêm luồng giao thất bại và nhận hàng hoàn (docs/chuan/04).
-  shipping: ["completed"],
-  completed: [],
-  cancelled: [],
+export const SHIPPING_STATUSES = ["not_created", "ready", "in_transit", "delivered", "failed", "returned"] as const;
+export type ShippingStatus = (typeof SHIPPING_STATUSES)[number];
+
+export const SHIPPING_STATUS_LABELS: Record<ShippingStatus, string> = {
+  not_created: "Chưa đóng gói",
+  ready: "Chờ bàn giao",
+  in_transit: "Đang giao",
+  delivered: "Đã giao",
+  failed: "Giao thất bại",
+  returned: "Đã hoàn về kho",
 };
+
+export function isShippingStatus(value: string): value is ShippingStatus {
+  return (SHIPPING_STATUSES as readonly string[]).includes(value);
+}
 
 export function isOrderStatus(value: string): value is OrderStatus {
   return (ORDER_STATUSES as readonly string[]).includes(value);

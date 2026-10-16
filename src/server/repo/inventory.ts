@@ -99,19 +99,19 @@ export function movementStatements(m: Movement, guard?: Guard): InStatement[] {
 
 // Lấy hàng cho một dòng đơn (Q7): các vị trí `storage` có hàng, mã vị trí tăng dần, được tách nhiều vị trí.
 // shortcut: đọc ngoài giao dịch; nếu tồn vừa đổi thì ràng buộc CHECK huỷ cả lô, người dùng bấm lại.
-export async function allocateStorage(variantId: string, quantity: number): Promise<{ locationId: string; qty: number }[] | null> {
+export async function allocateStorage(variantId: string, quantity: number): Promise<{ locationId: string; code: string; qty: number }[] | null> {
   const db = await getDb();
   const result = await db.execute({
-    sql: `SELECT s.location_id, s.on_hand FROM stock_levels s JOIN locations l ON l.id = s.location_id
+    sql: `SELECT s.location_id, l.code, s.on_hand FROM stock_levels s JOIN locations l ON l.id = s.location_id
           WHERE s.variant_id = ? AND l.type = 'storage' AND s.on_hand > 0 ORDER BY l.code`,
     args: [variantId],
   });
-  const picks: { locationId: string; qty: number }[] = [];
+  const picks: { locationId: string; code: string; qty: number }[] = [];
   let left = quantity;
   for (const row of result.rows) {
     if (left === 0) break;
     const qty = Math.min(left, Number(row.on_hand));
-    picks.push({ locationId: String(row.location_id), qty });
+    picks.push({ locationId: String(row.location_id), code: String(row.code), qty });
     left -= qty;
   }
   return left === 0 ? picks : null;
@@ -136,11 +136,12 @@ export async function findInventoryDiscrepancies(): Promise<string[]> {
      LEFT JOIN stock_levels s ON s.variant_id = i.variant_id
      LEFT JOIN locations l ON l.id = s.location_id AND l.warehouse_id = i.warehouse_id
      GROUP BY i.variant_id, i.warehouse_id, i.on_hand, i.quarantined, i.reserved`,
-    // Đơn còn giữ hàng là đơn đã đặt nhưng chưa xuất kho, chưa huỷ.
+    // Đơn còn giữ hàng: chưa huỷ, chưa hoàn tất và chưa bàn giao vận chuyển (L6 mới xuất kho).
     `SELECT i.variant_id, i.reserved, COALESCE(o.total, 0) AS open_orders
      FROM inventory i
      LEFT JOIN (SELECT oi.variant_id, SUM(oi.quantity) AS total FROM order_items oi JOIN orders ord ON ord.id = oi.order_id
-                WHERE ord.status IN ('pending', 'confirmed') GROUP BY oi.variant_id) o ON o.variant_id = i.variant_id
+                WHERE ord.status IN ('pending', 'confirmed', 'processing') AND ord.shipping_status IN ('not_created', 'ready')
+                GROUP BY oi.variant_id) o ON o.variant_id = i.variant_id
      WHERE i.reserved <> COALESCE(o.total, 0)`,
   ]);
   const issues: string[] = [];
