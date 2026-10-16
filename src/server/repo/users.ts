@@ -141,9 +141,3 @@ export async function listCustomers(query: {
     total: Number(count.rows[0].total),
   };
 }
-
-export async function countUsers(): Promise<number> {
-  const db = await getDb();
-  const result = await db.execute("SELECT COUNT(*) AS total FROM users WHERE role = 'customer'");
-  return Number(result.rows[0].total);
-}

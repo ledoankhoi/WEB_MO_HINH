@@ -94,7 +94,7 @@ Ghi nhớ kỹ thuật của dự án:
   `/admin/kho` (tìm, lọc, phân trang ở máy chủ, giá vốn chỉ khi có `cost.view`), `/admin/kho/the-kho/[variantId]`, phiếu chờ xử lý, sắp hết, tuổi tồn, giá trị tồn, `/admin/kho/doi-soat`, Route Handler `/admin/xuat/[loai]` cho CSV (UTF-8 có BOM).
   Xong khi: test SEC-03 (dữ liệu trả về không có giá vốn), WH-10 (chuỗi thao tác ngẫu nhiên có hạt giống cố định, đối soát rỗng), PERF-01 (1.000 biến thể, trang đầu dưới 300 ms trên PGlite), CSV đúng định dạng.
 
-- [ ] **T13 — Trang tổng quan theo vai trò.** Cần T12. YC-QTN-07, YC-QT-11; Q6.
+- [x] **T13 — Trang tổng quan theo vai trò.** Cần T12. YC-QTN-07, YC-QT-11; Q6.
   Thẻ số liệu cho kho và cửa hàng, mỗi thẻ dẫn tới danh sách đã lọc; đơn chuyển khoản quá 48 giờ; đơn chờ hoàn tiền; banner sắp hết lịch (sau T14 thì bổ sung, trước đó bỏ qua phần này).
   Xong khi: test các truy vấn số liệu; smoke với vài vai trò khác nhau (tạo tài khoản tạm trong test hoặc smoke).
 
@@ -222,6 +222,10 @@ Ghi nhớ kỹ thuật của dự án:
 | 16/10/2026 | T07 | Xoá ảnh chỉ xoá file trên Storage nếu file nằm trong thư mục tải lên (đúng mẫu tên trên); ảnh của dữ liệu mẫu, ảnh chụp từ 3D giữ lại | Không xoá nhầm tài nguyên dùng chung |
 | 16/10/2026 | T07 | Ảnh đầu tiên tải lên thành ảnh đại diện nếu sản phẩm chưa có; xoá ảnh đại diện thì lấy ảnh kế tiếp | YC-SP-06 |
 | 16/10/2026 | T07 | Chưa thử tải ảnh thật lên Supabase Storage; test dùng bản giả của Storage | Quy tắc: test không gọi Storage thật |
+| 16/10/2026 | T13 | Tổng quan chia khối theo quyền: Kho (inventory.view), Cửa hàng (orders.view), ô Chờ hoàn tiền (payments.manage); mỗi thẻ là liên kết tới danh sách đã lọc | YC-QTN-07 |
+| 16/10/2026 | T13 | “Hôm nay” tính theo giờ Việt Nam từ đồng hồ CSDL (cộng 7 giờ cố định), tỷ lệ huỷ và bán chạy tính trong 30 ngày | PGlite có thể thiếu dữ liệu múi giờ; không dùng Date.now() lúc dựng trang |
+| 16/10/2026 | T13 | Ô “banner sắp hết lịch” thêm ở T14 khi có bảng banners | Chưa có dữ liệu |
+| 16/10/2026 | T13 | Smoke chỉ chạy với tài khoản admin; phần ẩn hiện theo vai trò đã có test quyền ở máy chủ | Tạo nhiều tài khoản tạm trong smoke ghi vào CSDL thật |
 
 ## Vướng mắc
 
