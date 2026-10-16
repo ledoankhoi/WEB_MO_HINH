@@ -126,7 +126,8 @@ async function placeOrder() {
     shippingAddress: "12 Lê Lợi",
     shippingCity: "Đà Nẵng",
     note: "",
-    items: [{ productId: product.id, quantity: 1, expectedPrice: product.price }],
+    idempotencyKey: null,
+    items: [{ variantId: product.variantId, quantity: 1, expectedPrice: product.price }],
   });
   if (!created.ok) throw new Error("Không tạo được đơn thử");
   return created.order.id;

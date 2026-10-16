@@ -77,7 +77,8 @@ export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
 export const ORDER_TRANSITIONS: Record<OrderStatus, readonly OrderStatus[]> = {
   pending: ["confirmed", "cancelled"],
   confirmed: ["shipping", "cancelled"],
-  shipping: ["completed", "cancelled"],
+  // Hàng đã xuất kho thì không huỷ thẳng được; T05 thêm luồng giao thất bại và nhận hàng hoàn (docs/chuan/04).
+  shipping: ["completed"],
   completed: [],
   cancelled: [],
 };

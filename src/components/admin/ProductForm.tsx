@@ -114,7 +114,11 @@ export function ProductForm({ product }: { product?: Product }) {
             error={errors.compareAtPrice}
             hint="Để trống nếu không giảm giá."
           />
-          <Field label="Tồn kho" name="stock" required inputMode="numeric" defaultValue={product?.stock ?? 0} error={errors.stock} />
+          {product ? (
+            <Field label="SKU" name="sku" defaultValue={product.variants.find((v) => v.isDefault)?.sku} readOnly hint={`Có thể bán: ${product.stock}. Tồn kho đổi qua phiếu kho.`} />
+          ) : (
+            <Field label="SKU" name="sku" required maxLength={40} error={errors.sku} hint="Mã quản lý kho, không đổi được sau khi tạo." />
+          )}
         </div>
 
         <TextAreaField
@@ -126,10 +130,11 @@ export function ProductForm({ product }: { product?: Product }) {
           hint="Mỗi dòng một thông số, dạng “Nhãn: giá trị”."
         />
 
-        <label className={check}>
-          <input type="checkbox" name="isActive" defaultChecked={product?.isActive ?? true} className="size-4 accent-brand" />
-          Đang bán (hiện trên cửa hàng)
-        </label>
+        <SelectField label="Trạng thái" name="status" required defaultValue={product?.status ?? "draft"} error={errors.status}>
+          <option value="draft">Nháp (chưa hiện trên cửa hàng)</option>
+          <option value="published">Xuất bản</option>
+          <option value="archived">Lưu trữ (ẩn)</option>
+        </SelectField>
         <label className={check}>
           <input type="checkbox" name="isFeatured" defaultChecked={product?.isFeatured} className="size-4 accent-brand" />
           Sản phẩm nổi bật

@@ -52,7 +52,7 @@ Ghi nhớ kỹ thuật của dự án:
   Migration tạo `categories` (2 cấp), `brands`, `series`; nạp danh mục từ `CATEGORIES` hiện có và thương hiệu, series suy ra từ dữ liệu mẫu. Trang quản trị `/admin/danh-muc`, `/admin/thuong-hieu`, `/admin/series` (tạo, sửa, sắp xếp; không xoá khi còn sản phẩm). Bảng `products` cũ chưa đổi ở việc này.
   Xong khi: test ràng buộc 2 cấp và chặn xoá; trang có trong smoke.
 
-- [ ] **T04 — Biến thể và lõi kho (thay cấu trúc lớn).** Cần T03. YC-DM-02, 03, 05; YC-GH-01, 02, 06, 07; QT-11, QT-14; EC-01, EC-02, EC-03, EC-05, WH-03 (phần đặt hàng).
+- [x] **T04 — Biến thể và lõi kho (thay cấu trúc lớn).** Cần T03. YC-DM-02, 03, 05; YC-GH-01, 02, 06, 07; QT-11, QT-14; EC-01, EC-02, EC-03, EC-05, WH-03 (phần đặt hàng).
   Migration mới xoá và tạo lại theo tài liệu 03: `products` (khoá ngoại tới danh mục, thương hiệu, series), `product_variants`, `product_media`, `warehouses`, `locations` (tạo sẵn `KHO-01`, `A-01`, `CACH-LY`), `stock_levels`, `inventory`, `stock_documents`, `stock_document_lines`, `stock_movements`, `suppliers`, `orders`, `order_items` (có biến thể, `idempotency_key`, `discount`, `coupon_code`). Giữ tạm dãy trạng thái đơn hiện tại; T05 mới đổi sang ba trạng thái. Dữ liệu mẫu: mỗi sản phẩm một biến thể mặc định; tồn ban đầu qua phiếu `PN-SEED` đã ghi sổ (dữ liệu mẫu giữ đúng các khoá `SEED_KEY` hiện có hoặc thêm khoá mới).
   Viết lớp kho ở máy chủ (ví dụ `src/server/repo/inventory.ts`): hàm sinh câu lệnh cho từng loại biến động cập nhật `stock_levels`, `inventory` và thêm `stock_movements` trong cùng `batch`; hàm đối soát trả danh sách sai lệch (YC-KHO-18) dùng lại ở test.
   Cửa hàng: trang sản phẩm chọn biến thể (giá, tồn, màu mô hình 3D đổi theo), giỏ hàng theo `variantId` (đổi khoá lưu trong trình duyệt để giỏ cũ không làm lỗi), đặt hàng giữ hàng (`reserve`) với `idempotency_key`, huỷ giải phóng (`release`), chuyển sang trạng thái giao hàng hiện có thì ghi `ship` từ vị trí theo Q7. Trang sản phẩm quản trị hiện có tạm thời sửa được thông tin chung và biến thể mặc định (T06 làm đầy đủ).
@@ -172,6 +172,14 @@ Ghi nhớ kỹ thuật của dự án:
 | 15/10/2026 | T03 | "Sắp xếp" chỉ áp cho danh mục (ô Thứ tự, `sort_order`); thương hiệu, series xếp theo tên | Tài liệu 03 không có `sort_order` ở `brands`, `series` |
 | 15/10/2026 | T03 | Tới T04: danh mục đếm sản phẩm và chặn xoá qua `products.category = slug`, không đổi được slug danh mục còn sản phẩm. Thương hiệu, series chưa nối sản phẩm nên xoá được; khoá ngoại ở T04 sẽ chặn (repo đã bắt lỗi ràng buộc). T04 phải đổi `PRODUCTS_OF` trong `src/server/repo/taxonomy.ts` | Bảng `products` cũ chưa đổi ở việc này; đổi slug sẽ làm sản phẩm mất danh mục |
 | 15/10/2026 | T03 | Ba trang dùng chung `TaxonomyPage`; sửa bằng `?sua=<id>` mở form dưới bảng | Ít mã nhất, không cần trang con |
+| 16/10/2026 | T04 | View `product_list` (sản phẩm + biến thể mặc định + số có thể bán) giữ tên cột cũ (`price`, `stock`, `category`, `is_active`), nên truy vấn cửa hàng chỉ đổi `FROM products` sang `FROM product_list` | Ít thay đổi nhất; `security_invoker` để view tuân theo RLS |
+| 16/10/2026 | T04 | View nằm ở migration riêng `006_product_list` | Migration 005 (bản trong stash) đã chạy lên Supabase trước khi thêm view, do một máy chủ phát triển còn sót nạp lại code; không sửa migration đã chạy |
+| 16/10/2026 | T04 | Lớp kho `src/server/repo/inventory.ts`: `movementStatements` cập nhật số dư bằng UPDATE (dòng số dư tạo trước với số 0) để CHECK chặn số âm; chống ghi trùng bằng khoá dòng đơn + điều kiện trạng thái trên mọi lệnh + khoá duy nhất của sổ kho | Mẫu sẵn có của `cancelOrder`; `INSERT ... ON CONFLICT` kiểm CHECK trên dòng đề xuất nên không dùng được cho số âm |
+| 16/10/2026 | T04 | Tạm bỏ chuyển "Đang giao → Huỷ" | Hàng đã xuất kho; T05 thêm giao thất bại và nhận hàng hoàn |
+| 16/10/2026 | T04 | Dữ liệu mẫu: SKU `RB-<SLUG>`, biến thể "Bản thường", giá vốn mẫu 60% giá bán, thương hiệu là hãng đầu tiên trong "Hãng sản xuất" | Số minh hoạ; ghi rõ trong code |
+| 16/10/2026 | T04 | Chọn biến thể ở trang sản phẩm không đổi màu mô hình 3D dựng sẵn | Hầu hết sản phẩm dùng file `.glb` (màu không áp dụng); đồng bộ màu cần nâng state khỏi khung 3D |
+| 16/10/2026 | T04 | Form sản phẩm tạm thời: SKU chỉ nhập khi tạo, tồn chỉ hiển thị, trạng thái nháp/xuất bản/lưu trữ; danh mục vẫn chọn trong `CATEGORIES` | T06 làm màn hình biến thể và chọn danh mục, thương hiệu, series từ CSDL |
+| 16/10/2026 | T04 | `idempotencyKey` 32 ký tự hex sinh bằng `crypto.getRandomValues` khi mở trang thanh toán | `randomUUID` không có khi mở web qua địa chỉ IP (không phải ngữ cảnh an toàn) |
 
 ## Vướng mắc
 

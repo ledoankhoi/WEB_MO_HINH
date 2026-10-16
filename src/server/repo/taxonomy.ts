@@ -20,13 +20,18 @@ export type TaxonomyItem = {
 
 export type TaxonomyInput = { slug: string; name: string; description: string; parentId: string | null; sortOrder: number };
 
-// Bảng `products` cũ nối danh mục bằng slug và chưa có thương hiệu, series; T04 đổi sang khoá ngoại.
-const PRODUCTS_OF = { categories: "SELECT 1 FROM products p WHERE p.category = t.slug", brands: null, series: null };
+// Sản phẩm thuộc từng mục (khoá ngoại). Slug danh mục còn sản phẩm vẫn không đổi được vì cửa hàng lọc theo
+// slug cố định trong CATEGORIES (src/lib/catalog.ts).
+const PRODUCTS_OF = {
+  categories: "SELECT 1 FROM products p WHERE p.category_id = t.id",
+  brands: "SELECT 1 FROM products p WHERE p.brand_id = t.id",
+  series: "SELECT 1 FROM products p WHERE p.series_id = t.id",
+};
 
 // Danh mục: gốc theo thứ tự, mỗi gốc kèm ngay các con. Thương hiệu, series: theo tên.
 export async function listTaxonomy(kind: TaxonomyKind): Promise<TaxonomyItem[]> {
   const db = await getDb();
-  const count = PRODUCTS_OF[kind] ? `(SELECT COUNT(*) FROM (${PRODUCTS_OF[kind]}) x)` : "0";
+  const count = `(SELECT COUNT(*) FROM (${PRODUCTS_OF[kind]}) x)`;
   const extra = kind === "categories" ? "t.description, t.parent_id, t.sort_order" : "'' AS description, NULL AS parent_id, 0 AS sort_order";
   const result = await db.execute(`SELECT t.id, t.slug, t.name, ${extra}, ${count} AS product_count FROM ${kind} t ORDER BY sort_order, name`);
   const items = result.rows.map((row) => ({
@@ -84,7 +89,7 @@ export async function saveTaxonomy(
 // Không xoá khi còn sản phẩm hoặc (với danh mục) còn danh mục con. Trả về false khi không xoá được.
 export async function deleteTaxonomy(kind: TaxonomyKind, id: string, entry: Omit<AuditEntry, "entityId">): Promise<boolean> {
   const conditions = [
-    PRODUCTS_OF[kind] && `NOT EXISTS (${PRODUCTS_OF[kind]})`,
+    `NOT EXISTS (${PRODUCTS_OF[kind]})`,
     kind === "categories" && "NOT EXISTS (SELECT 1 FROM categories c WHERE c.parent_id = t.id)",
   ].filter(Boolean);
   const db = await getDb();

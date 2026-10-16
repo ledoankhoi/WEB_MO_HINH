@@ -105,7 +105,7 @@ async function ProductDetail({ params }: Pick<Props, "params">) {
             <p className="text-3xl font-bold tabular-nums">{formatVnd(product.price)}</p>
             <p className={`text-sm font-medium ${product.stock > 0 ? "text-success" : "text-danger"}`}>{status}</p>
           </div>
-          <PurchasePanel id={product.id} name={product.name} stock={product.stock} />
+          <PurchasePanel name={product.name} variants={product.variants.filter((v) => v.isActive)} />
 
           {linked.length > 0 && (
             <section aria-labelledby="hop-the" className="border-t border-line pt-6">

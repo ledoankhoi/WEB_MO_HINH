@@ -38,10 +38,10 @@ Ngoài phạm vi bước 1: cổng thanh toán trực tuyến, tích hợp hãng
 | Mã | Yêu cầu | Hiện trạng |
 | --- | --- | --- |
 | YC-DM-01 | Sản phẩm thuộc một danh mục (tối đa 2 cấp), có thể có thương hiệu, series, loại, tỷ lệ, cấp độ | Sửa |
-| YC-DM-02 | Sản phẩm có một hoặc nhiều biến thể; mỗi biến thể có SKU, tên, tình trạng (mới, đã qua sử dụng), giá riêng | Chưa |
-| YC-DM-03 | Chỉ sản phẩm `published` và biến thể đang bật hiện cho khách | Sửa |
+| YC-DM-02 | Sản phẩm có một hoặc nhiều biến thể; mỗi biến thể có SKU, tên, tình trạng (mới, đã qua sử dụng), giá riêng | Có (dữ liệu; màn hình quản lý biến thể ở T06) |
+| YC-DM-03 | Chỉ sản phẩm `published` và biến thể đang bật hiện cho khách | Có |
 | YC-DM-04 | Trang sản phẩm hiện tên, thương hiệu, series, giá và tình trạng hàng của biến thể đang chọn, mô tả, thông số, đánh giá, sản phẩm liên quan | Sửa |
-| YC-DM-05 | Khách đổi biến thể trên trang sản phẩm; giá, tồn kho và màu mô hình 3D đổi theo | Chưa |
+| YC-DM-05 | Khách đổi biến thể trên trang sản phẩm; giá, tồn kho và màu mô hình 3D đổi theo | Có (trừ màu mô hình 3D dựng sẵn) |
 | YC-DM-06 | Trang chủ hiện sản phẩm nổi bật, hàng mới và các danh mục | Có |
 
 ### 3.2. Tìm kiếm và lọc (TK)
@@ -76,13 +76,13 @@ Ngoài phạm vi bước 1: cổng thanh toán trực tuyến, tích hợp hãng
 
 | Mã | Yêu cầu | Hiện trạng |
 | --- | --- | --- |
-| YC-GH-01 | Thêm biến thể vào giỏ, đổi số lượng, xoá; giỏ lưu ở trình duyệt và còn sau khi tải lại | Sửa (đang theo sản phẩm) |
-| YC-GH-02 | Giỏ luôn hiện giá và tồn kho mới nhất từ máy chủ; cảnh báo khi hết hàng hoặc vượt tồn | Sửa |
+| YC-GH-01 | Thêm biến thể vào giỏ, đổi số lượng, xoá; giỏ lưu ở trình duyệt và còn sau khi tải lại | Có |
+| YC-GH-02 | Giỏ luôn hiện giá và tồn kho mới nhất từ máy chủ; cảnh báo khi hết hàng hoặc vượt tồn | Có |
 | YC-GH-03 | Phải đăng nhập mới vào được trang đặt hàng; sau khi đăng nhập quay lại đúng trang đó | Sửa |
 | YC-GH-04 | Chọn địa chỉ từ sổ địa chỉ hoặc nhập mới; chọn COD hoặc chuyển khoản | Sửa |
 | YC-GH-05 | Máy chủ tính lại toàn bộ giá và tổng tiền; không dùng số do trình duyệt gửi | Có |
-| YC-GH-06 | Đặt hàng giữ hàng trong kho; hai khách đặt món cuối cùng thì chỉ một người thành công | Sửa (đang trừ thẳng) |
-| YC-GH-07 | Bấm đặt hàng nhiều lần không tạo đơn trùng | Chưa |
+| YC-GH-06 | Đặt hàng giữ hàng trong kho; hai khách đặt món cuối cùng thì chỉ một người thành công | Có |
+| YC-GH-07 | Bấm đặt hàng nhiều lần không tạo đơn trùng | Có |
 | YC-GH-08 | Giá đổi hoặc hết hàng lúc đặt thì báo rõ sản phẩm nào và không tạo đơn | Có |
 
 ### 3.6. Đơn hàng phía khách (DH)

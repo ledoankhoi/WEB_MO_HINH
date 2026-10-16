@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { placeOrderAction, type CheckoutState } from "@/app/actions/orders";
 import { Button, ButtonLink } from "@/components/ui/Button";
@@ -19,6 +19,8 @@ export function CheckoutForm({ defaults, paymentMethods }: { defaults: Defaults;
   const router = useRouter();
   const { rows, loading, failed, totals, canCheckout, reload } = useCart();
   const [state, action, pending] = useActionState(placeOrderAction, INITIAL);
+  // Một mã cho mỗi lần mở trang thanh toán: bấm đặt hàng nhiều lần chỉ tạo một đơn (YC-GH-07).
+  const [idempotencyKey] = useState(() => Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, "0")).join(""));
 
   // Đặt hàng xong: xoá giỏ rồi chuyển tới trang đơn hàng.
   useEffect(() => {
@@ -58,6 +60,7 @@ export function CheckoutForm({ defaults, paymentMethods }: { defaults: Defaults;
   return (
     <form action={action} className="grid gap-8 lg:grid-cols-[1fr_22rem]">
       <input type="hidden" name="items" value={JSON.stringify(items)} />
+      <input type="hidden" name="idempotencyKey" value={idempotencyKey} />
       <div className="space-y-5 rounded-xl border border-line bg-surface p-5 sm:p-6">
         <h2 className="text-lg font-semibold">Thông tin nhận hàng</h2>
         {state.message && (

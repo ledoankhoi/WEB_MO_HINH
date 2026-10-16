@@ -14,7 +14,7 @@ import {
 } from "@/lib/catalog";
 import { slugify } from "@/lib/format";
 import { ROLE_LABELS, isStaffRole, type Permission } from "@/lib/permissions";
-import type { FormState } from "@/lib/types";
+import type { FormState, ProductStatus } from "@/lib/types";
 import { isEmail, isHexColor, parseMoney, readText } from "@/lib/validation";
 import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH, hashPassword, isValidPassword } from "@/server/auth/password";
 import { authorize } from "@/server/auth/session";
@@ -95,7 +95,7 @@ export async function saveProductAction(_prev: FormState, form: FormData): Promi
   const category = readText(form, "category");
   const priceInput = readText(form, "price");
   const compareInput = readText(form, "compareAtPrice");
-  const stockInput = readText(form, "stock");
+  const skuInput = readText(form, "sku").toUpperCase();
   const model = readText(form, "model");
   const modelUrl = readText(form, "modelUrl");
   const colors = {
@@ -105,7 +105,7 @@ export async function saveProductAction(_prev: FormState, form: FormData): Promi
   };
   const specsInput = readText(form, "specs");
   const isFeatured = form.get("isFeatured") === "on";
-  const isActive = form.get("isActive") === "on";
+  const statusInput = readText(form, "status");
 
   const values = {
     name,
@@ -115,7 +115,7 @@ export async function saveProductAction(_prev: FormState, form: FormData): Promi
     category,
     price: priceInput,
     compareAtPrice: compareInput,
-    stock: stockInput,
+    sku: skuInput,
     model,
     modelUrl,
     colorPrimary: colors.primary,
@@ -123,7 +123,7 @@ export async function saveProductAction(_prev: FormState, form: FormData): Promi
     colorAccent: colors.accent,
     specs: specsInput,
     isFeatured: isFeatured ? "on" : "",
-    isActive: isActive ? "on" : "",
+    status: statusInput,
   };
 
   const errors: Record<string, string> = {};
@@ -144,8 +144,10 @@ export async function saveProductAction(_prev: FormState, form: FormData): Promi
     errors.compareAtPrice = "Giá gốc phải lớn hơn giá bán (để trống nếu không giảm giá).";
   }
 
-  const stock = /^\d{1,6}$/.test(stockInput) ? Number(stockInput) : null;
-  if (stock === null) errors.stock = "Tồn kho phải là số nguyên từ 0 đến 999.999.";
+  // SKU chỉ nhập khi tạo; sau đó giữ nguyên (YC-SP-03).
+  if (!id && !/^[A-Z0-9][A-Z0-9._-]{1,39}$/.test(skuInput)) errors.sku = "SKU gồm 2–40 ký tự: chữ, số, dấu chấm, gạch nối.";
+  const status = (["draft", "published", "archived"] as const).find((value) => value === statusInput);
+  if (!status) errors.status = "Vui lòng chọn trạng thái.";
   if (!isRobotModelKey(model)) errors.model = "Vui lòng chọn kiểu dáng mô hình.";
   const mediaBase = process.env.MEDIA_BASE_URL?.trim().replace(/\/$/, "") ?? "";
   const modelPath = mediaBase && modelUrl.startsWith(mediaBase) ? modelUrl.slice(mediaBase.length) : modelUrl;
@@ -164,7 +166,7 @@ export async function saveProductAction(_prev: FormState, form: FormData): Promi
   if (
     Object.keys(errors).length > 0 ||
     price === null ||
-    stock === null ||
+    !status ||
     !specs ||
     poster === "invalid" ||
     !isRobotModelKey(model)
@@ -178,15 +180,15 @@ export async function saveProductAction(_prev: FormState, form: FormData): Promi
     tagline,
     description,
     category,
+    sku: skuInput,
     price,
     compareAtPrice,
-    stock,
     model,
     modelUrl: modelUrl || null,
     colors,
     specs,
     isFeatured,
-    isActive,
+    status,
   };
 
   let productId = id;
@@ -194,10 +196,10 @@ export async function saveProductAction(_prev: FormState, form: FormData): Promi
     if (id) {
       const old = await findProductById(id);
       if (!old) return { message: "Sản phẩm không còn tồn tại.", values };
-      const pick = (p: { price: number; compareAtPrice: number | null; isActive: boolean }) => ({
+      const pick = (p: { price: number; compareAtPrice: number | null; status: ProductStatus }) => ({
         price: p.price,
         compareAtPrice: p.compareAtPrice,
-        isActive: p.isActive,
+        status: p.status,
       });
       const detail = changes(pick(old), pick(input));
       const priceChanged = "price" in detail.after || "compareAtPrice" in detail.after;
@@ -211,12 +213,12 @@ export async function saveProductAction(_prev: FormState, form: FormData): Promi
     } else {
       productId = await insertProduct(
         input,
-        audit({ action: "product.create", entity: "products", summary: `Tạo sản phẩm ${name}`, detail: { after: { price, isActive } } }),
+        audit({ action: "product.create", entity: "products", summary: `Tạo sản phẩm ${name}`, detail: { after: { sku: skuInput, price, status } } }),
       );
     }
   } catch (error) {
     if (isConstraintError(error)) {
-      return { errors: { slug: "Đường dẫn này đã được dùng cho sản phẩm khác." }, values };
+      return { errors: { slug: "Đường dẫn hoặc SKU này đã được dùng cho sản phẩm khác." }, values };
     }
     throw error;
   }
@@ -235,7 +237,7 @@ export async function deleteProductAction(id: string): Promise<FormState> {
   const product = await findProductById(id);
   const entry = audit({ action: "product.delete", entity: "products", summary: `Xoá sản phẩm ${product?.name ?? id}` });
   if (!(await deleteProduct(id, entry))) {
-    return { message: "Không xoá được vì sản phẩm đã có trong đơn hàng. Hãy bỏ chọn “Đang bán” để ẩn sản phẩm." };
+    return { message: "Không xoá được vì sản phẩm đã có trong đơn hàng hoặc sổ kho. Hãy chuyển sang “Lưu trữ” để ẩn sản phẩm." };
   }
   updateTag(PRODUCTS_TAG);
   redirect("/admin/san-pham");
@@ -275,11 +277,11 @@ export async function cancelOrderAsAdminAction(id: string): Promise<FormState> {
     summary: `Huỷ đơn ${order?.code ?? id}`,
     detail: { before: { status: order?.status }, after: { status: "cancelled" } },
   });
-  const cancelled = await cancelOrder(id, ["pending", "confirmed", "shipping"], entry);
+  const cancelled = await cancelOrder(id, ["pending", "confirmed"], entry);
   if (cancelled) updateTag(PRODUCTS_TAG);
   refresh();
   return cancelled
-    ? { ok: true, message: "Đã huỷ đơn và hoàn hàng về kho." }
+    ? { ok: true, message: "Đã huỷ đơn và trả hàng đang giữ về kho." }
     : { message: "Không thể huỷ đơn ở trạng thái hiện tại." };
 }
 

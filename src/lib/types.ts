@@ -8,8 +8,27 @@ import type {
 } from "./catalog";
 import type { Role } from "./permissions";
 
+// Phiên bản bán được (docs/chuan/03 mục 3): có SKU, giá, tồn và màu mô hình 3D riêng.
+export type ProductVariant = {
+  id: string;
+  sku: string;
+  name: string;
+  condition: "new" | "used";
+  price: number;
+  compareAtPrice: number | null;
+  // Số có thể bán = on_hand − reserved.
+  stock: number;
+  colors: RobotColors;
+  isDefault: boolean;
+  isActive: boolean;
+};
+
+export type ProductStatus = "draft" | "published" | "archived";
+
+// Giá, tồn, màu ở cấp sản phẩm là của biến thể mặc định (view product_list).
 export type Product = {
   id: string;
+  variantId: string;
   slug: string;
   name: string;
   tagline: string;
@@ -25,8 +44,10 @@ export type Product = {
   specs: ProductSpec[];
   image: string | null;
   isFeatured: boolean;
+  // status = published.
   isActive: boolean;
-  sold: number;
+  status: ProductStatus;
+  variants: ProductVariant[];
   createdAt: number;
   updatedAt: number;
 };
@@ -34,11 +55,12 @@ export type Product = {
 // Phần dữ liệu đủ để vẽ thẻ sản phẩm.
 export type ProductSummary = Pick<
   Product,
-  "id" | "slug" | "name" | "tagline" | "category" | "price" | "compareAtPrice" | "stock" | "image" | "isFeatured"
+  "id" | "variantId" | "slug" | "name" | "tagline" | "category" | "price" | "compareAtPrice" | "stock" | "image" | "isFeatured"
 >;
 
-// Dữ liệu mới nhất của một dòng trong giỏ hàng (giá, tồn kho) do máy chủ trả về.
+// Dữ liệu mới nhất của một dòng trong giỏ hàng (giá, tồn kho) do máy chủ trả về. `id` là mã biến thể.
 export type CartProduct = Pick<Product, "id" | "slug" | "name" | "price" | "compareAtPrice" | "stock" | "image"> & {
+  productId: string;
   available: boolean;
 };
 
@@ -54,7 +76,10 @@ export type CurrentUser = {
 
 export type OrderItem = {
   productId: string;
+  variantId: string;
   name: string;
+  variantName: string;
+  sku: string;
   slug: string;
   image: string | null;
   unitPrice: number;

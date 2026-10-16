@@ -7,6 +7,8 @@ import { can } from "@/lib/permissions";
 import { requireStaff } from "@/server/auth/session";
 import { listAllProducts } from "@/server/repo/products";
 
+const STATUS_LABELS = { draft: "Nháp", published: "Đang bán", archived: "Lưu trữ" } as const;
+
 export default async function AdminProductsPage() {
   const user = await requireStaff("catalog.view", "/admin/san-pham");
   // shortcut: tải toàn bộ sản phẩm vào một bảng, chuyển sang queryProducts (tìm kiếm, phân trang) khi vượt vài trăm sản phẩm.
@@ -36,10 +38,7 @@ export default async function AdminProductsPage() {
                   Giá bán
                 </th>
                 <th scope="col" className="text-right">
-                  Tồn kho
-                </th>
-                <th scope="col" className="text-right">
-                  Đã bán
+                  Có thể bán
                 </th>
                 <th scope="col">Trạng thái</th>
               </tr>
@@ -57,9 +56,8 @@ export default async function AdminProductsPage() {
                   <td className={`text-right tabular-nums ${product.stock === 0 ? "font-semibold text-danger" : ""}`}>
                     {formatNumber(product.stock)}
                   </td>
-                  <td className="text-right tabular-nums">{formatNumber(product.sold)}</td>
                   <td>
-                    <span className={BADGE}>{product.isActive ? "Đang bán" : "Đang ẩn"}</span>
+                    <span className={BADGE}>{STATUS_LABELS[product.status]}</span>
                     {product.isFeatured && <span className={`${BADGE} ml-1.5`}>Nổi bật</span>}
                   </td>
                 </tr>

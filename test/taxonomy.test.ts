@@ -146,7 +146,8 @@ describe("danh mục, thương hiệu, series", () => {
     expect(await find("categories", "goc-trong")).toBeUndefined();
     expect((await audit.listAuditLogs({ action: "categories.delete", entityId: parent!.id })).items).toHaveLength(1);
 
+    // Thương hiệu đã gắn với sản phẩm (khoá ngoại từ T04) thì không xoá được.
     const brand = await find("brands", "takara-tomy");
-    await expect(admin.deleteTaxonomyAction("brands", brand!.id)).rejects.toThrow("REDIRECT /admin/thuong-hieu");
+    expect((await admin.deleteTaxonomyAction("brands", brand!.id)).message).toMatch(/còn sản phẩm/);
   });
 });

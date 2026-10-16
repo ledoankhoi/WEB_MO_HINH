@@ -52,7 +52,7 @@ function parseItems(raw: string): OrderLineInput[] | null {
     ) {
       return null;
     }
-    items.push({ productId: entry.id, quantity: entry.qty, expectedPrice: entry.price });
+    items.push({ variantId: entry.id, quantity: entry.qty, expectedPrice: entry.price });
   }
   return items;
 }
@@ -107,6 +107,7 @@ export async function placeOrderAction(_prev: CheckoutState, form: FormData): Pr
     shippingAddress: address,
     shippingCity: city,
     note,
+    idempotencyKey: /^[0-9a-f]{32}$/.test(readText(form, "idempotencyKey")) ? readText(form, "idempotencyKey") : null,
     items,
   });
 

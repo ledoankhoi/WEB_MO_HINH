@@ -5,11 +5,12 @@ import { site } from "@/config/site";
 import { orderTotals } from "./pricing";
 import type { CartProduct } from "./types";
 
-// Giỏ hàng lưu trong localStorage của trình duyệt: chỉ gồm mã sản phẩm và số lượng. Giá và tồn kho
+// Giỏ hàng lưu trong localStorage của trình duyệt: chỉ gồm mã biến thể và số lượng. Giá và tồn kho
 // luôn lấy mới từ máy chủ (/api/cart) và được kiểm tra lại lần nữa khi đặt hàng.
 export type CartLine = { id: string; qty: number };
 
-const STORAGE_KEY = "robostore:cart:v1";
+// v2: mỗi dòng là một biến thể (v1 lưu mã sản phẩm cũ, không còn dùng được).
+const STORAGE_KEY = "robostore:cart:v2";
 const MAX_LINES = 50;
 const EMPTY: readonly CartLine[] = Object.freeze([]);
 

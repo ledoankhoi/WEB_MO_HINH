@@ -14,11 +14,12 @@ import type { Order, OrderItem, OrderSummary } from "@/lib/types";
 import { getDb, isConstraintError, type InStatement, type InValue, type Row } from "../db";
 import { newId, newOrderCode, newToken } from "../ids";
 import { withAudit, type AuditEntry } from "./audit";
+import { allocateStorage, movementStatements, type Guard } from "./inventory";
 import { findCartProducts } from "./products";
 
 const MAX_LINES = 50;
 
-export type OrderLineInput = { productId: string; quantity: number; expectedPrice: number };
+export type OrderLineInput = { variantId: string; quantity: number; expectedPrice: number };
 
 export type OrderDraft = {
   userId: string | null;
@@ -29,11 +30,13 @@ export type OrderDraft = {
   shippingAddress: string;
   shippingCity: string;
   note: string;
+  // Do trình duyệt sinh cho mỗi lần thanh toán: bấm đặt hàng nhiều lần chỉ tạo một đơn (YC-GH-07).
+  idempotencyKey: string | null;
   items: OrderLineInput[];
 };
 
 export type CartIssue = {
-  productId: string;
+  variantId: string;
   name: string | null;
   reason: "unavailable" | "insufficient_stock" | "price_changed";
 };
@@ -70,9 +73,12 @@ function toOrderBase(row: Row): Omit<Order, "items"> {
 function toOrderItem(row: Row): OrderItem {
   return {
     productId: String(row.product_id),
+    variantId: String(row.variant_id),
     name: String(row.product_name),
+    variantName: String(row.variant_name),
+    sku: String(row.sku),
     slug: String(row.product_slug),
-    image: row.product_image === null ? null : String(row.product_image),
+    image: row.image === null ? null : String(row.image),
     unitPrice: Number(row.unit_price),
     quantity: Number(row.quantity),
   };
@@ -86,44 +92,55 @@ function toOrderSummary(row: Row): OrderSummary {
 function normalizeLines(items: readonly OrderLineInput[]): OrderLineInput[] {
   const merged = new Map<string, OrderLineInput>();
   for (const item of items) {
-    if (!item.productId || !Number.isInteger(item.quantity) || item.quantity <= 0) continue;
-    const existing = merged.get(item.productId);
+    if (!item.variantId || !Number.isInteger(item.quantity) || item.quantity <= 0) continue;
+    const existing = merged.get(item.variantId);
     if (existing) existing.quantity += item.quantity;
-    else merged.set(item.productId, { ...item });
+    else merged.set(item.variantId, { ...item });
   }
   return [...merged.values()].slice(0, MAX_LINES);
 }
 
 // Tạo đơn hàng từ giỏ. Giá và tồn kho luôn lấy từ CSDL, không tin số liệu do trình duyệt gửi lên:
 // `expectedPrice` chỉ dùng để phát hiện giá đã đổi so với lúc khách xem giỏ.
+async function findOrderByIdempotencyKey(key: string) {
+  const db = await getDb();
+  const result = await db.execute({ sql: "SELECT id, code, token, total FROM orders WHERE idempotency_key = ?", args: [key] });
+  const row = result.rows[0];
+  return row ? { id: String(row.id), code: String(row.code), token: String(row.token), total: Number(row.total) } : null;
+}
+
 export async function createOrder(draft: OrderDraft): Promise<CreateOrderResult> {
   const lines = normalizeLines(draft.items);
   if (lines.length === 0) return { ok: false, reason: "empty", issues: [] };
+  if (draft.idempotencyKey) {
+    const existing = await findOrderByIdempotencyKey(draft.idempotencyKey);
+    if (existing) return { ok: true, order: existing };
+  }
 
   const inspect = async () => {
-    const products = new Map((await findCartProducts(lines.map((l) => l.productId))).map((p) => [p.id, p]));
+    const variants = new Map((await findCartProducts(lines.map((l) => l.variantId))).map((v) => [v.id, v]));
     const issues: CartIssue[] = [];
     for (const line of lines) {
-      const product = products.get(line.productId);
-      if (!product || !product.available) {
-        issues.push({ productId: line.productId, name: product?.name ?? null, reason: "unavailable" });
-      } else if (line.quantity > Math.min(product.stock, site.maxQtyPerItem)) {
-        issues.push({ productId: line.productId, name: product.name, reason: "insufficient_stock" });
-      } else if (product.price !== line.expectedPrice) {
-        issues.push({ productId: line.productId, name: product.name, reason: "price_changed" });
+      const variant = variants.get(line.variantId);
+      if (!variant || !variant.available) {
+        issues.push({ variantId: line.variantId, name: variant?.name ?? null, reason: "unavailable" });
+      } else if (line.quantity > Math.min(variant.stock, site.maxQtyPerItem)) {
+        issues.push({ variantId: line.variantId, name: variant.name, reason: "insufficient_stock" });
+      } else if (variant.price !== line.expectedPrice) {
+        issues.push({ variantId: line.variantId, name: variant.name, reason: "price_changed" });
       }
     }
-    return { products, issues };
+    return { variants, issues };
   };
 
-  const { products, issues } = await inspect();
+  const { variants, issues } = await inspect();
   if (issues.length > 0) return { ok: false, reason: "cart_changed", issues };
 
-  // Cập nhật sản phẩm theo cùng một thứ tự ở mọi đơn để hai đơn đặt chéo nhau không khoá chết lẫn nhau.
+  // Giữ hàng theo cùng một thứ tự ở mọi đơn để hai đơn đặt chéo nhau không khoá chết lẫn nhau.
   const priced = lines
-    .map((line) => ({ ...line, product: products.get(line.productId)! }))
-    .sort((a, b) => a.productId.localeCompare(b.productId));
-  const totals = orderTotals(priced.map((l) => ({ price: l.product.price, quantity: l.quantity })));
+    .map((line) => ({ ...line, variant: variants.get(line.variantId)! }))
+    .sort((a, b) => a.variantId.localeCompare(b.variantId));
+  const totals = orderTotals(priced.map((l) => ({ price: l.variant.price, quantity: l.quantity })));
   const db = await getDb();
 
   for (let attempt = 0; attempt < 3; attempt++) {
@@ -132,15 +149,16 @@ export async function createOrder(draft: OrderDraft): Promise<CreateOrderResult>
     const statements: InStatement[] = [
       {
         sql: `INSERT INTO orders (
-                id, code, token, user_id, status, payment_method, payment_status,
+                id, code, token, user_id, idempotency_key, status, payment_method, payment_status,
                 customer_name, customer_phone, customer_email, shipping_address, shipping_city, note,
                 subtotal, shipping_fee, total, created_at, updated_at
-              ) VALUES (?, ?, ?, ?, 'pending', ?, 'unpaid', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+              ) VALUES (?, ?, ?, ?, ?, 'pending', ?, 'unpaid', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         args: [
           order.id,
           order.code,
           order.token,
           draft.userId,
+          draft.idempotencyKey,
           draft.paymentMethod,
           draft.customerName,
           draft.customerPhone,
@@ -159,26 +177,25 @@ export async function createOrder(draft: OrderDraft): Promise<CreateOrderResult>
     for (const line of priced) {
       statements.push(
         {
-          // Nếu sản phẩm vừa bị ẩn hoặc đổi giá, truy vấn con trả về NULL và vi phạm NOT NULL,
-          // khiến cả lô (kể cả đơn hàng) bị huỷ.
-          sql: `INSERT INTO order_items (order_id, product_id, product_name, product_slug, product_image, unit_price, quantity)
-                VALUES (?, ?, (SELECT name FROM products WHERE id = ? AND is_active = 1 AND price = ?), ?, ?, ?, ?)`,
-          args: [
-            order.id,
-            line.productId,
-            line.productId,
-            line.product.price,
-            line.product.slug,
-            line.product.image,
-            line.product.price,
-            line.quantity,
-          ],
+          // Nếu biến thể vừa bị tắt, sản phẩm bị ẩn hoặc đổi giá, truy vấn con trả về NULL và vi phạm NOT NULL,
+          // khiến cả lô (kể cả đơn hàng) bị huỷ. Giá, tên, SKU lưu bản chụp lúc đặt (QT-05).
+          sql: `INSERT INTO order_items (order_id, variant_id, product_id, product_name, variant_name, sku, product_slug, image, unit_price, quantity)
+                SELECT ?, v.id, p.id, p.name, v.name, v.sku, p.slug, COALESCE(v.image, p.image), v.price, ?
+                FROM (SELECT 1) one
+                LEFT JOIN product_variants v ON v.id = ? AND v.is_active AND v.price = ?
+                LEFT JOIN products p ON p.id = v.product_id AND p.status = 'published'`,
+          args: [order.id, line.quantity, line.variantId, line.variant.price],
         },
-        {
-          // Ràng buộc CHECK (stock >= 0) của PostgreSQL chặn bán quá số lượng tồn khi hai khách đặt cùng lúc.
-          sql: "UPDATE products SET stock = stock - ?, sold = sold + ?, updated_at = ? WHERE id = ?",
-          args: [line.quantity, line.quantity, now, line.productId],
-        },
+        // Ràng buộc reserved ≤ on_hand chặn bán vượt tồn khi hai khách đặt cùng lúc (EC-02).
+        ...movementStatements({
+          variantId: line.variantId,
+          locationId: null,
+          type: "reserve",
+          qtyDelta: 0,
+          reservedDelta: line.quantity,
+          orderId: order.id,
+          now,
+        }),
       );
     }
 
@@ -187,8 +204,13 @@ export async function createOrder(draft: OrderDraft): Promise<CreateOrderResult>
       return { ok: true, order };
     } catch (error) {
       if (!isConstraintError(error)) throw error;
-      // Trùng mã đơn hoặc token (cực hiếm): sinh mã khác rồi thử lại.
-      if (error.statementIndex === 0) continue;
+      if (error.statementIndex === 0) {
+        // Cùng idempotency_key vừa được một yêu cầu song song dùng: trả về đơn đó. Còn lại là trùng mã đơn
+        // hoặc token (cực hiếm): sinh mã khác rồi thử lại.
+        const existing = draft.idempotencyKey ? await findOrderByIdempotencyKey(draft.idempotencyKey) : null;
+        if (existing) return { ok: true, order: existing };
+        continue;
+      }
       const recheck = await inspect();
       return { ok: false, reason: "cart_changed", issues: recheck.issues };
     }
@@ -283,7 +305,7 @@ export async function getOrderStats(): Promise<OrderStats> {
     [
       "SELECT status, COUNT(*) AS total FROM orders GROUP BY status",
       "SELECT COALESCE(SUM(total), 0) AS revenue FROM orders WHERE status = 'completed'",
-      "SELECT id, name, stock FROM products WHERE is_active = 1 AND stock <= 5 ORDER BY stock, name LIMIT 10",
+      "SELECT id, name, stock FROM product_list WHERE is_active AND stock <= 5 ORDER BY stock, name LIMIT 10",
     ]
   );
   const byStatus = Object.fromEntries(ORDER_STATUSES.map((s) => [s, 0])) as Record<OrderStatus, number>;
@@ -301,8 +323,20 @@ export async function getOrderStats(): Promise<OrderStats> {
 
 const placeholders = (values: readonly unknown[]) => values.map(() => "?").join(", ");
 
+const guardStatus = (id: string, from: readonly OrderStatus[]): Guard => ({
+  sql: `EXISTS (SELECT 1 FROM orders WHERE id = ? AND status IN (${placeholders(from)}))`,
+  args: [id, ...from],
+});
+
+async function orderLines(id: string): Promise<{ variantId: string; quantity: number }[]> {
+  const db = await getDb();
+  const result = await db.execute({ sql: "SELECT variant_id, quantity FROM order_items WHERE order_id = ? ORDER BY variant_id", args: [id] });
+  return result.rows.map((row) => ({ variantId: String(row.variant_id), quantity: Number(row.quantity) }));
+}
+
 // Chuyển đơn sang trạng thái kế tiếp (không dùng cho huỷ đơn). Điều kiện trạng thái hiện tại nằm ngay
-// trong câu UPDATE nên hai quản trị viên bấm cùng lúc cũng không thể nhảy sai bước.
+// trong câu UPDATE nên hai quản trị viên bấm cùng lúc cũng không thể nhảy sai bước. Sang `shipping` là bàn
+// giao vận chuyển: xuất kho (`ship`) từ các vị trí chọn theo Q7, cùng giao dịch.
 export async function advanceOrder(
   id: string,
   to: Exclude<OrderStatus, "cancelled" | "pending">,
@@ -310,51 +344,85 @@ export async function advanceOrder(
 ): Promise<boolean> {
   const from = ORDER_STATUSES.filter((s) => ORDER_TRANSITIONS[s].includes(to));
   if (from.length === 0) return false;
+  const now = Date.now();
+  const actorId = audit?.actor.id ?? null;
+  const statements: InStatement[] = [{ sql: "SELECT id FROM orders WHERE id = ? FOR UPDATE", args: [id] }];
+  if (to === "shipping") {
+    for (const line of await orderLines(id)) {
+      const picks = await allocateStorage(line.variantId, line.quantity);
+      if (!picks) return false;
+      for (const pick of picks) {
+        statements.push(
+          ...movementStatements(
+            { variantId: line.variantId, locationId: pick.locationId, type: "ship", qtyDelta: -pick.qty, reservedDelta: -pick.qty, orderId: id, actorId, now },
+            guardStatus(id, from),
+          ),
+        );
+      }
+    }
+  }
+  statements.push(
+    withAudit(
+      {
+        // Đơn COD coi như đã thu tiền khi giao hàng hoàn tất.
+        sql: `UPDATE orders SET
+                status = ?,
+                payment_status = CASE WHEN ? = 'completed' AND payment_method = 'cod' AND payment_status = 'unpaid'
+                                      THEN 'paid' ELSE payment_status END,
+                updated_at = ?
+              WHERE id = ? AND status IN (${placeholders(from)})`,
+        args: [to, to, now, id, ...from],
+      },
+      audit,
+    ),
+  );
   const db = await getDb();
-  const result = await db.execute(withAudit({
-    // Đơn COD coi như đã thu tiền khi giao hàng hoàn tất.
-    sql: `UPDATE orders SET
-            status = ?,
-            payment_status = CASE WHEN ? = 'completed' AND payment_method = 'cod' AND payment_status = 'unpaid'
-                                  THEN 'paid' ELSE payment_status END,
-            updated_at = ?
-          WHERE id = ? AND status IN (${placeholders(from)})`,
-    args: [to, to, Date.now(), id, ...from],
-  }, audit));
-  return result.rowsAffected > 0;
+  try {
+    const results = await db.batch(statements);
+    return results[results.length - 1].rowsAffected > 0;
+  } catch (error) {
+    // Lần bàn giao thứ hai trùng khoá duy nhất của sổ kho, hoặc tồn vị trí vừa đổi: không ghi gì.
+    if (isConstraintError(error)) return false;
+    throw error;
+  }
 }
 
-// Huỷ đơn và trả hàng về kho trong cùng một giao dịch. Lệnh hoàn kho chạy TRƯỚC và chỉ khi đơn còn ở
-// trạng thái cho phép, nên huỷ hai lần cũng không cộng kho hai lần.
+// Huỷ đơn và giải phóng hàng đã giữ (`release`) trong cùng một giao dịch. Lệnh kho chạy TRƯỚC và chỉ khi đơn
+// còn ở trạng thái cho phép, nên huỷ hai lần cũng không giải phóng hai lần.
 export async function cancelOrder(id: string, allowedFrom: readonly OrderStatus[], audit?: AuditEntry): Promise<boolean> {
   const from = allowedFrom.filter((s) => ORDER_TRANSITIONS[s].includes("cancelled"));
   if (from.length === 0) return false;
-  const db = await getDb();
   const now = Date.now();
-  const quantity = "(SELECT COALESCE(SUM(quantity), 0)::int FROM order_items WHERE order_id = ? AND product_id = products.id)";
-  const [, , updated] = await db.batch(
-    [
-      // Khoá dòng đơn hàng: lần huỷ đến sau phải chờ, rồi thấy đơn đã huỷ và không hoàn kho nữa.
-      { sql: "SELECT id FROM orders WHERE id = ? FOR UPDATE", args: [id] },
-      {
-        sql: `UPDATE products SET
-                stock = stock + ${quantity},
-                sold = GREATEST(0, sold - ${quantity}),
-                updated_at = ?
-              WHERE id IN (SELECT product_id FROM order_items WHERE order_id = ?)
-                AND EXISTS (SELECT 1 FROM orders WHERE id = ? AND status IN (${placeholders(from)}))`,
-        args: [id, id, now, id, id, ...from],
-      },
-      withAudit(
-        {
-          sql: `UPDATE orders SET status = 'cancelled', updated_at = ? WHERE id = ? AND status IN (${placeholders(from)})`,
-          args: [now, id, ...from],
-        },
-        audit,
+  const actorId = audit?.actor.id ?? null;
+  const statements: InStatement[] = [
+    // Khoá dòng đơn hàng: lần huỷ đến sau phải chờ, rồi thấy đơn đã huỷ và không giải phóng nữa.
+    { sql: "SELECT id FROM orders WHERE id = ? FOR UPDATE", args: [id] },
+  ];
+  for (const line of await orderLines(id)) {
+    statements.push(
+      ...movementStatements(
+        { variantId: line.variantId, locationId: null, type: "release", qtyDelta: 0, reservedDelta: -line.quantity, orderId: id, actorId, now },
+        guardStatus(id, from),
       ),
-    ]
+    );
+  }
+  statements.push(
+    withAudit(
+      {
+        sql: `UPDATE orders SET status = 'cancelled', updated_at = ? WHERE id = ? AND status IN (${placeholders(from)})`,
+        args: [now, id, ...from],
+      },
+      audit,
+    ),
   );
-  return updated.rowsAffected > 0;
+  const db = await getDb();
+  try {
+    const results = await db.batch(statements);
+    return results[results.length - 1].rowsAffected > 0;
+  } catch (error) {
+    if (isConstraintError(error)) return false;
+    throw error;
+  }
 }
 
 export async function setPaymentStatus(id: string, status: PaymentStatus, audit?: AuditEntry): Promise<boolean> {

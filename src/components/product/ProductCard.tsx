@@ -44,7 +44,7 @@ export function ProductCard({ product }: { product: ProductSummary }) {
         <p className="line-clamp-2 text-sm text-muted">{product.tagline}</p>
         <p className="mt-auto pt-3 text-base font-semibold tabular-nums">{formatVnd(product.price)}</p>
         <div className="pt-2">
-          <AddToCartButton id={product.id} name={product.name} stock={product.stock} full />
+          <AddToCartButton id={product.variantId} name={product.name} stock={product.stock} full />
         </div>
       </div>
     </article>

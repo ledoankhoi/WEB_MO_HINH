@@ -6,6 +6,7 @@ import { CATEGORIES } from "@/lib/catalog";
 import { foldText, slugify } from "@/lib/format";
 import { hashPassword, isValidPassword } from "../auth/password";
 import { newId } from "../ids";
+import { DEFAULT_WAREHOUSE, movementStatements } from "../repo/inventory";
 import { MIGRATIONS } from "./migrations";
 import { SEED_BRANDS, SEED_PRODUCTS, SEED_SERIES } from "./seed-data";
 
@@ -31,11 +32,9 @@ export type Db = {
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const INIT_LOCK = 7291801;
-// v1 là 12 robot tự dựng ban đầu; v2 là danh mục Gundam, Transformers... có mô hình .glb thật;
-// v3 thêm các mô hình biến hình và hợp thể được (Combaticons, Bruticus, bộ G1).
-const SEED_KEY = "seed:catalog-v3";
-const V1_SEED_KEY = "seed:catalog";
-const V2_SEED_KEY = "seed:catalog-v2";
+// v4: sản phẩm có biến thể, tồn kho theo vị trí (migration 005 xoá và tạo lại bảng, nên các khoá v1 đến v3 cũ không còn ý nghĩa).
+const SEED_KEY = "seed:catalog-v4";
+const SEED_PRODUCT_TYPES: Record<string, string> = { "model-kits": "model_kit", "robot-hop-the": "combiner", "phu-kien": "accessory" };
 const TAXONOMY_SEED_KEY = "seed:taxonomy-v1";
 
 type DbState = { backend?: Backend; ready?: Promise<Db> };
@@ -163,47 +162,80 @@ async function migrateAndSeed(backend: Backend) {
     }
 
     if (done.has(SEED_KEY)) return;
-    // Ẩn danh mục v1 thay vì xoá, để các đơn hàng cũ vẫn trỏ được tới sản phẩm.
-    if (done.has(V1_SEED_KEY) && !done.has(V2_SEED_KEY)) {
-      await exec("UPDATE products SET is_active = 0, is_featured = 0");
-    }
     // Mô hình và ảnh nằm trên Supabase Storage (npm run media); không khai báo thì trỏ vào public/ của trang.
     const media = process.env.MEDIA_BASE_URL?.trim().replace(/\/$/, "") ?? "";
-    // Mốc thời gian cố định để thứ tự "mới nhất" của dữ liệu mẫu luôn giống nhau. Sản phẩm đã có (trùng slug)
-    // được giữ nguyên; mốc này dời theo 11 sản phẩm v3 ở đầu danh sách để 28 sản phẩm v2 có cùng ngày tạo
-    // như trong các CSDL đã nạp v2.
+    // Mốc thời gian cố định để thứ tự "mới nhất" của dữ liệu mẫu luôn giống nhau.
     const base = Date.UTC(2026, 8, 12);
+    // Tồn ban đầu đi qua một phiếu nhập đã ghi sổ (PN-SEED) để sổ kho và số dư khớp nhau ngay từ đầu.
+    const documentId = newId();
+    await exec({
+      sql: `INSERT INTO stock_documents (id, code, type, status, warehouse_id, reason_code, note, posted_at, created_at, updated_at)
+            VALUES (?, 'PN-SEED', 'receipt', 'posted', ${DEFAULT_WAREHOUSE}, 'purchase', 'Tồn ban đầu của dữ liệu mẫu', ?, ?, ?)`,
+      args: [documentId, base, base, base],
+    });
+    const locationId = String((await exec("SELECT id FROM locations WHERE code = 'A-01'")).rows[0].id);
     for (const [index, p] of SEED_PRODUCTS.entries()) {
       const createdAt = base - index * DAY_MS;
+      const spec = (...labels: string[]) => p.specs.find((s) => labels.includes(s.label))?.value;
+      const productId = newId();
+      const variantId = newId();
       await exec({
         sql: `INSERT INTO products (
-                id, slug, name, tagline, description, category, price, compare_at_price, stock,
-                model, model_url, color_primary, color_secondary, color_accent, specs, image, search_text,
-                is_featured, is_active, sold, created_at, updated_at
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0, ?, ?)
-              ON CONFLICT (slug) DO NOTHING`,
+                id, slug, name, tagline, description, category_id, brand_id, series_id, product_type,
+                model, model_url, specs, image, search_text, is_featured, status, published_at, created_at, updated_at
+              ) VALUES (?, ?, ?, ?, ?, (SELECT id FROM categories WHERE slug = ?), (SELECT id FROM brands WHERE slug = ?),
+                        (SELECT id FROM series WHERE slug = ?), ?, ?, ?, ?, ?, ?, ?, 'published', ?, ?, ?)`,
         args: [
-          newId(),
+          productId,
           p.slug,
           p.name,
           p.tagline,
           p.description,
           p.category,
-          p.price,
-          p.compareAtPrice,
-          p.stock,
+          slugify(spec("Hãng sản xuất")?.split(", ")[0] ?? ""),
+          slugify(spec("Dòng phim", "Dòng") ?? ""),
+          SEED_PRODUCT_TYPES[p.category] ?? "figure",
           p.model,
           `${media}/models/${p.slug}.glb`,
-          p.colors.primary,
-          p.colors.secondary,
-          p.colors.accent,
           JSON.stringify(p.specs),
           `${media}/products/${p.slug}.webp`,
           foldText(`${p.name} ${p.tagline} ${p.description}`),
-          p.featured ? 1 : 0,
+          p.featured,
+          createdAt,
           createdAt,
           createdAt,
         ],
+      });
+      await exec({
+        sql: `INSERT INTO product_variants (
+                id, product_id, sku, name, price, compare_at_price, color_primary, color_secondary, color_accent,
+                is_default, created_at, updated_at
+              ) VALUES (?, ?, ?, 'Bản thường', ?, ?, ?, ?, ?, true, ?, ?)`,
+        args: [variantId, productId, `RB-${p.slug.toUpperCase()}`, p.price, p.compareAtPrice, p.colors.primary, p.colors.secondary, p.colors.accent, createdAt, createdAt],
+      });
+      if (p.stock <= 0) continue;
+      // Giá vốn mẫu: 60% giá bán (số tự đặt cho dữ liệu minh hoạ).
+      const unitCost = Math.round(p.price * 0.6);
+      await exec({
+        sql: `INSERT INTO stock_document_lines (document_id, variant_id, location_id, qty_expected, qty, qty_quarantined, unit_cost)
+              VALUES (?, ?, ?, ?, ?, 0, ?)`,
+        args: [documentId, variantId, locationId, p.stock, p.stock, unitCost],
+      });
+      for (const statement of movementStatements({
+        variantId,
+        locationId,
+        type: "receive",
+        qtyDelta: p.stock,
+        unitCost,
+        documentId,
+        reason: "purchase",
+        now: base,
+      })) {
+        await exec(statement);
+      }
+      await exec({
+        sql: `UPDATE inventory SET avg_cost = ?, last_received_at = ? WHERE variant_id = ?`,
+        args: [unitCost, base, variantId],
       });
     }
     await mark(SEED_KEY);
