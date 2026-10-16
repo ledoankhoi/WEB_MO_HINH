@@ -110,7 +110,7 @@ async function OrderDetail({ params }: Pick<PageProps<"/don-hang/[token]">, "par
           <OrderHistory order={order} />
         </div>
         <aside className="h-fit space-y-4 rounded-xl border border-line bg-surface p-5 text-sm">
-          <OrderSummary totals={{ subtotal: order.subtotal, shipping: order.shippingFee, total: order.total }} />
+          <OrderSummary totals={{ subtotal: order.subtotal, discount: order.discount, shipping: order.shippingFee, total: order.total }} couponCode={order.couponCode} />
           <div className="space-y-1 border-t border-line pt-4">
             <p className="font-semibold">Giao tới</p>
             <p>

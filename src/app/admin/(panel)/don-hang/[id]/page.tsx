@@ -71,7 +71,7 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/don-h
         </div>
 
         <aside className="space-y-4 rounded-xl border border-line bg-surface p-5 text-sm">
-          <OrderSummary totals={{ subtotal: order.subtotal, shipping: order.shippingFee, total: order.total }} />
+          <OrderSummary totals={{ subtotal: order.subtotal, discount: order.discount, shipping: order.shippingFee, total: order.total }} couponCode={order.couponCode} />
           {order.payments.length > 0 && (
             <div className="space-y-1 border-t border-line pt-4">
               <p className="font-semibold">Thanh toán</p>

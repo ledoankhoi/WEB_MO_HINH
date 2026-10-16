@@ -58,8 +58,9 @@ describe("giá và phí vận chuyển", () => {
   });
 
   it("cộng tổng đơn hàng", () => {
-    expect(orderTotals([{ price: 400_000, quantity: 2 }])).toEqual({ subtotal: 800_000, shipping: 30_000, total: 830_000 });
-    expect(orderTotals([{ price: 990_000, quantity: 2 }])).toEqual({ subtotal: 1_980_000, shipping: 0, total: 1_980_000 });
+    expect(orderTotals([{ price: 400_000, quantity: 2 }])).toEqual({ subtotal: 800_000, discount: 0, shipping: 30_000, total: 830_000 });
+    expect(orderTotals([{ price: 990_000, quantity: 2 }])).toEqual({ subtotal: 1_980_000, discount: 0, shipping: 0, total: 1_980_000 });
+    expect(orderTotals([{ price: 990_000, quantity: 2 }], 100_000)).toEqual({ subtotal: 1_980_000, discount: 100_000, shipping: 0, total: 1_880_000 });
   });
 
   it("giới hạn số lượng theo tồn kho và mức tối đa", () => {

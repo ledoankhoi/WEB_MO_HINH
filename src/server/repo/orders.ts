@@ -11,11 +11,12 @@ import {
   type ShippingStatus,
 } from "@/lib/catalog";
 import { ORDER_ACTIONS, conditionSql, type OrderActionKey } from "@/lib/order-flow";
-import { orderTotals } from "@/lib/pricing";
+import { orderTotals, type CouponRejection } from "@/lib/pricing";
 import type { Order, OrderEvent, OrderItem, OrderSummary } from "@/lib/types";
 import { getDb, isConstraintError, type InStatement, type InValue, type Row } from "../db";
 import { newId, newOrderCode, newToken } from "../ids";
 import { withAudit, type AuditEntry } from "./audit";
+import { evaluateCoupon, redeemStatements, releaseStatements } from "./coupons";
 import { allocateStorage, movementStatements, type Guard } from "./inventory";
 import { findCartProducts } from "./products";
 
@@ -34,6 +35,8 @@ export type OrderDraft = {
   note: string;
   // Do trình duyệt sinh cho mỗi lần thanh toán: bấm đặt hàng nhiều lần chỉ tạo một đơn (YC-GH-07).
   idempotencyKey: string | null;
+  // Mã giảm giá khách nhập (trống nếu không dùng); máy chủ tự kiểm tra lại.
+  couponCode?: string;
   items: OrderLineInput[];
 };
 
@@ -45,7 +48,8 @@ export type CartIssue = {
 
 export type CreateOrderResult =
   | { ok: true; order: { id: string; code: string; token: string; total: number } }
-  | { ok: false; reason: "empty" | "cart_changed"; issues: CartIssue[] };
+  | { ok: false; reason: "empty" | "cart_changed"; issues: CartIssue[] }
+  | { ok: false; reason: "coupon"; coupon: CouponRejection; minSubtotal?: number };
 
 function toOrderBase(row: Row): Omit<Order, "items" | "events" | "payments"> {
   const status = String(row.status);
@@ -69,6 +73,8 @@ function toOrderBase(row: Row): Omit<Order, "items" | "events" | "payments"> {
     shippingCity: String(row.shipping_city),
     note: String(row.note),
     subtotal: Number(row.subtotal),
+    discount: Number(row.discount),
+    couponCode: row.coupon_code === null ? null : String(row.coupon_code),
     shippingFee: Number(row.shipping_fee),
     total: Number(row.total),
     createdAt: Number(row.created_at),
@@ -146,7 +152,10 @@ export async function createOrder(draft: OrderDraft): Promise<CreateOrderResult>
   const priced = lines
     .map((line) => ({ ...line, variant: variants.get(line.variantId)! }))
     .sort((a, b) => a.variantId.localeCompare(b.variantId));
-  const totals = orderTotals(priced.map((l) => ({ price: l.variant.price, quantity: l.quantity })));
+  const pricedLines = priced.map((l) => ({ variantId: l.variantId, price: l.variant.price, quantity: l.quantity }));
+  const coupon = draft.couponCode ? await evaluateCoupon(draft.couponCode, pricedLines) : null;
+  if (coupon && !coupon.ok) return { ok: false, reason: "coupon", coupon: coupon.reason, minSubtotal: coupon.minSubtotal };
+  const totals = orderTotals(pricedLines, coupon?.discount ?? 0);
   const db = await getDb();
 
   for (let attempt = 0; attempt < 3; attempt++) {
@@ -157,8 +166,8 @@ export async function createOrder(draft: OrderDraft): Promise<CreateOrderResult>
         sql: `INSERT INTO orders (
                 id, code, token, user_id, idempotency_key, status, payment_method, payment_status,
                 customer_name, customer_phone, customer_email, shipping_address, shipping_city, note,
-                subtotal, shipping_fee, total, created_at, updated_at
-              ) VALUES (?, ?, ?, ?, ?, 'pending', ?, 'unpaid', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                subtotal, discount, coupon_code, shipping_fee, total, created_at, updated_at
+              ) VALUES (?, ?, ?, ?, ?, 'pending', ?, 'unpaid', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         args: [
           order.id,
           order.code,
@@ -173,6 +182,8 @@ export async function createOrder(draft: OrderDraft): Promise<CreateOrderResult>
           draft.shippingCity,
           draft.note,
           totals.subtotal,
+          totals.discount,
+          coupon?.coupon.code ?? null,
           totals.shipping,
           totals.total,
           now,
@@ -205,6 +216,9 @@ export async function createOrder(draft: OrderDraft): Promise<CreateOrderResult>
       );
     }
 
+    const couponIndex = statements.length;
+    if (coupon) statements.push(...redeemStatements(coupon.coupon, order.id, coupon.discount, now));
+
     try {
       await db.batch(statements);
       return { ok: true, order };
@@ -216,6 +230,11 @@ export async function createOrder(draft: OrderDraft): Promise<CreateOrderResult>
         const existing = draft.idempotencyKey ? await findOrderByIdempotencyKey(draft.idempotencyKey) : null;
         if (existing) return { ok: true, order: existing };
         continue;
+      }
+      if (coupon && (error.statementIndex ?? -1) >= couponIndex) {
+        // Mã vừa hết lượt, bị tắt hoặc bị sửa trong lúc đặt: báo lý do mới nhất.
+        const again = await evaluateCoupon(coupon.coupon.code, pricedLines);
+        return { ok: false, reason: "coupon", coupon: again.ok ? "exhausted" : again.reason };
       }
       const recheck = await inspect();
       return { ok: false, reason: "cart_changed", issues: recheck.issues };
@@ -426,6 +445,9 @@ export async function applyOrderAction(id: string, key: OrderActionKey, audit?: 
       }
     }
   }
+
+  // EC-07: huỷ đơn thì trả lại lượt dùng mã giảm giá.
+  if ("status" in action.set && action.set.status === "cancelled") statements.push(...releaseStatements(id, guard, now));
 
   if ("payment" in action) {
     statements.push({

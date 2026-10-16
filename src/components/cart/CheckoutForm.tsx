@@ -1,8 +1,8 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { placeOrderAction, type CheckoutState } from "@/app/actions/orders";
+import { placeOrderAction, previewCouponAction, type CheckoutState } from "@/app/actions/orders";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Field, SelectField, TextAreaField } from "@/components/ui/Field";
 import { Notice } from "@/components/ui/Notice";
@@ -28,6 +28,18 @@ export function CheckoutForm({ defaults, paymentMethods }: { defaults: Defaults;
     cart.clear();
     router.replace(`/don-hang/${state.token}`);
   }, [state.token, router]);
+
+  // Mã giảm giá đang áp (máy chủ đã xem trước); lúc đặt hàng máy chủ kiểm tra lại.
+  const [coupon, setCoupon] = useState<{ code: string; discount: number } | null>(null);
+  const [couponInput, setCouponInput] = useState("");
+  const [couponError, setCouponError] = useState("");
+  const [checking, startChecking] = useTransition();
+  // Máy chủ vừa từ chối mã lúc đặt hàng: bỏ mã đang áp (điều chỉnh state ngay khi render).
+  const [seenState, setSeenState] = useState(state);
+  if (seenState !== state) {
+    setSeenState(state);
+    if (state.couponRejected) setCoupon(null);
+  }
 
   // Máy chủ báo giỏ hàng đã thay đổi: tải lại giá và tồn kho.
   useEffect(() => {
@@ -56,11 +68,19 @@ export function CheckoutForm({ defaults, paymentMethods }: { defaults: Defaults;
   const value = (name: keyof Defaults | "note") => state.values?.[name] ?? (name === "note" ? "" : defaults[name]);
   const items = rows.map((row) => ({ id: row.id, qty: row.qty, price: row.product!.price }));
   const selectedMethod = state.values?.paymentMethod ?? paymentMethods[0];
+  const discount = Math.min(coupon?.discount ?? 0, totals.subtotal);
+  const applyCoupon = () =>
+    startChecking(async () => {
+      const result = await previewCouponAction(couponInput, JSON.stringify(items));
+      setCouponError(result.ok ? "" : result.message);
+      setCoupon(result.ok ? { code: result.code, discount: result.discount } : null);
+    });
 
   return (
     <form action={action} className="grid gap-8 lg:grid-cols-[1fr_22rem]">
       <input type="hidden" name="items" value={JSON.stringify(items)} />
       <input type="hidden" name="idempotencyKey" value={idempotencyKey} />
+      {coupon && <input type="hidden" name="couponCode" value={coupon.code} />}
       <div className="space-y-5 rounded-xl border border-line bg-surface p-5 sm:p-6">
         <h2 className="text-lg font-semibold">Thông tin nhận hàng</h2>
         {state.message && (
@@ -113,8 +133,42 @@ export function CheckoutForm({ defaults, paymentMethods }: { defaults: Defaults;
             </li>
           ))}
         </ul>
+        <div className="space-y-2 border-t border-line pt-4">
+          {coupon ? (
+            <p className="flex items-center justify-between gap-2 text-sm">
+              <span>
+                Đã áp mã <strong>{coupon.code}</strong>
+              </span>
+              <button type="button" onClick={() => setCoupon(null)} className="font-medium text-brand-strong hover:underline">
+                Bỏ mã
+              </button>
+            </p>
+          ) : (
+            <div className="flex items-end gap-2">
+              <Field
+                label="Mã giảm giá"
+                name="couponInput"
+                value={couponInput}
+                maxLength={30}
+                autoComplete="off"
+                onChange={(event) => setCouponInput(event.target.value)}
+                onKeyDown={(event) => {
+                  // Enter trong ô này áp mã, không gửi đơn.
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    if (couponInput.trim()) applyCoupon();
+                  }
+                }}
+                error={couponError}
+              />
+              <Button type="button" variant="secondary" size="sm" pending={checking} disabled={!couponInput.trim()} onClick={applyCoupon}>
+                Áp dụng
+              </Button>
+            </div>
+          )}
+        </div>
         <div className="border-t border-line pt-4">
-          <OrderSummary totals={totals} />
+          <OrderSummary totals={{ ...totals, discount, total: totals.total - discount }} couponCode={coupon?.code} />
         </div>
         <Button type="submit" size="lg" full pending={pending}>
           Đặt hàng

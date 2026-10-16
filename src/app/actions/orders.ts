@@ -3,10 +3,13 @@
 import { refresh, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { isProvince, type PaymentMethod } from "@/lib/catalog";
+import { couponMessage } from "@/lib/pricing";
 import type { FormState } from "@/lib/types";
 import { isEmail, normalizePhone, readText } from "@/lib/validation";
 import { getCurrentUser } from "@/server/auth/session";
 import { PRODUCTS_TAG } from "@/server/catalog";
+import { evaluateCoupon } from "@/server/repo/coupons";
+import { findCartProducts } from "@/server/repo/products";
 import { getPaymentMethods } from "@/server/payment";
 import {
   applyOrderAction,
@@ -25,6 +28,13 @@ export type CheckoutState = FormState & {
   // Token của đơn vừa tạo: trình duyệt dùng để chuyển tới trang đơn hàng.
   token?: string;
   issues?: string[];
+  // Mã giảm giá bị từ chối lúc đặt: trình duyệt bỏ mã đang áp.
+  couponRejected?: boolean;
+};
+
+const readCouponCode = (value: unknown) => {
+  const code = typeof value === "string" ? value.trim().toUpperCase() : "";
+  return /^[A-Z0-9_-]{3,30}$/.test(code) ? code : null;
 };
 
 // Giỏ hàng nằm ở trình duyệt nên dữ liệu gửi lên phải được kiểm tra từng trường.
@@ -107,10 +117,12 @@ export async function placeOrderAction(_prev: CheckoutState, form: FormData): Pr
     shippingAddress: address,
     shippingCity: city,
     note,
+    couponCode: readCouponCode(form.get("couponCode")) ?? undefined,
     idempotencyKey: /^[0-9a-f]{32}$/.test(readText(form, "idempotencyKey")) ? readText(form, "idempotencyKey") : null,
     items,
   });
 
+  if (!result.ok && result.reason === "coupon") return { values, message: couponMessage(result.coupon, result.minSubtotal), couponRejected: true };
   if (!result.ok) {
     return {
       values,
@@ -125,6 +137,20 @@ export async function placeOrderAction(_prev: CheckoutState, form: FormData): Pr
   // Tồn kho đã thay đổi: làm mới dữ liệu sản phẩm đang được cache.
   updateTag(PRODUCTS_TAG);
   return { ok: true, token: result.order.token };
+}
+
+// Xem trước mã giảm giá ở trang thanh toán. Giá lấy từ CSDL; lúc đặt hàng máy chủ kiểm tra lại từ đầu.
+export async function previewCouponAction(code: string, rawItems: string): Promise<{ ok: true; code: string; discount: number } | { ok: false; message: string }> {
+  const normalized = readCouponCode(code);
+  const items = typeof rawItems === "string" ? parseItems(rawItems) : null;
+  if (!normalized || !items) return { ok: false, message: "Mã giảm giá không hợp lệ." };
+  // Chặn dò mã hàng loạt.
+  const limit = await consumeRateLimit(`coupon:${await getClientIp()}`, 30, 15 * MINUTE);
+  if (!limit.allowed) return { ok: false, message: "Bạn thử mã quá nhiều lần. Vui lòng thử lại sau ít phút." };
+  const prices = new Map((await findCartProducts(items.map((i) => i.variantId))).map((p) => [p.id, p.price]));
+  const lines = items.filter((i) => prices.has(i.variantId)).map((i) => ({ variantId: i.variantId, price: prices.get(i.variantId)!, quantity: i.quantity }));
+  const result = await evaluateCoupon(normalized, lines);
+  return result.ok ? { ok: true, code: result.coupon.code, discount: result.discount } : { ok: false, message: couponMessage(result.reason, result.minSubtotal) };
 }
 
 // Ai có liên kết đơn hàng (token) thì được huỷ đơn khi đơn còn chờ xác nhận.

@@ -116,6 +116,8 @@ export type Order = {
   shippingCity: string;
   note: string;
   subtotal: number;
+  discount: number;
+  couponCode: string | null;
   shippingFee: number;
   total: number;
   createdAt: number;

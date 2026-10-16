@@ -16,13 +16,19 @@ const ISSUE_TEXT: Record<NonNullable<CartRow["issue"]>, string> = {
   over_stock: "Số lượng trong giỏ vượt quá số hàng còn lại.",
 };
 
-export function OrderSummary({ totals }: { totals: { subtotal: number; shipping: number; total: number } }) {
+export function OrderSummary({ totals, couponCode }: { totals: { subtotal: number; discount?: number; shipping: number; total: number }; couponCode?: string | null }) {
   return (
     <dl className="space-y-2 text-sm">
       <div className="flex justify-between">
         <dt className="text-muted">Tạm tính</dt>
         <dd className="tabular-nums">{formatVnd(totals.subtotal)}</dd>
       </div>
+      {!!totals.discount && (
+        <div className="flex justify-between">
+          <dt className="text-muted">Giảm giá{couponCode && ` (${couponCode})`}</dt>
+          <dd className="tabular-nums">−{formatVnd(totals.discount)}</dd>
+        </div>
+      )}
       <div className="flex justify-between">
         <dt className="text-muted">Phí vận chuyển</dt>
         <dd className="tabular-nums">{totals.shipping === 0 ? "Miễn phí" : formatVnd(totals.shipping)}</dd>

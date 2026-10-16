@@ -118,7 +118,7 @@ Ghi nhớ kỹ thuật của dự án:
   `/admin/khach-hang` (tìm, số đơn, tổng chi, phân trang), `/admin/khach-hang/[id]`; khoá, mở khoá; che thông tin với `viewer` ở máy chủ; ô "Nhận tin khuyến mãi" ở form đăng ký (mặc định không chọn) và trang tài khoản.
   Xong khi: test SEC-02, khoá thì mất phiên, đồng ý lưu thời điểm.
 
-- [ ] **T18 — Mã giảm giá.** Cần T05. YC-BH-05, 06; QT-21; EC-06, EC-07.
+- [x] **T18 — Mã giảm giá.** Cần T05. YC-BH-05, 06; QT-21; EC-06, EC-07.
   Bảng `coupons`, `coupon_redemptions`; `/admin/ma-giam-gia`; ô mã ở trang thanh toán, máy chủ tính lại; tăng lượt dùng trong giao dịch đặt hàng; huỷ đơn trả lượt.
   Xong khi: test EC-06 (từng lý do từ chối, mã hợp lệ cho đúng tổng tiền), EC-07, hai đơn cùng tranh lượt cuối cùng.
 
@@ -246,6 +246,9 @@ Ghi nhớ kỹ thuật của dự án:
 | 16/10/2026 | T17 | Hồ sơ khách: địa chỉ đã dùng lấy từ các đơn (chưa có sổ địa chỉ); đánh giá và yêu thích thêm khi làm T19, T20 | Sổ địa chỉ thuộc giai đoạn cửa hàng |
 | 16/10/2026 | T17 | Đồng ý nhận tin: ô ở form đăng ký (không đánh dấu sẵn) và ở form thông tin cá nhân; thời điểm đồng ý chỉ đổi khi đổi lựa chọn, rút lại thì xoá thời điểm | YC-KH-04 |
 | 16/10/2026 | T17 | Khoá tài khoản khách (customers.manage) xoá mọi phiên trong cùng giao dịch và ghi nhật ký | YC-KH-03, YC-TKH-04 |
+| 16/10/2026 | T18 | Mã giảm giá: số tiền cố định hoặc phần trăm (làm tròn xuống, có trần), đơn tối thiểu tính trên cả giỏ, giới hạn danh mục tính cả danh mục con; không giảm phí vận chuyển, phí vận chuyển tính trên tạm tính trước giảm | QT-21 |
+| 16/10/2026 | T18 | Lượt dùng ghi trong cùng giao dịch đặt hàng (`coupon_redemptions` + `used_count`, ràng buộc `used_count ≤ usage_limit`); mã bị sửa, tắt, hết lượt giữa chừng thì cả đơn không tạo; huỷ đơn (L11, L12, L13) trả lượt một lần | EC-06, EC-07 |
+| 16/10/2026 | T18 | Khách không phân biệt được mã không tồn tại với mã đã tắt; xem trước mã giới hạn 30 lần / 15 phút mỗi IP. Mã đã dùng không xoá, chỉ tắt | Chống dò mã |
 
 ## Vướng mắc
 

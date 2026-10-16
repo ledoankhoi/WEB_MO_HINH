@@ -602,4 +602,40 @@ export const MIGRATIONS: Migration[] = [
       "ALTER TABLE page_revisions ENABLE ROW LEVEL SECURITY",
     ],
   },
+  {
+    // Mã giảm giá (YC-BH-05, 06; QT-21). Lượt dùng tăng trong giao dịch đặt hàng; huỷ đơn thì trả lại.
+    id: "012_coupons",
+    statements: [
+      `CREATE TABLE coupons (
+        id TEXT PRIMARY KEY,
+        code TEXT NOT NULL UNIQUE,
+        kind TEXT NOT NULL,
+        value BIGINT NOT NULL,
+        max_discount BIGINT,
+        min_subtotal BIGINT NOT NULL DEFAULT 0,
+        category_id TEXT REFERENCES categories (id),
+        starts_at BIGINT,
+        ends_at BIGINT,
+        usage_limit INTEGER,
+        used_count INTEGER NOT NULL DEFAULT 0,
+        is_active BOOLEAN NOT NULL DEFAULT true,
+        created_at BIGINT NOT NULL,
+        updated_at BIGINT NOT NULL,
+        CONSTRAINT kind_valid CHECK (kind IN ('fixed', 'percent')),
+        CONSTRAINT value_valid CHECK (value > 0 AND (kind = 'fixed' OR value <= 100)),
+        CONSTRAINT usage_valid CHECK (used_count >= 0 AND (usage_limit IS NULL OR used_count <= usage_limit)),
+        CONSTRAINT window_valid CHECK (starts_at IS NULL OR ends_at IS NULL OR ends_at > starts_at)
+      )`,
+      `CREATE TABLE coupon_redemptions (
+        id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+        coupon_id TEXT NOT NULL REFERENCES coupons (id),
+        order_id TEXT NOT NULL UNIQUE REFERENCES orders (id),
+        amount BIGINT NOT NULL,
+        released_at BIGINT,
+        created_at BIGINT NOT NULL
+      )`,
+      "ALTER TABLE coupons ENABLE ROW LEVEL SECURITY",
+      "ALTER TABLE coupon_redemptions ENABLE ROW LEVEL SECURITY",
+    ],
+  },
 ];
