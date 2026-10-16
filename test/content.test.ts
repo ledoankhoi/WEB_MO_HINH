@@ -74,3 +74,38 @@ describe("banner (T14)", () => {
     expect(await actions.saveBannerAction({}, banner({}))).toEqual({ message: "Bạn không có quyền thực hiện thao tác này." });
   });
 });
+
+describe("menu, thanh thông báo, liên hệ (T15)", () => {
+  it("menu nạp sẵn như cửa hàng cũ; liên kết nội bộ phải trỏ tới trang có thật", async () => {
+    await signInAs((await createUser("marketing")).id);
+    const items = await content.listNavItems();
+    expect(items.filter((i) => i.menu === "header").map((i) => i.url)).toEqual([
+      "/",
+      "/san-pham",
+      "/san-pham?loai=transformers",
+      "/san-pham?loai=super-sentai",
+      "/san-pham?loai=model-kits",
+      "/san-pham?sap-xep=moi-nhat",
+    ]);
+    for (const ok of ["/san-pham/bruticus", "/gio-hang", "/san-pham?loai=figure"]) expect(await content.internalLinkExists(ok)).toBe(true);
+    for (const bad of ["/khong-co", "/san-pham/khong-co", "/gio-hang?x=1", "/admin"]) expect(await content.internalLinkExists(bad)).toBe(false);
+
+    expect((await actions.saveNavItemAction({}, formOf({ menu: "header", label: "Trang lỗi", url: "/khong-co" }))).errors?.url).toMatch(/Không có trang/);
+    expect((await actions.saveNavItemAction({}, formOf({ menu: "footer", label: "Bruticus", url: "/san-pham/bruticus", isActive: "on" }))).ok).toBe(true);
+    expect((await content.listNavItems()).some((i) => i.menu === "footer" && i.label === "Bruticus")).toBe(true);
+  });
+
+  it("thanh thông báo chỉ hiện khi bật và trong khung giờ; liên hệ lưu được", async () => {
+    expect(await content.activeAnnouncement()).toBeNull();
+    expect((await actions.saveSettingsAction("announcement", {}, formOf({ enabled: "on", text: "" }))).errors?.text).toMatch(/Nhập nội dung/);
+    expect((await actions.saveSettingsAction("announcement", {}, formOf({ enabled: "on", text: "Nghỉ lễ 2/9", linkUrl: "/san-pham" }))).ok).toBe(true);
+    expect(await content.activeAnnouncement()).toMatchObject({ text: "Nghỉ lễ 2/9" });
+    expect((await actions.saveSettingsAction("announcement", {}, formOf({ enabled: "on", text: "Đã qua", endsAt: "2020-01-01T00:00" }))).ok).toBe(true);
+    expect(await content.activeAnnouncement()).toBeNull();
+
+    expect((await actions.saveSettingsAction("contact", {}, formOf({ phone: "0900 000 001", email: "sai" }))).errors?.email).toBeDefined();
+    expect((await actions.saveSettingsAction("contact", {}, formOf({ phone: "0900 000 001", email: "CSKH@ROBOTICA.VN", address: "", hours: "" }))).ok).toBe(true);
+    expect((await content.getSettings()).contact).toEqual({ phone: "0900 000 001", email: "cskh@robotica.vn", address: "", hours: "" });
+    expect((await actions.saveSettingsAction("policy", {}, formOf({ returnDays: "400", warrantyMonths: "12" }))).errors?.returnDays).toBeDefined();
+  });
+});

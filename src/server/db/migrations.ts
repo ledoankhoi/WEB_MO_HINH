@@ -522,4 +522,41 @@ export const MIGRATIONS: Migration[] = [
       "ALTER TABLE banners ENABLE ROW LEVEL SECURITY",
     ],
   },
+  {
+    // Menu và cài đặt hiển thị (YC-CMS-03, 05, 06). Nạp sẵn menu đang có trong mã để cửa hàng không đổi.
+    // Lớp CSDL đổi mọi dấu ? thành tham số, nên URL viết | rồi thay bằng chr(63).
+    id: "010_nav_settings",
+    statements: [
+      `CREATE TABLE nav_items (
+        id TEXT PRIMARY KEY,
+        menu TEXT NOT NULL,
+        label TEXT NOT NULL,
+        url TEXT NOT NULL,
+        sort_order INTEGER NOT NULL DEFAULT 0,
+        is_active BOOLEAN NOT NULL DEFAULT true,
+        CONSTRAINT menu_valid CHECK (menu IN ('header', 'footer'))
+      )`,
+      "CREATE INDEX idx_nav_items_menu ON nav_items (menu, sort_order)",
+      `INSERT INTO nav_items (id, menu, label, url, sort_order)
+       SELECT substr(md5(v.menu || v.url), 1, 20), v.menu, v.label, replace(v.url, '|', chr(63)), v.sort_order FROM (VALUES
+         ('header', 'Trang chủ', '/', 0),
+         ('header', 'Cửa hàng', '/san-pham', 1),
+         ('header', 'Transformers', '/san-pham|loai=transformers', 2),
+         ('header', 'Super Sentai', '/san-pham|loai=super-sentai', 3),
+         ('header', 'Model Kits', '/san-pham|loai=model-kits', 4),
+         ('header', 'Hàng mới về', '/san-pham|sap-xep=moi-nhat', 5),
+         ('footer', 'Tra cứu đơn hàng', '/tra-cuu-don-hang', 0),
+         ('footer', 'Giỏ hàng', '/gio-hang', 1),
+         ('footer', 'Tài khoản', '/tai-khoan', 2)
+       ) AS v (menu, label, url, sort_order)`,
+      `CREATE TABLE site_settings (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL,
+        updated_by TEXT REFERENCES users (id),
+        updated_at BIGINT NOT NULL
+      )`,
+      "ALTER TABLE nav_items ENABLE ROW LEVEL SECURITY",
+      "ALTER TABLE site_settings ENABLE ROW LEVEL SECURITY",
+    ],
+  },
 ];

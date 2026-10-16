@@ -2,7 +2,7 @@ import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import type { SortValue } from "@/lib/catalog";
 import type { Product, ProductSummary } from "@/lib/types";
-import { listActiveBanners, type Banner } from "./repo/content";
+import { activeAnnouncement, getSettings, listActiveBanners, listNavItems, type AnnouncementSettings, type Banner, type NavItem, type SiteSettings } from "./repo/content";
 import {
   countProductsByCategory,
   findProductBySlug,
@@ -84,4 +84,28 @@ export async function getActiveBanners(): Promise<Banner[]> {
   cacheLife("minutes");
   cacheTag(CONTENT_TAG);
   return listActiveBanners();
+}
+
+// Menu đầu trang và chân trang đang bật.
+export async function getNavigation(): Promise<{ header: NavItem[]; footer: NavItem[] }> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(CONTENT_TAG);
+  const items = (await listNavItems()).filter((item) => item.isActive);
+  return { header: items.filter((item) => item.menu === "header"), footer: items.filter((item) => item.menu === "footer") };
+}
+
+export async function getSiteSettings(): Promise<SiteSettings> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(CONTENT_TAG);
+  return getSettings();
+}
+
+// Thanh thông báo có khung giờ nên cache theo phút như banner (Q21).
+export async function getAnnouncement(): Promise<AnnouncementSettings | null> {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag(CONTENT_TAG);
+  return activeAnnouncement();
 }

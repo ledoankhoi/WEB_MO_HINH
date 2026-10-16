@@ -3,19 +3,13 @@ import Link from "next/link";
 import { AccountButton, AccountButtonFallback } from "./AccountButton";
 import { CartButton } from "./CartButton";
 import { Logo } from "./Logo";
+import { getNavigation } from "@/server/catalog";
 import { MobileMenu, type NavLink } from "./MobileMenu";
 import { SearchForm } from "./SearchForm";
 
-const NAV_LINKS: NavLink[] = [
-  { href: "/", label: "Trang chủ" },
-  { href: "/san-pham", label: "Cửa hàng" },
-  { href: "/san-pham?loai=transformers", label: "Transformers" },
-  { href: "/san-pham?loai=super-sentai", label: "Super Sentai" },
-  { href: "/san-pham?loai=model-kits", label: "Model Kits" },
-  { href: "/san-pham?sap-xep=moi-nhat", label: "Hàng mới về" },
-];
-
-export function Header() {
+// Menu đầu trang lấy từ CSDL, quản trị sửa ở /admin/noi-dung/menu (YC-CMS-03).
+export async function Header() {
+  const NAV_LINKS: NavLink[] = (await getNavigation()).header.map((item) => ({ href: item.url, label: item.label }));
   return (
     <header className="sticky top-0 z-40 border-b border-line/70 bg-bg/90 backdrop-blur-md">
       <div className="relative mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6">

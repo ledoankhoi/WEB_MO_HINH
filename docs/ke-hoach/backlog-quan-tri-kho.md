@@ -104,7 +104,7 @@ Ghi nhớ kỹ thuật của dự án:
   Bảng `banners`; `/admin/noi-dung/banner` (tạo, sửa, tải ảnh qua T07, lịch, xem trước, xuất bản); trang chủ hiện banner đang hiệu lực, lọc theo giờ của CSDL, cache tối đa 5 phút, cập nhật tag khi ghi.
   Xong khi: test EC-04, EC-08, kiểm tra liên kết và khung thời gian.
 
-- [ ] **T15 — Menu, thanh thông báo, thông tin liên hệ.** Cần T14. YC-CMS-03, 05, 06.
+- [x] **T15 — Menu, thanh thông báo, thông tin liên hệ.** Cần T14. YC-CMS-03, 05, 06.
   Bảng `nav_items`, `site_settings`; `/admin/noi-dung/menu`, `/admin/noi-dung/cai-dat`; đầu trang, chân trang và thanh thông báo của cửa hàng đọc từ CSDL (không có dữ liệu thì dùng `src/config/site.ts`).
   Xong khi: test kiểm tra liên kết nội bộ, giá trị mặc định khi bảng rỗng.
 
@@ -232,6 +232,11 @@ Ghi nhớ kỹ thuật của dự án:
 | 16/10/2026 | T14 | Thời gian bắt đầu, kết thúc nhập bằng ô ngày giờ theo giờ Việt Nam (`parseVnDateTime`); CHECK trong CSDL bảo đảm kết thúc sau bắt đầu | YC-CMS-01 |
 | 16/10/2026 | T14 | Banner dùng thẻ <img>/<picture> (ảnh điện thoại riêng) thay cho next/image | Kích thước ảnh tuỳ chiến dịch, cần nguồn khác cho màn hình hẹp |
 | 16/10/2026 | T14 | Thêm khối “Banner sắp hết lịch (3 ngày tới)” vào trang tổng quan cho vai trò content.edit | Việc còn treo ở T13 |
+| 16/10/2026 | T15 | Migration 010 `nav_items`, `site_settings`; nạp sẵn menu đầu trang và mục Hỗ trợ ở chân trang đúng như mã cũ; cửa hàng đọc qua hàm cache gắn thẻ `content` | Cửa hàng không đổi sau migration |
+| 16/10/2026 | T15 | Lớp CSDL đổi mọi dấu ? (kể cả trong chuỗi SQL) thành tham số; URL nạp sẵn trong migration viết `|` rồi `replace(..., chr(63))`. Test đã bắt được lỗi này trước khi chạy lên Supabase | Lưu ý cho mọi migration sau: không viết ? trong chuỗi SQL |
+| 16/10/2026 | T15 | Liên kết nội bộ của menu phải là đường dẫn cố định, `/san-pham?...` hoặc sản phẩm đã xuất bản (`internalLinkExists`); T16 thêm `/trang/<slug>` | YC-CMS-03 |
+| 16/10/2026 | T15 | Chân trang chỉ hiện liên hệ khi đã lưu trong cài đặt; giá trị mẫu trong `site.ts` chỉ điền sẵn vào form | Tài liệu 01 mục 6: không hiện liên hệ mẫu |
+| 16/10/2026 | T15 | Thanh thông báo so khung giờ bằng đồng hồ CSDL, cache theo phút | Q21 |
 
 ## Vướng mắc
 
