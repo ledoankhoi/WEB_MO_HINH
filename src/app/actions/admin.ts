@@ -87,6 +87,8 @@ export async function saveProductAction(_prev: FormState, form: FormData): Promi
   };
   const specsInput = readText(form, "specs");
   const isFeatured = form.get("isFeatured") === "on";
+  const metaTitle = readText(form, "metaTitle");
+  const metaDescription = readText(form, "metaDescription");
   const statusInput = readText(form, "status");
   const brandId = readText(form, "brandId");
   const seriesId = readText(form, "seriesId");
@@ -117,6 +119,8 @@ export async function saveProductAction(_prev: FormState, form: FormData): Promi
     colorAccent: colors.accent,
     specs: specsInput,
     isFeatured: isFeatured ? "on" : "",
+    metaTitle,
+    metaDescription,
     status: statusInput,
   };
 
@@ -137,6 +141,8 @@ export async function saveProductAction(_prev: FormState, form: FormData): Promi
   if (scale.length > 20) errors.scale = "Tối đa 20 ký tự.";
   if (grade.length > 20) errors.grade = "Tối đa 20 ký tự.";
   if (boxContents.length > 2000) errors.boxContents = "Tối đa 2.000 ký tự.";
+  if (metaTitle.length > 70) errors.metaTitle = "Tối đa 70 ký tự.";
+  if (metaDescription.length > 160) errors.metaDescription = "Tối đa 160 ký tự.";
 
   const price = parseMoney(priceInput);
   if (price === null) errors.price = "Giá bán phải là số nguyên không âm.";
@@ -197,6 +203,8 @@ export async function saveProductAction(_prev: FormState, form: FormData): Promi
     colors,
     specs,
     isFeatured,
+    metaTitle,
+    metaDescription,
     status,
   };
 

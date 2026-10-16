@@ -15,6 +15,8 @@ const PAGES = [
   { path: "/" },
   { path: "/san-pham" },
   { path: "/san-pham/:product" },
+  // Slug cũ (dòng tạm trong slug_redirects, xoá khi xong) chuyển hướng 308 qua src/proxy.ts.
+  { path: "/san-pham/:oldSlug", status: 308 },
   { path: "/gio-hang" },
   { path: "/thanh-toan" },
   { path: "/dang-nhap" },
@@ -119,6 +121,7 @@ function stopServer() {
 }
 
 let sessionId = null;
+const SMOKE_SLUG = "smoke-slug-cu";
 const failures = [];
 
 try {
@@ -155,7 +158,14 @@ try {
   const document = await one("SELECT id FROM stock_documents ORDER BY created_at DESC LIMIT 1");
   const variant = await one("SELECT variant_id FROM stock_movements ORDER BY id LIMIT 1");
   const customer = await one("SELECT id FROM users WHERE role = 'customer' ORDER BY created_at LIMIT 1");
-  const params = { product: product?.slug, productId: product?.id, order: order?.id, orderToken: order?.token, categoryId: category?.id, documentId: document?.id, variantId: variant?.variant_id, customerId: customer?.id };
+  const published = await one("SELECT id FROM products WHERE status = 'published' ORDER BY created_at LIMIT 1");
+  if (published) {
+    await pool.query(
+      "INSERT INTO slug_redirects (old_slug, product_id, created_at) VALUES ($1, $2, $3) ON CONFLICT (old_slug) DO UPDATE SET product_id = EXCLUDED.product_id",
+      [SMOKE_SLUG, published.id, Date.now()],
+    );
+  }
+  const params = { oldSlug: published && SMOKE_SLUG, product: product?.slug, productId: product?.id, order: order?.id, orderToken: order?.token, categoryId: category?.id, documentId: document?.id, variantId: variant?.variant_id, customerId: customer?.id };
 
   for (const page of PAGES) {
     const missing = page.path.match(/:(\w+)/g)?.find((key) => !params[key.slice(1)]);
@@ -187,6 +197,7 @@ try {
   console.error(error.message);
 } finally {
   if (sessionId) await pool.query("DELETE FROM sessions WHERE id = $1", [sessionId]).catch(() => {});
+  await pool.query("DELETE FROM slug_redirects WHERE old_slug = $1", [SMOKE_SLUG]).catch(() => {});
   await pool.end();
   stopServer();
 }

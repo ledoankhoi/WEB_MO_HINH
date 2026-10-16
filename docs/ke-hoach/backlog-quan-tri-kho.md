@@ -132,7 +132,7 @@ Ghi nhớ kỹ thuật của dự án:
 
 ### Giai đoạn 6: P1 còn lại, báo cáo, vận hành
 
-- [ ] **T21 — SEO cơ bản và chuyển hướng slug.** Cần T06. YC-SP-09.
+- [x] **T21 — SEO cơ bản và chuyển hướng slug.** Cần T06. YC-SP-09.
   Tiêu đề, mô tả meta cho sản phẩm, danh mục, trang dùng trong `generateMetadata`; alt ảnh; bảng `slug_redirects`, đổi slug thì slug cũ chuyển hướng 308.
   Xong khi: test lưu slug cũ và tra chuyển hướng; smoke kiểm một slug cũ trả 308.
 
@@ -252,6 +252,8 @@ Ghi nhớ kỹ thuật của dự án:
 | 16/10/2026 | T19 | Khách gửi đánh giá ở trang tài khoản (mục Sản phẩm chờ đánh giá), mỗi dòng đơn của đơn `completed` một lần; điều kiện kiểm tra trong chính câu INSERT, khoá duy nhất `order_item_id` chống gửi trùng | YC-DG-01 |
 | 16/10/2026 | T19 | Trang sản phẩm hiện 20 đánh giá đã duyệt mới nhất, điểm trung bình làm tròn 1 chữ số, qua hàm cache gắn PRODUCTS_TAG; duyệt, ẩn thì làm mới thẻ này. Hồ sơ khách trong quản trị liệt kê đánh giá của khách | YC-DG-02, YC-KH-02 |
 | 16/10/2026 | T20 | Nút yêu thích trên thẻ và trang sản phẩm đọc trạng thái qua `GET /api/wishlist` một lần mỗi trang (trang sản phẩm được cache chung nên không dựng sẵn trạng thái của từng khách); chưa đăng nhập thì chuyển tới đăng nhập kèm `next`. Danh sách ở trang tài khoản và hồ sơ khách; xếp hạng yêu thích nhiều nhất (`topWishlisted`) đưa vào báo cáo T23 | YC-DG-03, YC-KH-06 |
+| 16/10/2026 | T21 | Chuyển hướng slug cũ làm trong `src/proxy.ts` (mã 308), vì trang sản phẩm dựng trong Suspense nên chuyển hướng từ trang chỉ ra thẻ meta. Proxy giữ bảng slug cũ trong bộ nhớ một phút, chỉ tra với đường dẫn `/san-pham/<slug>`; `slug_redirects` trỏ tới sản phẩm nên đổi nhiều lần vẫn về slug hiện tại, slug được dùng lại thì bỏ chuyển hướng | YC-SP-09 |
+| 16/10/2026 | T21 | SEO sản phẩm là một nhóm ô trong form sản phẩm (tiêu đề ≤ 70, mô tả ≤ 160 ký tự, trống thì dùng tên và mô tả ngắn), kèm canonical; trang lọc danh mục lấy tiêu đề, mô tả từ danh mục. Ảnh trên thẻ sản phẩm để alt rỗng vì tên đứng ngay cạnh | YC-SP-09 |
 
 ## Vướng mắc
 

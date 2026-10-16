@@ -55,6 +55,9 @@ export type Product = {
   specs: ProductSpec[];
   image: string | null;
   isFeatured: boolean;
+  // SEO (YC-SP-09): trống thì dùng tên và mô tả ngắn.
+  metaTitle: string;
+  metaDescription: string;
   // status = published.
   isActive: boolean;
   status: ProductStatus;

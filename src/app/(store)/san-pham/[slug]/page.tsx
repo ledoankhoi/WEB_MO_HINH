@@ -14,10 +14,13 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const product = await getProductBySlug((await params).slug);
   if (!product) return { title: "Không tìm thấy sản phẩm" };
+  const title = product.metaTitle || product.name;
+  const description = product.metaDescription || product.tagline;
   return {
-    title: product.name,
-    description: product.tagline,
-    openGraph: { title: product.name, description: product.tagline, images: product.image ? [product.image] : undefined },
+    title,
+    description,
+    alternates: { canonical: `/san-pham/${product.slug}` },
+    openGraph: { title, description, images: product.image ? [{ url: product.image, alt: product.name }] : undefined },
   };
 }
 

@@ -71,6 +71,8 @@ async function newProduct(sku: string) {
     colors: { primary: "#111111", secondary: "#222222", accent: "#333333" },
     specs: [],
     isFeatured: false,
+    metaTitle: "",
+    metaDescription: "",
     status: "draft",
   });
   return (await products.findProductById(id))!.variantId;

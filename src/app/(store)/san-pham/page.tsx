@@ -9,14 +9,17 @@ import { site } from "@/config/site";
 import { CATEGORIES, SORT_OPTIONS, isCategorySlug, isSortValue } from "@/lib/catalog";
 import { searchProducts } from "@/server/catalog";
 
-export const metadata: Metadata = {
-  title: "Cửa hàng",
-  description: "Toàn bộ mô hình robot sưu tầm: tìm kiếm, lọc theo danh mục và sắp xếp theo giá.",
-};
-
 type SearchParams = PageProps<"/san-pham">["searchParams"];
 
 const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value) ?? "";
+
+// YC-SP-09: trang lọc theo danh mục có tiêu đề và mô tả riêng.
+export async function generateMetadata({ searchParams }: { searchParams: SearchParams }): Promise<Metadata> {
+  const slug = first((await searchParams).loai);
+  const category = CATEGORIES.find((item) => item.slug === slug);
+  if (!category) return { title: "Cửa hàng", description: "Toàn bộ mô hình robot sưu tầm: tìm kiếm, lọc theo danh mục và sắp xếp theo giá." };
+  return { title: category.name, description: category.description, alternates: { canonical: `/san-pham?loai=${category.slug}` } };
+}
 
 const chip = (active: boolean) =>
   `rounded-full border px-3.5 py-1.5 text-sm font-medium whitespace-nowrap transition ${

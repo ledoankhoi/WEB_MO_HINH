@@ -78,6 +78,8 @@ function toProduct(row: Row, variants: ProductVariant[]): Product {
     specs: parseSpecs(row.specs),
     image: row.image === null ? null : String(row.image),
     isFeatured: Boolean(row.is_featured),
+    metaTitle: String(row.meta_title ?? ""),
+    metaDescription: String(row.meta_description ?? ""),
     isActive: Boolean(row.is_active),
     status: String(row.status) as ProductStatus,
     variants,
@@ -249,6 +251,8 @@ export type ProductInput = {
   colors: RobotColors;
   specs: ProductSpec[];
   isFeatured: boolean;
+  metaTitle: string;
+  metaDescription: string;
   status: ProductStatus;
 };
 
@@ -272,6 +276,8 @@ function productArgs(input: ProductInput): InValue[] {
     JSON.stringify(input.specs),
     foldText(`${input.name} ${input.tagline} ${input.description}`),
     input.isFeatured,
+    input.metaTitle,
+    input.metaDescription,
     input.status,
   ];
 }
@@ -293,8 +299,8 @@ export async function insertProduct(input: ProductInput, audit?: AuditEntry): Pr
     {
       sql: `INSERT INTO products (
               slug, name, tagline, description, category_id, brand_id, series_id, product_type, scale, grade, box_contents,
-              model, model_url, specs, search_text, is_featured, status, published_at, id, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ${CATEGORY_ID}, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CASE WHEN ? = 'published' THEN ?::bigint END, ?, ?, ?)`,
+              model, model_url, specs, search_text, is_featured, meta_title, meta_description, status, published_at, id, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ${CATEGORY_ID}, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CASE WHEN ? = 'published' THEN ?::bigint END, ?, ?, ?)`,
       args: [...productArgs(input), input.status, now, id, now, now],
     },
     {
@@ -304,6 +310,8 @@ export async function insertProduct(input: ProductInput, audit?: AuditEntry): Pr
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Bản thường', true, ?, ?)`,
       args: [...variantArgs(input), newId(), id, input.sku, now, now],
     },
+    // Slug mới không còn là slug cũ của sản phẩm khác.
+    { sql: "DELETE FROM slug_redirects WHERE old_slug = ?", args: [input.slug] },
     ...(audit ? [auditStatement({ ...audit, entityId: id })] : []),
   ]);
   return id;
@@ -313,13 +321,20 @@ export async function insertProduct(input: ProductInput, audit?: AuditEntry): Pr
 export async function updateProduct(id: string, input: ProductInput, audit?: AuditEntry): Promise<boolean> {
   const db = await getDb();
   const now = Date.now();
-  const [result] = await db.batch([
+  const [, , result] = await db.batch([
+    // YC-SP-09: đổi slug thì slug cũ chuyển hướng 308 về sản phẩm (src/proxy.ts).
+    {
+      sql: `INSERT INTO slug_redirects (old_slug, product_id, created_at) SELECT slug, id, ? FROM products WHERE id = ? AND slug <> ?
+            ON CONFLICT (old_slug) DO UPDATE SET product_id = EXCLUDED.product_id, created_at = EXCLUDED.created_at`,
+      args: [now, id, input.slug],
+    },
+    { sql: "DELETE FROM slug_redirects WHERE old_slug = ?", args: [input.slug] },
     withAudit(
       {
         sql: `UPDATE products SET
                 slug = ?, name = ?, tagline = ?, description = ?, category_id = ${CATEGORY_ID}, brand_id = ?, series_id = ?,
                 product_type = ?, scale = ?, grade = ?, box_contents = ?, model = ?, model_url = ?,
-                specs = ?, search_text = ?, is_featured = ?, status = ?,
+                specs = ?, search_text = ?, is_featured = ?, meta_title = ?, meta_description = ?, status = ?,
                 published_at = CASE WHEN ? = 'published' THEN COALESCE(published_at, ?) ELSE published_at END, updated_at = ?
               WHERE id = ?`,
         args: [...productArgs(input), input.status, now, now, id],

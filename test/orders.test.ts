@@ -387,6 +387,8 @@ describe("vòng đời đơn hàng", () => {
       colors: { primary: "#111111", secondary: "#222222", accent: "#333333" },
       specs: [],
       isFeatured: false,
+      metaTitle: "",
+      metaDescription: "",
       status: "draft" as const,
     };
     const id = await products.insertProduct(input);

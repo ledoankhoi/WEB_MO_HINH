@@ -674,4 +674,16 @@ export const MIGRATIONS: Migration[] = [
       "ALTER TABLE wishlist_items ENABLE ROW LEVEL SECURITY",
     ],
   },
+  {
+    // Slug cũ của sản phẩm (YC-SP-09): trỏ tới sản phẩm chứ không tới slug, nên đổi nhiều lần vẫn về slug hiện tại.
+    id: "015_slug_redirects",
+    statements: [
+      `CREATE TABLE slug_redirects (
+        old_slug TEXT PRIMARY KEY,
+        product_id TEXT NOT NULL REFERENCES products (id) ON DELETE CASCADE,
+        created_at BIGINT NOT NULL
+      )`,
+      "ALTER TABLE slug_redirects ENABLE ROW LEVEL SECURITY",
+    ],
+  },
 ];

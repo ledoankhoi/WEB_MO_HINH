@@ -166,6 +166,12 @@ export function ProductForm({ product, options }: { product?: Product; options: 
         />
         <TextAreaField label="Nội dung hộp" name="boxContents" rows={3} maxLength={2000} defaultValue={state.values?.boxContents ?? product?.boxContents} error={errors.boxContents} hint="Phụ kiện, sách hướng dẫn, đế trưng bày... đi kèm." />
 
+        <fieldset className="space-y-3 rounded-lg border border-line p-4">
+          <legend className="px-1 text-sm font-medium">SEO</legend>
+          <Field label="Tiêu đề trang" name="metaTitle" maxLength={70} defaultValue={state.values?.metaTitle ?? product?.metaTitle} error={errors.metaTitle} hint="Tối đa 70 ký tự. Để trống thì dùng tên sản phẩm." />
+          <TextAreaField label="Mô tả meta" name="metaDescription" rows={2} maxLength={160} defaultValue={state.values?.metaDescription ?? product?.metaDescription} error={errors.metaDescription} hint="Tối đa 160 ký tự, hiện trong kết quả tìm kiếm. Để trống thì dùng mô tả ngắn." />
+        </fieldset>
+
         <SelectField label="Trạng thái" name="status" required defaultValue={product?.status ?? "draft"} error={errors.status}>
           <option value="draft">Nháp (chưa hiện trên cửa hàng)</option>
           <option value="published">Xuất bản</option>
