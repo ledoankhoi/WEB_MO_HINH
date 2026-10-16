@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Boxes, ClipboardList, FileText, Scale, ShieldAlert, FolderTree, MapPin, Truck, LayoutDashboard, Library, Package, ReceiptText, ScrollText, Tag, Undo2, UserCog, Users } from "lucide-react";
+import { Boxes, Image as ImageIcon, ClipboardList, FileText, Scale, ShieldAlert, FolderTree, MapPin, Truck, LayoutDashboard, Library, Package, ReceiptText, ScrollText, Tag, Undo2, UserCog, Users } from "lucide-react";
 import { can, type Permission, type Role } from "@/lib/permissions";
 
 // Nhóm theo menu ở mục 5 của docs/chuan/10. Mỗi mục chỉ hiện với vai trò có quyền mở trang đó; quyền
@@ -29,6 +29,10 @@ const GROUPS: { label?: string; links: { href: string; label: string; icon: type
       { href: "/admin/series", label: "Series", icon: Library, permission: "catalog.view" },
       { href: "/admin/nha-cung-cap", label: "Nhà cung cấp", icon: Truck, permission: "inventory.setup" },
     ],
+  },
+  {
+    label: "Cửa hàng trực tuyến",
+    links: [{ href: "/admin/noi-dung/banner", label: "Banner", icon: ImageIcon, permission: "content.edit" }],
   },
   {
     label: "Bán hàng",

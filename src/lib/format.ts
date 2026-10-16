@@ -62,3 +62,16 @@ export function parseVnDate(value: string): number | null {
   const date = new Date(ms);
   return date.getUTCDate() === day && date.getUTCMonth() === month - 1 ? ms - VN_OFFSET_MS : null;
 }
+
+// Ô <input type="datetime-local"> theo giờ Việt Nam: "YYYY-MM-DDTHH:mm" ⇄ mili giây UTC.
+export function parseVnDateTime(value: string): number | null {
+  const match = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2})$/.exec(value);
+  if (!match) return null;
+  const day = parseVnDate(match[1]);
+  const [hours, minutes] = [Number(match[2]), Number(match[3])];
+  return day === null || hours > 23 || minutes > 59 ? null : day + (hours * 60 + minutes) * 60_000;
+}
+
+export function toVnDateTimeInput(ms: number): string {
+  return new Date(ms + VN_OFFSET_MS).toISOString().slice(0, 16);
+}

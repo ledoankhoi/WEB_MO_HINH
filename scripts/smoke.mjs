@@ -34,6 +34,7 @@ const PAGES = [
   { path: "/admin/danh-muc?sua=:categoryId" },
   { path: "/admin/thuong-hieu" },
   { path: "/admin/series" },
+  { path: "/admin/noi-dung/banner" },
   { path: "/admin/don-hang" },
   { path: "/admin/don-hang/:order" },
   { path: "/admin/don-hang?van-chuyen=not_created&thanh-toan=unpaid&q=RB" },

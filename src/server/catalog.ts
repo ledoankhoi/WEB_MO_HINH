@@ -2,6 +2,7 @@ import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import type { SortValue } from "@/lib/catalog";
 import type { Product, ProductSummary } from "@/lib/types";
+import { listActiveBanners, type Banner } from "./repo/content";
 import {
   countProductsByCategory,
   findProductBySlug,
@@ -14,6 +15,8 @@ import {
 // Mọi dữ liệu danh mục hiển thị cho khách đều gắn thẻ này. Khi sản phẩm hoặc tồn kho thay đổi,
 // Server Action gọi updateTag(PRODUCTS_TAG) để trang được dựng lại.
 export const PRODUCTS_TAG = "products";
+// Nội dung cửa hàng (banner, menu, trang, cài đặt hiển thị); ghi xong gọi updateTag(CONTENT_TAG).
+export const CONTENT_TAG = "content";
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
   "use cache";
@@ -73,4 +76,12 @@ export async function getCategoryCounts(): Promise<Record<string, number>> {
   cacheLife("hours");
   cacheTag(PRODUCTS_TAG);
   return countProductsByCategory();
+}
+
+// Banner đang hiệu lực. Cache theo phút nên banner hết hạn có thể còn hiện thêm vài phút (Q21).
+export async function getActiveBanners(): Promise<Banner[]> {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag(CONTENT_TAG);
+  return listActiveBanners();
 }

@@ -34,3 +34,15 @@ export function parseMoney(value: string): number | null {
   if (!/^\d{1,12}$/.test(cleaned)) return null;
   return Number(cleaned);
 }
+
+// Liên kết do quản trị nhập (banner, menu): đường dẫn nội bộ bắt đầu bằng "/" (không phải "//"), hoặc https://.
+// Chặn javascript:, data:, http:// (YC-CMS-01).
+export function isSafeLink(value: string): boolean {
+  if (/^\/(?!\/)[^\s]*$/.test(value)) return true;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && Boolean(url.hostname);
+  } catch {
+    return false;
+  }
+}

@@ -100,7 +100,7 @@ Ghi nhớ kỹ thuật của dự án:
 
 ### Giai đoạn 4: nội dung cửa hàng
 
-- [ ] **T14 — Banner.** Cần T07. YC-CMS-01, 02, 07; Q20, Q21; EC-04, EC-08; AUD-01 (xuất bản banner).
+- [x] **T14 — Banner.** Cần T07. YC-CMS-01, 02, 07; Q20, Q21; EC-04, EC-08; AUD-01 (xuất bản banner).
   Bảng `banners`; `/admin/noi-dung/banner` (tạo, sửa, tải ảnh qua T07, lịch, xem trước, xuất bản); trang chủ hiện banner đang hiệu lực, lọc theo giờ của CSDL, cache tối đa 5 phút, cập nhật tag khi ghi.
   Xong khi: test EC-04, EC-08, kiểm tra liên kết và khung thời gian.
 
@@ -226,6 +226,12 @@ Ghi nhớ kỹ thuật của dự án:
 | 16/10/2026 | T13 | “Hôm nay” tính theo giờ Việt Nam từ đồng hồ CSDL (cộng 7 giờ cố định), tỷ lệ huỷ và bán chạy tính trong 30 ngày | PGlite có thể thiếu dữ liệu múi giờ; không dùng Date.now() lúc dựng trang |
 | 16/10/2026 | T13 | Ô “banner sắp hết lịch” thêm ở T14 khi có bảng banners | Chưa có dữ liệu |
 | 16/10/2026 | T13 | Smoke chỉ chạy với tài khoản admin; phần ẩn hiện theo vai trò đã có test quyền ở máy chủ | Tạo nhiều tài khoản tạm trong smoke ghi vào CSDL thật |
+| 16/10/2026 | T14 | Migration 009 `banners`; banner hiện cho khách lọc bằng đồng hồ CSDL, hàm cache `getActiveBanners` gắn thẻ `content` với `cacheLife("minutes")` | Q21: hết hạn trễ tối đa vài phút |
+| 16/10/2026 | T14 | Trang chủ: banner `home_hero` đầu tiên hiện trên phần giới thiệu, các banner `home_strip` thành dải dưới; không có banner thì trang giữ nguyên | YC-CMS-02 |
+| 16/10/2026 | T14 | Ảnh banner tải qua `/admin/api/anh` với `target=banner` (quyền content.edit), lưu `banners/<12 hex>.<đuôi>`; vẫn cho dán đường dẫn ảnh https:// hoặc /... | Dùng lại đường tải ảnh của T07 |
+| 16/10/2026 | T14 | Thời gian bắt đầu, kết thúc nhập bằng ô ngày giờ theo giờ Việt Nam (`parseVnDateTime`); CHECK trong CSDL bảo đảm kết thúc sau bắt đầu | YC-CMS-01 |
+| 16/10/2026 | T14 | Banner dùng thẻ <img>/<picture> (ảnh điện thoại riêng) thay cho next/image | Kích thước ảnh tuỳ chiến dịch, cần nguồn khác cho màn hình hẹp |
+| 16/10/2026 | T14 | Thêm khối “Banner sắp hết lịch (3 ngày tới)” vào trang tổng quan cho vai trò content.edit | Việc còn treo ở T13 |
 
 ## Vướng mắc
 

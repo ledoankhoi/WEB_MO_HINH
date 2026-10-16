@@ -496,4 +496,30 @@ export const MIGRATIONS: Migration[] = [
       "ALTER TABLE stock_documents ADD COLUMN count_locations TEXT NOT NULL DEFAULT '[]'",
     ],
   },
+  {
+    // Banner trang chủ (YC-CMS-01, docs/chuan/03 mục 12.3).
+    id: "009_banners",
+    statements: [
+      `CREATE TABLE banners (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        subtitle TEXT NOT NULL DEFAULT '',
+        image_url TEXT NOT NULL,
+        image_mobile_url TEXT,
+        link_url TEXT NOT NULL DEFAULT '',
+        placement TEXT NOT NULL,
+        sort_order INTEGER NOT NULL DEFAULT 0,
+        starts_at BIGINT,
+        ends_at BIGINT,
+        status TEXT NOT NULL DEFAULT 'draft',
+        created_at BIGINT NOT NULL,
+        updated_at BIGINT NOT NULL,
+        CONSTRAINT placement_valid CHECK (placement IN ('home_hero', 'home_strip')),
+        CONSTRAINT status_valid CHECK (status IN ('draft', 'published')),
+        CONSTRAINT window_valid CHECK (starts_at IS NULL OR ends_at IS NULL OR ends_at > starts_at)
+      )`,
+      "CREATE INDEX idx_banners_placement ON banners (placement, status, sort_order)",
+      "ALTER TABLE banners ENABLE ROW LEVEL SECURITY",
+    ],
+  },
 ];

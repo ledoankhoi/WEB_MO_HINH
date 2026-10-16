@@ -4,7 +4,8 @@ import { ProductGrid } from "@/components/product/ProductCard";
 import RobotViewerLoader from "@/components/three/RobotViewerLoader";
 import { ButtonLink } from "@/components/ui/Button";
 import { CATEGORIES } from "@/lib/catalog";
-import { getCategoryCounts, getFeaturedProducts, getProductBySlug, searchProducts } from "@/server/catalog";
+import { HeroBanner, StripBanners } from "@/components/content/Banners";
+import { getActiveBanners, getCategoryCounts, getFeaturedProducts, getProductBySlug, searchProducts } from "@/server/catalog";
 
 function SectionHeading({ title, href }: { title: string; href: string }) {
   return (
@@ -18,15 +19,24 @@ function SectionHeading({ title, href }: { title: string; href: string }) {
 }
 
 export default async function Home() {
-  const [featured, newest, counts] = await Promise.all([
+  const [featured, newest, counts, banners] = await Promise.all([
     getFeaturedProducts(4),
     searchProducts({ q: "", category: "", sort: "moi-nhat", page: 1, pageSize: 8 }),
     getCategoryCounts(),
+    getActiveBanners(),
   ]);
+  // Không có banner thì trang chủ giữ nguyên như trước (YC-CMS-02).
+  const heroBanner = banners.find((banner) => banner.placement === "home_hero");
+  const stripBanners = banners.filter((banner) => banner.placement === "home_strip");
   const hero = featured[0] ? await getProductBySlug(featured[0].slug) : null;
 
   return (
     <>
+      {heroBanner && (
+        <div className="mx-auto max-w-7xl px-4 pt-6 sm:px-6">
+          <HeroBanner banner={heroBanner} />
+        </div>
+      )}
       <section className="relative overflow-hidden border-b border-line">
         <div className="grid-backdrop absolute inset-0" aria-hidden />
         <div className="relative mx-auto grid max-w-7xl items-center gap-8 px-4 py-12 sm:px-6 lg:grid-cols-2 lg:py-20">
@@ -64,6 +74,7 @@ export default async function Home() {
       </section>
 
       <div className="mx-auto max-w-7xl space-y-16 px-4 py-14 sm:px-6">
+        <StripBanners banners={stripBanners} />
         <section aria-labelledby="danh-muc">
           <h2 id="danh-muc" className="mb-6 text-2xl font-semibold tracking-tight sm:text-3xl">
             Danh mục

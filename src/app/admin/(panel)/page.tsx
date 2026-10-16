@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { ORDER_STATUSES, ORDER_STATUS_LABELS } from "@/lib/catalog";
-import { formatNumber, formatVnd } from "@/lib/format";
+import { formatDateTime, formatNumber, formatVnd } from "@/lib/format";
 import { can } from "@/lib/permissions";
 import { requireStaff } from "@/server/auth/session";
+import { listBannersEndingSoon } from "@/server/repo/content";
 import { stockDashboard, storeDashboard } from "@/server/repo/dashboard";
 import { getOrderStats } from "@/server/repo/orders";
 import { pendingWork } from "@/server/repo/stock-reports";
@@ -24,17 +25,36 @@ export default async function AdminDashboardPage() {
   const seesStock = can(user.role, "inventory.view");
   const seesOrders = can(user.role, "orders.view");
   const seesPayments = can(user.role, "payments.manage");
-  const [stock, work, store, stats] = await Promise.all([
+  const seesContent = can(user.role, "content.edit");
+  const [stock, work, store, stats, endingBanners] = await Promise.all([
     seesStock ? stockDashboard() : null,
     seesStock ? pendingWork() : null,
     seesOrders ? storeDashboard() : null,
     seesOrders ? getOrderStats() : null,
+    seesContent ? listBannersEndingSoon() : [],
   ]);
 
   return (
     <>
       <h1 className="text-3xl font-bold tracking-tight">Tổng quan</h1>
-      {!seesStock && !seesOrders && <p className="text-sm text-muted">Chọn một mục ở thanh bên để bắt đầu.</p>}
+      {endingBanners.length > 0 && (
+        <section aria-labelledby="banner-het-lich" className={card}>
+          <h2 id="banner-het-lich" className="font-semibold">
+            Banner sắp hết lịch (3 ngày tới)
+          </h2>
+          <ul className="mt-2 space-y-1 text-sm">
+            {endingBanners.map((banner) => (
+              <li key={banner.id}>
+                <Link href={`/admin/noi-dung/banner?sua=${banner.id}`} className="hover:text-brand-strong">
+                  {banner.title}
+                </Link>{" "}
+                <span className="text-muted">kết thúc {formatDateTime(banner.endsAt!)}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+      {!seesStock && !seesOrders && !seesContent && <p className="text-sm text-muted">Chọn một mục ở thanh bên để bắt đầu.</p>}
 
       {stock && work && (
         <section aria-labelledby="kho" className="space-y-3">
