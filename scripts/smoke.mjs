@@ -27,6 +27,7 @@ const PAGES = [
   { path: "/admin/san-pham/moi" },
   { path: "/admin/san-pham/:productId" },
   { path: "/admin/san-pham/:productId?tab=bien-the" },
+  { path: "/admin/san-pham/:productId?tab=media" },
   { path: "/admin/san-pham/:productId?tab=xem-truoc" },
   { path: "/admin/san-pham?trang-thai=published&q=gundam" },
   { path: "/admin/danh-muc" },

@@ -68,7 +68,7 @@ Ghi nhớ kỹ thuật của dự án:
   Màn hình sản phẩm chia tab (Thông tin, Biến thể, Media, SEO, Xem trước); thêm, sửa, tắt biến thể; SKU khoá khi đã có sổ kho hoặc đơn; mã vạch duy nhất; một biến thể mặc định; lưu nháp, xuất bản (kiểm tra YC-SP-05), lưu trữ; lịch sử giá từ nhật ký; xem trước bản nháp trong `/admin` bằng component của cửa hàng. Danh sách sản phẩm lọc theo trạng thái, danh mục, thương hiệu; phân trang.
   Xong khi: test xuất bản thiếu điều kiện bị chặn, SKU bị khoá, đổi giá ghi nhật ký, xoá sản phẩm đã có đơn bị chặn; smoke có các tab.
 
-- [ ] **T07 — Tải ảnh sản phẩm.** Cần T06. YC-SP-06; SEC-05; Q17, QT-22.
+- [x] **T07 — Tải ảnh sản phẩm.** Cần T06. YC-SP-06; SEC-05; Q17, QT-22.
   Route Handler dưới `/admin` nhận ảnh WebP, PNG, JPEG tối đa 5 MB, kiểm tra chữ ký file, đặt tên file ở máy chủ, đẩy lên Supabase Storage bucket `media` thư mục `products/` bằng `SUPABASE_URL` và `SUPABASE_SECRET_KEY` (xem cách `scripts/media.mjs` gọi API), lưu `product_media`. Tab Media: tải lên, sắp xếp, alt, xoá, chọn ảnh đại diện. Phần gọi Storage tách thành một hàm để test thay bằng bản giả, **test không gọi Storage thật**.
   Xong khi: test SEC-05 (sai chữ ký, quá cỡ), test lưu và sắp xếp media; tự kiểm tra tay một lần tải ảnh thật lên Storage là được phép nhưng không bắt buộc.
 
@@ -217,6 +217,11 @@ Ghi nhớ kỹ thuật của dự án:
 | 16/10/2026 | T06 | Form thông tin vẫn sửa giá, màu của biến thể mặc định; các biến thể khác sửa ở tab Biến thể | Đơn giản cho sản phẩm một biến thể (phần lớn danh mục) |
 | 16/10/2026 | T06 | Danh mục chọn từ CSDL; sản phẩm thuộc danh mục tạo mới (ngoài 7 danh mục gốc) vẫn bán được nhưng chưa có lối lọc riêng ở cửa hàng | Thanh danh mục của cửa hàng còn đọc `CATEGORIES` cố định |
 | 16/10/2026 | T06 | Không tắt được biến thể mặc định; muốn tắt thì đặt biến thể khác làm mặc định trước | Luôn đúng một biến thể mặc định đang bật |
+| 16/10/2026 | T07 | Tải ảnh qua Route Handler `/admin/api/anh` (Server Action giới hạn 1 MB); sau khi lưu gọi `revalidateTag(PRODUCTS_TAG, "max")` vì `updateTag` chỉ dùng được trong Server Action | Tài liệu Next 16 |
+| 16/10/2026 | T07 | Ảnh lưu ở `products/<productId>-<12 hex>.<đuôi theo chữ ký>` trên bucket `media`; đường dẫn công khai theo `MEDIA_BASE_URL` | Tên file do máy chủ đặt (QT-22), khớp dữ liệu mẫu |
+| 16/10/2026 | T07 | Xoá ảnh chỉ xoá file trên Storage nếu file nằm trong thư mục tải lên (đúng mẫu tên trên); ảnh của dữ liệu mẫu, ảnh chụp từ 3D giữ lại | Không xoá nhầm tài nguyên dùng chung |
+| 16/10/2026 | T07 | Ảnh đầu tiên tải lên thành ảnh đại diện nếu sản phẩm chưa có; xoá ảnh đại diện thì lấy ảnh kế tiếp | YC-SP-06 |
+| 16/10/2026 | T07 | Chưa thử tải ảnh thật lên Supabase Storage; test dùng bản giả của Storage | Quy tắc: test không gọi Storage thật |
 
 ## Vướng mắc
 

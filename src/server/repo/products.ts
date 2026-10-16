@@ -542,3 +542,63 @@ export async function listAdminProducts(query: {
   ]);
   return { items: rows.rows.map((row) => toProduct(row, [])), total: Number(count.rows[0].total) };
 }
+
+export type MediaItem = { id: string; url: string; alt: string; kind: "image" | "model"; sortOrder: number };
+
+export async function listMedia(productId: string): Promise<MediaItem[]> {
+  const db = await getDb();
+  const result = await db.execute({ sql: "SELECT * FROM product_media WHERE product_id = ? AND kind = 'image' ORDER BY sort_order, created_at", args: [productId] });
+  return result.rows.map((row) => ({ id: String(row.id), url: String(row.url), alt: String(row.alt), kind: row.kind === "model" ? "model" : "image", sortOrder: Number(row.sort_order) }));
+}
+
+// Thêm ảnh vào cuối; sản phẩm chưa có ảnh đại diện thì lấy luôn ảnh này (YC-SP-06).
+export async function addMedia(productId: string, url: string, alt: string, audit?: AuditEntry): Promise<string> {
+  const db = await getDb();
+  const id = newId();
+  const now = Date.now();
+  await db.batch([
+    {
+      sql: `INSERT INTO product_media (id, product_id, kind, url, alt, sort_order, created_at)
+            VALUES (?, ?, 'image', ?, ?, (SELECT COALESCE(MAX(sort_order), -1) + 1 FROM product_media WHERE product_id = ?), ?)`,
+      args: [id, productId, url, alt, productId, now],
+    },
+    { sql: "UPDATE products SET image = ?, updated_at = ? WHERE id = ? AND (image IS NULL OR image = '')", args: [url, now, productId] },
+    ...(audit ? [auditStatement({ ...audit, entityId: id })] : []),
+  ]);
+  return id;
+}
+
+// Sửa chữ thay thế, đổi thứ tự (lên/xuống), đặt làm ảnh đại diện hoặc xoá một ảnh. Trả về false khi ảnh không
+// thuộc sản phẩm. Xoá ảnh đang là ảnh đại diện thì lấy ảnh kế tiếp (hoặc để trống).
+export async function updateMedia(
+  productId: string,
+  mediaId: string,
+  change: { alt: string } | { move: -1 | 1 } | { cover: true } | { remove: true },
+): Promise<{ ok: boolean; removedUrl?: string }> {
+  const db = await getDb();
+  const media = await listMedia(productId);
+  const index = media.findIndex((item) => item.id === mediaId);
+  if (index < 0) return { ok: false };
+  const item = media[index];
+  const now = Date.now();
+  if ("alt" in change) {
+    await db.execute({ sql: "UPDATE product_media SET alt = ? WHERE id = ?", args: [change.alt, mediaId] });
+  } else if ("move" in change) {
+    const other = media[index + change.move];
+    if (!other) return { ok: true };
+    await db.batch([
+      { sql: "UPDATE product_media SET sort_order = ? WHERE id = ?", args: [other.sortOrder, item.id] },
+      { sql: "UPDATE product_media SET sort_order = ? WHERE id = ?", args: [item.sortOrder === other.sortOrder ? other.sortOrder + change.move : item.sortOrder, other.id] },
+    ]);
+  } else if ("cover" in change) {
+    await db.execute({ sql: "UPDATE products SET image = ?, updated_at = ? WHERE id = ?", args: [item.url, now, productId] });
+  } else {
+    const next = media.find((other) => other.id !== mediaId)?.url ?? null;
+    await db.batch([
+      { sql: "DELETE FROM product_media WHERE id = ?", args: [mediaId] },
+      { sql: "UPDATE products SET image = ?, updated_at = ? WHERE id = ? AND image = ?", args: [next, now, productId, item.url] },
+    ]);
+    return { ok: true, removedUrl: item.url };
+  }
+  return { ok: true };
+}

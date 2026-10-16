@@ -14,6 +14,8 @@ import { isConstraintError } from "@/server/db";
 import { applyOrderAction, findOrderById } from "@/server/repo/orders";
 import { authorize } from "@/server/auth/session";
 import { FORBIDDEN, changes, isId, staffWith } from "@/server/staff-action";
+import { writeAudit } from "@/server/repo/audit";
+import { deleteObject } from "@/server/storage";
 import {
   canPublish,
   deleteProduct,
@@ -21,6 +23,7 @@ import {
   saveVariant,
   setDefaultVariant,
   setVariantActive,
+  updateMedia,
   insertProduct,
   saveProductImage,
   updateProduct,
@@ -310,6 +313,40 @@ export async function variantAction(productId: string, variantId: string, action
   refresh();
   if (changed) return { ok: true };
   return { message: action === "deactivate" ? "Không tắt được biến thể mặc định; hãy đặt biến thể khác làm mặc định trước." : "Biến thể phải đang bật mới đặt làm mặc định được." };
+}
+
+// YC-SP-06: sửa chữ thay thế, đổi thứ tự, đặt ảnh đại diện, xoá ảnh. Tải ảnh lên đi qua /admin/api/anh.
+export async function mediaAction(
+  productId: string,
+  mediaId: string,
+  change: { alt: string } | { move: -1 | 1 } | { cover: true } | { remove: true },
+): Promise<FormState> {
+  const audit = await staffWith("catalog.edit");
+  if (!audit) return FORBIDDEN;
+  const valid =
+    isId(productId) &&
+    isId(mediaId) &&
+    typeof change === "object" &&
+    change !== null &&
+    (("alt" in change && typeof change.alt === "string") ||
+      ("move" in change && (change.move === 1 || change.move === -1)) ||
+      ("cover" in change && change.cover === true) ||
+      ("remove" in change && change.remove === true));
+  if (!valid) return { message: "Yêu cầu không hợp lệ." };
+  const normalized = "alt" in change ? { alt: change.alt.trim().slice(0, 160) } : change;
+  const result = await updateMedia(productId, mediaId, normalized);
+  if (!result.ok) return { message: "Ảnh không còn thuộc sản phẩm này." };
+  if ("remove" in change || "cover" in change) {
+    await writeAudit(audit({ action: "remove" in change ? "product_media.delete" : "product_media.cover", entity: "product_media", entityId: mediaId, summary: "remove" in change ? "Xoá ảnh sản phẩm" : "Đổi ảnh đại diện" }));
+  }
+  // Xoá file trên Storage sau khi đã bỏ khỏi CSDL; file của dữ liệu mẫu (không nằm trong thư mục tải lên) giữ lại.
+  if (result.removedUrl) {
+    const path = /\/(products\/[a-f0-9]{20}-[a-f0-9]{12}\.(?:webp|png|jpg))$/.exec(result.removedUrl)?.[1];
+    if (path) await deleteObject(path);
+  }
+  updateTag(PRODUCTS_TAG);
+  refresh();
+  return { ok: true };
 }
 
 export async function deleteProductAction(id: string): Promise<FormState> {

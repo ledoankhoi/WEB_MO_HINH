@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { first, isId } from "@/components/admin/parts";
 import { ProductForm } from "@/components/admin/ProductForm";
+import { MediaPanel } from "@/components/admin/MediaPanel";
 import { VariantsPanel } from "@/components/admin/VariantsPanel";
 import { ProductView } from "@/components/product/ProductView";
 import { Notice } from "@/components/ui/Notice";
@@ -9,11 +10,11 @@ import { site } from "@/config/site";
 import { formatDateTime, formatVnd } from "@/lib/format";
 import { can } from "@/lib/permissions";
 import { requireStaff } from "@/server/auth/session";
-import { findProductById, listPriceHistory } from "@/server/repo/products";
+import { findProductById, listMedia, listPriceHistory } from "@/server/repo/products";
 import { productFormOptions } from "@/server/repo/taxonomy";
 
-// YC-SP-04: màn hình sản phẩm chia tab. Media (T07) và SEO (T21) thêm sau.
-const TABS = { "thong-tin": "Thông tin", "bien-the": "Biến thể", "xem-truoc": "Xem trước" } as const;
+// YC-SP-04: màn hình sản phẩm chia tab. SEO (T21) thêm sau.
+const TABS = { "thong-tin": "Thông tin", "bien-the": "Biến thể", media: "Media", "xem-truoc": "Xem trước" } as const;
 type Tab = keyof typeof TABS;
 
 const money = (value: unknown) => (typeof value === "number" ? formatVnd(value) : "—");
@@ -71,6 +72,8 @@ export default async function AdminEditProductPage({ params, searchParams }: Pag
           </section>
         </>
       )}
+
+      {tab === "media" && <MediaPanel productId={product.id} media={await listMedia(product.id)} cover={product.image} canEdit={canEdit} />}
 
       {tab === "xem-truoc" && (
         <div className="space-y-6 rounded-2xl border border-dashed border-line p-4 sm:p-6">
