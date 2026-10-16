@@ -3,17 +3,19 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { LogoutButton, PasswordForm, ProfileForm } from "@/components/account/AccountForms";
 import { ReviewForm } from "@/components/account/ReviewForm";
+import { ProductGrid } from "@/components/product/ProductCard";
 import { ORDER_STATUS_LABELS } from "@/lib/catalog";
 import { formatDate, formatVnd } from "@/lib/format";
 import { requireUser } from "@/server/auth/session";
 import { listOrdersByUser } from "@/server/repo/orders";
 import { listReviewableItems } from "@/server/repo/reviews";
+import { listWishlistProducts } from "@/server/repo/wishlist";
 
 export const metadata: Metadata = { title: "Tài khoản", robots: { index: false } };
 
 async function Account() {
   const user = await requireUser("/tai-khoan");
-  const [orders, reviewable] = await Promise.all([listOrdersByUser(user.id), listReviewableItems(user.id)]);
+  const [orders, reviewable, wishlist] = await Promise.all([listOrdersByUser(user.id), listReviewableItems(user.id), listWishlistProducts(user.id)]);
 
   return (
     <>
@@ -44,6 +46,19 @@ async function Account() {
               </li>
             ))}
           </ul>
+        )}
+      </section>
+
+      <section aria-labelledby="yeu-thich" className="space-y-3">
+        <h2 id="yeu-thich" className="text-lg font-semibold">
+          Sản phẩm yêu thích
+        </h2>
+        {wishlist.length === 0 ? (
+          <p className="rounded-xl border border-dashed border-line bg-surface px-5 py-8 text-center text-sm text-muted">
+            Bấm biểu tượng trái tim ở sản phẩm để lưu vào đây.
+          </p>
+        ) : (
+          <ProductGrid products={wishlist} />
         )}
       </section>
 

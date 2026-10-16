@@ -4,6 +4,7 @@ import { getCategory } from "@/lib/catalog";
 import { formatVnd } from "@/lib/format";
 import type { ProductSummary } from "@/lib/types";
 import { AddToCartButton } from "./AddToCartButton";
+import { WishlistButton } from "./WishlistButton";
 
 // Ngưỡng tồn kho để hiện nhãn "Sắp hết hàng".
 const LOW_STOCK = 3;
@@ -21,7 +22,7 @@ export function ProductCard({ product }: { product: ProductSummary }) {
   const badge = product.stock <= 0 ? "Hết hàng" : product.stock <= LOW_STOCK ? "Sắp hết hàng" : null;
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-xl border border-line bg-surface transition hover:shadow-lg hover:shadow-black/5">
+    <article className="group relative flex flex-col overflow-hidden rounded-xl border border-line bg-surface transition hover:shadow-lg hover:shadow-black/5">
       <Link href={href} className="product-stage relative block aspect-square overflow-hidden" tabIndex={-1} aria-hidden>
         <ProductImage
           src={product.image}
@@ -32,6 +33,7 @@ export function ProductCard({ product }: { product: ProductSummary }) {
           <span className="absolute top-3 left-3 rounded-full bg-fg px-2.5 py-1 text-xs font-medium text-bg">{badge}</span>
         )}
       </Link>
+      <WishlistButton productId={product.id} name={product.name} className="absolute top-3 right-3" />
       <div className="flex flex-1 flex-col gap-1 p-4">
         <p className="text-xs font-medium tracking-wide text-brand-strong uppercase">
           {getCategory(product.category)?.name ?? "Mô hình"}

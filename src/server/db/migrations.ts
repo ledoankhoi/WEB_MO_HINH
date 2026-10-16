@@ -660,4 +660,18 @@ export const MIGRATIONS: Migration[] = [
       "ALTER TABLE reviews ENABLE ROW LEVEL SECURITY",
     ],
   },
+  {
+    // Yêu thích (YC-DG-03; YC-KH-06). Khoá chính chống trùng.
+    id: "014_wishlist",
+    statements: [
+      `CREATE TABLE wishlist_items (
+        user_id TEXT NOT NULL REFERENCES users (id),
+        product_id TEXT NOT NULL REFERENCES products (id),
+        created_at BIGINT NOT NULL,
+        PRIMARY KEY (user_id, product_id)
+      )`,
+      "CREATE INDEX idx_wishlist_product ON wishlist_items (product_id)",
+      "ALTER TABLE wishlist_items ENABLE ROW LEVEL SECURITY",
+    ],
+  },
 ];

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ProductGrid, ProductImage } from "@/components/product/ProductCard";
 import { PurchasePanel } from "@/components/product/PurchasePanel";
+import { WishlistButton } from "@/components/product/WishlistButton";
 import RobotViewerLoader from "@/components/three/RobotViewerLoader";
 import { getCategory } from "@/lib/catalog";
 import { getModelFeatures, modelKey } from "@/lib/model-features";
@@ -88,7 +89,10 @@ export function ProductView({
         <div className="space-y-6">
           <div className="space-y-2">
             {category && <p className="text-xs font-semibold tracking-wide text-brand-strong uppercase">{category.name}</p>}
-            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{product.name}</h1>
+            <div className="flex items-start justify-between gap-3">
+              <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{product.name}</h1>
+              {!preview && <WishlistButton productId={product.id} name={product.name} className="shrink-0" />}
+            </div>
             <p className="text-muted">{product.tagline}</p>
             {reviews && reviews.count > 0 && (
               <a href="#danh-gia" className="inline-block text-sm text-muted hover:text-fg">

@@ -7,7 +7,7 @@ import { newId } from "../ids";
 import { auditStatement, withAudit, type AuditEntry } from "./audit";
 
 // product_list (migration 005): sản phẩm ghép biến thể mặc định, cột giá, tồn, màu là của biến thể đó.
-const SUMMARY_COLUMNS = "id, variant_id, slug, name, tagline, category, price, compare_at_price, stock, image, is_featured";
+export const SUMMARY_COLUMNS = "id, variant_id, slug, name, tagline, category, price, compare_at_price, stock, image, is_featured";
 
 const ORDER_BY: Record<SortValue, string> = {
   "moi-nhat": "created_at DESC, id",
@@ -86,7 +86,7 @@ function toProduct(row: Row, variants: ProductVariant[]): Product {
   };
 }
 
-function toSummary(row: Row): ProductSummary {
+export function toSummary(row: Row): ProductSummary {
   return {
     id: String(row.id),
     variantId: String(row.variant_id),

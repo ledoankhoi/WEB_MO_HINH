@@ -126,7 +126,7 @@ Ghi nhớ kỹ thuật của dự án:
   Bảng `reviews`; khách đã đăng nhập gửi đánh giá cho dòng đơn thuộc đơn `completed` (mỗi dòng một lần); trang sản phẩm hiện đánh giá đã duyệt, điểm trung bình, số đánh giá; `/admin/danh-gia` duyệt, ẩn, lọc.
   Xong khi: test điều kiện gửi, chỉ hiện `approved`, chuyển trạng thái đúng luật.
 
-- [ ] **T20 — Yêu thích.** Cần T04. YC-KH-06; YC-DG-03.
+- [x] **T20 — Yêu thích.** Cần T04. YC-KH-06; YC-DG-03.
   Bảng `wishlist_items`; nút yêu thích ở trang sản phẩm và thẻ sản phẩm (khách chưa đăng nhập thì chuyển tới đăng nhập), danh sách trong trang tài khoản; quản trị xem sản phẩm được yêu thích nhiều nhất (ở báo cáo hoặc hồ sơ khách).
   Xong khi: test thêm, bỏ, không trùng.
 
@@ -251,6 +251,7 @@ Ghi nhớ kỹ thuật của dự án:
 | 16/10/2026 | T18 | Khách không phân biệt được mã không tồn tại với mã đã tắt; xem trước mã giới hạn 30 lần / 15 phút mỗi IP. Mã đã dùng không xoá, chỉ tắt | Chống dò mã |
 | 16/10/2026 | T19 | Khách gửi đánh giá ở trang tài khoản (mục Sản phẩm chờ đánh giá), mỗi dòng đơn của đơn `completed` một lần; điều kiện kiểm tra trong chính câu INSERT, khoá duy nhất `order_item_id` chống gửi trùng | YC-DG-01 |
 | 16/10/2026 | T19 | Trang sản phẩm hiện 20 đánh giá đã duyệt mới nhất, điểm trung bình làm tròn 1 chữ số, qua hàm cache gắn PRODUCTS_TAG; duyệt, ẩn thì làm mới thẻ này. Hồ sơ khách trong quản trị liệt kê đánh giá của khách | YC-DG-02, YC-KH-02 |
+| 16/10/2026 | T20 | Nút yêu thích trên thẻ và trang sản phẩm đọc trạng thái qua `GET /api/wishlist` một lần mỗi trang (trang sản phẩm được cache chung nên không dựng sẵn trạng thái của từng khách); chưa đăng nhập thì chuyển tới đăng nhập kèm `next`. Danh sách ở trang tài khoản và hồ sơ khách; xếp hạng yêu thích nhiều nhất (`topWishlisted`) đưa vào báo cáo T23 | YC-DG-03, YC-KH-06 |
 
 ## Vướng mắc
 
