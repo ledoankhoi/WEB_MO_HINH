@@ -39,7 +39,14 @@ export function AuthForm({ mode, next }: { mode: keyof typeof ACTIONS; next: str
         hint={isLogin ? undefined : "Từ 8 ký tự trở lên."}
       />
       {!isLogin && (
-        <Field label="Nhập lại mật khẩu" name="confirm" type="password" required autoComplete="new-password" error={state.errors?.confirm} />
+        <>
+          <Field label="Nhập lại mật khẩu" name="confirm" type="password" required autoComplete="new-password" error={state.errors?.confirm} />
+          {/* YC-KH-04: không đánh dấu sẵn đồng ý nhận tin. */}
+          <label className="flex items-center gap-2.5 text-sm">
+            <input type="checkbox" name="marketingConsent" className="size-4 accent-brand" />
+            Nhận tin khuyến mãi, hàng mới qua email
+          </label>
+        </>
       )}
       <Button type="submit" size="lg" full pending={pending}>
         {isLogin ? "Đăng nhập" : "Tạo tài khoản"}

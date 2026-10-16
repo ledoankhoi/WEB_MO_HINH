@@ -5,7 +5,7 @@ import { isId } from "@/components/admin/parts";
 import { OrderSummary } from "@/components/cart/CartView";
 import { OrderHistory } from "@/components/order/OrderHistory";
 import { ORDER_STATUS_LABELS, PAYMENT_METHOD_LABELS, PAYMENT_STATUS_LABELS, SHIPPING_STATUS_LABELS } from "@/lib/catalog";
-import { formatDateTime, formatVnd } from "@/lib/format";
+import { formatDateTime, formatVnd, maskEmail, maskPhone, maskText } from "@/lib/format";
 import { ORDER_ACTION_KEYS, ORDER_ACTIONS, canApply } from "@/lib/order-flow";
 import { can } from "@/lib/permissions";
 import { requireStaff } from "@/server/auth/session";
@@ -14,7 +14,11 @@ import { findOrderById } from "@/server/repo/orders";
 export default async function AdminOrderPage({ params }: PageProps<"/admin/don-hang/[id]">) {
   const { id } = await params;
   const user = await requireStaff("orders.view", `/admin/don-hang/${id}`);
-  const order = isId(id) ? await findOrderById(id) : null;
+  const found = isId(id) ? await findOrderById(id) : null;
+  // SEC-02: người không có customers.view (vai trò viewer) thấy thông tin liên hệ đã che.
+  const order = found && !can(user.role, "customers.view")
+    ? { ...found, customerPhone: maskPhone(found.customerPhone), customerEmail: found.customerEmail && maskEmail(found.customerEmail), shippingAddress: maskText(found.shippingAddress) }
+    : found;
   if (!order) notFound();
 
   // Chỉ những thao tác đúng điều kiện của đơn và đúng quyền của người xem (máy chủ vẫn kiểm tra lại).

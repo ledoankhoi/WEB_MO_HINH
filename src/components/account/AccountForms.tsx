@@ -34,6 +34,10 @@ export function ProfileForm({ user }: { user: CurrentUser }) {
           <option key={province}>{province}</option>
         ))}
       </SelectField>
+      <label className="flex items-center gap-2.5 text-sm">
+        <input type="checkbox" name="marketingConsent" defaultChecked={user.marketingConsent} className="size-4 accent-brand" />
+        Nhận tin khuyến mãi, hàng mới qua email
+      </label>
       <Button type="submit" pending={pending}>
         Lưu thay đổi
       </Button>

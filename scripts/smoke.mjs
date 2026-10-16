@@ -55,6 +55,8 @@ const PAGES = [
   { path: "/admin/kho/vi-tri" },
   { path: "/admin/nha-cung-cap" },
   { path: "/admin/khach-hang" },
+  { path: "/admin/khach-hang?q=a" },
+  { path: "/admin/khach-hang/:customerId" },
   { path: "/admin/nhan-vien" },
   { path: "/admin/nhat-ky" },
   { path: "/admin/nhat-ky?hanh-dong=auth.admin_login&tu=2026-01-01&den=2026-12-31" },
@@ -149,7 +151,8 @@ try {
   const category = await one("SELECT id FROM categories ORDER BY sort_order LIMIT 1");
   const document = await one("SELECT id FROM stock_documents ORDER BY created_at DESC LIMIT 1");
   const variant = await one("SELECT variant_id FROM stock_movements ORDER BY id LIMIT 1");
-  const params = { product: product?.slug, productId: product?.id, order: order?.id, orderToken: order?.token, categoryId: category?.id, documentId: document?.id, variantId: variant?.variant_id };
+  const customer = await one("SELECT id FROM users WHERE role = 'customer' ORDER BY created_at LIMIT 1");
+  const params = { product: product?.slug, productId: product?.id, order: order?.id, orderToken: order?.token, categoryId: category?.id, documentId: document?.id, variantId: variant?.variant_id, customerId: customer?.id };
 
   for (const page of PAGES) {
     const missing = page.path.match(/:(\w+)/g)?.find((key) => !params[key.slice(1)]);

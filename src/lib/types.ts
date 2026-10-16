@@ -83,6 +83,7 @@ export type CurrentUser = {
   address: string;
   city: string;
   role: Role;
+  marketingConsent: boolean;
 };
 
 export type OrderItem = {

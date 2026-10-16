@@ -116,7 +116,7 @@ Cập nhật 15/10/2026: phần quản trị và kho được đặc tả chi ti
 | YC-QT-06 | Danh sách đơn lọc theo trạng thái, tìm theo mã đơn; thực hiện các thao tác L2 đến L14 theo đúng vai trò | Theo bảng ở tài liệu 04 | Có |
 | YC-QT-07 | Danh sách các đơn đã huỷ nhưng đã thu tiền, chờ hoàn | Kế toán | Có |
 | YC-QT-08 | Duyệt, ẩn đánh giá | Chăm sóc khách hàng | Chưa |
-| YC-QT-09 | Xem danh sách khách hàng và đơn của từng người | Chăm sóc khách hàng | Chưa |
+| YC-QT-09 | Xem danh sách khách hàng và đơn của từng người | Chăm sóc khách hàng | Có |
 | YC-QT-10 | Tạo tài khoản nhân viên, đổi vai trò, khoá tài khoản; không ai tự đổi vai trò của mình | Quản trị viên | Có |
 | YC-QT-11 | Trang tổng quan: số đơn theo trạng thái, đơn cần xử lý, hàng sắp hết | Tất cả nhân viên | Có |
 | YC-QT-12 | Ghi nhật ký mọi thao tác quản trị làm thay đổi dữ liệu | Hệ thống | Chưa |

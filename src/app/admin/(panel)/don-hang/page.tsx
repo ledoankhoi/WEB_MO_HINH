@@ -17,7 +17,8 @@ import {
   isPaymentStatus,
   isShippingStatus,
 } from "@/lib/catalog";
-import { formatNumber, parseVnDate } from "@/lib/format";
+import { formatNumber, maskPhone, parseVnDate } from "@/lib/format";
+import { can } from "@/lib/permissions";
 import { requireStaff } from "@/server/auth/session";
 import { listOrders } from "@/server/repo/orders";
 
@@ -25,7 +26,7 @@ const PAGE_SIZE = 20;
 const DAY = 24 * 60 * 60 * 1000;
 
 export default async function AdminOrdersPage({ searchParams }: PageProps<"/admin/don-hang">) {
-  await requireStaff("orders.view", "/admin/don-hang");
+  const user = await requireStaff("orders.view", "/admin/don-hang");
   const params = await searchParams;
   // Chỉ nhận giá trị có trong danh sách; giá trị lạ trên URL bị bỏ qua.
   const query = {
@@ -123,7 +124,7 @@ export default async function AdminOrdersPage({ searchParams }: PageProps<"/admi
         </div>
       </Form>
 
-      <OrdersTable items={items} />
+      <OrdersTable items={can(user.role, "customers.view") ? items : items.map((order) => ({ ...order, customerPhone: maskPhone(order.customerPhone) }))} />
       <Pager page={page} pages={Math.ceil(total / PAGE_SIZE)} href={(number) => href({ trang: number === 1 ? "" : String(number) })} />
     </>
   );

@@ -75,3 +75,14 @@ export function parseVnDateTime(value: string): number | null {
 export function toVnDateTimeInput(ms: number): string {
   return new Date(ms + VN_OFFSET_MS).toISOString().slice(0, 16);
 }
+
+// SEC-02: che thông tin cá nhân cho vai trò chỉ xem, làm ở máy chủ trước khi gửi xuống trình duyệt.
+export function maskEmail(email: string): string {
+  const [name, domain] = email.split("@");
+  return domain ? `${name.slice(0, 1)}***@${domain}` : "***";
+}
+export function maskPhone(phone: string): string {
+  const digits = phone.replace(/\D/g, "");
+  return digits.length < 4 ? "***" : `${digits.slice(0, 2)}${"*".repeat(Math.max(digits.length - 4, 3))}${digits.slice(-2)}`;
+}
+export const maskText = (text: string) => (text ? "***" : "");

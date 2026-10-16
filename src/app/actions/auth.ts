@@ -64,7 +64,7 @@ export async function registerAction(_prev: FormState, form: FormData): Promise<
 
   let userId: string;
   try {
-    userId = await insertUser({ email, name, phone: phone ?? "", passwordHash: await hashPassword(password) });
+    userId = await insertUser({ email, name, phone: phone ?? "", passwordHash: await hashPassword(password), marketingConsent: form.get("marketingConsent") === "on" });
   } catch (error) {
     if (isConstraintError(error)) return { errors: { email: "Email này đã được đăng ký." }, values };
     throw error;
@@ -164,7 +164,7 @@ export async function updateProfileAction(_prev: FormState, form: FormData): Pro
   if (city && !isProvince(city)) errors.city = "Vui lòng chọn tỉnh, thành phố trong danh sách.";
   if (Object.keys(errors).length > 0) return { errors, values };
 
-  await updateUserProfile(user.id, { name, phone: phone ?? "", address, city });
+  await updateUserProfile(user.id, { name, phone: phone ?? "", address, city, marketingConsent: form.get("marketingConsent") === "on" });
   return { ok: true, message: "Đã lưu thông tin tài khoản.", values };
 }
 

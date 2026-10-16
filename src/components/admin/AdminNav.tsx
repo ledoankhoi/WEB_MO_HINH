@@ -7,7 +7,7 @@ import { can, type Permission, type Role } from "@/lib/permissions";
 
 // Nhóm theo menu ở mục 5 của docs/chuan/10. Mỗi mục chỉ hiện với vai trò có quyền mở trang đó; quyền
 // vẫn được kiểm tra lại ở máy chủ.
-const GROUPS: { label?: string; links: { href: string; label: string; icon: typeof Package; permission: Permission }[] }[] = [
+const GROUPS: { label?: string; links: { href: string; label: string; icon: typeof Package; permission: Permission; alsoViewer?: boolean }[] }[] = [
   { links: [{ href: "/admin", label: "Tổng quan", icon: LayoutDashboard, permission: "dashboard.view" }] },
   {
     label: "Kho",
@@ -48,7 +48,8 @@ const GROUPS: { label?: string; links: { href: string; label: string; icon: type
   },
   {
     label: "Khách hàng",
-    links: [{ href: "/admin/khach-hang", label: "Khách hàng", icon: Users, permission: "customers.view" }],
+    // Vai trò viewer cũng xem được danh sách khách (thông tin cá nhân bị che, SEC-02).
+    links: [{ href: "/admin/khach-hang", label: "Khách hàng", icon: Users, permission: "customers.view", alsoViewer: true }],
   },
   {
     label: "Cài đặt",
@@ -61,7 +62,7 @@ const GROUPS: { label?: string; links: { href: string; label: string; icon: type
 
 export function AdminNav({ role }: { role: Role }) {
   const pathname = usePathname();
-  const groups = GROUPS.map((group) => ({ ...group, links: group.links.filter((link) => can(role, link.permission)) })).filter(
+  const groups = GROUPS.map((group) => ({ ...group, links: group.links.filter((link) => can(role, link.permission) || (link.alsoViewer && role === "viewer")) })).filter(
     (group) => group.links.length > 0,
   );
   // Mục khớp dài nhất là mục đang mở (/admin/don-hang/cho-hoan-tien không làm sáng cả /admin/don-hang).

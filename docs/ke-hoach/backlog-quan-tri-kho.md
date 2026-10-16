@@ -114,7 +114,7 @@ Ghi nhớ kỹ thuật của dự án:
 
 ### Giai đoạn 5: khách hàng và bán hàng
 
-- [ ] **T17 — Hồ sơ khách, khoá tài khoản, đồng ý nhận tin.** Cần T05. YC-KH-01, 02, 03, 04; YC-TKH-04; SEC-02.
+- [x] **T17 — Hồ sơ khách, khoá tài khoản, đồng ý nhận tin.** Cần T05. YC-KH-01, 02, 03, 04; YC-TKH-04; SEC-02.
   `/admin/khach-hang` (tìm, số đơn, tổng chi, phân trang), `/admin/khach-hang/[id]`; khoá, mở khoá; che thông tin với `viewer` ở máy chủ; ô "Nhận tin khuyến mãi" ở form đăng ký (mặc định không chọn) và trang tài khoản.
   Xong khi: test SEC-02, khoá thì mất phiên, đồng ý lưu thời điểm.
 
@@ -242,6 +242,10 @@ Ghi nhớ kỹ thuật của dự án:
 | 16/10/2026 | T16 | Trang hiện ở `/trang/<slug>` dạng văn bản thuần (xuống dòng giữ nguyên), thẻ HTML hiện như chữ; menu được trỏ tới trang đã xuất bản | Q19 |
 | 16/10/2026 | T16 | Trang không tồn tại trả về trang 404 nhưng mã 200 vì `notFound()` nằm trong `<Suspense>` (cùng cách với trang sản phẩm); smoke không kiểm mã 404 | Hành vi stream của Next 16 |
 | 16/10/2026 | T16 | Vitest: `testTimeout`, `hookTimeout` 30 giây | Test đầu mỗi file dựng CSDL và chạy 11 migration, chạy song song có lúc quá 5 giây |
+| 16/10/2026 | T17 | Trang khách hàng mở cho customers.view và cho vai trò viewer (`requireCustomerAccess`); viewer thấy email, số điện thoại, địa chỉ đã che bằng `maskContact` ở máy chủ, áp cả ở danh sách đơn và chi tiết đơn | SEC-02, mục 3 tài liệu 10 |
+| 16/10/2026 | T17 | Hồ sơ khách: địa chỉ đã dùng lấy từ các đơn (chưa có sổ địa chỉ); đánh giá và yêu thích thêm khi làm T19, T20 | Sổ địa chỉ thuộc giai đoạn cửa hàng |
+| 16/10/2026 | T17 | Đồng ý nhận tin: ô ở form đăng ký (không đánh dấu sẵn) và ở form thông tin cá nhân; thời điểm đồng ý chỉ đổi khi đổi lựa chọn, rút lại thì xoá thời điểm | YC-KH-04 |
+| 16/10/2026 | T17 | Khoá tài khoản khách (customers.manage) xoá mọi phiên trong cùng giao dịch và ghi nhật ký | YC-KH-03, YC-TKH-04 |
 
 ## Vướng mắc
 

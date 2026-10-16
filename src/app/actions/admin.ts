@@ -30,6 +30,7 @@ import {
   type ProductInput,
 } from "@/server/repo/products";
 import { findStaffById, insertStaff, updateStaff } from "@/server/repo/staff";
+import { setCustomerActive } from "@/server/repo/users";
 import { deleteTaxonomy, isTaxonomyKind, listTaxonomy, saveTaxonomy, type TaxonomyKind } from "@/server/repo/taxonomy";
 
 const MAX_POSTER_BYTES = 800 * 1024;
@@ -347,6 +348,16 @@ export async function mediaAction(
   updateTag(PRODUCTS_TAG);
   refresh();
   return { ok: true };
+}
+
+// YC-KH-03: khoá, mở khoá tài khoản khách (quyền customers.manage); khoá thì mất mọi phiên ngay.
+export async function setCustomerActiveAction(id: string, active: boolean): Promise<FormState> {
+  const audit = await staffWith("customers.manage");
+  if (!audit) return FORBIDDEN;
+  if (!isId(id) || typeof active !== "boolean") return { message: "Yêu cầu không hợp lệ." };
+  const changed = await setCustomerActive(id, active, audit({ action: active ? "customer.unlock" : "customer.lock", entity: "users", summary: `${active ? "Mở khoá" : "Khoá"} tài khoản khách` }));
+  refresh();
+  return changed ? { ok: true, message: active ? "Đã mở khoá tài khoản." : "Đã khoá tài khoản và đăng xuất mọi thiết bị." } : { message: "Tài khoản đã ở trạng thái này." };
 }
 
 export async function deleteProductAction(id: string): Promise<FormState> {
