@@ -10,14 +10,11 @@ import {
   DOCUMENT_TYPE_LABELS,
   isDocumentStatus,
   isDocumentType,
-  type StockDocumentType,
 } from "@/lib/stock";
 import { requireStaff } from "@/server/auth/session";
 import { listDocuments } from "@/server/repo/stock-documents";
 
 const PAGE_SIZE = 20;
-// Loại phiếu đã ghi sổ được (T10, T11 thêm các loại còn lại).
-const CREATABLE: StockDocumentType[] = ["receipt", "issue", "transfer", "return"];
 
 export default async function DocumentsPage({ searchParams }: PageProps<"/admin/kho/phieu">) {
   const user = await requireStaff("inventory.view", "/admin/kho/phieu");
@@ -42,7 +39,7 @@ export default async function DocumentsPage({ searchParams }: PageProps<"/admin/
         <h1 className="text-3xl font-bold tracking-tight">Phiếu kho ({formatNumber(total)})</h1>
         {can(user.role, "inventory.draft") && (
           <div className="flex flex-wrap gap-2">
-            {CREATABLE.map((value) => (
+            {DOCUMENT_TYPES.map((value) => (
               <CreateDocumentButton key={value} type={value} />
             ))}
           </div>

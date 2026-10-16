@@ -289,3 +289,86 @@ describe("phiếu xuất, chuyển vị trí, hàng trả, hàng cách ly (T10)"
     expect((await warehouse.listQuarantineStock()).find((r) => r.variantId === variantId)).toBeUndefined();
   });
 });
+
+async function newDoc(type: "adjustment" | "stocktake"): Promise<string> {
+  const error = await actions.createDocumentAction(type).catch((e: Error) => e);
+  return /phieu\/([a-f0-9]{20})/.exec(String(error))![1];
+}
+
+describe("điều chỉnh và kiểm kê (T11)", () => {
+  it("điều chỉnh tăng, giảm theo lý do; giảm bắt buộc ghi chú; WH-09: người tạo không tự ghi sổ, trừ quản trị viên", async () => {
+    const variantId = await stocked("ADJ1", 5);
+    const id = await newDoc("adjustment");
+    expect((await actions.saveDraftAction(id, { reasonCode: "damaged", lines: [line(variantId, { qty: -2 })] })).message).toMatch(/cần ghi chú/);
+    expect((await actions.saveDraftAction(id, { reasonCode: "damaged", lines: [line(variantId, { qty: 0 })] })).message).toMatch(/khác 0/);
+    expect((await actions.saveDraftAction(id, { reasonCode: "damaged", note: "Rơi vỡ khi bốc xếp", lines: [line(variantId, { qty: -2 })] })).ok).toBe(true);
+    expect((await actions.documentAction(id, "post")).message).toMatch(/kiểm soát kép/);
+    expect((await balance(variantId))!.onHand).toBe(5);
+
+    await signInAs((await createUser("warehouse_manager")).id);
+    expect((await actions.documentAction(id, "post")).ok).toBe(true);
+    expect((await balance(variantId))!.onHand).toBe(3);
+
+    const boss = await createUser("admin");
+    await signInAs(boss.id);
+    const own = await newDoc("adjustment");
+    await actions.saveDraftAction(own, { reasonCode: "found", lines: [line(variantId, { qty: 1 })] });
+    expect((await actions.documentAction(own, "post")).ok).toBe(true);
+    expect((await balance(variantId))!.onHand).toBe(4);
+    await signInAs(manager.id);
+  });
+
+  it("WH-04: kiểm kê sổ sách 8, đếm được 7: ghi sổ tạo điều chỉnh −1, truy được người và lý do", async () => {
+    const variantId = await stocked("WH04", 8);
+    const id = await newDoc("stocktake");
+    expect((await actions.saveDraftAction(id, { lines: [] })).message).toMatch(/chụp số/);
+    expect((await actions.startStocktakeAction(id, [a01])).ok).toBe(true);
+    expect((await actions.startStocktakeAction(id, [a01])).ok).toBeUndefined();
+    const doc = (await documents.findDocument(id))!;
+    expect(doc.snapshotAt).not.toBeNull();
+    const mine = doc.lines.find((l) => l.variantId === variantId)!;
+    expect(mine).toMatchObject({ systemQty: 8, qty: null });
+
+    // Trình duyệt chỉ gửi số đếm; số sổ sách gửi kèm (nếu có) bị bỏ qua.
+    const counted = doc.lines.map((l) => ({ variantId: l.variantId, locationId: l.locationId, qty: l.variantId === variantId ? 7 : (l.systemQty ?? 0), systemQty: 999, note: "" }));
+    expect((await actions.saveDraftAction(id, { lines: counted })).ok).toBe(true);
+    expect((await documents.findDocument(id))!.lines.find((l) => l.variantId === variantId)).toMatchObject({ systemQty: 8, qty: 7 });
+
+    expect((await actions.documentAction(id, "post")).message).toMatch(/kiểm soát kép/);
+    const checker = await createUser("warehouse_manager");
+    await signInAs(checker.id);
+    expect((await actions.documentAction(id, "post")).ok).toBe(true);
+    await signInAs(manager.id);
+    expect((await balance(variantId))!.onHand).toBe(7);
+    const db = await getDb();
+    const moves = await db.execute({ sql: "SELECT type, qty_delta, reason, actor_id FROM stock_movements WHERE document_id = ?", args: [id] });
+    expect(moves.rows).toEqual([{ type: "adjust_out", qty_delta: -1, reason: "count_loss", actor_id: checker.id }]);
+  });
+
+  it("WH-06 và QT-16: vị trí có biến động sau lúc chụp số thì không ghi sổ; một vị trí không thuộc hai phiếu kiểm kê mở", async () => {
+    const variantId = await stocked("WH06", 3);
+    const b01 = await warehouse.saveLocation(null, { code: "B-01", name: "", type: "storage" }, { actor: { id: manager.id, role: "warehouse_manager" }, action: "location.create", entity: "locations", summary: "test" });
+    const move = await newDocument("transfer");
+    await actions.saveDraftAction(move, { lines: [{ ...line(variantId, { qty: 3 }), toLocationId: b01 }] });
+    await actions.documentAction(move, "post");
+
+    const first = await newDoc("stocktake");
+    expect((await actions.startStocktakeAction(first, [b01!])).ok).toBe(true);
+    const second = await newDoc("stocktake");
+    expect((await actions.startStocktakeAction(second, [b01!])).message).toMatch(/QT-16/);
+
+    // Có người nhập thêm vào B-01 sau lúc chụp số.
+    const receipt = await newDocument("receipt");
+    await actions.saveDraftAction(receipt, { lines: [{ ...line(variantId, { qty: 1, unitCost: 1000 }), locationId: b01 }] });
+    expect((await actions.documentAction(receipt, "post")).ok).toBe(true);
+
+    const doc = (await documents.findDocument(first))!;
+    await actions.saveDraftAction(first, { lines: doc.lines.map((l) => ({ variantId: l.variantId, locationId: l.locationId, qty: 3, note: "" })) });
+    await signInAs((await createUser("warehouse_manager")).id);
+    expect((await actions.documentAction(first, "post")).message).toMatch(/B-01 có biến động/);
+    await signInAs(manager.id);
+    expect((await documents.findDocument(first))!.status).toBe("draft");
+    expect((await actions.documentAction(first, "cancel")).ok).toBe(true);
+    expect((await actions.startStocktakeAction(second, [b01!])).ok).toBe(true);
+  });
+});

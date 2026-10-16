@@ -86,7 +86,7 @@ Ghi nhớ kỹ thuật của dự án:
   Thêm các loại phiếu `issue`, `transfer`, `return` vào màn hình phiếu; trang `/admin/kho/cach-ly` với thao tác "bán lại được" và "huỷ hàng" (tạo phiếu tương ứng).
   Xong khi: test WH-03 (phiếu xuất vượt khả dụng), WH-05 (phiếu hàng trả), WH-07, không lấy được hàng đã giữ cho đơn.
 
-- [ ] **T11 — Điều chỉnh và kiểm kê.** Cần T09. YC-KHO-06, 07; Q10; QT-16; WH-04, WH-06, WH-09.
+- [x] **T11 — Điều chỉnh và kiểm kê.** Cần T09. YC-KHO-06, 07; Q10; QT-16; WH-04, WH-06, WH-09.
   Phiếu `adjustment` (lý do bắt buộc) và `stocktake` (chọn vị trí, chụp số sổ sách, màn hình đếm không hiện số sổ sách, ghi sổ tạo điều chỉnh, từ chối khi vị trí có biến động sau lúc chụp). Kiểm soát kép theo Q10.
   Xong khi: test WH-04, WH-06, WH-09, một vị trí không thuộc hai phiếu kiểm kê mở.
 
@@ -200,6 +200,12 @@ Ghi nhớ kỹ thuật của dự án:
 | 16/10/2026 | T10 | Hai nút ở trang hàng cách ly chỉ tạo phiếu nháp điền sẵn (chuyển toàn bộ về kệ đầu tiên, hoặc xuất toàn bộ); nhân viên sửa số lượng rồi gửi ghi sổ như thường | Giữ kiểm soát duyệt (K4) cho mọi biến động |
 | 16/10/2026 | T10 | QT-15 không cần kiểm tra riêng: xuất, chuyển từ kệ làm giảm on_hand, ràng buộc reserved ≤ on_hand trong CSDL tự chặn khi đụng hàng đã giữ | Một lớp chặn, không lệch giữa mã và CSDL |
 | 16/10/2026 | T10 | Phiếu hàng trả gắn đơn bằng mã đơn (không bắt buộc); dòng sổ kho `return_in` mang cả mã phiếu và mã đơn | YC-KHO-08 |
+| 16/10/2026 | T11 | Migration 008: `snapshot_at`, `count_locations` (JSON) ở `stock_documents` | Kiểm kê cần biết vị trí được đếm (kể cả vị trí trống) và lúc chụp số để kiểm WH-06 |
+| 16/10/2026 | T11 | Bắt đầu kiểm kê = chọn vị trí rồi chụp số: mỗi biến thể đang có hàng ở đó thành một dòng với `system_qty`, số đếm để trống; màn hình đếm không hiện số sổ sách; được thêm dòng cho hàng tìm thấy ngoài sổ (sổ sách 0) | YC-KHO-07 |
+| 16/10/2026 | T11 | WH-06 kiểm hai lớp: trước khi ghi sổ (báo rõ vị trí nào có biến động) và trong điều kiện SQL của giao dịch (trừ dòng của chính phiếu) | Lớp SQL chặn trường hợp biến động xảy ra đúng lúc ghi sổ |
+| 16/10/2026 | T11 | Kiểm soát kép (Q10) áp cho phiếu điều chỉnh và phiếu kiểm kê có ít nhất một dòng chênh; quản trị viên được tự ghi sổ (vẫn có nhật ký) | Đúng Q10 |
+| 16/10/2026 | T11 | Điều chỉnh giảm bắt buộc ghi chú ở phần đầu phiếu | YC-KHO-06 |
+| 16/10/2026 | T11 | QT-16 kiểm ở action khi chụp số (đã ghi `shortcut:` trong repo) | Một kho, ít người kiểm kê cùng lúc |
 
 ## Vướng mắc
 

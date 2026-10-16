@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Trash2 } from "lucide-react";
-import { createDocumentAction, documentAction, resolveQuarantineAction, saveDraftAction, type DocumentActionKey } from "@/app/actions/inventory";
+import { createDocumentAction, documentAction, resolveQuarantineAction, saveDraftAction, startStocktakeAction, type DocumentActionKey } from "@/app/actions/inventory";
 import { Button } from "@/components/ui/Button";
 import { Field, SelectField, TextAreaField } from "@/components/ui/Field";
 import { Notice } from "@/components/ui/Notice";
@@ -47,6 +47,9 @@ const COLUMNS: Partial<Record<StockDocumentType, { key: "qtyExpected" | "qty" | 
   issue: [{ key: "qty", label: "SL xuất" }],
   transfer: [{ key: "qty", label: "SL chuyển" }],
   return: [{ key: "qty", label: "SL nhận về" }],
+  adjustment: [{ key: "qty", label: "SL điều chỉnh (+/−)" }],
+  // Không hiện số sổ sách khi đang đếm (YC-KHO-07).
+  stocktake: [{ key: "qty", label: "Số đếm" }],
 };
 
 const cell = "h-9 w-24 rounded-lg border border-line bg-surface px-2 text-right text-sm tabular-nums focus:border-brand focus:outline-none";
@@ -225,7 +228,7 @@ export function DocumentEditor({
                           aria-label={`${column.label} của ${line.sku}`}
                           inputMode="numeric"
                           value={line[column.key]}
-                          onChange={(e) => update(index, { [column.key]: e.target.value.replace(/\D/g, "") })}
+                          onChange={(e) => update(index, { [column.key]: document.type === "adjustment" ? e.target.value.replace(/(?!^-)\D/g, "") : e.target.value.replace(/\D/g, "") })}
                           className={column.key === "unitCost" ? `${cell} w-32` : cell}
                         />
                       </td>
@@ -320,5 +323,43 @@ export function QuarantineActions({ variantId, locationId }: { variantId: string
       </div>
       {result.message && <Notice tone="error">{result.message}</Notice>}
     </div>
+  );
+}
+
+// YC-KHO-07: chọn vị trí (một, nhiều hoặc toàn kho) rồi chụp số sổ sách để bắt đầu đếm.
+export function StocktakeStart({ id, locations }: { id: string; locations: (Option & { busy: boolean })[] }) {
+  const [chosen, setChosen] = useState<string[]>([]);
+  const [pending, startTransition] = useTransition();
+  const [result, setResult] = useState<FormState>({});
+  const free = locations.filter((l) => !l.busy);
+  return (
+    <section className="space-y-4 rounded-xl border border-line bg-surface p-5 sm:p-6">
+      <h2 className="text-lg font-semibold">Chọn vị trí cần kiểm kê</h2>
+      {result.message && <Notice tone={result.ok ? "success" : "error"}>{result.message}</Notice>}
+      <div className="flex flex-wrap gap-2">
+        <Button type="button" size="sm" variant="secondary" onClick={() => setChosen(free.map((l) => l.id))}>
+          Chọn toàn kho
+        </Button>
+      </div>
+      <fieldset className="grid gap-2 sm:grid-cols-3">
+        <legend className="sr-only">Vị trí</legend>
+        {locations.map((l) => (
+          <label key={l.id} className={`flex items-center gap-2 text-sm ${l.busy ? "text-muted" : ""}`}>
+            <input
+              type="checkbox"
+              disabled={l.busy}
+              checked={chosen.includes(l.id)}
+              onChange={(e) => setChosen(e.target.checked ? [...chosen, l.id] : chosen.filter((x) => x !== l.id))}
+              className="size-4 accent-brand"
+            />
+            {l.label}
+            {l.busy && " (đang kiểm kê ở phiếu khác)"}
+          </label>
+        ))}
+      </fieldset>
+      <Button disabled={pending || chosen.length === 0} onClick={() => startTransition(async () => setResult(await startStocktakeAction(id, chosen)))}>
+        Chụp số sổ sách và bắt đầu đếm
+      </Button>
+    </section>
   );
 }

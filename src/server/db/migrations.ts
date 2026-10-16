@@ -487,4 +487,13 @@ export const MIGRATIONS: Migration[] = [
       "ALTER TABLE payments ENABLE ROW LEVEL SECURITY",
     ],
   },
+  {
+    // Kiểm kê (YC-KHO-07): các vị trí được đếm và thời điểm chụp số sổ sách. Có biến động sau lúc chụp thì
+    // không ghi sổ (WH-06). Dòng điều chỉnh mang số có dấu trong `qty`.
+    id: "008_stocktake",
+    statements: [
+      "ALTER TABLE stock_documents ADD COLUMN snapshot_at BIGINT",
+      "ALTER TABLE stock_documents ADD COLUMN count_locations TEXT NOT NULL DEFAULT '[]'",
+    ],
+  },
 ];

@@ -10,7 +10,16 @@ import { isEmail, readText } from "@/lib/validation";
 import { PRODUCTS_TAG } from "@/server/catalog";
 import { findOrderIdByCode } from "@/server/repo/orders";
 import { isConstraintError } from "@/server/db";
-import { changeDocumentStatus, createDocument, findDocument, postDocument, saveDraft, type DraftInput } from "@/server/repo/stock-documents";
+import {
+  changeDocumentStatus,
+  createDocument,
+  findDocument,
+  locationsInOpenStocktakes,
+  postDocument,
+  saveDraft,
+  startStocktake,
+  type DraftInput,
+} from "@/server/repo/stock-documents";
 import { FORBIDDEN, changes, isId, staffWith } from "@/server/staff-action";
 import {
   listLocations,
@@ -174,6 +183,9 @@ const intOrNull = (value: unknown, max: number) =>
     : Number.isInteger(Number(value)) && Number(value) >= 0 && Number(value) <= max
       ? Number(value)
       : NaN;
+// Số nguyên có dấu, khác 0 hoặc null (phiếu điều chỉnh).
+const signedInt = (value: unknown) =>
+  value === null || value === undefined || value === "" ? null : Number.isInteger(Number(value)) && Math.abs(Number(value)) <= MAX_LINE_QTY ? Number(value) : NaN;
 const textOf = (value: unknown, max: number) => (typeof value === "string" ? value.trim().slice(0, max) : "");
 
 export async function createDocumentAction(type: StockDocumentType): Promise<FormState> {
@@ -223,6 +235,9 @@ export async function saveDraftAction(id: string, payload: DraftPayload): Promis
   if (document.type === "return" && orderCode && !orderId) errors.push(`Không có đơn hàng mã ${orderCode}.`);
 
   const type = document.type;
+  if (type === "stocktake" && !document.snapshotAt) return { message: "Chọn vị trí và chụp số sổ sách trước khi đếm." };
+  // Số sổ sách của phiếu kiểm kê do máy chủ chụp; không nhận từ trình duyệt.
+  const snapshot = new Map(document.lines.map((line) => [`${line.variantId}:${line.locationId}`, line.systemQty ?? 0]));
   const lines: DraftInput["lines"] = [];
   const seen = new Set<string>();
   for (const [index, raw] of (payload.lines as LineInput[]).entries()) {
@@ -233,25 +248,30 @@ export async function saveDraftAction(id: string, payload: DraftPayload): Promis
     const location = locations.find((l) => l.id === locationId);
     const toLocation = locations.find((l) => l.id === toLocationId);
     const qtyExpected = type === "receipt" ? intOrNull(raw?.qtyExpected, MAX_LINE_QTY) : null;
-    const qty = intOrNull(raw?.qty, MAX_LINE_QTY);
+    const qty = type === "adjustment" ? signedInt(raw?.qty) : intOrNull(raw?.qty, MAX_LINE_QTY);
     const qtyQuarantined = type === "receipt" ? intOrNull(raw?.qtyQuarantined, MAX_LINE_QTY) : null;
     const unitCost = type === "receipt" ? intOrNull(raw?.unitCost, 1_000_000_000) : null;
     if (!isId(variantId)) errors.push(`${label}: chưa chọn sản phẩm.`);
     if (!location || !location.isActive) errors.push(`${label}: vị trí không hợp lệ hoặc đã ngừng dùng.`);
     else if (type === "receipt" && location.type !== "storage") errors.push(`${label}: hàng nhận tốt phải vào kệ hàng; phần lỗi ghi ở cột cách ly.`);
     else if (type === "return" && location.type !== "quarantine") errors.push(`${label}: hàng trả phải nhận vào khu cách ly.`);
+    else if (type === "stocktake" && !document.countLocations.includes(locationId)) errors.push(`${label}: vị trí không thuộc phiếu kiểm kê này.`);
     if (type === "transfer" && (!toLocation || !toLocation.isActive || toLocationId === locationId)) errors.push(`${label}: chọn vị trí đích khác vị trí nguồn.`);
     for (const [name, value] of [["SL dự kiến", qtyExpected], ["Số lượng", qty], ["SL cách ly", qtyQuarantined], ["Đơn giá", unitCost]] as const) {
       if (Number.isNaN(value)) errors.push(`${label}: ${name} phải là số nguyên không âm.`);
     }
-    if (type !== "receipt" && !((qty ?? 0) > 0)) errors.push(`${label}: số lượng phải lớn hơn 0.`);
-    if ((qtyQuarantined ?? 0) > (qty ?? 0)) errors.push(`${label}: SL cách ly không được lớn hơn SL thực nhận.`);
+    if (type === "adjustment" && !qty) errors.push(`${label}: số lượng điều chỉnh phải khác 0 (số âm là giảm).`);
+    else if (type !== "receipt" && type !== "stocktake" && type !== "adjustment" && !((qty ?? 0) > 0)) errors.push(`${label}: số lượng phải lớn hơn 0.`);
+    if (type === "receipt" && (qtyQuarantined ?? 0) > (qty ?? 0)) errors.push(`${label}: SL cách ly không được lớn hơn SL thực nhận.`);
     if (type === "receipt" && (qty ?? 0) > 0 && unitCost === null) errors.push(`${label}: cần nhập đơn giá nhập.`);
     const key = `${variantId}:${locationId}`;
     if (seen.has(key)) errors.push(`${label}: trùng sản phẩm và vị trí với một dòng khác.`);
     seen.add(key);
-    lines.push({ variantId, locationId, toLocationId: toLocationId || null, qtyExpected, qty, qtyQuarantined, systemQty: null, unitCost, note: textOf(raw?.note, 200) });
+    const systemQty = type === "stocktake" ? (snapshot.get(key) ?? 0) : null;
+    lines.push({ variantId, locationId, toLocationId: toLocationId || null, qtyExpected, qty, qtyQuarantined, systemQty, unitCost, note: textOf(raw?.note, 200) });
   }
+  // YC-KHO-06: điều chỉnh giảm bắt buộc ghi chú.
+  if (type === "adjustment" && lines.some((line) => (line.qty ?? 0) < 0) && !textOf(payload.note, 500)) errors.push("Điều chỉnh giảm cần ghi chú lý do cụ thể.");
   if (errors.length > 0) return { message: errors.slice(0, 8).join(" ") };
 
   try {
@@ -294,6 +314,12 @@ export async function documentAction(id: string, action: DocumentActionKey): Pro
     detail: { before: { status: document.status } },
   });
   if (action === "post") {
+    // Q10: điều chỉnh, kiểm kê có chênh lệch thì người ghi sổ phải khác người tạo; quản trị viên được tự ghi sổ.
+    const hasDifference = document.type === "adjustment" || document.lines.some((line) => line.qty !== null && line.qty !== line.systemQty);
+    const dualControl = (document.type === "adjustment" || document.type === "stocktake") && hasDifference;
+    if (dualControl && document.createdBy === audit.user.id && audit.user.role !== "admin") {
+      return { message: "Phiếu điều chỉnh, kiểm kê có chênh lệch phải do người khác ghi sổ (kiểm soát kép)." };
+    }
     const result = await postDocument(id, entry);
     refresh();
     if (result.ok) {
@@ -349,4 +375,26 @@ export async function resolveQuarantineAction(variantId: string, locationId: str
     ],
   });
   redirect(`/admin/kho/phieu/${id}`);
+}
+
+// YC-KHO-07: chọn vị trí và chụp số sổ sách để bắt đầu đếm.
+export async function startStocktakeAction(id: string, locationIds: string[]): Promise<FormState> {
+  const found = await documentFor(id, "inventory.draft");
+  if (!found) return FORBIDDEN;
+  const { audit, document } = found;
+  if (document.type !== "stocktake" || document.status !== "draft" || document.snapshotAt) return { message: "Phiếu này đã bắt đầu kiểm kê hoặc không phải phiếu kiểm kê." };
+  if (!Array.isArray(locationIds) || locationIds.length === 0 || locationIds.length > 200 || !locationIds.every(isId)) return { message: "Chọn ít nhất một vị trí." };
+  const locations = await listLocations();
+  const chosen = [...new Set(locationIds)];
+  if (!chosen.every((locationId) => locations.some((l) => l.id === locationId && l.isActive))) return { message: "Có vị trí không hợp lệ hoặc đã ngừng dùng." };
+  const busy = await locationsInOpenStocktakes(id);
+  const conflict = locations.filter((l) => chosen.includes(l.id) && busy.has(l.id)).map((l) => l.code);
+  if (conflict.length > 0) return { message: `Vị trí ${conflict.join(", ")} đang thuộc một phiếu kiểm kê khác chưa ghi sổ (QT-16).` };
+  const started = await startStocktake(
+    id,
+    chosen,
+    audit({ action: "stock_document.snapshot", entity: "stock_documents", summary: `Chụp số sổ sách để kiểm kê ${document.code}`, detail: { after: { locations: chosen.length } } }),
+  );
+  refresh();
+  return started ? { ok: true, message: "Đã chụp số sổ sách. Bắt đầu đếm." } : { message: "Phiếu vừa được bắt đầu ở nơi khác. Trang vừa được tải lại." };
 }

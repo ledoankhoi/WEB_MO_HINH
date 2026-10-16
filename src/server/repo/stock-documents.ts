@@ -56,6 +56,9 @@ export type StockDocument = {
   submittedAt: number | null;
   postedAt: number | null;
   cancelledAt: number | null;
+  // Kiểm kê: lúc chụp số sổ sách và các vị trí được đếm.
+  snapshotAt: number | null;
+  countLocations: string[];
   lines: DocumentLine[];
 };
 
@@ -84,6 +87,15 @@ function toDocument(row: Row): Omit<StockDocument, "lines"> {
     submittedAt: num(row.submitted_at),
     postedAt: num(row.posted_at),
     cancelledAt: num(row.cancelled_at),
+    snapshotAt: num(row.snapshot_at),
+    countLocations: (() => {
+      try {
+        const parsed: unknown = JSON.parse(String(row.count_locations ?? "[]"));
+        return Array.isArray(parsed) ? parsed.map(String) : [];
+      } catch {
+        return [];
+      }
+    })(),
   };
 }
 
@@ -308,6 +320,24 @@ export async function postDocument(id: string, entry: AuditEntry): Promise<PostR
     for (const line of document.lines) {
       if ((line.qty ?? 0) > 0) move({ variantId: line.variantId, locationId: line.locationId, type: "return_in", qtyDelta: line.qty ?? 0, orderId: document.orderId });
     }
+  } else if (document.type === "adjustment") {
+    for (const line of document.lines) {
+      const qty = line.qty ?? 0;
+      if (qty !== 0) move({ variantId: line.variantId, locationId: line.locationId, type: qty > 0 ? "adjust_in" : "adjust_out", qtyDelta: qty, reason: document.reasonCode });
+    }
+  } else if (document.type === "stocktake") {
+    if (!document.snapshotAt) return { ok: false, reason: "invalid", message: "Phiếu kiểm kê chưa chụp số sổ sách." };
+    if (document.lines.some((line) => line.qty === null)) return { ok: false, reason: "invalid", message: "Còn dòng chưa nhập số đếm." };
+    // WH-06: vị trí có biến động sau lúc chụp số thì số đếm không còn so được với sổ sách.
+    const changed = await movedSince(document.countLocations, document.snapshotAt);
+    if (changed) return { ok: false, reason: "invalid", message: `Vị trí ${changed} có biến động sau lúc chụp số. Hãy huỷ phiếu và kiểm kê lại.` };
+    guard.sql += ` AND NOT EXISTS (SELECT 1 FROM stock_movements m WHERE m.location_id IN (SELECT jsonb_array_elements_text(count_locations::jsonb) FROM stock_documents WHERE id = ?) AND m.created_at > ? AND m.document_id IS DISTINCT FROM ?)`;
+    // Trừ chính các dòng phiếu này đang ghi trong cùng giao dịch.
+    guard.args.push(id, document.snapshotAt, id);
+    for (const line of document.lines) {
+      const diff = (line.qty ?? 0) - (line.systemQty ?? 0);
+      if (diff !== 0) move({ variantId: line.variantId, locationId: line.locationId, type: diff > 0 ? "adjust_in" : "adjust_out", qtyDelta: diff, reason: diff > 0 ? "count_gain" : "count_loss" });
+    }
   } else {
     return { ok: false, reason: "invalid", message: "Loại phiếu này chưa ghi sổ được." };
   }
@@ -315,8 +345,9 @@ export async function postDocument(id: string, entry: AuditEntry): Promise<PostR
   statements.push(
     withAudit(
       {
-        sql: "UPDATE stock_documents SET status = 'posted', posted_by = ?, posted_at = ?, updated_at = ? WHERE id = ? AND status IN ('draft', 'submitted')",
-        args: [entry.actor.id, now, now, id],
+        // Cùng điều kiện với các lệnh ghi kho: điều kiện sai thì không dòng nào ghi và phiếu cũng không đổi.
+        sql: `UPDATE stock_documents SET status = 'posted', posted_by = ?, posted_at = ?, updated_at = ? WHERE id = ? AND ${guard.sql}`,
+        args: [entry.actor.id, now, now, id, ...guard.args],
       },
       entry,
     ),
@@ -330,4 +361,53 @@ export async function postDocument(id: string, entry: AuditEntry): Promise<PostR
     if (isConstraintError(error)) return { ok: false, reason: "stock" };
     throw error;
   }
+}
+
+// Mã vị trí đầu tiên có dòng sổ kho sau thời điểm `since`, hoặc null.
+async function movedSince(locationIds: string[], since: number): Promise<string | null> {
+  if (locationIds.length === 0) return null;
+  const db = await getDb();
+  const result = await db.execute({
+    sql: `SELECT l.code FROM stock_movements m JOIN locations l ON l.id = m.location_id
+          WHERE m.location_id IN (${locationIds.map(() => "?").join(", ")}) AND m.created_at > ? ORDER BY l.code LIMIT 1`,
+    args: [...locationIds, since],
+  });
+  return result.rows[0] ? String(result.rows[0].code) : null;
+}
+
+// Vị trí đang thuộc một phiếu kiểm kê chưa ghi sổ khác (QT-16).
+export async function locationsInOpenStocktakes(exceptId: string): Promise<Set<string>> {
+  const db = await getDb();
+  const result = await db.execute({
+    sql: "SELECT count_locations FROM stock_documents WHERE type = 'stocktake' AND status IN ('draft', 'submitted') AND id <> ?",
+    args: [exceptId],
+  });
+  return new Set(result.rows.flatMap((row) => JSON.parse(String(row.count_locations)) as string[]));
+}
+
+// Bắt đầu kiểm kê (YC-KHO-07): chụp số sổ sách của mọi biến thể đang có ở các vị trí đã chọn thành dòng phiếu
+// (system_qty), số đếm để trống. Chỉ làm một lần, khi phiếu còn nháp và chưa chụp.
+// shortcut: QT-16 kiểm ở lớp action trước khi gọi; hai người chụp cùng lúc cùng vị trí có thể lọt, khi nhiều kho
+// thật thì khoá theo vị trí.
+export async function startStocktake(id: string, locationIds: string[], entry: AuditEntry): Promise<boolean> {
+  const db = await getDb();
+  const now = Date.now();
+  const open = "EXISTS (SELECT 1 FROM stock_documents WHERE id = ? AND type = 'stocktake' AND status = 'draft' AND snapshot_at IS NULL)";
+  const results = await db.batch([
+    { sql: "SELECT id FROM stock_documents WHERE id = ? FOR UPDATE", args: [id] },
+    {
+      sql: `INSERT INTO stock_document_lines (document_id, variant_id, location_id, system_qty)
+            SELECT ?, s.variant_id, s.location_id, s.on_hand FROM stock_levels s
+            WHERE s.location_id IN (${locationIds.map(() => "?").join(", ")}) AND s.on_hand > 0 AND ${open}`,
+      args: [id, ...locationIds, id],
+    },
+    withAudit(
+      {
+        sql: "UPDATE stock_documents SET snapshot_at = ?, count_locations = ?, updated_at = ? WHERE id = ? AND status = 'draft' AND snapshot_at IS NULL",
+        args: [now, JSON.stringify(locationIds), now, id],
+      },
+      entry,
+    ),
+  ]);
+  return results[results.length - 1].rowsAffected > 0;
 }
