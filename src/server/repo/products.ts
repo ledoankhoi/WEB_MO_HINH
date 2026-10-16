@@ -39,14 +39,17 @@ function toVariant(row: Row): ProductVariant {
   return {
     id: String(row.id),
     sku: String(row.sku),
+    barcode: row.barcode === null || row.barcode === undefined ? null : String(row.barcode),
     name: String(row.name),
     condition: row.condition === "used" ? "used" : "new",
+    conditionNote: String(row.condition_note ?? ""),
     price: Number(row.price),
     compareAtPrice: row.compare_at_price === null ? null : Number(row.compare_at_price),
     stock: Number(row.stock),
     colors: colorsOf(row),
     isDefault: Boolean(row.is_default),
     isActive: Boolean(row.is_active),
+    locked: Boolean(row.locked),
   };
 }
 
@@ -60,6 +63,12 @@ function toProduct(row: Row, variants: ProductVariant[]): Product {
     tagline: String(row.tagline),
     description: String(row.description),
     category: String(row.category),
+    brandId: row.brand_id === null || row.brand_id === undefined ? null : String(row.brand_id),
+    seriesId: row.series_id === null || row.series_id === undefined ? null : String(row.series_id),
+    productType: (String(row.product_type ?? "figure") as Product["productType"]),
+    scale: String(row.scale ?? ""),
+    grade: String(row.grade ?? ""),
+    boxContents: String(row.box_contents ?? ""),
     price: Number(row.price),
     compareAtPrice: row.compare_at_price === null ? null : Number(row.compare_at_price),
     stock: Number(row.stock),
@@ -93,6 +102,9 @@ function toSummary(row: Row): ProductSummary {
   };
 }
 
+// Biến thể đã có sổ kho hoặc đơn hàng.
+const VARIANT_USED = "(EXISTS (SELECT 1 FROM stock_movements m WHERE m.variant_id = v.id) OR EXISTS (SELECT 1 FROM order_items oi WHERE oi.variant_id = v.id))";
+
 // Số có thể bán của biến thể (một kho, Q2).
 const VARIANT_STOCK = "COALESCE((SELECT SUM(i.on_hand - i.reserved) FROM inventory i WHERE i.variant_id = v.id), 0)::int";
 
@@ -101,7 +113,7 @@ async function loadProduct(where: string, arg: string): Promise<Product | null> 
   const [product, variants] = await db.batch([
     { sql: `SELECT * FROM product_list WHERE ${where}`, args: [arg] },
     {
-      sql: `SELECT v.*, ${VARIANT_STOCK} AS stock FROM product_variants v
+      sql: `SELECT v.*, ${VARIANT_STOCK} AS stock, ${VARIANT_USED} AS locked FROM product_variants v
             WHERE v.product_id = (SELECT id FROM products WHERE ${where}) ORDER BY v.sort_order, v.created_at, v.id`,
       args: [arg],
     },
@@ -215,12 +227,6 @@ export async function countProductsByCategory(): Promise<Record<string, number>>
   return Object.fromEntries(result.rows.map((row) => [String(row.category), Number(row.total)]));
 }
 
-// Danh sách cho trang quản trị (cả bản nháp, đã lưu trữ), không kèm danh sách biến thể.
-export async function listAllProducts(): Promise<Product[]> {
-  const db = await getDb();
-  const result = await db.execute("SELECT * FROM product_list ORDER BY created_at DESC, id");
-  return result.rows.map((row) => toProduct(row, []));
-}
 
 // Thông tin chung của sản phẩm và biến thể mặc định. Tồn kho không sửa ở đây mà qua phiếu kho (QT-11).
 export type ProductInput = {
@@ -229,6 +235,12 @@ export type ProductInput = {
   tagline: string;
   description: string;
   category: string;
+  brandId: string | null;
+  seriesId: string | null;
+  productType: Product["productType"];
+  scale: string;
+  grade: string;
+  boxContents: string;
   sku: string;
   price: number;
   compareAtPrice: number | null;
@@ -249,6 +261,12 @@ function productArgs(input: ProductInput): InValue[] {
     input.tagline,
     input.description,
     input.category,
+    input.brandId,
+    input.seriesId,
+    input.productType,
+    input.scale || null,
+    input.grade || null,
+    input.boxContents,
     input.model,
     input.modelUrl,
     JSON.stringify(input.specs),
@@ -274,9 +292,9 @@ export async function insertProduct(input: ProductInput, audit?: AuditEntry): Pr
   await db.batch([
     {
       sql: `INSERT INTO products (
-              slug, name, tagline, description, category_id, model, model_url, specs, search_text, is_featured, status,
-              published_at, id, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ${CATEGORY_ID}, ?, ?, ?, ?, ?, ?, CASE WHEN ? = 'published' THEN ?::bigint END, ?, ?, ?)`,
+              slug, name, tagline, description, category_id, brand_id, series_id, product_type, scale, grade, box_contents,
+              model, model_url, specs, search_text, is_featured, status, published_at, id, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ${CATEGORY_ID}, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CASE WHEN ? = 'published' THEN ?::bigint END, ?, ?, ?)`,
       args: [...productArgs(input), input.status, now, id, now, now],
     },
     {
@@ -299,7 +317,8 @@ export async function updateProduct(id: string, input: ProductInput, audit?: Aud
     withAudit(
       {
         sql: `UPDATE products SET
-                slug = ?, name = ?, tagline = ?, description = ?, category_id = ${CATEGORY_ID}, model = ?, model_url = ?,
+                slug = ?, name = ?, tagline = ?, description = ?, category_id = ${CATEGORY_ID}, brand_id = ?, series_id = ?,
+                product_type = ?, scale = ?, grade = ?, box_contents = ?, model = ?, model_url = ?,
                 specs = ?, search_text = ?, is_featured = ?, status = ?,
                 published_at = CASE WHEN ? = 'published' THEN COALESCE(published_at, ?) ELSE published_at END, updated_at = ?
               WHERE id = ?`,
@@ -382,4 +401,144 @@ export async function listVariantOptions(): Promise<VariantOption[]> {
     barcode: row.barcode === null ? null : String(row.barcode),
     name: String(row.name),
   }));
+}
+
+export type VariantInput = {
+  sku: string;
+  barcode: string | null;
+  name: string;
+  condition: "new" | "used";
+  conditionNote: string;
+  price: number;
+  compareAtPrice: number | null;
+  colors: RobotColors;
+};
+
+// Thêm hoặc sửa biến thể (YC-SP-03). SKU chỉ đổi được khi biến thể chưa có sổ kho, đơn hàng. Ném lỗi ràng buộc
+// khi trùng SKU hoặc mã vạch. Trả về id, hoặc null khi biến thể không thuộc sản phẩm.
+export async function saveVariant(productId: string, variantId: string | null, input: VariantInput, audit?: AuditEntry): Promise<string | null> {
+  const db = await getDb();
+  const now = Date.now();
+  const args = [input.barcode, input.name, input.condition, input.conditionNote, input.price, input.compareAtPrice, input.colors.primary, input.colors.secondary, input.colors.accent];
+  if (variantId) {
+    const result = await db.execute(
+      withAudit(
+        {
+          sql: `UPDATE product_variants v SET barcode = ?, name = ?, condition = ?, condition_note = ?, price = ?, compare_at_price = ?,
+                  color_primary = ?, color_secondary = ?, color_accent = ?, updated_at = ?,
+                  sku = CASE WHEN ${VARIANT_USED} THEN v.sku ELSE ? END
+                WHERE v.id = ? AND v.product_id = ?`,
+          args: [...args, now, input.sku, variantId, productId],
+        },
+        audit,
+      ),
+    );
+    return result.rowsAffected > 0 ? variantId : null;
+  }
+  const id = newId();
+  await db.batch([
+    {
+      sql: `INSERT INTO product_variants (barcode, name, condition, condition_note, price, compare_at_price, color_primary, color_secondary, color_accent,
+              id, product_id, sku, is_default, sort_order, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, false, (SELECT COUNT(*) FROM product_variants WHERE product_id = ?), ?, ?)`,
+      args: [...args, id, productId, input.sku, productId, now, now],
+    },
+    ...(audit ? [auditStatement({ ...audit, entityId: id })] : []),
+  ]);
+  return id;
+}
+
+// Bật, tắt biến thể. Không tắt biến thể mặc định (đổi mặc định trước).
+export async function setVariantActive(productId: string, variantId: string, active: boolean, audit?: AuditEntry): Promise<boolean> {
+  const db = await getDb();
+  const result = await db.execute(
+    withAudit(
+      {
+        sql: "UPDATE product_variants SET is_active = ?, updated_at = ? WHERE id = ? AND product_id = ? AND is_active <> ? AND (? OR NOT is_default)",
+        args: [active, Date.now(), variantId, productId, active, active],
+      },
+      audit,
+    ),
+  );
+  return result.rowsAffected > 0;
+}
+
+// Đổi biến thể mặc định (phải đang bật). Hai lệnh trong một giao dịch để luôn đúng một biến thể mặc định.
+export async function setDefaultVariant(productId: string, variantId: string, audit?: AuditEntry): Promise<boolean> {
+  const db = await getDb();
+  const ok = "EXISTS (SELECT 1 FROM product_variants WHERE id = ? AND product_id = ? AND is_active)";
+  const results = await db.batch([
+    { sql: `UPDATE product_variants SET is_default = false WHERE product_id = ? AND is_default AND id <> ? AND ${ok}`, args: [productId, variantId, variantId, productId] },
+    withAudit({ sql: "UPDATE product_variants SET is_default = true WHERE id = ? AND product_id = ? AND is_active AND NOT is_default", args: [variantId, productId] }, audit),
+  ]);
+  return results[1].rowsAffected > 0;
+}
+
+export type PriceChange = { at: number; actorName: string | null; summary: string; before: Record<string, unknown>; after: Record<string, unknown> };
+
+// Lịch sử giá (YC-SP-07) lấy từ nhật ký: đổi giá ở form sản phẩm (biến thể mặc định) và ở từng biến thể.
+export async function listPriceHistory(productId: string, limit = 30): Promise<PriceChange[]> {
+  const db = await getDb();
+  const result = await db.execute({
+    sql: `SELECT a.created_at, a.summary, a.detail, u.name AS actor_name FROM audit_logs a LEFT JOIN users u ON u.id = a.actor_id
+          WHERE a.action = 'product.price_change'
+            AND (a.entity_id = ? OR a.entity_id IN (SELECT id FROM product_variants WHERE product_id = ?))
+          ORDER BY a.id DESC LIMIT ?`,
+    args: [productId, productId, limit],
+  });
+  return result.rows.map((row) => {
+    const detail = JSON.parse(String(row.detail || "{}")) as { before?: Record<string, unknown>; after?: Record<string, unknown> };
+    return { at: Number(row.created_at), actorName: row.actor_name === null ? null : String(row.actor_name), summary: String(row.summary), before: detail.before ?? {}, after: detail.after ?? {} };
+  });
+}
+
+// YC-SP-05: xuất bản được khi có ít nhất một biến thể đang bật và có ảnh đại diện.
+export async function canPublish(productId: string): Promise<{ activeVariant: boolean; image: boolean }> {
+  const db = await getDb();
+  const result = await db.execute({
+    sql: `SELECT EXISTS (SELECT 1 FROM product_variants WHERE product_id = p.id AND is_active) AS active_variant, p.image IS NOT NULL AND p.image <> '' AS image
+          FROM products p WHERE p.id = ?`,
+    args: [productId],
+  });
+  const row = result.rows[0];
+  return { activeVariant: Boolean(row?.active_variant), image: Boolean(row?.image) };
+}
+
+// Danh sách cho trang quản trị: mọi trạng thái, lọc và phân trang ở máy chủ (YC-QTN-08).
+export async function listAdminProducts(query: {
+  q?: string;
+  status?: ProductStatus;
+  category?: string;
+  brandId?: string;
+  page?: number;
+  pageSize?: number;
+}): Promise<{ items: Product[]; total: number }> {
+  const where: string[] = [];
+  const args: InValue[] = [];
+  if (query.status) {
+    where.push("status = ?");
+    args.push(query.status);
+  }
+  if (query.category) {
+    where.push("category = ?");
+    args.push(query.category);
+  }
+  if (query.brandId) {
+    where.push("brand_id = ?");
+    args.push(query.brandId);
+  }
+  for (const term of foldText(query.q ?? "").split(" ").filter(Boolean).slice(0, 6)) {
+    where.push("(search_text LIKE ? ESCAPE '\' OR lower(sku) LIKE ? ESCAPE '\')");
+    const like = `%${term.replace(/[\%_]/g, "\$&")}%`;
+    args.push(like, like);
+  }
+  const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
+  const pageSize = Math.min(Math.max(query.pageSize ?? 30, 1), 100);
+  const page = Math.max(query.page ?? 1, 1);
+  const db = await getDb();
+  const [count, rows] = await db.batch([
+    { sql: `SELECT COUNT(*) AS total FROM product_list ${whereSql}`, args },
+    { sql: `SELECT * FROM product_list ${whereSql} ORDER BY created_at DESC, id LIMIT ? OFFSET ?`, args: [...args, pageSize, (page - 1) * pageSize] },
+  ]);
+  return { items: rows.rows.map((row) => toProduct(row, [])), total: Number(count.rows[0].total) };
 }

@@ -38,7 +38,7 @@ Ngoài phạm vi bước 1: cổng thanh toán trực tuyến, tích hợp hãng
 | Mã | Yêu cầu | Hiện trạng |
 | --- | --- | --- |
 | YC-DM-01 | Sản phẩm thuộc một danh mục (tối đa 2 cấp), có thể có thương hiệu, series, loại, tỷ lệ, cấp độ | Sửa |
-| YC-DM-02 | Sản phẩm có một hoặc nhiều biến thể; mỗi biến thể có SKU, tên, tình trạng (mới, đã qua sử dụng), giá riêng | Có (dữ liệu; màn hình quản lý biến thể ở T06) |
+| YC-DM-02 | Sản phẩm có một hoặc nhiều biến thể; mỗi biến thể có SKU, tên, tình trạng (mới, đã qua sử dụng), giá riêng | Có |
 | YC-DM-03 | Chỉ sản phẩm `published` và biến thể đang bật hiện cho khách | Có |
 | YC-DM-04 | Trang sản phẩm hiện tên, thương hiệu, series, giá và tình trạng hàng của biến thể đang chọn, mô tả, thông số, đánh giá, sản phẩm liên quan | Sửa |
 | YC-DM-05 | Khách đổi biến thể trên trang sản phẩm; giá, tồn kho và màu mô hình 3D đổi theo | Có (trừ màu mô hình 3D dựng sẵn) |
@@ -109,7 +109,7 @@ Cập nhật 15/10/2026: phần quản trị và kho được đặc tả chi ti
 | Mã | Yêu cầu | Vai trò | Hiện trạng |
 | --- | --- | --- | --- |
 | YC-QT-01 | Trang quản trị chỉ mở cho nhân viên; mỗi chức năng kiểm tra vai trò ở máy chủ | Tất cả | Có |
-| YC-QT-02 | Tạo, sửa, xuất bản, lưu trữ sản phẩm; quản lý biến thể | Quản lý sản phẩm | Chưa (có sẵn một phần xử lý ở máy chủ) |
+| YC-QT-02 | Tạo, sửa, xuất bản, lưu trữ sản phẩm; quản lý biến thể | Quản lý sản phẩm | Có (thiếu tải ảnh, SEO: T07, T21) |
 | YC-QT-03 | Quản lý danh mục, thương hiệu, series | Quản lý sản phẩm | Có |
 | YC-QT-04 | Chụp ảnh đại diện từ mô hình 3D khi lưu sản phẩm | Quản lý sản phẩm | Chưa (có sẵn phần chụp) |
 | YC-QT-05 | Xem tồn kho, nhập kho, điều chỉnh có lý do, xem lịch sử biến động, danh sách sắp hết | Nhân viên kho | Có |

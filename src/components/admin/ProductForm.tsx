@@ -7,7 +7,7 @@ import { deleteProductAction, saveProductAction } from "@/app/actions/admin";
 import { Button } from "@/components/ui/Button";
 import { Field, SelectField, TextAreaField } from "@/components/ui/Field";
 import { Notice } from "@/components/ui/Notice";
-import { CATEGORIES, ROBOT_MODELS, isRobotModelKey, type RobotColors } from "@/lib/catalog";
+import { PRODUCT_TYPES, PRODUCT_TYPE_LABELS, ROBOT_MODELS, isRobotModelKey, type RobotColors } from "@/lib/catalog";
 import type { FormState, Product } from "@/lib/types";
 
 // Three.js chỉ tải ở trình duyệt, và chỉ khi mở form sản phẩm.
@@ -58,7 +58,13 @@ function DeleteProductButton({ id }: { id: string }) {
   );
 }
 
-export function ProductForm({ product }: { product?: Product }) {
+export type ProductFormOptions = {
+  categories: { slug: string; name: string; parentId: string | null }[];
+  brands: { id: string; name: string }[];
+  series: { id: string; name: string }[];
+};
+
+export function ProductForm({ product, options }: { product?: Product; options: ProductFormOptions }) {
   const [state, formAction, pending] = useActionState(saveProductAction, INITIAL);
   const canvasState = useRef<RootState | null>(null);
   // Các ô quyết định hình dáng mô hình được theo dõi để khung xem trước đổi theo ngay.
@@ -97,12 +103,41 @@ export function ProductForm({ product }: { product?: Product }) {
         <TextAreaField label="Mô tả" name="description" rows={6} maxLength={5000} defaultValue={product?.description} error={errors.description} />
         <SelectField label="Danh mục" name="category" required defaultValue={product?.category ?? ""} error={errors.category}>
           <option value="">Chọn danh mục</option>
-          {CATEGORIES.map((category) => (
+          {options.categories.map((category) => (
             <option key={category.slug} value={category.slug}>
-              {category.name}
+              {category.parentId ? `└ ${category.name}` : category.name}
             </option>
           ))}
         </SelectField>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <SelectField label="Thương hiệu" name="brandId" defaultValue={state.values?.brandId ?? product?.brandId ?? ""} error={errors.brandId}>
+            <option value="">Không chọn</option>
+            {options.brands.map((brand) => (
+              <option key={brand.id} value={brand.id}>
+                {brand.name}
+              </option>
+            ))}
+          </SelectField>
+          <SelectField label="Series" name="seriesId" defaultValue={state.values?.seriesId ?? product?.seriesId ?? ""} error={errors.seriesId}>
+            <option value="">Không chọn</option>
+            {options.series.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.name}
+              </option>
+            ))}
+          </SelectField>
+          <SelectField label="Loại sản phẩm" name="productType" required defaultValue={state.values?.productType ?? product?.productType ?? "figure"} error={errors.productType}>
+            {PRODUCT_TYPES.map((value) => (
+              <option key={value} value={value}>
+                {PRODUCT_TYPE_LABELS[value]}
+              </option>
+            ))}
+          </SelectField>
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="Tỷ lệ" name="scale" maxLength={20} placeholder="1/144" defaultValue={state.values?.scale ?? product?.scale} error={errors.scale} />
+            <Field label="Cấp độ" name="grade" maxLength={20} placeholder="HG, RG, MG" defaultValue={state.values?.grade ?? product?.grade} error={errors.grade} />
+          </div>
+        </div>
 
         <div className="grid gap-4 sm:grid-cols-3">
           <Field label="Giá bán (₫)" name="price" required inputMode="numeric" defaultValue={product?.price} error={errors.price} />
@@ -129,6 +164,7 @@ export function ProductForm({ product }: { product?: Product }) {
           error={errors.specs}
           hint="Mỗi dòng một thông số, dạng “Nhãn: giá trị”."
         />
+        <TextAreaField label="Nội dung hộp" name="boxContents" rows={3} maxLength={2000} defaultValue={state.values?.boxContents ?? product?.boxContents} error={errors.boxContents} hint="Phụ kiện, sách hướng dẫn, đế trưng bày... đi kèm." />
 
         <SelectField label="Trạng thái" name="status" required defaultValue={product?.status ?? "draft"} error={errors.status}>
           <option value="draft">Nháp (chưa hiện trên cửa hàng)</option>

@@ -64,7 +64,7 @@ Ghi nhớ kỹ thuật của dự án:
 
 ### Giai đoạn 2: danh mục hàng
 
-- [ ] **T06 — Quản trị sản phẩm có biến thể.** Cần T05. YC-SP-02, 03, 04, 05, 07, 08, 11; YC-QT-02; AUD-01 (đổi giá).
+- [x] **T06 — Quản trị sản phẩm có biến thể.** Cần T05. YC-SP-02, 03, 04, 05, 07, 08, 11; YC-QT-02; AUD-01 (đổi giá).
   Màn hình sản phẩm chia tab (Thông tin, Biến thể, Media, SEO, Xem trước); thêm, sửa, tắt biến thể; SKU khoá khi đã có sổ kho hoặc đơn; mã vạch duy nhất; một biến thể mặc định; lưu nháp, xuất bản (kiểm tra YC-SP-05), lưu trữ; lịch sử giá từ nhật ký; xem trước bản nháp trong `/admin` bằng component của cửa hàng. Danh sách sản phẩm lọc theo trạng thái, danh mục, thương hiệu; phân trang.
   Xong khi: test xuất bản thiếu điều kiện bị chặn, SKU bị khoá, đổi giá ghi nhật ký, xoá sản phẩm đã có đơn bị chặn; smoke có các tab.
 
@@ -212,6 +212,11 @@ Ghi nhớ kỹ thuật của dự án:
 | 16/10/2026 | T12 | CSV qua Route Handler `/admin/xuat/[loai]` (`ton-kho`, `the-kho`), UTF-8 có BOM, tối đa 20.000 dòng; ô chữ bắt đầu bằng =, +, @, - (không phải số) được thêm dấu nháy để Excel không chạy công thức | Q22; chống chèn công thức |
 | 16/10/2026 | T12 | Ngưỡng sắp hết sửa ở trang thẻ kho (quyền inventory.setup), có nhật ký | YC-KHO-13 |
 | 16/10/2026 | T12 | Chưa sửa CLAUDE.md phần mô tả trang kho: file đang có thay đổi chưa commit của một phiên khác (tài liệu AI) | Tránh commit lẫn |
+| 16/10/2026 | T06 | Tab qua `?tab=` (Thông tin, Biến thể, Xem trước); tab Media làm ở T07, SEO ở T21 | Từng việc một |
+| 16/10/2026 | T06 | Thân trang sản phẩm tách thành `ProductView`, dùng chung cho cửa hàng và tab Xem trước (xem trước không cho mua) | Bản xem trước giống hệt trang thật |
+| 16/10/2026 | T06 | Form thông tin vẫn sửa giá, màu của biến thể mặc định; các biến thể khác sửa ở tab Biến thể | Đơn giản cho sản phẩm một biến thể (phần lớn danh mục) |
+| 16/10/2026 | T06 | Danh mục chọn từ CSDL; sản phẩm thuộc danh mục tạo mới (ngoài 7 danh mục gốc) vẫn bán được nhưng chưa có lối lọc riêng ở cửa hàng | Thanh danh mục của cửa hàng còn đọc `CATEGORIES` cố định |
+| 16/10/2026 | T06 | Không tắt được biến thể mặc định; muốn tắt thì đặt biến thể khác làm mặc định trước | Luôn đúng một biến thể mặc định đang bật |
 
 ## Vướng mắc
 

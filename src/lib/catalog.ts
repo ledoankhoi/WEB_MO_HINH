@@ -20,6 +20,14 @@ export function isCategorySlug(value: string): value is CategorySlug {
   return CATEGORIES.some((c) => c.slug === value);
 }
 
+export const PRODUCT_TYPES = ["figure", "model_kit", "combiner", "accessory"] as const;
+export const PRODUCT_TYPE_LABELS: Record<(typeof PRODUCT_TYPES)[number], string> = {
+  figure: "Figure, robot hoàn thiện",
+  model_kit: "Mô hình lắp ráp",
+  combiner: "Bộ hợp thể",
+  accessory: "Phụ kiện, linh kiện",
+};
+
 // Các kiểu dáng robot dựng bằng hình học trong src/components/three/robots.
 export const ROBOT_MODELS = {
   humanoid: "Robot hình người",

@@ -2,11 +2,7 @@
 
 import { refresh, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
-import {
-  isCategorySlug,
-  isRobotModelKey,
-  type ProductSpec,
-} from "@/lib/catalog";
+import { PRODUCT_TYPES, isRobotModelKey, type ProductSpec } from "@/lib/catalog";
 import { slugify } from "@/lib/format";
 import { ORDER_ACTIONS, isOrderActionKey, type OrderActionKey } from "@/lib/order-flow";
 import { ROLE_LABELS, isStaffRole } from "@/lib/permissions";
@@ -19,8 +15,12 @@ import { applyOrderAction, findOrderById } from "@/server/repo/orders";
 import { authorize } from "@/server/auth/session";
 import { FORBIDDEN, changes, isId, staffWith } from "@/server/staff-action";
 import {
+  canPublish,
   deleteProduct,
   findProductById,
+  saveVariant,
+  setDefaultVariant,
+  setVariantActive,
   insertProduct,
   saveProductImage,
   updateProduct,
@@ -84,8 +84,20 @@ export async function saveProductAction(_prev: FormState, form: FormData): Promi
   const specsInput = readText(form, "specs");
   const isFeatured = form.get("isFeatured") === "on";
   const statusInput = readText(form, "status");
+  const brandId = readText(form, "brandId");
+  const seriesId = readText(form, "seriesId");
+  const productType = readText(form, "productType");
+  const scale = readText(form, "scale");
+  const grade = readText(form, "grade");
+  const boxContents = readText(form, "boxContents").replace(/\r\n/g, "\n");
 
   const values = {
+    brandId,
+    seriesId,
+    productType,
+    scale,
+    grade,
+    boxContents,
     name,
     slug,
     tagline,
@@ -112,7 +124,15 @@ export async function saveProductAction(_prev: FormState, form: FormData): Promi
   }
   if (tagline.length > 160) errors.tagline = "Mô tả ngắn tối đa 160 ký tự.";
   if (description.length > 5000) errors.description = "Mô tả tối đa 5.000 ký tự.";
-  if (!isCategorySlug(category)) errors.category = "Vui lòng chọn danh mục.";
+  const [categories, brands, series] = await Promise.all([listTaxonomy("categories"), listTaxonomy("brands"), listTaxonomy("series")]);
+  if (!categories.some((item) => item.slug === category)) errors.category = "Vui lòng chọn danh mục.";
+  if (brandId && !brands.some((item) => item.id === brandId)) errors.brandId = "Thương hiệu không hợp lệ.";
+  if (seriesId && !series.some((item) => item.id === seriesId)) errors.seriesId = "Series không hợp lệ.";
+  const type = PRODUCT_TYPES.find((value) => value === productType);
+  if (!type) errors.productType = "Vui lòng chọn loại sản phẩm.";
+  if (scale.length > 20) errors.scale = "Tối đa 20 ký tự.";
+  if (grade.length > 20) errors.grade = "Tối đa 20 ký tự.";
+  if (boxContents.length > 2000) errors.boxContents = "Tối đa 2.000 ký tự.";
 
   const price = parseMoney(priceInput);
   if (price === null) errors.price = "Giá bán phải là số nguyên không âm.";
@@ -145,6 +165,7 @@ export async function saveProductAction(_prev: FormState, form: FormData): Promi
     Object.keys(errors).length > 0 ||
     price === null ||
     !status ||
+    !type ||
     !specs ||
     poster === "invalid" ||
     !isRobotModelKey(model)
@@ -158,6 +179,12 @@ export async function saveProductAction(_prev: FormState, form: FormData): Promi
     tagline,
     description,
     category,
+    brandId: brandId || null,
+    seriesId: seriesId || null,
+    productType: type,
+    scale,
+    grade,
+    boxContents,
     sku: skuInput,
     price,
     compareAtPrice,
@@ -168,6 +195,18 @@ export async function saveProductAction(_prev: FormState, form: FormData): Promi
     isFeatured,
     status,
   };
+
+  // YC-SP-05: xuất bản cần ít nhất một biến thể đang bật và ảnh đại diện (có sẵn hoặc vừa chụp).
+  if (status === "published") {
+    const ready = id ? await canPublish(id) : { activeVariant: true, image: false };
+    if (!ready.activeVariant || (!ready.image && !poster)) {
+      return {
+        errors: { status: !ready.activeVariant ? "Cần ít nhất một biến thể đang bật." : "Cần ảnh đại diện trước khi xuất bản (chụp từ mô hình 3D hoặc tải ảnh)." },
+        values,
+        message: "Chưa xuất bản được.",
+      };
+    }
+  }
 
   let productId = id;
   try {
@@ -206,6 +245,71 @@ export async function saveProductAction(_prev: FormState, form: FormData): Promi
 
   if (!id) redirect(`/admin/san-pham/${productId}?moi=1`);
   return { ok: true, message: "Đã lưu thay đổi.", values };
+}
+
+// YC-SP-03: thêm, sửa biến thể. Đổi giá ghi nhật ký `product.price_change` (YC-SP-07).
+export async function saveVariantAction(productId: string, _prev: FormState, form: FormData): Promise<FormState> {
+  const audit = await staffWith("catalog.edit");
+  if (!audit) return FORBIDDEN;
+  if (!isId(productId)) return { message: "Sản phẩm không hợp lệ." };
+  const id = readText(form, "id");
+  const input = {
+    sku: readText(form, "sku").toUpperCase(),
+    barcode: readText(form, "barcode") || null,
+    name: readText(form, "name"),
+    condition: readText(form, "condition") === "used" ? ("used" as const) : ("new" as const),
+    conditionNote: readText(form, "conditionNote"),
+    price: parseMoney(readText(form, "price")),
+    compareAtPrice: readText(form, "compareAtPrice") ? parseMoney(readText(form, "compareAtPrice")) : null,
+    colors: { primary: readText(form, "colorPrimary"), secondary: readText(form, "colorSecondary"), accent: readText(form, "colorAccent") },
+  };
+  const values = Object.fromEntries([...form.entries()].map(([key, value]) => [key, String(value)]));
+  const product = await findProductById(productId);
+  if (!product) return { message: "Sản phẩm không còn tồn tại.", values };
+  const old = id ? product.variants.find((variant) => variant.id === id) : undefined;
+  if (id && !old) return { message: "Biến thể không thuộc sản phẩm này.", values };
+
+  const errors: Record<string, string> = {};
+  if (!/^[A-Z0-9][A-Z0-9._-]{1,39}$/.test(input.sku)) errors.sku = "SKU gồm 2–40 ký tự: chữ, số, dấu chấm, gạch nối.";
+  else if (old?.locked && old.sku !== input.sku) errors.sku = "Biến thể đã có sổ kho hoặc đơn hàng nên không đổi SKU được.";
+  if (input.barcode && !/^[0-9A-Za-z-]{4,40}$/.test(input.barcode)) errors.barcode = "Mã vạch gồm 4–40 chữ, số.";
+  if (input.name.length < 1 || input.name.length > 80) errors.name = "Tên phiên bản cần 1–80 ký tự.";
+  if (input.conditionNote.length > 200) errors.conditionNote = "Tối đa 200 ký tự.";
+  if (input.price === null) errors.price = "Giá bán phải là số nguyên không âm.";
+  if (input.compareAtPrice === null && readText(form, "compareAtPrice")) errors.compareAtPrice = "Giá gốc không hợp lệ.";
+  else if (input.price !== null && input.compareAtPrice !== null && input.compareAtPrice <= input.price) errors.compareAtPrice = "Giá gốc phải lớn hơn giá bán.";
+  if (![input.colors.primary, input.colors.secondary, input.colors.accent].every(isHexColor)) errors.colors = "Màu phải ở dạng #rrggbb.";
+  if (Object.keys(errors).length > 0 || input.price === null) return { errors, values, message: "Vui lòng kiểm tra lại các ô được đánh dấu." };
+
+  const priceChanged = old ? old.price !== input.price || old.compareAtPrice !== input.compareAtPrice : false;
+  const entry = audit({
+    action: !old ? "product_variant.create" : priceChanged ? "product.price_change" : "product_variant.update",
+    entity: "product_variants",
+    summary: `${old ? (priceChanged ? "Đổi giá" : "Sửa") : "Thêm"} biến thể ${input.sku} của ${product.name}`,
+    detail: changes(old ? { sku: old.sku, name: old.name, price: old.price, compareAtPrice: old.compareAtPrice } : {}, { sku: input.sku, name: input.name, price: input.price, compareAtPrice: input.compareAtPrice }),
+  });
+  try {
+    await saveVariant(productId, id || null, { ...input, price: input.price }, entry);
+  } catch (error) {
+    if (isConstraintError(error)) return { errors: { sku: "SKU hoặc mã vạch này đã được dùng." }, values };
+    throw error;
+  }
+  updateTag(PRODUCTS_TAG);
+  refresh();
+  return { ok: true, message: old ? "Đã lưu biến thể." : `Đã thêm biến thể ${input.sku}.` };
+}
+
+export async function variantAction(productId: string, variantId: string, action: "activate" | "deactivate" | "default"): Promise<FormState> {
+  const audit = await staffWith("catalog.edit");
+  if (!audit) return FORBIDDEN;
+  if (!isId(productId) || !isId(variantId) || !["activate", "deactivate", "default"].includes(action)) return { message: "Yêu cầu không hợp lệ." };
+  const entry = audit({ action: `product_variant.${action}`, entity: "product_variants", summary: { activate: "Bật", deactivate: "Tắt", default: "Đặt mặc định" }[action] + " biến thể" });
+  const changed =
+    action === "default" ? await setDefaultVariant(productId, variantId, entry) : await setVariantActive(productId, variantId, action === "activate", entry);
+  updateTag(PRODUCTS_TAG);
+  refresh();
+  if (changed) return { ok: true };
+  return { message: action === "deactivate" ? "Không tắt được biến thể mặc định; hãy đặt biến thể khác làm mặc định trước." : "Biến thể phải đang bật mới đặt làm mặc định được." };
 }
 
 export async function deleteProductAction(id: string): Promise<FormState> {

@@ -14,7 +14,9 @@ export type ProductVariant = {
   id: string;
   sku: string;
   name: string;
+  barcode: string | null;
   condition: "new" | "used";
+  conditionNote: string;
   price: number;
   compareAtPrice: number | null;
   // Số có thể bán = on_hand − reserved.
@@ -22,6 +24,8 @@ export type ProductVariant = {
   colors: RobotColors;
   isDefault: boolean;
   isActive: boolean;
+  // Đã có sổ kho hoặc đơn hàng: SKU không đổi được nữa (YC-SP-03).
+  locked: boolean;
 };
 
 export type ProductStatus = "draft" | "published" | "archived";
@@ -35,6 +39,12 @@ export type Product = {
   tagline: string;
   description: string;
   category: string;
+  brandId: string | null;
+  seriesId: string | null;
+  productType: "figure" | "model_kit" | "combiner" | "accessory";
+  scale: string;
+  grade: string;
+  boxContents: string;
   price: number;
   compareAtPrice: number | null;
   stock: number;

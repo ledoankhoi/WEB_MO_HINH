@@ -104,3 +104,13 @@ export async function deleteTaxonomy(kind: TaxonomyKind, id: string, entry: Omit
     throw error;
   }
 }
+
+// Lựa chọn danh mục, thương hiệu, series cho form sản phẩm.
+export async function productFormOptions() {
+  const [categories, brands, series] = await Promise.all([listTaxonomy("categories"), listTaxonomy("brands"), listTaxonomy("series")]);
+  return {
+    categories: categories.map((c) => ({ slug: c.slug, name: c.name, parentId: c.parentId })),
+    brands: brands.map((b) => ({ id: b.id, name: b.name })),
+    series: series.map((s) => ({ id: s.id, name: s.name })),
+  };
+}
