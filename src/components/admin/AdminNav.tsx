@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ClipboardList, FolderTree, LayoutDashboard, Library, Package, ReceiptText, ScrollText, Tag, Undo2, UserCog, Users } from "lucide-react";
+import { ClipboardList, FolderTree, MapPin, Truck, LayoutDashboard, Library, Package, ReceiptText, ScrollText, Tag, Undo2, UserCog, Users } from "lucide-react";
 import { can, type Permission, type Role } from "@/lib/permissions";
 
 // Nhóm theo menu ở mục 5 của docs/chuan/10. Mỗi mục chỉ hiện với vai trò có quyền mở trang đó; quyền
@@ -11,7 +11,10 @@ const GROUPS: { label?: string; links: { href: string; label: string; icon: type
   { links: [{ href: "/admin", label: "Tổng quan", icon: LayoutDashboard, permission: "dashboard.view" }] },
   {
     label: "Kho",
-    links: [{ href: "/admin/kho/lay-hang", label: "Lấy hàng", icon: ClipboardList, permission: "orders.fulfil" }],
+    links: [
+      { href: "/admin/kho/lay-hang", label: "Lấy hàng", icon: ClipboardList, permission: "orders.fulfil" },
+      { href: "/admin/kho/vi-tri", label: "Vị trí kho", icon: MapPin, permission: "inventory.setup" },
+    ],
   },
   {
     label: "Danh mục hàng",
@@ -20,6 +23,7 @@ const GROUPS: { label?: string; links: { href: string; label: string; icon: type
       { href: "/admin/danh-muc", label: "Danh mục", icon: FolderTree, permission: "catalog.view" },
       { href: "/admin/thuong-hieu", label: "Thương hiệu", icon: Tag, permission: "catalog.view" },
       { href: "/admin/series", label: "Series", icon: Library, permission: "catalog.view" },
+      { href: "/admin/nha-cung-cap", label: "Nhà cung cấp", icon: Truck, permission: "inventory.setup" },
     ],
   },
   {

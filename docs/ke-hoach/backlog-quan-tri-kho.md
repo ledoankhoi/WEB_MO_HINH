@@ -74,7 +74,7 @@ Ghi nhớ kỹ thuật của dự án:
 
 ### Giai đoạn 3: kho
 
-- [ ] **T08 — Vị trí kho và nhà cung cấp.** Cần T04. YC-KHO-01, 02.
+- [x] **T08 — Vị trí kho và nhà cung cấp.** Cần T04. YC-KHO-01, 02.
   `/admin/kho/vi-tri`, `/admin/nha-cung-cap`: tạo, sửa, ngừng dùng; vị trí còn hàng không ngừng dùng được.
   Xong khi: test ràng buộc; smoke.
 
@@ -188,6 +188,9 @@ Ghi nhớ kỹ thuật của dự án:
 | 16/10/2026 | T05 | Danh sách lấy hàng tính vị trí lúc xem (không lưu nhiệm vụ lấy hàng), tối đa 50 đơn cũ nhất; in bằng `window.print()` | Q7 |
 | 16/10/2026 | T05 | Bỏ liên kết "Xem trang khách thấy" ở trang đơn quản trị | Từ khi tách tên miền, `/don-hang/...` không mở trên tên miền quản trị |
 | 16/10/2026 | T05 | Tạo một đơn thử COD (RX-78-2, "Khách thử") trên Supabase để kiểm tra trang chi tiết đơn với dữ liệu thật | Smoke bỏ qua trang đơn khi CSDL chưa có đơn |
+| 16/10/2026 | T08 | `staffWith`, `changes`, `isId`, `FORBIDDEN` chuyển sang `src/server/staff-action.ts`; action kho ở file mới `src/app/actions/inventory.ts` | File "use server" biến mọi hàm export thành action gọi được từ trình duyệt, nên hàm dùng chung không đặt ở đó |
+| 16/10/2026 | T08 | Vị trí đang có hàng không đổi loại được (kệ ⇄ cách ly), ngoài việc không ngừng dùng được | Đổi loại khi có hàng làm lệch on_hand và quarantined của inventory |
+| 16/10/2026 | T08 | Mã vị trí, mã nhà cung cấp tự viết hoa; nhà cung cấp ngừng giao dịch chứ không xoá | Phiếu nhập sẽ tham chiếu nhà cung cấp |
 
 ## Vướng mắc
 

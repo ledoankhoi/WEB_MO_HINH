@@ -35,6 +35,8 @@ const PAGES = [
   { path: "/admin/don-hang?van-chuyen=not_created&thanh-toan=unpaid&q=RB" },
   { path: "/admin/don-hang/cho-hoan-tien" },
   { path: "/admin/kho/lay-hang" },
+  { path: "/admin/kho/vi-tri" },
+  { path: "/admin/nha-cung-cap" },
   { path: "/admin/khach-hang" },
   { path: "/admin/nhan-vien" },
   { path: "/admin/nhat-ky" },

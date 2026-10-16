@@ -9,15 +9,15 @@ import {
 } from "@/lib/catalog";
 import { slugify } from "@/lib/format";
 import { ORDER_ACTIONS, isOrderActionKey, type OrderActionKey } from "@/lib/order-flow";
-import { ROLE_LABELS, isStaffRole, type Permission } from "@/lib/permissions";
+import { ROLE_LABELS, isStaffRole } from "@/lib/permissions";
 import type { FormState, ProductStatus } from "@/lib/types";
 import { isEmail, isHexColor, parseMoney, readText } from "@/lib/validation";
 import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH, hashPassword, isValidPassword } from "@/server/auth/password";
-import { authorize } from "@/server/auth/session";
 import { PRODUCTS_TAG } from "@/server/catalog";
 import { isConstraintError } from "@/server/db";
-import type { AuditEntry } from "@/server/repo/audit";
 import { applyOrderAction, findOrderById } from "@/server/repo/orders";
+import { authorize } from "@/server/auth/session";
+import { FORBIDDEN, changes, isId, staffWith } from "@/server/staff-action";
 import {
   deleteProduct,
   findProductById,
@@ -30,24 +30,6 @@ import { findStaffById, insertStaff, updateStaff } from "@/server/repo/staff";
 import { deleteTaxonomy, isTaxonomyKind, listTaxonomy, saveTaxonomy, type TaxonomyKind } from "@/server/repo/taxonomy";
 
 const MAX_POSTER_BYTES = 800 * 1024;
-const isId = (value: unknown): value is string => typeof value === "string" && /^[a-f0-9]{20}$/.test(value);
-const FORBIDDEN: FormState = { message: "Bạn không có quyền thực hiện thao tác này." };
-
-// Kiểm tra phiên và quyền trước mọi thao tác; trả về hàm tạo dòng nhật ký mang người làm và vai trò.
-async function staffWith(permission: Permission) {
-  const user = await authorize(permission);
-  if (!user) return null;
-  return (entry: Omit<AuditEntry, "actor">): AuditEntry => ({ actor: { id: user.id, role: user.role }, ...entry });
-}
-
-// Chỉ giữ các trường có đổi, dạng { before, after }.
-function changes(before: Record<string, unknown>, after: Record<string, unknown>) {
-  const keys = Object.keys(after).filter((key) => before[key] !== after[key]);
-  return {
-    before: Object.fromEntries(keys.map((key) => [key, before[key]])),
-    after: Object.fromEntries(keys.map((key) => [key, after[key]])),
-  };
-}
 
 // Mỗi dòng có dạng "Nhãn: giá trị".
 function parseSpecs(raw: string): ProductSpec[] | null {
