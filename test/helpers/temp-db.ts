@@ -5,7 +5,8 @@ type DbState = { backend?: Backend; ready?: unknown };
 
 // Cho module CSDL dùng PGlite (PostgreSQL chạy trong bộ nhớ) thay cho máy chủ thật. Phải gọi trước lần
 // truy vấn đầu tiên. Mỗi file test chạy trong một worker riêng nên có một CSDL riêng.
-export function setupTempDatabase(): () => Promise<void> {
+// Hàm trả về dọn CSDL khi xong; kèm `pg` cho test cần truy vấn thẳng (ví dụ diễn tập khôi phục).
+export function setupTempDatabase(): (() => Promise<void>) & { pg: PGlite } {
   delete process.env.ADMIN_EMAIL;
   delete process.env.ADMIN_PASSWORD;
 
@@ -17,9 +18,10 @@ export function setupTempDatabase(): () => Promise<void> {
     transaction: (fn) => pg.transaction((tx) => fn((text, values) => tx.query(text, values))),
   };
 
-  return async () => {
+  const cleanup = async () => {
     state.ready = undefined;
     state.backend = undefined;
     await pg.close();
   };
+  return Object.assign(cleanup, { pg });
 }

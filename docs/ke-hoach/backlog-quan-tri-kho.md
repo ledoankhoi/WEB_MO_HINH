@@ -144,7 +144,7 @@ Ghi nhớ kỹ thuật của dự án:
   `/admin/bao-cao`: chọn khoảng ngày (giờ Việt Nam), số đơn, doanh thu đơn `completed`, theo trạng thái, tỷ lệ huỷ, bán chạy, yêu thích nhiều nhất; xuất CSV. Biểu đồ nếu có thì SVG hoặc CSS tự vẽ.
   Xong khi: test số liệu với dữ liệu dựng sẵn; CSV.
 
-- [ ] **T24 — Sao lưu và diễn tập khôi phục.** Cần T12. YC-VH-01; OPS-01.
+- [x] **T24 — Sao lưu và diễn tập khôi phục.** Cần T12. YC-VH-01; OPS-01.
   `scripts/backup.mjs` và script `backup`: đọc mọi bảng có trong `meta`/migration, ghi JSON vào `data/backups/<thời điểm>/`. Test: dựng dữ liệu trên PGlite, sao lưu, khôi phục vào PGlite trống, so khớp và chạy đối soát. Không có lệnh khôi phục vào CSDL thật.
   Xong khi: test OPS-01; ghi cách dùng vào CLAUDE.md phần Lệnh.
 
@@ -256,6 +256,7 @@ Ghi nhớ kỹ thuật của dự án:
 | 16/10/2026 | T21 | SEO sản phẩm là một nhóm ô trong form sản phẩm (tiêu đề ≤ 70, mô tả ≤ 160 ký tự, trống thì dùng tên và mô tả ngắn), kèm canonical; trang lọc danh mục lấy tiêu đề, mô tả từ danh mục. Ảnh trên thẻ sản phẩm để alt rỗng vì tên đứng ngay cạnh | YC-SP-09 |
 | 16/10/2026 | T22 | Tải .glb hai bước qua Server Action: xin URL có chữ ký (tên file `models/<sản phẩm>-<ngẫu nhiên>.glb` do máy chủ đặt), trình duyệt PUT thẳng lên Storage, rồi máy chủ đọc 12 byte đầu bằng Range: `glTF`, phiên bản 2, độ dài khai báo khớp kích thước file và không quá 25 MB; sai thì xoá file. Đúng thì thêm `product_media` loại model và đổi `model_url` trong một giao dịch. Chưa kiểm thử với Supabase thật trong phiên này | YC-SP-10, Q18 |
 | 16/10/2026 | T23 | Báo cáo bán hàng tính theo ngày đặt, chia ngày theo UTC+7; mặc định 30 ngày gần nhất lấy mốc từ đồng hồ CSDL; tối đa 366 ngày. Doanh thu chỉ đơn `completed`, bán chạy bỏ đơn huỷ, yêu thích nhiều nhất tính mọi thời điểm. Biểu đồ là thanh CSS trong bảng theo ngày. CSV `ban-hang` (theo ngày) và `ban-chay` qua `/admin/xuat/[loai]`, kiểm quyền `reports.view`, khoảng ngày sai trả 400 | YC-BC-01, 03 |
+| 16/10/2026 | T24 | `npm run backup` đọc mọi bảng của schema public trong một giao dịch REPEATABLE READ chỉ đọc, ghi mỗi bảng một file JSON và `manifest.json` (số dòng) vào `data/backups/<thời điểm UTC>/`; bytea ghi base64. Không sao lưu lược đồ (khôi phục vào CSDL đã chạy migration). Hàm khôi phục chỉ có trong `scripts/backup-lib.mjs` cho test, không có lệnh khôi phục vào CSDL thật. Đã chạy thử với Supabase: 34 bảng, 327 dòng. Dòng hướng dẫn trong CLAUDE.md để T26 (file đang có thay đổi của phiên khác) | YC-VH-01, OPS-01 |
 
 ## Vướng mắc
 

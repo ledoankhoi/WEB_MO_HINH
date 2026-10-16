@@ -14,7 +14,8 @@
     "test": "vitest run",
     "smoke": "node --env-file-if-exists=.env.local scripts/smoke.mjs",
     "models": "node --env-file-if-exists=.env.local scripts/sketchfab.mjs",
-    "media": "node --env-file-if-exists=.env.local scripts/media.mjs"
+    "media": "node --env-file-if-exists=.env.local scripts/media.mjs",
+    "backup": "node --env-file-if-exists=.env.local scripts/backup.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",
