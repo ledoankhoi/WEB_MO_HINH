@@ -270,6 +270,12 @@ export function findOrderById(id: string): Promise<Order | null> {
 }
 
 // Tra cứu đơn cho khách không đăng nhập: phải khớp cả mã đơn lẫn số điện thoại đặt hàng.
+export async function findOrderIdByCode(code: string): Promise<string | null> {
+  const db = await getDb();
+  const result = await db.execute({ sql: "SELECT id FROM orders WHERE code = ?", args: [code] });
+  return result.rows[0] ? String(result.rows[0].id) : null;
+}
+
 export async function findOrderTokenByCodeAndPhone(code: string, phone: string): Promise<string | null> {
   const db = await getDb();
   const result = await db.execute({

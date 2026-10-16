@@ -59,6 +59,7 @@ export default async function DocumentPage({ params }: PageProps<"/admin/kho/phi
             type: document.type,
             supplierId: document.supplierId,
             reasonCode: document.reasonCode,
+            orderCode: document.orderCode ?? "",
             reference: document.reference,
             note: document.note,
             expectedDate: document.expectedAt ? VN_DATE(document.expectedAt) : "",
@@ -67,6 +68,7 @@ export default async function DocumentPage({ params }: PageProps<"/admin/kho/phi
               sku: line.sku,
               name: line.name,
               locationId: line.locationId,
+              toLocationId: line.toLocationId ?? "",
               qtyExpected: line.qtyExpected?.toString() ?? "",
               qty: line.qty?.toString() ?? "",
               qtyQuarantined: line.qtyQuarantined?.toString() ?? "",
@@ -75,7 +77,10 @@ export default async function DocumentPage({ params }: PageProps<"/admin/kho/phi
             })),
           }}
           variants={variants}
-          locations={locations.filter((l) => l.isActive && (!isReceipt || l.type === "storage")).map((l) => ({ id: l.id, label: l.code }))}
+          locations={locations
+            .filter((l) => l.isActive && (isReceipt ? l.type === "storage" : document.type === "return" ? l.type === "quarantine" : true))
+            .map((l) => ({ id: l.id, label: l.type === "quarantine" ? `${l.code} (cách ly)` : l.code }))}
+          toLocations={locations.filter((l) => l.isActive).map((l) => ({ id: l.id, label: l.type === "quarantine" ? `${l.code} (cách ly)` : l.code }))}
           suppliers={suppliers.filter((s) => s.isActive).map((s) => ({ id: s.id, label: `${s.code} · ${s.name}` }))}
         />
       ) : (
@@ -91,6 +96,12 @@ export default async function DocumentPage({ params }: PageProps<"/admin/kho/phi
               <>
                 <dt className="text-muted">Lý do</dt>
                 <dd>{DOCUMENT_REASONS[document.type]?.[document.reasonCode] ?? document.reasonCode}</dd>
+              </>
+            )}
+            {document.orderCode && (
+              <>
+                <dt className="text-muted">Đơn hàng</dt>
+                <dd className="font-mono">{document.orderCode}</dd>
               </>
             )}
             {document.reference && (
@@ -129,7 +140,10 @@ export default async function DocumentPage({ params }: PageProps<"/admin/kho/phi
                       <td>
                         <span className="font-mono text-xs text-muted">{line.sku}</span> {line.name}
                       </td>
-                      <td className="font-mono">{line.locationCode}</td>
+                      <td className="font-mono">
+                        {line.locationCode}
+                        {line.toLocationCode && ` → ${line.toLocationCode}`}
+                      </td>
                       {isReceipt && <td className="text-right tabular-nums">{line.qtyExpected ?? ""}</td>}
                       <td className="text-right tabular-nums">
                         {formatNumber(line.qty ?? 0)}

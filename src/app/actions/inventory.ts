@@ -8,11 +8,13 @@ import { DOCUMENT_REASONS, DOCUMENT_TYPE_LABELS, MAX_LINE_QTY, isDocumentType, t
 import type { FormState } from "@/lib/types";
 import { isEmail, readText } from "@/lib/validation";
 import { PRODUCTS_TAG } from "@/server/catalog";
+import { findOrderIdByCode } from "@/server/repo/orders";
 import { isConstraintError } from "@/server/db";
 import { changeDocumentStatus, createDocument, findDocument, postDocument, saveDraft, type DraftInput } from "@/server/repo/stock-documents";
 import { FORBIDDEN, changes, isId, staffWith } from "@/server/staff-action";
 import {
   listLocations,
+  listQuarantineStock,
   listSuppliers,
   saveLocation,
   saveSupplier,
@@ -162,6 +164,7 @@ export type DraftPayload = {
   note?: unknown;
   expectedAt?: unknown;
   reasonCode?: unknown;
+  orderCode?: unknown;
   lines?: unknown;
 };
 
@@ -214,37 +217,47 @@ export async function saveDraftAction(id: string, payload: DraftPayload): Promis
   const reasons = DOCUMENT_REASONS[document.type];
   const reasonCode = textOf(payload.reasonCode, 40) || (reasons ? Object.keys(reasons)[0] : "");
   if (reasons && !(reasonCode in reasons)) errors.push("Lý do không hợp lệ.");
+  // Phiếu hàng trả gắn với đơn (nếu có) bằng mã đơn.
+  const orderCode = textOf(payload.orderCode, 20).toUpperCase();
+  const orderId = document.type === "return" && orderCode ? await findOrderIdByCode(orderCode) : null;
+  if (document.type === "return" && orderCode && !orderId) errors.push(`Không có đơn hàng mã ${orderCode}.`);
 
+  const type = document.type;
   const lines: DraftInput["lines"] = [];
   const seen = new Set<string>();
   for (const [index, raw] of (payload.lines as LineInput[]).entries()) {
     const label = `Dòng ${index + 1}`;
     const variantId = textOf(raw?.variantId, 20);
     const locationId = textOf(raw?.locationId, 20);
+    const toLocationId = type === "transfer" ? textOf(raw?.toLocationId, 20) : "";
     const location = locations.find((l) => l.id === locationId);
-    const qtyExpected = intOrNull(raw?.qtyExpected, MAX_LINE_QTY);
+    const toLocation = locations.find((l) => l.id === toLocationId);
+    const qtyExpected = type === "receipt" ? intOrNull(raw?.qtyExpected, MAX_LINE_QTY) : null;
     const qty = intOrNull(raw?.qty, MAX_LINE_QTY);
-    const qtyQuarantined = intOrNull(raw?.qtyQuarantined, MAX_LINE_QTY);
-    const unitCost = intOrNull(raw?.unitCost, 1_000_000_000);
+    const qtyQuarantined = type === "receipt" ? intOrNull(raw?.qtyQuarantined, MAX_LINE_QTY) : null;
+    const unitCost = type === "receipt" ? intOrNull(raw?.unitCost, 1_000_000_000) : null;
     if (!isId(variantId)) errors.push(`${label}: chưa chọn sản phẩm.`);
     if (!location || !location.isActive) errors.push(`${label}: vị trí không hợp lệ hoặc đã ngừng dùng.`);
-    else if (document.type === "receipt" && location.type !== "storage") errors.push(`${label}: hàng nhận tốt phải vào kệ hàng; phần lỗi ghi ở cột cách ly.`);
-    for (const [name, value] of [["SL dự kiến", qtyExpected], ["SL thực nhận", qty], ["SL cách ly", qtyQuarantined], ["Đơn giá", unitCost]] as const) {
+    else if (type === "receipt" && location.type !== "storage") errors.push(`${label}: hàng nhận tốt phải vào kệ hàng; phần lỗi ghi ở cột cách ly.`);
+    else if (type === "return" && location.type !== "quarantine") errors.push(`${label}: hàng trả phải nhận vào khu cách ly.`);
+    if (type === "transfer" && (!toLocation || !toLocation.isActive || toLocationId === locationId)) errors.push(`${label}: chọn vị trí đích khác vị trí nguồn.`);
+    for (const [name, value] of [["SL dự kiến", qtyExpected], ["Số lượng", qty], ["SL cách ly", qtyQuarantined], ["Đơn giá", unitCost]] as const) {
       if (Number.isNaN(value)) errors.push(`${label}: ${name} phải là số nguyên không âm.`);
     }
+    if (type !== "receipt" && !((qty ?? 0) > 0)) errors.push(`${label}: số lượng phải lớn hơn 0.`);
     if ((qtyQuarantined ?? 0) > (qty ?? 0)) errors.push(`${label}: SL cách ly không được lớn hơn SL thực nhận.`);
-    if ((qty ?? 0) > 0 && unitCost === null) errors.push(`${label}: cần nhập đơn giá nhập.`);
+    if (type === "receipt" && (qty ?? 0) > 0 && unitCost === null) errors.push(`${label}: cần nhập đơn giá nhập.`);
     const key = `${variantId}:${locationId}`;
     if (seen.has(key)) errors.push(`${label}: trùng sản phẩm và vị trí với một dòng khác.`);
     seen.add(key);
-    lines.push({ variantId, locationId, toLocationId: null, qtyExpected, qty, qtyQuarantined, systemQty: null, unitCost, note: textOf(raw?.note, 200) });
+    lines.push({ variantId, locationId, toLocationId: toLocationId || null, qtyExpected, qty, qtyQuarantined, systemQty: null, unitCost, note: textOf(raw?.note, 200) });
   }
   if (errors.length > 0) return { message: errors.slice(0, 8).join(" ") };
 
   try {
     const saved = await saveDraft(id, {
-      supplierId,
-      orderId: document.orderId,
+      supplierId: type === "receipt" ? supplierId : null,
+      orderId,
       reasonCode,
       reference: textOf(payload.reference, 60),
       note: textOf(payload.note, 500),
@@ -295,4 +308,45 @@ export async function documentAction(id: string, action: DocumentActionKey): Pro
   return changed
     ? { ok: true, message: `Đã thực hiện: ${STATUS_ACTIONS[action].label}.` }
     : { message: "Phiếu không còn ở trạng thái cho phép (hoặc chưa có dòng nào)." };
+}
+
+// YC-KHO-09: xử lý hàng cách ly bằng phiếu nháp điền sẵn. "Bán lại được" = chuyển sang kệ hàng đầu tiên;
+// "Huỷ hàng" = phiếu xuất lý do hư hỏng. Nhân viên kiểm tra phiếu rồi gửi ghi sổ như mọi phiếu khác.
+export async function resolveQuarantineAction(variantId: string, locationId: string, decision: "resell" | "scrap"): Promise<FormState> {
+  const audit = await staffWith("inventory.draft");
+  if (!audit) return FORBIDDEN;
+  if (!isId(variantId) || !isId(locationId) || (decision !== "resell" && decision !== "scrap")) return { message: "Yêu cầu không hợp lệ." };
+  const locations = await listLocations();
+  const quarantine = locations.find((l) => l.id === locationId && l.type === "quarantine");
+  const storage = locations.find((l) => l.type === "storage" && l.isActive);
+  const held = quarantine ? (await listQuarantineStock()).find((row) => row.variantId === variantId && row.locationId === locationId)?.qty : 0;
+  if (!quarantine || !held || (decision === "resell" && !storage)) return { message: "Không còn hàng cách ly này hoặc kho chưa có kệ hàng." };
+
+  const type = decision === "resell" ? "transfer" : "issue";
+  const id = await createDocument(
+    type,
+    audit({ action: "stock_document.create", entity: "stock_documents", summary: `${decision === "resell" ? "Bán lại hàng cách ly" : "Huỷ hàng cách ly"}:` }),
+  );
+  await saveDraft(id, {
+    supplierId: null,
+    orderId: null,
+    reasonCode: decision === "scrap" ? "damaged" : "",
+    reference: "",
+    note: decision === "resell" ? "Hàng cách ly đã kiểm tra, bán lại được" : "Huỷ hàng cách ly hư hỏng",
+    expectedAt: null,
+    lines: [
+      {
+        variantId,
+        locationId,
+        toLocationId: decision === "resell" ? storage!.id : null,
+        qtyExpected: null,
+        qty: held,
+        qtyQuarantined: null,
+        systemQty: null,
+        unitCost: null,
+        note: "",
+      },
+    ],
+  });
+  redirect(`/admin/kho/phieu/${id}`);
 }

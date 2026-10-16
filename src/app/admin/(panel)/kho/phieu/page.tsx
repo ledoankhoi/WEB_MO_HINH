@@ -17,7 +17,7 @@ import { listDocuments } from "@/server/repo/stock-documents";
 
 const PAGE_SIZE = 20;
 // Loại phiếu đã ghi sổ được (T10, T11 thêm các loại còn lại).
-const CREATABLE: StockDocumentType[] = ["receipt"];
+const CREATABLE: StockDocumentType[] = ["receipt", "issue", "transfer", "return"];
 
 export default async function DocumentsPage({ searchParams }: PageProps<"/admin/kho/phieu">) {
   const user = await requireStaff("inventory.view", "/admin/kho/phieu");

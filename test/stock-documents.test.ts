@@ -141,7 +141,7 @@ describe("phiếu nhập mua (YC-KHO-03)", () => {
     expect(result.message).toMatch(/Dòng 2: SL cách ly/);
     expect(result.message).toMatch(/Dòng 2: trùng/);
     expect(result.message).toMatch(/Dòng 3: hàng nhận tốt phải vào kệ/);
-    expect(result.message).toMatch(/Dòng 4: SL thực nhận phải là số nguyên/);
+    expect(result.message).toMatch(/Dòng 4: Số lượng phải là số nguyên/);
     expect((await documents.findDocument(id))!.lines).toEqual([]);
   });
 
@@ -180,5 +180,112 @@ describe("phiếu nhập mua (YC-KHO-03)", () => {
     expect((await actions.documentAction(id, "post")).ok).toBe(true);
     const listed = await documents.listDocuments({ type: "receipt", status: "posted" });
     expect(listed.items.map((d) => d.id)).toContain(id);
+  });
+});
+
+async function newDocument(type: "receipt" | "issue" | "transfer" | "return"): Promise<string> {
+  const error = await actions.createDocumentAction(type).catch((e: Error) => e);
+  const match = /REDIRECT \/admin\/kho\/phieu\/([a-f0-9]{20})/.exec(String(error));
+  if (!match) throw new Error(`không tạo được phiếu: ${String(error)}`);
+  return match[1];
+}
+
+// Sản phẩm mới có `qty` món ở kệ A-01 (qua một phiếu nhập đã ghi sổ).
+async function stocked(sku: string, qty: number) {
+  const variantId = await newProduct(sku);
+  const id = await newDocument("receipt");
+  await actions.saveDraftAction(id, { lines: [line(variantId, { qty, unitCost: 100000 })] });
+  expect((await actions.documentAction(id, "post")).ok).toBe(true);
+  return variantId;
+}
+
+describe("phiếu xuất, chuyển vị trí, hàng trả, hàng cách ly (T10)", () => {
+  it("WH-03: phiếu xuất 11 khi có 8 bị chặn, không âm tồn; xuất 3 thì còn 5", async () => {
+    const variantId = await stocked("WH03", 8);
+    const over = await newDocument("issue");
+    await actions.saveDraftAction(over, { reasonCode: "damaged", lines: [line(variantId, { qty: 11 })] });
+    expect((await actions.documentAction(over, "post")).message).toMatch(/vượt tồn/);
+    expect((await balance(variantId))!.onHand).toBe(8);
+
+    const ok = await newDocument("issue");
+    expect((await actions.saveDraftAction(ok, { reasonCode: "sample", lines: [line(variantId, { qty: 3 })] })).ok).toBe(true);
+    expect((await actions.documentAction(ok, "post")).ok).toBe(true);
+    expect((await balance(variantId))!.onHand).toBe(5);
+    expect((await documents.findDocument(ok))!.reasonCode).toBe("sample");
+  });
+
+  it("QT-15: không xuất, không chuyển được phần hàng đã giữ cho đơn", async () => {
+    const variantId = await stocked("QT15", 5);
+    const db = await getDb();
+    await db.execute({ sql: "UPDATE products SET status = 'published' WHERE id = (SELECT product_id FROM product_variants WHERE id = ?)", args: [variantId] });
+    const orders = await import("@/server/repo/orders");
+    const placed = await orders.createOrder({
+      userId: null,
+      paymentMethod: "cod",
+      customerName: "Khách",
+      customerPhone: "0901234567",
+      customerEmail: "",
+      shippingAddress: "1 Lê Lợi",
+      shippingCity: "Huế",
+      note: "",
+      idempotencyKey: null,
+      items: [{ variantId, quantity: 4, expectedPrice: 500000 }],
+    });
+    expect(placed.ok).toBe(true);
+    const issue = await newDocument("issue");
+    await actions.saveDraftAction(issue, { reasonCode: "lost", lines: [line(variantId, { qty: 2 })] });
+    expect((await actions.documentAction(issue, "post")).ok).toBeUndefined();
+    const quarantine = (await warehouse.listLocations()).find((l) => l.type === "quarantine")!.id;
+    const transfer = await newDocument("transfer");
+    await actions.saveDraftAction(transfer, { lines: [{ ...line(variantId, { qty: 2 }), toLocationId: quarantine }] });
+    expect((await actions.documentAction(transfer, "post")).ok).toBeUndefined();
+    expect((await balance(variantId))!.onHand).toBe(5);
+    if (placed.ok) await orders.applyOrderAction(placed.order.id, "cancel");
+  });
+
+  it("WH-07: chuyển 3 từ kệ sang cách ly: on_hand −3, quarantined +3, tổng thực có không đổi", async () => {
+    const variantId = await stocked("WH07", 6);
+    const quarantine = (await warehouse.listLocations()).find((l) => l.type === "quarantine")!.id;
+    const id = await newDocument("transfer");
+    expect((await actions.saveDraftAction(id, { lines: [{ ...line(variantId, { qty: 3 }), toLocationId: a01 }] })).message).toMatch(/vị trí đích khác/);
+    expect((await actions.saveDraftAction(id, { lines: [{ ...line(variantId, { qty: 3 }), toLocationId: quarantine }] })).ok).toBe(true);
+    expect((await actions.documentAction(id, "post")).ok).toBe(true);
+    expect(await balance(variantId)).toMatchObject({ onHand: 3, quarantined: 3 });
+    expect((await documents.findDocument(id))!.lines[0]).toMatchObject({ locationCode: "A-01", toLocationCode: "CACH-LY" });
+  });
+
+  it("WH-05: phiếu hàng trả vào khu cách ly, gắn đơn; khả dụng không tăng", async () => {
+    const variantId = await stocked("WH05", 2);
+    const quarantine = (await warehouse.listLocations()).find((l) => l.type === "quarantine")!.id;
+    const id = await newDocument("return");
+    expect((await actions.saveDraftAction(id, { lines: [line(variantId, { qty: 1 })] })).message).toMatch(/khu cách ly/);
+    expect((await actions.saveDraftAction(id, { orderCode: "RBKHONGCO", lines: [{ ...line(variantId, { qty: 1 }), locationId: quarantine }] })).message).toMatch(/Không có đơn hàng/);
+    expect((await actions.saveDraftAction(id, { lines: [{ ...line(variantId, { qty: 2 }), locationId: quarantine }] })).ok).toBe(true);
+    expect((await actions.documentAction(id, "post")).ok).toBe(true);
+    expect(await balance(variantId)).toMatchObject({ onHand: 2, quarantined: 2 });
+  });
+
+  it("YC-KHO-09: hàng cách ly bán lại được thì chuyển về kệ; huỷ hàng thì xuất hư hỏng", async () => {
+    const variantId = await stocked("KHO09", 4);
+    const quarantine = (await warehouse.listLocations()).find((l) => l.type === "quarantine")!.id;
+    const move = await newDocument("transfer");
+    await actions.saveDraftAction(move, { lines: [{ ...line(variantId, { qty: 3 }), toLocationId: quarantine }] });
+    await actions.documentAction(move, "post");
+    expect((await warehouse.listQuarantineStock()).find((r) => r.variantId === variantId)?.qty).toBe(3);
+
+    const resell = String(await actions.resolveQuarantineAction(variantId, quarantine, "resell").catch((e: Error) => e));
+    const resellId = /phieu\/([a-f0-9]{20})/.exec(resell)![1];
+    const draft = (await documents.findDocument(resellId))!;
+    expect(draft).toMatchObject({ type: "transfer", status: "draft", lines: [{ qty: 3, locationCode: "CACH-LY", toLocationCode: "A-01" }] });
+    // Nhân viên sửa lại: chỉ 2 món bán lại được.
+    await actions.saveDraftAction(resellId, { lines: [{ variantId, locationId: quarantine, toLocationId: a01, qty: 2, note: "" }] });
+    expect((await actions.documentAction(resellId, "post")).ok).toBe(true);
+
+    const scrap = String(await actions.resolveQuarantineAction(variantId, quarantine, "scrap").catch((e: Error) => e));
+    const scrapId = /phieu\/([a-f0-9]{20})/.exec(scrap)![1];
+    expect(await documents.findDocument(scrapId)).toMatchObject({ type: "issue", reasonCode: "damaged", lines: [{ qty: 1 }] });
+    expect((await actions.documentAction(scrapId, "post")).ok).toBe(true);
+    expect(await balance(variantId)).toMatchObject({ onHand: 3, quarantined: 0 });
+    expect((await warehouse.listQuarantineStock()).find((r) => r.variantId === variantId)).toBeUndefined();
   });
 });

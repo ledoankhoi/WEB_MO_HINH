@@ -82,7 +82,7 @@ Ghi nhớ kỹ thuật của dự án:
   Danh sách phiếu `/admin/kho/phieu` (lọc theo loại, trạng thái), tạo và sửa phiếu nhập, ô quét mã vạch hoặc SKU, gửi, trả lại, ghi sổ, huỷ. Ghi sổ nguyên tử, chống lặp (Q16), cập nhật `avg_cost` theo Q11.
   Xong khi: test WH-01, WH-02 (kể cả hai lệnh ghi sổ song song), WH-08, phiếu nháp không tác động tồn, phiếu đã ghi sổ không sửa được; nhật ký.
 
-- [ ] **T10 — Phiếu xuất khác, chuyển vị trí, hàng trả, hàng cách ly.** Cần T09. YC-KHO-04, 05, 08, 09; QT-15; WH-03, WH-05, WH-07.
+- [x] **T10 — Phiếu xuất khác, chuyển vị trí, hàng trả, hàng cách ly.** Cần T09. YC-KHO-04, 05, 08, 09; QT-15; WH-03, WH-05, WH-07.
   Thêm các loại phiếu `issue`, `transfer`, `return` vào màn hình phiếu; trang `/admin/kho/cach-ly` với thao tác "bán lại được" và "huỷ hàng" (tạo phiếu tương ứng).
   Xong khi: test WH-03 (phiếu xuất vượt khả dụng), WH-05 (phiếu hàng trả), WH-07, không lấy được hàng đã giữ cho đơn.
 
@@ -196,6 +196,10 @@ Ghi nhớ kỹ thuật của dự án:
 | 16/10/2026 | T09 | Giá vốn tính theo SL thực nhận (kể cả phần cách ly) và đơn giá nhập, làm tròn tới đồng | Q11: tồn cũ gồm cả hàng cách ly |
 | 16/10/2026 | T09 | Bấm “Tạo phiếu nhập” là tạo ngay phiếu nháp rỗng rồi mở trang phiếu; bộ soạn dòng lưu bằng một Server Action nhận JSON đã kiểm tra từng trường | Đơn giản hơn trang `/moi?loai=` riêng |
 | 16/10/2026 | T09 | Ô quét mã nhận SKU hoặc mã vạch, có gợi ý SKU (datalist); quét lại cùng mã thì cộng 1 vào SL thực nhận | Q23, YC-KHO-17 |
+| 16/10/2026 | T10 | “Huỷ hàng” ở trang hàng cách ly tạo phiếu xuất lý do “Hư hỏng” thay cho phiếu điều chỉnh giảm | Đúng bản chất xuất huỷ, không cần đợi T11; vẫn có dòng sổ kho và nhật ký |
+| 16/10/2026 | T10 | Hai nút ở trang hàng cách ly chỉ tạo phiếu nháp điền sẵn (chuyển toàn bộ về kệ đầu tiên, hoặc xuất toàn bộ); nhân viên sửa số lượng rồi gửi ghi sổ như thường | Giữ kiểm soát duyệt (K4) cho mọi biến động |
+| 16/10/2026 | T10 | QT-15 không cần kiểm tra riêng: xuất, chuyển từ kệ làm giảm on_hand, ràng buộc reserved ≤ on_hand trong CSDL tự chặn khi đụng hàng đã giữ | Một lớp chặn, không lệch giữa mã và CSDL |
+| 16/10/2026 | T10 | Phiếu hàng trả gắn đơn bằng mã đơn (không bắt buộc); dòng sổ kho `return_in` mang cả mã phiếu và mã đơn | YC-KHO-08 |
 
 ## Vướng mắc
 

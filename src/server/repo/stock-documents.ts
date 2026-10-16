@@ -27,6 +27,7 @@ export type DocumentLine = {
   locationId: string;
   locationCode: string;
   toLocationId: string | null;
+  toLocationCode: string | null;
   qtyExpected: number | null;
   qty: number | null;
   qtyQuarantined: number | null;
@@ -43,6 +44,7 @@ export type StockDocument = {
   supplierId: string | null;
   supplierName: string | null;
   orderId: string | null;
+  orderCode: string | null;
   reasonCode: string;
   reference: string;
   note: string;
@@ -70,6 +72,7 @@ function toDocument(row: Row): Omit<StockDocument, "lines"> {
     supplierId: row.supplier_id === null ? null : String(row.supplier_id),
     supplierName: row.supplier_name === null || row.supplier_name === undefined ? null : String(row.supplier_name),
     orderId: row.order_id === null ? null : String(row.order_id),
+    orderCode: row.order_code === null || row.order_code === undefined ? null : String(row.order_code),
     reasonCode: String(row.reason_code),
     reference: String(row.reference),
     note: String(row.note),
@@ -84,8 +87,9 @@ function toDocument(row: Row): Omit<StockDocument, "lines"> {
   };
 }
 
-const HEADER_SQL = `SELECT d.*, s.name AS supplier_name, c.name AS created_by_name, p.name AS posted_by_name
+const HEADER_SQL = `SELECT d.*, s.name AS supplier_name, c.name AS created_by_name, p.name AS posted_by_name, o.code AS order_code
                     FROM stock_documents d
+                    LEFT JOIN orders o ON o.id = d.order_id
                     LEFT JOIN suppliers s ON s.id = d.supplier_id
                     LEFT JOIN users c ON c.id = d.created_by
                     LEFT JOIN users p ON p.id = d.posted_by`;
@@ -95,8 +99,9 @@ export async function findDocument(id: string): Promise<StockDocument | null> {
   const [header, lines] = await db.batch([
     { sql: `${HEADER_SQL} WHERE d.id = ?`, args: [id] },
     {
-      sql: `SELECT l.*, v.sku, p.name || ' (' || v.name || ')' AS name, loc.code AS location_code
+      sql: `SELECT l.*, v.sku, p.name || ' (' || v.name || ')' AS name, loc.code AS location_code, tl.code AS to_location_code
             FROM stock_document_lines l
+            LEFT JOIN locations tl ON tl.id = l.to_location_id
             JOIN product_variants v ON v.id = l.variant_id
             JOIN products p ON p.id = v.product_id
             JOIN locations loc ON loc.id = l.location_id
@@ -114,6 +119,7 @@ export async function findDocument(id: string): Promise<StockDocument | null> {
       locationId: String(row.location_id),
       locationCode: String(row.location_code),
       toLocationId: row.to_location_id === null ? null : String(row.to_location_id),
+      toLocationCode: row.to_location_code === null ? null : String(row.to_location_code),
       qtyExpected: num(row.qty_expected),
       qty: num(row.qty),
       qtyQuarantined: num(row.qty_quarantined),
@@ -192,7 +198,7 @@ export type DraftInput = {
   reference: string;
   note: string;
   expectedAt: number | null;
-  lines: Omit<DocumentLine, "sku" | "name" | "locationCode">[];
+  lines: Omit<DocumentLine, "sku" | "name" | "locationCode" | "toLocationCode">[];
 };
 
 // Lưu phần đầu và thay toàn bộ dòng của phiếu nháp (K1). Trả về false khi phiếu không còn là nháp.
@@ -284,6 +290,23 @@ export async function postDocument(id: string, entry: AuditEntry): Promise<PostR
     if (quarantined.size > 0 && !quarantine) return { ok: false, reason: "invalid", message: "Kho chưa có vị trí cách ly đang dùng." };
     for (const [variantId, qty] of quarantined) {
       move({ variantId, locationId: quarantine, type: "receive", qtyDelta: qty, reason: "Nhận vào cách ly" });
+    }
+  } else if (document.type === "issue") {
+    // QT-15: xuất từ kệ hàng không được lấy phần đã giữ cho đơn; ràng buộc reserved ≤ on_hand chặn ở CSDL.
+    for (const line of document.lines) {
+      if ((line.qty ?? 0) > 0) move({ variantId: line.variantId, locationId: line.locationId, type: "issue", qtyDelta: -(line.qty ?? 0), reason: document.reasonCode });
+    }
+  } else if (document.type === "transfer") {
+    for (const line of document.lines) {
+      const qty = line.qty ?? 0;
+      if (qty <= 0 || !line.toLocationId) continue;
+      move({ variantId: line.variantId, locationId: line.locationId, type: "transfer_out", qtyDelta: -qty });
+      move({ variantId: line.variantId, locationId: line.toLocationId, type: "transfer_in", qtyDelta: qty });
+    }
+  } else if (document.type === "return") {
+    // Hàng trả luôn vào khu cách ly, chưa bán lại được (YC-KHO-08, Q15).
+    for (const line of document.lines) {
+      if ((line.qty ?? 0) > 0) move({ variantId: line.variantId, locationId: line.locationId, type: "return_in", qtyDelta: line.qty ?? 0, orderId: document.orderId });
     }
   } else {
     return { ok: false, reason: "invalid", message: "Loại phiếu này chưa ghi sổ được." };

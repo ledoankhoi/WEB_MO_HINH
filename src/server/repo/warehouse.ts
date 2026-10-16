@@ -130,3 +130,25 @@ export async function setSupplierActive(id: string, active: boolean, entry: Audi
   );
   return result.rowsAffected > 0;
 }
+
+export type QuarantineRow = { variantId: string; sku: string; name: string; locationId: string; locationCode: string; qty: number };
+
+// Hàng đang nằm ở vị trí cách ly (YC-KHO-09).
+export async function listQuarantineStock(): Promise<QuarantineRow[]> {
+  const db = await getDb();
+  const result = await db.execute(`
+    SELECT s.variant_id, v.sku, p.name || ' (' || v.name || ')' AS name, s.location_id, l.code, s.on_hand
+    FROM stock_levels s
+    JOIN locations l ON l.id = s.location_id AND l.type = 'quarantine'
+    JOIN product_variants v ON v.id = s.variant_id
+    JOIN products p ON p.id = v.product_id
+    WHERE s.on_hand > 0 ORDER BY l.code, v.sku`);
+  return result.rows.map((row) => ({
+    variantId: String(row.variant_id),
+    sku: String(row.sku),
+    name: String(row.name),
+    locationId: String(row.location_id),
+    locationCode: String(row.code),
+    qty: Number(row.on_hand),
+  }));
+}

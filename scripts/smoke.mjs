@@ -38,6 +38,7 @@ const PAGES = [
   { path: "/admin/kho/phieu" },
   { path: "/admin/kho/phieu?loai=receipt&trang-thai=posted" },
   { path: "/admin/kho/phieu/:documentId" },
+  { path: "/admin/kho/cach-ly" },
   { path: "/admin/kho/vi-tri" },
   { path: "/admin/nha-cung-cap" },
   { path: "/admin/khach-hang" },

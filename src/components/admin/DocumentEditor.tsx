@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Trash2 } from "lucide-react";
-import { createDocumentAction, documentAction, saveDraftAction, type DocumentActionKey } from "@/app/actions/inventory";
+import { createDocumentAction, documentAction, resolveQuarantineAction, saveDraftAction, type DocumentActionKey } from "@/app/actions/inventory";
 import { Button } from "@/components/ui/Button";
 import { Field, SelectField, TextAreaField } from "@/components/ui/Field";
 import { Notice } from "@/components/ui/Notice";
@@ -16,6 +16,7 @@ type Line = {
   sku: string;
   name: string;
   locationId: string;
+  toLocationId: string;
   qtyExpected: string;
   qty: string;
   qtyQuarantined: string;
@@ -28,6 +29,7 @@ export type EditorDocument = {
   type: StockDocumentType;
   supplierId: string | null;
   reasonCode: string;
+  orderCode: string;
   reference: string;
   note: string;
   expectedDate: string;
@@ -42,6 +44,9 @@ const COLUMNS: Partial<Record<StockDocumentType, { key: "qtyExpected" | "qty" | 
     { key: "qtyQuarantined", label: "Trong đó cách ly" },
     { key: "unitCost", label: "Đơn giá nhập (₫)" },
   ],
+  issue: [{ key: "qty", label: "SL xuất" }],
+  transfer: [{ key: "qty", label: "SL chuyển" }],
+  return: [{ key: "qty", label: "SL nhận về" }],
 };
 
 const cell = "h-9 w-24 rounded-lg border border-line bg-surface px-2 text-right text-sm tabular-nums focus:border-brand focus:outline-none";
@@ -50,16 +55,21 @@ export function DocumentEditor({
   document,
   variants,
   locations,
+  toLocations = [],
   suppliers,
 }: {
   document: EditorDocument;
   variants: VariantOption[];
+  // Vị trí nguồn (phiếu chuyển), vị trí nhận hoặc xuất (phiếu khác).
   locations: Option[];
+  // Vị trí đích của phiếu chuyển.
+  toLocations?: Option[];
   suppliers: Option[];
 }) {
   const [header, setHeader] = useState({
     supplierId: document.supplierId ?? "",
     reasonCode: document.reasonCode,
+    orderCode: document.orderCode,
     reference: document.reference,
     note: document.note,
     expectedAt: document.expectedDate,
@@ -84,7 +94,7 @@ export function DocumentEditor({
     }
     const index = lines.findIndex((line) => line.variantId === variant.id);
     if (index >= 0) update(index, { qty: String(Number(lines[index].qty || 0) + 1) });
-    else setLines([...lines, { variantId: variant.id, sku: variant.sku, name: variant.name, locationId: locations[0]?.id ?? "", qtyExpected: "", qty: "1", qtyQuarantined: "", unitCost: "", note: "" }]);
+    else setLines([...lines, { variantId: variant.id, sku: variant.sku, name: variant.name, locationId: locations[0]?.id ?? "", toLocationId: toLocations.find((l) => l.id !== locations[0]?.id)?.id ?? "", qtyExpected: "", qty: "1", qtyQuarantined: "", unitCost: "", note: "" }]);
     setScan("");
     setResult({});
   };
@@ -116,6 +126,9 @@ export function DocumentEditor({
               </option>
             ))}
           </SelectField>
+        )}
+        {document.type === "return" && (
+          <Field label="Mã đơn hàng (nếu có)" name="orderCode" maxLength={20} value={header.orderCode} onChange={(e) => setHeader({ ...header, orderCode: e.target.value })} />
         )}
         <Field label="Số chứng từ, hoá đơn" name="reference" maxLength={60} value={header.reference} onChange={(e) => setHeader({ ...header, reference: e.target.value })} />
         {document.type === "receipt" && (
@@ -161,7 +174,8 @@ export function DocumentEditor({
             <thead>
               <tr>
                 <th scope="col">Sản phẩm</th>
-                <th scope="col">Vị trí</th>
+                <th scope="col">{document.type === "transfer" ? "Từ vị trí" : "Vị trí"}</th>
+                {document.type === "transfer" && <th scope="col">Đến vị trí</th>}
                 {columns.map((column) => (
                   <th key={column.key} scope="col" className="text-right">
                     {column.label}
@@ -193,6 +207,18 @@ export function DocumentEditor({
                         ))}
                       </select>
                     </td>
+                    {document.type === "transfer" && (
+                      <td>
+                        <select aria-label={`Vị trí đích của ${line.sku}`} value={line.toLocationId} onChange={(e) => update(index, { toLocationId: e.target.value })} className={`${cell} w-32 text-left`}>
+                          <option value="">Chọn</option>
+                          {toLocations.map((l) => (
+                            <option key={l.id} value={l.id}>
+                              {l.label}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                    )}
                     {columns.map((column) => (
                       <td key={column.key} className="text-right">
                         <input
@@ -274,5 +300,25 @@ export function CreateDocumentButton({ type }: { type: StockDocumentType }) {
       </Button>
       {result.message && <Notice tone="error">{result.message}</Notice>}
     </>
+  );
+}
+
+// YC-KHO-09: tạo phiếu nháp điền sẵn để bán lại (chuyển sang kệ) hoặc huỷ (xuất hư hỏng) hàng cách ly.
+export function QuarantineActions({ variantId, locationId }: { variantId: string; locationId: string }) {
+  const [pending, startTransition] = useTransition();
+  const [result, setResult] = useState<FormState>({});
+  const run = (decision: "resell" | "scrap") => startTransition(async () => setResult(await resolveQuarantineAction(variantId, locationId, decision)));
+  return (
+    <div className="space-y-2">
+      <div className="flex flex-wrap gap-2">
+        <Button size="sm" variant="secondary" disabled={pending} onClick={() => run("resell")}>
+          Bán lại được
+        </Button>
+        <Button size="sm" variant="danger" disabled={pending} onClick={() => run("scrap")}>
+          Huỷ hàng
+        </Button>
+      </div>
+      {result.message && <Notice tone="error">{result.message}</Notice>}
+    </div>
   );
 }
