@@ -18,7 +18,7 @@ Ký hiệu: `- [ ]` chưa làm, `- [x]` xong, `- [!]` bị chặn (lý do ở m�
    - Logic mới (luật trạng thái, tiền, kho, quyền, kiểm tra đầu vào) có test Vitest. Test cho kịch bản nghiệm thu đặt tên bắt đầu bằng mã kịch bản, ví dụ `it("WH-02: ghi sổ hai lần chỉ ghi một bộ dòng sổ kho", ...)`.
    - Mọi Server Action và Route Handler mới kiểm tra quyền theo bảng ở mục 3 của tài liệu 10 và kiểm tra dữ liệu đầu vào. Thao tác thuộc YC-QTN-04 ghi nhật ký.
    - Cột "Hiện trạng" ở `docs/chuan/01-dac-ta-yeu-cau.md` được cập nhật cho các yêu cầu vừa làm xong, nếu có.
-6. **Commit.** Đánh `[x]` cho việc trong file này, rồi `git add -A` và commit **một** lần, nội dung tiếng Việt: dòng đầu `T05: <tóm tắt>`, các dòng sau liệt kê mã yêu cầu và mã kịch bản đã làm, dòng cuối `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`. Không commit khi chưa đạt quy tắc 5.
+6. **Commit.** Đánh `[x]` cho việc trong file này, rồi `git add -A` và commit **một** lần, nội dung tiếng Việt: dòng đầu `T05: <tóm tắt>`, các dòng sau liệt kê mã yêu cầu và mã kịch bản đã làm. Không thêm dòng ghi công Claude (`Co-Authored-By`). Không commit khi chưa đạt quy tắc 5.
 7. **Không bao giờ:** `git push`, đổi nhánh, `git reset --hard`, sửa lịch sử commit; sửa một migration đã có trong commit trước (chỉ thêm migration mới ở cuối mảng); chạy `npm run media` hoặc `npm run models`; sửa hay in ra nội dung `.env*`; xoá `data/`; cài thư viện mới (trừ khi không có cách nào khác, và phải ghi lý do vào "Quyết định tự chọn"); tắt test, thêm `eslint-disable`, `@ts-ignore`, `it.skip` để cho qua.
 8. **Khi bị chặn.** Nếu sau 3 hướng sửa khác nhau vẫn không đạt quy tắc 5, hoặc thiếu thông tin mà không tự chọn được: chuyển việc thành `- [!]`, ghi lý do và những gì đã thử vào mục Vướng mắc; với phần code chưa xanh thì chạy `git stash push -u -m "<mã việc> dở"` và ghi tên stash vào mục Vướng mắc; rồi commit riêng thay đổi của file này. Phiên sau sẽ làm việc kế tiếp không phụ thuộc vào việc bị chặn.
 9. **Dọn dẹp.** Tắt mọi máy chủ phát triển đã bật trước khi kết thúc phiên. Không để file tạm trong repo.
@@ -284,7 +284,7 @@ Kiểm tra cuối: typecheck, lint qua; 23 file test, 125 test qua; build qua; s
 ### Còn mở (không chặn)
 
 - Trang sản phẩm chưa hiện thương hiệu, series (YC-DM-04 còn "Sửa"); chưa có sổ địa chỉ, lọc theo thương hiệu, series, khoảng giá.
-- Tải `.glb` thẳng lên Supabase Storage mới test với bản giả; cần thử một lần với Storage thật.
+- Đã kiểm tra trên Supabase thật ngày 16/10/2026 (bộ test chạy trong schema tạm, dữ liệu, RLS, Storage): xem `docs/chuan/07-kiem-thu.md` mục 2.
 - Chưa đo giao diện ở 375 px bằng trình duyệt thật; T25 rà bằng đọc mã.
 - Hai lần không ổn định đã gặp (đều qua khi chạy lại): `coupons.test.ts` quá giờ ở bước chuẩn bị khi máy bận; `npm run build` báo hàm cache quá giờ khi dựng sẵn trang sản phẩm qua mạng.
 - Nút yêu thích giữ trạng thái cũ sau khi đăng xuất cho tới khi tải lại trang; slug cũ chuyển hướng sau tối đa một phút kể từ lúc đổi.

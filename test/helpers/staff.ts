@@ -25,7 +25,8 @@ export async function signInAs(userId: string) {
   const token = newToken();
   await db.execute({
     sql: "INSERT INTO sessions (id, user_id, expires_at, created_at) VALUES (?, ?, ?, ?)",
-    args: [sha256(token), userId, Date.now() + 60_000, Date.now()],
+    // Một giờ: chạy trên PostgreSQL thật qua mạng (npm run test:pg), một file test có thể quá một phút.
+    args: [sha256(token), userId, Date.now() + 3_600_000, Date.now()],
   });
   jar.set("rs_admin", token);
 }

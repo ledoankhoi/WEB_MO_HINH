@@ -10,6 +10,7 @@ Kế hoạch và kết quả kiểm thử phần quản trị website và quản
 | Lớp dữ liệu, Server Action, Route Handler, hàm thuần | Vitest | `npm test` | PGlite (PostgreSQL trong bộ nhớ), mỗi file test một CSDL riêng có migration và dữ liệu mẫu |
 | Build production | Next.js | `npm run build` | Chạy migration lên Supabase, dựng sẵn trang |
 | Mọi trang | `scripts/smoke.mjs` | `npm run smoke` | `next dev` cổng 3100, CSDL Supabase thật, phiên quản trị tạm |
+| Bộ test trên PostgreSQL thật | Vitest, `scripts/test-pg.mjs` | `npm run test:pg` | Supabase, mỗi file test một schema tạm (xoá khi xong), chạy tuần tự; bỏ `backup.test.ts` (cần quyền superuser) |
 
 Quy ước:
 
@@ -27,6 +28,19 @@ Quy ước:
 | `npm test` | 23 file, 125 test, tất cả qua |
 | `npm run build` | Qua |
 | `npm run smoke` | Mọi trang trả đúng mã mong đợi, không có dấu hiệu lỗi trong HTML |
+
+### Kiểm tra trên Supabase thật (16/10/2026)
+
+| Hạng mục | Kết quả |
+| --- | --- |
+| `npm run test:pg` | 22 file, 124 test: 123 qua. PERF-01 trượt (khoảng 440 ms so với ngưỡng 300 ms); ngưỡng này đo trên PGlite, trên Supabase mỗi truy vấn đi qua mạng |
+| Lược đồ `public` | Đủ 15 migration (`001_init` → `015_slug_redirects`); 34 bảng đều bật RLS, không có chính sách |
+| Dữ liệu | Đối soát sổ kho với số dư theo vị trí, số tổng và hàng đang giữ: không lệch; mọi đơn có tổng = tạm tính − giảm + phí vận chuyển; 39 sản phẩm đã xuất bản đều có biến thể đang bật |
+| Storage | 39 mô hình và ảnh công khai trả 200. Luồng tải `.glb` của T22 chạy đúng với Storage thật: xin URL có chữ ký, CORS cho phép trình duyệt, PUT không cần khoá bí mật, đọc 12 byte đầu bằng Range (`glTF`, phiên bản 2, độ dài khớp), xoá (file thử đã xoá) |
+| `npm run build`, `npm run smoke` | Qua; 59 trang đúng mã mong đợi |
+| `npm run backup` | 34 bảng, 327 dòng |
+
+Lần chạy đầu `npm run test:pg` lộ hai lỗi của bộ test (không phải của ứng dụng), đã sửa: chạy song song thì các schema chờ nhau ở khoá tư vấn lúc chạy migration tới quá `statement_timeout` (nay chạy tuần tự); phiên đăng nhập giả lập chỉ sống 60 giây, hết hạn giữa file test chạy qua mạng (nay một giờ).
 
 Hai lần không ổn định ghi nhận trong phiên (lần chạy lại đều qua, không đổi mã):
 
@@ -88,6 +102,6 @@ Ngoài các kịch bản trên:
 
 ## 5. Giới hạn
 
-- Không có kiểm thử đầu cuối bằng trình duyệt thật (dự án không cài Playwright): luồng tải `.glb` thẳng lên Supabase Storage bằng URL có chữ ký, giao diện ở chiều rộng 375 px, thao tác bằng bàn phím mới được rà bằng đọc mã.
+- Không có kiểm thử đầu cuối bằng trình duyệt thật (dự án không cài Playwright): giao diện ở chiều rộng 375 px, thao tác bằng bàn phím mới được rà bằng đọc mã. Luồng tải `.glb` đã chạy với Storage thật bằng script, chưa bấm qua giao diện.
 - PERF-01 đo trên PGlite trong bộ nhớ, chưa đo trên Supabase.
 - Nghiệm thu với người dùng thật (UAT) chưa làm (tài liệu 10 mục 8).
