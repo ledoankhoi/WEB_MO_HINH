@@ -366,3 +366,20 @@ export async function findProductImage(id: string): Promise<{ data: Uint8Array<A
   if (!row || !(row.data instanceof Uint8Array)) return null;
   return { data: new Uint8Array(row.data), contentType: String(row.content_type) };
 }
+
+export type VariantOption = { id: string; sku: string; barcode: string | null; name: string };
+
+// Danh sách biến thể cho ô chọn sản phẩm trên phiếu kho (mọi trạng thái: hàng nháp vẫn nhập kho được).
+// shortcut: trả về toàn bộ; khi vượt vài nghìn biến thể thì chuyển sang tìm theo từ khoá ở máy chủ.
+export async function listVariantOptions(): Promise<VariantOption[]> {
+  const db = await getDb();
+  const result = await db.execute(
+    "SELECT v.id, v.sku, v.barcode, p.name || ' (' || v.name || ')' AS name FROM product_variants v JOIN products p ON p.id = v.product_id ORDER BY v.sku",
+  );
+  return result.rows.map((row) => ({
+    id: String(row.id),
+    sku: String(row.sku),
+    barcode: row.barcode === null ? null : String(row.barcode),
+    name: String(row.name),
+  }));
+}

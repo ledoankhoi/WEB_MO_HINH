@@ -1,9 +1,15 @@
 "use server";
 
-import { refresh } from "next/cache";
+import { refresh, updateTag } from "next/cache";
+import { redirect } from "next/navigation";
+import { parseVnDate } from "@/lib/format";
+import { can } from "@/lib/permissions";
+import { DOCUMENT_REASONS, DOCUMENT_TYPE_LABELS, MAX_LINE_QTY, isDocumentType, type StockDocumentType } from "@/lib/stock";
 import type { FormState } from "@/lib/types";
 import { isEmail, readText } from "@/lib/validation";
+import { PRODUCTS_TAG } from "@/server/catalog";
 import { isConstraintError } from "@/server/db";
+import { changeDocumentStatus, createDocument, findDocument, postDocument, saveDraft, type DraftInput } from "@/server/repo/stock-documents";
 import { FORBIDDEN, changes, isId, staffWith } from "@/server/staff-action";
 import {
   listLocations,
@@ -134,4 +140,159 @@ export async function setSupplierActiveAction(id: string, active: boolean): Prom
   );
   refresh();
   return { ok: true };
+}
+
+// ---------------------------------------------------------------------------------------------------------
+// Phiếu kho (docs/chuan/04 mục 6.1, K1–K5).
+
+type LineInput = {
+  variantId?: unknown;
+  locationId?: unknown;
+  toLocationId?: unknown;
+  qtyExpected?: unknown;
+  qty?: unknown;
+  qtyQuarantined?: unknown;
+  unitCost?: unknown;
+  note?: unknown;
+};
+
+export type DraftPayload = {
+  supplierId?: unknown;
+  reference?: unknown;
+  note?: unknown;
+  expectedAt?: unknown;
+  reasonCode?: unknown;
+  lines?: unknown;
+};
+
+const intOrNull = (value: unknown, max: number) =>
+  value === null || value === undefined || value === ""
+    ? null
+    : Number.isInteger(Number(value)) && Number(value) >= 0 && Number(value) <= max
+      ? Number(value)
+      : NaN;
+const textOf = (value: unknown, max: number) => (typeof value === "string" ? value.trim().slice(0, max) : "");
+
+export async function createDocumentAction(type: StockDocumentType): Promise<FormState> {
+  const audit = await staffWith("inventory.draft");
+  if (!audit) return FORBIDDEN;
+  if (!isDocumentType(type)) return { message: "Yêu cầu không hợp lệ." };
+  const id = await createDocument(
+    type,
+    audit({ action: "stock_document.create", entity: "stock_documents", summary: `Tạo ${DOCUMENT_TYPE_LABELS[type].toLowerCase()}` }),
+  );
+  redirect(`/admin/kho/phieu/${id}`);
+}
+
+// Người tạo được sửa, gửi, huỷ phiếu của mình; người có quyền ghi sổ được làm với mọi phiếu (K1, K5).
+async function documentFor(id: string, permission: "inventory.draft" | "inventory.post") {
+  const audit = await staffWith(permission);
+  if (!audit || !isId(id)) return null;
+  const document = await findDocument(id);
+  if (!document) return null;
+  const canPost = can(audit.user.role, "inventory.post");
+  if (permission === "inventory.draft" && !canPost && document.createdBy !== audit.user.id) return null;
+  return { audit, document };
+}
+
+export async function saveDraftAction(id: string, payload: DraftPayload): Promise<FormState> {
+  const found = await documentFor(id, "inventory.draft");
+  if (!found) return FORBIDDEN;
+  const { document } = found;
+  if (document.status !== "draft") return { message: "Chỉ sửa được phiếu nháp." };
+  if (typeof payload !== "object" || payload === null || !Array.isArray(payload.lines) || payload.lines.length > 200) {
+    return { message: "Dữ liệu phiếu không hợp lệ." };
+  }
+
+  const [locations, suppliers] = await Promise.all([listLocations(), listSuppliers()]);
+  const errors: string[] = [];
+  const supplierId = textOf(payload.supplierId, 20) || null;
+  if (supplierId && !suppliers.some((s) => s.id === supplierId && s.isActive)) errors.push("Nhà cung cấp không hợp lệ hoặc đã ngừng giao dịch.");
+  const expectedText = textOf(payload.expectedAt, 10);
+  const expectedAt = expectedText ? parseVnDate(expectedText) : null;
+  if (expectedText && expectedAt === null) errors.push("Ngày dự kiến không hợp lệ.");
+  const reasons = DOCUMENT_REASONS[document.type];
+  const reasonCode = textOf(payload.reasonCode, 40) || (reasons ? Object.keys(reasons)[0] : "");
+  if (reasons && !(reasonCode in reasons)) errors.push("Lý do không hợp lệ.");
+
+  const lines: DraftInput["lines"] = [];
+  const seen = new Set<string>();
+  for (const [index, raw] of (payload.lines as LineInput[]).entries()) {
+    const label = `Dòng ${index + 1}`;
+    const variantId = textOf(raw?.variantId, 20);
+    const locationId = textOf(raw?.locationId, 20);
+    const location = locations.find((l) => l.id === locationId);
+    const qtyExpected = intOrNull(raw?.qtyExpected, MAX_LINE_QTY);
+    const qty = intOrNull(raw?.qty, MAX_LINE_QTY);
+    const qtyQuarantined = intOrNull(raw?.qtyQuarantined, MAX_LINE_QTY);
+    const unitCost = intOrNull(raw?.unitCost, 1_000_000_000);
+    if (!isId(variantId)) errors.push(`${label}: chưa chọn sản phẩm.`);
+    if (!location || !location.isActive) errors.push(`${label}: vị trí không hợp lệ hoặc đã ngừng dùng.`);
+    else if (document.type === "receipt" && location.type !== "storage") errors.push(`${label}: hàng nhận tốt phải vào kệ hàng; phần lỗi ghi ở cột cách ly.`);
+    for (const [name, value] of [["SL dự kiến", qtyExpected], ["SL thực nhận", qty], ["SL cách ly", qtyQuarantined], ["Đơn giá", unitCost]] as const) {
+      if (Number.isNaN(value)) errors.push(`${label}: ${name} phải là số nguyên không âm.`);
+    }
+    if ((qtyQuarantined ?? 0) > (qty ?? 0)) errors.push(`${label}: SL cách ly không được lớn hơn SL thực nhận.`);
+    if ((qty ?? 0) > 0 && unitCost === null) errors.push(`${label}: cần nhập đơn giá nhập.`);
+    const key = `${variantId}:${locationId}`;
+    if (seen.has(key)) errors.push(`${label}: trùng sản phẩm và vị trí với một dòng khác.`);
+    seen.add(key);
+    lines.push({ variantId, locationId, toLocationId: null, qtyExpected, qty, qtyQuarantined, systemQty: null, unitCost, note: textOf(raw?.note, 200) });
+  }
+  if (errors.length > 0) return { message: errors.slice(0, 8).join(" ") };
+
+  try {
+    const saved = await saveDraft(id, {
+      supplierId,
+      orderId: document.orderId,
+      reasonCode,
+      reference: textOf(payload.reference, 60),
+      note: textOf(payload.note, 500),
+      expectedAt,
+      lines,
+    });
+    if (!saved) return { message: "Phiếu vừa được gửi hoặc huỷ ở nơi khác. Trang vừa được tải lại." };
+  } catch (error) {
+    if (isConstraintError(error)) return { message: "Có sản phẩm không còn tồn tại. Vui lòng tải lại trang." };
+    throw error;
+  }
+  refresh();
+  return { ok: true, message: "Đã lưu nháp." };
+}
+
+const STATUS_ACTIONS = {
+  submit: { permission: "inventory.draft", label: "Gửi ghi sổ" },
+  return: { permission: "inventory.post", label: "Trả lại để sửa" },
+  cancel: { permission: "inventory.draft", label: "Huỷ phiếu" },
+  post: { permission: "inventory.post", label: "Ghi sổ" },
+} as const;
+
+export type DocumentActionKey = keyof typeof STATUS_ACTIONS;
+
+export async function documentAction(id: string, action: DocumentActionKey): Promise<FormState> {
+  if (typeof action !== "string" || !Object.hasOwn(STATUS_ACTIONS, action)) return { message: "Yêu cầu không hợp lệ." };
+  const found = await documentFor(id, STATUS_ACTIONS[action].permission);
+  if (!found) return FORBIDDEN;
+  const { audit, document } = found;
+  const entry = audit({
+    action: `stock_document.${action}`,
+    entity: "stock_documents",
+    summary: `${STATUS_ACTIONS[action].label} ${document.code}`,
+    detail: { before: { status: document.status } },
+  });
+  if (action === "post") {
+    const result = await postDocument(id, entry);
+    refresh();
+    if (result.ok) {
+      updateTag(PRODUCTS_TAG);
+      return { ok: true, message: `Đã ghi sổ ${document.code}.` };
+    }
+    if (result.reason === "stock") return { message: "Không ghi sổ được: số lượng vượt tồn ở vị trí, hoặc phiếu vừa được ghi sổ ở nơi khác." };
+    return { message: result.message ?? "Phiếu không còn ở trạng thái ghi sổ được." };
+  }
+  const changed = await changeDocumentStatus(id, action, entry);
+  refresh();
+  return changed
+    ? { ok: true, message: `Đã thực hiện: ${STATUS_ACTIONS[action].label}.` }
+    : { message: "Phiếu không còn ở trạng thái cho phép (hoặc chưa có dòng nào)." };
 }

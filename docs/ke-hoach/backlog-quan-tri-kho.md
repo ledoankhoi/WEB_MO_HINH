@@ -78,7 +78,7 @@ Ghi nhớ kỹ thuật của dự án:
   `/admin/kho/vi-tri`, `/admin/nha-cung-cap`: tạo, sửa, ngừng dùng; vị trí còn hàng không ngừng dùng được.
   Xong khi: test ràng buộc; smoke.
 
-- [ ] **T09 — Phiếu nhập mua và giá vốn.** Cần T08. YC-KHO-03, 17; K1 đến K5 với `receipt`; QT-12, 13, 17, 18; WH-01, WH-02, WH-08.
+- [x] **T09 — Phiếu nhập mua và giá vốn.** Cần T08. YC-KHO-03, 17; K1 đến K5 với `receipt`; QT-12, 13, 17, 18; WH-01, WH-02, WH-08.
   Danh sách phiếu `/admin/kho/phieu` (lọc theo loại, trạng thái), tạo và sửa phiếu nhập, ô quét mã vạch hoặc SKU, gửi, trả lại, ghi sổ, huỷ. Ghi sổ nguyên tử, chống lặp (Q16), cập nhật `avg_cost` theo Q11.
   Xong khi: test WH-01, WH-02 (kể cả hai lệnh ghi sổ song song), WH-08, phiếu nháp không tác động tồn, phiếu đã ghi sổ không sửa được; nhật ký.
 
@@ -191,6 +191,11 @@ Ghi nhớ kỹ thuật của dự án:
 | 16/10/2026 | T08 | `staffWith`, `changes`, `isId`, `FORBIDDEN` chuyển sang `src/server/staff-action.ts`; action kho ở file mới `src/app/actions/inventory.ts` | File "use server" biến mọi hàm export thành action gọi được từ trình duyệt, nên hàm dùng chung không đặt ở đó |
 | 16/10/2026 | T08 | Vị trí đang có hàng không đổi loại được (kệ ⇄ cách ly), ngoài việc không ngừng dùng được | Đổi loại khi có hàng làm lệch on_hand và quarantined của inventory |
 | 16/10/2026 | T08 | Mã vị trí, mã nhà cung cấp tự viết hoa; nhà cung cấp ngừng giao dịch chứ không xoá | Phiếu nhập sẽ tham chiếu nhà cung cấp |
+| 16/10/2026 | T09 | Lớp phiếu chung `src/server/repo/stock-documents.ts` (tạo, lưu nháp thay toàn bộ dòng, K2/K3/K5, `postDocument` theo loại); T09 chỉ ghi sổ được phiếu nhập, T10, T11 thêm loại khác | Một vòng đời cho mọi loại phiếu |
+| 16/10/2026 | T09 | Trên phiếu nhập, `qty` là SL thực nhận, `qty_quarantined` là phần trong đó đưa vào cách ly; phần cách ly của cùng một biến thể gộp thành một dòng sổ kho vào vị trí cách ly đầu tiên | Khoá duy nhất của sổ kho theo (phiếu, biến thể, vị trí, loại) |
+| 16/10/2026 | T09 | Giá vốn tính theo SL thực nhận (kể cả phần cách ly) và đơn giá nhập, làm tròn tới đồng | Q11: tồn cũ gồm cả hàng cách ly |
+| 16/10/2026 | T09 | Bấm “Tạo phiếu nhập” là tạo ngay phiếu nháp rỗng rồi mở trang phiếu; bộ soạn dòng lưu bằng một Server Action nhận JSON đã kiểm tra từng trường | Đơn giản hơn trang `/moi?loai=` riêng |
+| 16/10/2026 | T09 | Ô quét mã nhận SKU hoặc mã vạch, có gợi ý SKU (datalist); quét lại cùng mã thì cộng 1 vào SL thực nhận | Q23, YC-KHO-17 |
 
 ## Vướng mắc
 

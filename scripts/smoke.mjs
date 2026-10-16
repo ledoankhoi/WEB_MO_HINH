@@ -35,6 +35,9 @@ const PAGES = [
   { path: "/admin/don-hang?van-chuyen=not_created&thanh-toan=unpaid&q=RB" },
   { path: "/admin/don-hang/cho-hoan-tien" },
   { path: "/admin/kho/lay-hang" },
+  { path: "/admin/kho/phieu" },
+  { path: "/admin/kho/phieu?loai=receipt&trang-thai=posted" },
+  { path: "/admin/kho/phieu/:documentId" },
   { path: "/admin/kho/vi-tri" },
   { path: "/admin/nha-cung-cap" },
   { path: "/admin/khach-hang" },
@@ -130,7 +133,8 @@ try {
   const product = await one("SELECT id, slug FROM products ORDER BY created_at DESC LIMIT 1");
   const order = await one("SELECT id, token FROM orders ORDER BY created_at DESC LIMIT 1");
   const category = await one("SELECT id FROM categories ORDER BY sort_order LIMIT 1");
-  const params = { product: product?.slug, productId: product?.id, order: order?.id, orderToken: order?.token, categoryId: category?.id };
+  const document = await one("SELECT id FROM stock_documents ORDER BY created_at DESC LIMIT 1");
+  const params = { product: product?.slug, productId: product?.id, order: order?.id, orderToken: order?.token, categoryId: category?.id, documentId: document?.id };
 
   for (const page of PAGES) {
     const missing = page.path.match(/:(\w+)/g)?.find((key) => !params[key.slice(1)]);
