@@ -140,7 +140,7 @@ Ghi nhớ kỹ thuật của dự án:
   Máy chủ cấp URL tải lên có chữ ký (Supabase Storage), trình duyệt tải thẳng file `.glb` tối đa 25 MB, máy chủ kiểm tra 12 byte đầu (`glTF`, phiên bản 2), sai thì xoá; cập nhật `product_media` và `products.model_url`. Nhắc trong giao diện rằng file phải nén sẵn và mô hình CC BY phải có mục trong `src/data/model-credits.json`.
   Xong khi: test kiểm tra chữ ký với bản giả của Storage.
 
-- [ ] **T23 — Báo cáo bán hàng.** Cần T13. YC-BC-01, 03.
+- [x] **T23 — Báo cáo bán hàng.** Cần T13. YC-BC-01, 03.
   `/admin/bao-cao`: chọn khoảng ngày (giờ Việt Nam), số đơn, doanh thu đơn `completed`, theo trạng thái, tỷ lệ huỷ, bán chạy, yêu thích nhiều nhất; xuất CSV. Biểu đồ nếu có thì SVG hoặc CSS tự vẽ.
   Xong khi: test số liệu với dữ liệu dựng sẵn; CSV.
 
@@ -255,6 +255,7 @@ Ghi nhớ kỹ thuật của dự án:
 | 16/10/2026 | T21 | Chuyển hướng slug cũ làm trong `src/proxy.ts` (mã 308), vì trang sản phẩm dựng trong Suspense nên chuyển hướng từ trang chỉ ra thẻ meta. Proxy giữ bảng slug cũ trong bộ nhớ một phút, chỉ tra với đường dẫn `/san-pham/<slug>`; `slug_redirects` trỏ tới sản phẩm nên đổi nhiều lần vẫn về slug hiện tại, slug được dùng lại thì bỏ chuyển hướng | YC-SP-09 |
 | 16/10/2026 | T21 | SEO sản phẩm là một nhóm ô trong form sản phẩm (tiêu đề ≤ 70, mô tả ≤ 160 ký tự, trống thì dùng tên và mô tả ngắn), kèm canonical; trang lọc danh mục lấy tiêu đề, mô tả từ danh mục. Ảnh trên thẻ sản phẩm để alt rỗng vì tên đứng ngay cạnh | YC-SP-09 |
 | 16/10/2026 | T22 | Tải .glb hai bước qua Server Action: xin URL có chữ ký (tên file `models/<sản phẩm>-<ngẫu nhiên>.glb` do máy chủ đặt), trình duyệt PUT thẳng lên Storage, rồi máy chủ đọc 12 byte đầu bằng Range: `glTF`, phiên bản 2, độ dài khai báo khớp kích thước file và không quá 25 MB; sai thì xoá file. Đúng thì thêm `product_media` loại model và đổi `model_url` trong một giao dịch. Chưa kiểm thử với Supabase thật trong phiên này | YC-SP-10, Q18 |
+| 16/10/2026 | T23 | Báo cáo bán hàng tính theo ngày đặt, chia ngày theo UTC+7; mặc định 30 ngày gần nhất lấy mốc từ đồng hồ CSDL; tối đa 366 ngày. Doanh thu chỉ đơn `completed`, bán chạy bỏ đơn huỷ, yêu thích nhiều nhất tính mọi thời điểm. Biểu đồ là thanh CSS trong bảng theo ngày. CSV `ban-hang` (theo ngày) và `ban-chay` qua `/admin/xuat/[loai]`, kiểm quyền `reports.view`, khoảng ngày sai trả 400 | YC-BC-01, 03 |
 
 ## Vướng mắc
 

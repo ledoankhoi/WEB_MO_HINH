@@ -1,19 +1,37 @@
 import { can } from "@/lib/permissions";
 import { authorize } from "@/server/auth/session";
+import { parseVnDate } from "@/lib/format";
+import { MAX_RANGE_DAYS, salesReport } from "@/server/repo/sales-reports";
 import { STOCK_FILTERS, listStock, stockCard, toCsv, type StockFilter } from "@/server/repo/stock-reports";
 
 const isId = (value: string | null) => typeof value === "string" && /^[a-f0-9]{20}$/.test(value);
 const MAX_ROWS = 20_000;
+const DAY = 86400 * 1000;
+const isoDay = (ms: number) => new Date(ms + 7 * 3600 * 1000).toISOString().slice(0, 10);
 
 // Xuất CSV (YC-KHO-19, YC-BC-03): kiểm tra quyền như trang tương ứng; cột giá vốn chỉ có với cost.view (SEC-03).
 export async function GET(request: Request, ctx: RouteContext<"/admin/xuat/[loai]">) {
   const { loai } = await ctx.params;
-  const user = await authorize("inventory.view");
+  const sales = loai === "ban-hang" || loai === "ban-chay";
+  const user = await authorize(sales ? "reports.view" : "inventory.view");
   if (!user) return new Response("Không có quyền.", { status: 403 });
   const params = new URL(request.url).searchParams;
   let csv: string;
 
-  if (loai === "ton-kho") {
+  if (sales) {
+    // Cùng khoảng ngày với trang /admin/bao-cao; sai thì báo lỗi thay vì lặng lẽ đổi khoảng.
+    const from = parseVnDate(params.get("tu") ?? "");
+    const to = parseVnDate(params.get("den") ?? "");
+    if (from === null || to === null || to < from || to - from >= MAX_RANGE_DAYS * DAY) return new Response("Khoảng ngày không hợp lệ.", { status: 400 });
+    const report = await salesReport({ from, to: to + DAY });
+    csv =
+      loai === "ban-hang"
+        ? toCsv(
+            ["Ngày (giờ Việt Nam)", "Số đơn", "Hoàn tất", "Đã huỷ", "Doanh thu đơn hoàn tất"],
+            report.daily.map((row) => [isoDay(row.day), row.orders, row.completed, row.cancelled, row.revenue]),
+          )
+        : toCsv(["Sản phẩm", "Số lượng", "Thành tiền"], report.topProducts.map((row) => [row.name, row.quantity, row.amount]));
+  } else if (loai === "ton-kho") {
     const withCost = can(user.role, "cost.view");
     const filter = params.get("loc") as StockFilter | null;
     const header = ["SKU", "Mã vạch", "Sản phẩm", "Thực có", "Đang giữ", "Khả dụng", "Cách ly", "Ngưỡng sắp hết", "Số ngày từ lần nhập"];

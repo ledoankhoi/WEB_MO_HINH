@@ -2,13 +2,18 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Boxes, Image as ImageIcon, Menu, NotebookText, Settings, ClipboardList, FileText, Scale, ShieldAlert, Star, TicketPercent, FolderTree, MapPin, Truck, LayoutDashboard, Library, Package, ReceiptText, ScrollText, Tag, Undo2, UserCog, Users } from "lucide-react";
+import { Boxes, Image as ImageIcon, Menu, NotebookText, Settings, ClipboardList, FileText, Scale, ShieldAlert, Star, TicketPercent, FolderTree, MapPin, Truck, LayoutDashboard, ChartColumn, Library, Package, ReceiptText, ScrollText, Tag, Undo2, UserCog, Users } from "lucide-react";
 import { can, type Permission, type Role } from "@/lib/permissions";
 
 // Nhóm theo menu ở mục 5 của docs/chuan/10. Mỗi mục chỉ hiện với vai trò có quyền mở trang đó; quyền
 // vẫn được kiểm tra lại ở máy chủ.
 const GROUPS: { label?: string; links: { href: string; label: string; icon: typeof Package; permission: Permission; alsoViewer?: boolean }[] }[] = [
-  { links: [{ href: "/admin", label: "Tổng quan", icon: LayoutDashboard, permission: "dashboard.view" }] },
+  {
+    links: [
+      { href: "/admin", label: "Tổng quan", icon: LayoutDashboard, permission: "dashboard.view" },
+      { href: "/admin/bao-cao", label: "Báo cáo bán hàng", icon: ChartColumn, permission: "reports.view" },
+    ],
+  },
   {
     label: "Kho",
     links: [
