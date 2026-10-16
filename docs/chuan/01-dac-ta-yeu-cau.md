@@ -4,7 +4,7 @@ Yêu cầu của **bước 1**: trang thương mại điện tử cốt lõi. Ph
 
 Căn cứ: [00-quyet-dinh-nen-tang.md](00-quyet-dinh-nen-tang.md). Dữ liệu: [03-co-so-du-lieu.md](03-co-so-du-lieu.md). Trạng thái: [04-trang-thai.md](04-trang-thai.md).
 
-Cột **Hiện trạng** so với mã nguồn ngày 12/10/2026: *Có* (đã chạy), *Sửa* (có nhưng phải đổi theo thiết kế mới), *Chưa*.
+Cột **Hiện trạng** so với mã nguồn ngày 12/10/2026, các mục đánh giá, yêu thích và quản trị cập nhật lại ngày 16/10/2026: *Có* (đã chạy), *Sửa* (có nhưng phải đổi theo thiết kế mới), *Chưa*.
 
 ## 1. Mục tiêu và phạm vi
 
@@ -40,7 +40,7 @@ Ngoài phạm vi bước 1: cổng thanh toán trực tuyến, tích hợp hãng
 | YC-DM-01 | Sản phẩm thuộc một danh mục (tối đa 2 cấp), có thể có thương hiệu, series, loại, tỷ lệ, cấp độ | Sửa |
 | YC-DM-02 | Sản phẩm có một hoặc nhiều biến thể; mỗi biến thể có SKU, tên, tình trạng (mới, đã qua sử dụng), giá riêng | Có |
 | YC-DM-03 | Chỉ sản phẩm `published` và biến thể đang bật hiện cho khách | Có |
-| YC-DM-04 | Trang sản phẩm hiện tên, thương hiệu, series, giá và tình trạng hàng của biến thể đang chọn, mô tả, thông số, đánh giá, sản phẩm liên quan | Sửa |
+| YC-DM-04 | Trang sản phẩm hiện tên, thương hiệu, series, giá và tình trạng hàng của biến thể đang chọn, mô tả, thông số, đánh giá, sản phẩm liên quan | Sửa (đã có đánh giá; chưa hiện thương hiệu, series) |
 | YC-DM-05 | Khách đổi biến thể trên trang sản phẩm; giá, tồn kho và màu mô hình 3D đổi theo | Có (trừ màu mô hình 3D dựng sẵn) |
 | YC-DM-06 | Trang chủ hiện sản phẩm nổi bật, hàng mới và các danh mục | Có |
 
@@ -98,9 +98,9 @@ Ngoài phạm vi bước 1: cổng thanh toán trực tuyến, tích hợp hãng
 
 | Mã | Yêu cầu | Hiện trạng |
 | --- | --- | --- |
-| YC-DG-01 | Khách đã mua và đơn đã hoàn tất được đánh giá 1 đến 5 sao kèm nhận xét, mỗi lần mua một lần | Chưa |
-| YC-DG-02 | Đánh giá chỉ hiện sau khi được duyệt; trang sản phẩm hiện điểm trung bình và số đánh giá | Chưa |
-| YC-DG-03 | Khách thêm, bỏ sản phẩm yêu thích; xem danh sách yêu thích | Chưa |
+| YC-DG-01 | Khách đã mua và đơn đã hoàn tất được đánh giá 1 đến 5 sao kèm nhận xét, mỗi lần mua một lần | Có |
+| YC-DG-02 | Đánh giá chỉ hiện sau khi được duyệt; trang sản phẩm hiện điểm trung bình và số đánh giá | Có |
+| YC-DG-03 | Khách thêm, bỏ sản phẩm yêu thích; xem danh sách yêu thích | Có |
 
 ### 3.8. Quản trị (QT)
 
@@ -109,17 +109,17 @@ Cập nhật 15/10/2026: phần quản trị và kho được đặc tả chi ti
 | Mã | Yêu cầu | Vai trò | Hiện trạng |
 | --- | --- | --- | --- |
 | YC-QT-01 | Trang quản trị chỉ mở cho nhân viên; mỗi chức năng kiểm tra vai trò ở máy chủ | Tất cả | Có |
-| YC-QT-02 | Tạo, sửa, xuất bản, lưu trữ sản phẩm; quản lý biến thể | Quản lý sản phẩm | Có (thiếu tải ảnh, SEO: T07, T21) |
+| YC-QT-02 | Tạo, sửa, xuất bản, lưu trữ sản phẩm; quản lý biến thể | Quản lý sản phẩm | Có |
 | YC-QT-03 | Quản lý danh mục, thương hiệu, series | Quản lý sản phẩm | Có |
 | YC-QT-04 | Chụp ảnh đại diện từ mô hình 3D khi lưu sản phẩm | Quản lý sản phẩm | Chưa (có sẵn phần chụp) |
 | YC-QT-05 | Xem tồn kho, nhập kho, điều chỉnh có lý do, xem lịch sử biến động, danh sách sắp hết | Nhân viên kho | Có |
 | YC-QT-06 | Danh sách đơn lọc theo trạng thái, tìm theo mã đơn; thực hiện các thao tác L2 đến L14 theo đúng vai trò | Theo bảng ở tài liệu 04 | Có |
 | YC-QT-07 | Danh sách các đơn đã huỷ nhưng đã thu tiền, chờ hoàn | Kế toán | Có |
-| YC-QT-08 | Duyệt, ẩn đánh giá | Chăm sóc khách hàng | Chưa |
+| YC-QT-08 | Duyệt, ẩn đánh giá | Chăm sóc khách hàng | Có |
 | YC-QT-09 | Xem danh sách khách hàng và đơn của từng người | Chăm sóc khách hàng | Có |
 | YC-QT-10 | Tạo tài khoản nhân viên, đổi vai trò, khoá tài khoản; không ai tự đổi vai trò của mình | Quản trị viên | Có |
 | YC-QT-11 | Trang tổng quan: số đơn theo trạng thái, đơn cần xử lý, hàng sắp hết | Tất cả nhân viên | Có |
-| YC-QT-12 | Ghi nhật ký mọi thao tác quản trị làm thay đổi dữ liệu | Hệ thống | Chưa |
+| YC-QT-12 | Ghi nhật ký mọi thao tác quản trị làm thay đổi dữ liệu | Hệ thống | Có |
 
 ### 3.9. Ghi nhận hành vi (HV)
 

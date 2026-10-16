@@ -152,7 +152,7 @@ Ghi nhớ kỹ thuật của dự án:
   Mọi form quản trị có nhãn, thông báo lỗi gắn với ô nhập, dùng được bằng bàn phím; bảng dài cuộn ngang trong khung, không tràn trang ở chiều rộng 375 px; trang lỗi trong `/admin` không lộ chi tiết kỹ thuật (YC-VH-03).
   Xong khi: lint qua, smoke qua; ghi những gì đã rà vào commit.
 
-- [ ] **T26 — Tài liệu và báo cáo cuối.** Cần tất cả các việc khác đã `[x]` hoặc `[!]`.
+- [x] **T26 — Tài liệu và báo cáo cuối.** Cần tất cả các việc khác đã `[x]` hoặc `[!]`.
   Viết `docs/chuan/05-kien-truc.md` (kiến trúc, phân quyền, bảo mật), `06-api.md` (danh sách Server Action, Route Handler, quyền), `07-kiem-thu.md` (bảng mã kịch bản → file test → kết quả); cập nhật cột Tình trạng ở `docs/chuan/README.md`, "Hiện trạng" ở 01, phần Cấu trúc và "Chưa làm" ở `CLAUDE.md`. Viết mục "Báo cáo cuối" theo quy tắc 10.
 
 ## Quyết định tự chọn
@@ -263,3 +263,48 @@ Ghi nhớ kỹ thuật của dự án:
 
 | Ngày | Việc | Vướng mắc | Đã thử | Stash |
 | --- | --- | --- | --- | --- |
+| 16/10/2026 | T18–T26 | Trong suốt các phiên có file thay đổi chưa commit không thuộc việc nào: `CLAUDE.md` (một dòng ở mục Chưa làm trỏ tới `docs/AI/`), `docs/README.md`, thư mục `docs/AI/` | Không commit lẫn: chỉ `git add` file của từng việc. Ở T26, `CLAUDE.md` được commit theo bản HEAD cộng phần của T26, dòng của phiên khác vẫn để nguyên trong bản làm việc | |
+
+## Báo cáo cuối
+
+Ngày 16/10/2026, nhánh `auto/quan-tri-kho`, chưa gộp vào `main`, chưa đẩy lên máy chủ git.
+
+### Đã xong
+
+Cả 27 việc T00–T26, mỗi việc một commit (`git log --oneline main..HEAD`). Không có việc `[!]`.
+
+- Nền quản trị (T00–T03): tên miền quản trị riêng, mười vai trò và ma trận quyền, nhân viên, nhật ký, danh mục hai cấp, thương hiệu, series.
+- Kho (T04, T05, T08–T12): biến thể, sổ kho theo vị trí, ba trạng thái đơn với luật L2–L14, vị trí, nhà cung cấp, phiếu nhập, xuất, chuyển, hàng trả, điều chỉnh, kiểm kê, hàng cách ly, giá vốn bình quân, danh sách tồn, thẻ kho, đối soát, CSV.
+- Danh mục hàng (T06, T07, T21, T22): biến thể trong quản trị, xem trước, ảnh, SEO, chuyển hướng slug cũ 308, tải mô hình `.glb` qua URL có chữ ký.
+- Cửa hàng và khách (T13–T20): trang tổng quan theo vai trò, banner, menu, thanh thông báo, trang thông tin có phiên bản, hồ sơ khách, khoá tài khoản, đồng ý nhận tin, mã giảm giá, đánh giá, yêu thích.
+- Báo cáo, vận hành, tài liệu (T23–T26): báo cáo bán hàng và CSV, `npm run backup` và diễn tập khôi phục, rà soát truy cập, tài liệu 05, 06, 07.
+
+Kiểm tra cuối: typecheck, lint qua; 23 file test, 125 test qua; build qua; smoke qua mọi trang. Mọi kịch bản nghiệm thu ở tài liệu 10 mục 7 có test và qua (bảng ở `docs/chuan/07-kiem-thu.md`).
+
+### Còn mở (không chặn)
+
+- Trang sản phẩm chưa hiện thương hiệu, series (YC-DM-04 còn "Sửa"); chưa có sổ địa chỉ, lọc theo thương hiệu, series, khoảng giá.
+- Tải `.glb` thẳng lên Supabase Storage mới test với bản giả; cần thử một lần với Storage thật.
+- Chưa đo giao diện ở 375 px bằng trình duyệt thật; T25 rà bằng đọc mã.
+- Hai lần không ổn định đã gặp (đều qua khi chạy lại): `coupons.test.ts` quá giờ ở bước chuẩn bị khi máy bận; `npm run build` báo hàm cache quá giờ khi dựng sẵn trang sản phẩm qua mạng.
+- Nút yêu thích giữ trạng thái cũ sau khi đăng xuất cho tới khi tải lại trang; slug cũ chuyển hướng sau tối đa một phút kể từ lúc đổi.
+
+### Việc cần người thật làm (tài liệu 10 mục 8)
+
+- Viết nội dung thật cho 7 trang thông tin đang là bản nháp "NỘI DUNG MẪU", điền liên hệ và chính sách đổi trả ở `/admin/noi-dung/cai-dat`, rồi xuất bản.
+- Rà soát pháp lý (Luật Thương mại điện tử 122/2025/QH15, Nghị định 248/2026/NĐ-CP, dữ liệu cá nhân, thuế, sở hữu trí tuệ).
+- Kiểm tra gói Supabase có sao lưu tự động không; chạy `npm run backup` định kỳ và chép thư mục `data/backups/` ra nơi khác.
+- Chọn dịch vụ email (thông báo đơn, đặt lại mật khẩu).
+- Nghiệm thu với người dùng thật theo tài liệu 10 mục 7; viết hướng dẫn vận hành cho nhập, xuất, kiểm kê, xử lý đơn.
+- Khi đưa lên mạng: đặt `ADMIN_HOST` (ví dụ `admin.robotica.vn`), kiểm tra CORS của bucket `media` cho phép trình duyệt gửi file `.glb` từ tên miền quản trị.
+- Xem lại rồi gộp nhánh `auto/quan-tri-kho` vào `main`.
+
+### Cách kiểm tra nhanh
+
+1. `npm run typecheck`, `npm run lint`, `npm test`, `npm run smoke`.
+2. `npm run dev`, mở `http://admin.localhost:3000/admin`, đăng nhập bằng `ADMIN_EMAIL`.
+3. Kho: tạo phiếu nhập ở `/admin/kho/phieu`, ghi sổ, xem tồn và thẻ kho; mở kiểm kê một vị trí.
+4. Mã giảm giá: tạo mã ở `/admin/ma-giam-gia`; ở `http://localhost:3000` thêm hàng vào giỏ, nhập mã ở trang thanh toán, đặt hàng, rồi huỷ đơn: số lượt dùng trở về như cũ.
+5. Đánh giá: hoàn tất một đơn của khách đã đăng nhập (L2–L8 ở `/admin/don-hang`), khách gửi đánh giá ở `/tai-khoan`, duyệt ở `/admin/danh-gia`, xem ở trang sản phẩm.
+6. Báo cáo: `/admin/bao-cao`, chọn khoảng ngày, xuất CSV.
+7. Sao lưu: `npm run backup`, xem `data/backups/`.
