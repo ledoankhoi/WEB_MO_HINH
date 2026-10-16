@@ -638,4 +638,26 @@ export const MIGRATIONS: Migration[] = [
       "ALTER TABLE coupon_redemptions ENABLE ROW LEVEL SECURITY",
     ],
   },
+  {
+    // Đánh giá (YC-DG-01, 02; YC-KH-05; 04 mục 7): mỗi dòng đơn đã hoàn tất một đánh giá.
+    id: "013_reviews",
+    statements: [
+      `CREATE TABLE reviews (
+        id TEXT PRIMARY KEY,
+        order_item_id BIGINT NOT NULL UNIQUE REFERENCES order_items (id),
+        product_id TEXT NOT NULL REFERENCES products (id),
+        user_id TEXT NOT NULL REFERENCES users (id),
+        rating SMALLINT NOT NULL,
+        comment TEXT NOT NULL DEFAULT '',
+        status TEXT NOT NULL DEFAULT 'pending',
+        created_at BIGINT NOT NULL,
+        updated_at BIGINT NOT NULL,
+        CONSTRAINT rating_valid CHECK (rating BETWEEN 1 AND 5),
+        CONSTRAINT status_valid CHECK (status IN ('pending', 'approved', 'hidden'))
+      )`,
+      "CREATE INDEX idx_reviews_product ON reviews (product_id, status, created_at)",
+      "CREATE INDEX idx_reviews_status ON reviews (status, created_at)",
+      "ALTER TABLE reviews ENABLE ROW LEVEL SECURITY",
+    ],
+  },
 ];

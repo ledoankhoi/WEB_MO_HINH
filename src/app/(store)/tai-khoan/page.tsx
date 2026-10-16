@@ -2,16 +2,18 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { LogoutButton, PasswordForm, ProfileForm } from "@/components/account/AccountForms";
+import { ReviewForm } from "@/components/account/ReviewForm";
 import { ORDER_STATUS_LABELS } from "@/lib/catalog";
 import { formatDate, formatVnd } from "@/lib/format";
 import { requireUser } from "@/server/auth/session";
 import { listOrdersByUser } from "@/server/repo/orders";
+import { listReviewableItems } from "@/server/repo/reviews";
 
 export const metadata: Metadata = { title: "Tài khoản", robots: { index: false } };
 
 async function Account() {
   const user = await requireUser("/tai-khoan");
-  const orders = await listOrdersByUser(user.id);
+  const [orders, reviewable] = await Promise.all([listOrdersByUser(user.id), listReviewableItems(user.id)]);
 
   return (
     <>
@@ -44,6 +46,24 @@ async function Account() {
           </ul>
         )}
       </section>
+
+      {reviewable.length > 0 && (
+        <section aria-labelledby="cho-danh-gia" className="space-y-3">
+          <h2 id="cho-danh-gia" className="text-lg font-semibold">
+            Sản phẩm chờ đánh giá
+          </h2>
+          <ul className="divide-y divide-line rounded-xl border border-line bg-surface">
+            {reviewable.map((item) => (
+              <li key={item.orderItemId}>
+                <ReviewForm
+                  orderItemId={item.orderItemId}
+                  title={`${item.productName}${item.variantName === "Bản thường" ? "" : ` (${item.variantName})`} · đơn ${item.orderCode}`}
+                />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-2">
         <ProfileForm user={user} />

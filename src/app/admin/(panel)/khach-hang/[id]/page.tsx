@@ -6,6 +6,7 @@ import { formatDate, formatDateTime, formatNumber, formatVnd, maskPhone, maskTex
 import { can } from "@/lib/permissions";
 import { maskContact, requireCustomerAccess } from "@/server/customer-access";
 import { listOrders } from "@/server/repo/orders";
+import { REVIEW_STATUS_LABELS, listReviews } from "@/server/repo/reviews";
 import { listCustomerAddresses, listCustomers } from "@/server/repo/users";
 
 // YC-KH-02, 03: hồ sơ khách. Vai trò viewer thấy thông tin cá nhân đã che (SEC-02).
@@ -15,7 +16,7 @@ export default async function AdminCustomerPage({ params }: PageProps<"/admin/kh
   const found = isId(id) ? (await listCustomers({ id, pageSize: 1 })).items[0] : undefined;
   if (!found) notFound();
   const customer = maskContact(found, masked);
-  const [orders, addresses] = await Promise.all([listOrders({ userId: id, pageSize: 50 }), listCustomerAddresses(id)]);
+  const [orders, addresses, reviews] = await Promise.all([listOrders({ userId: id, pageSize: 50 }), listCustomerAddresses(id), listReviews({ userId: id, pageSize: 50 })]);
   const shownOrders = orders.items.map((order) => (masked ? { ...order, customerPhone: maskPhone(order.customerPhone) } : order));
 
   return (
@@ -65,6 +66,22 @@ export default async function AdminCustomerPage({ params }: PageProps<"/admin/kh
       <section className="space-y-2">
         <h2 className="text-lg font-semibold">Đơn hàng</h2>
         <OrdersTable items={shownOrders} />
+      </section>
+
+      <section className="space-y-2">
+        <h2 className="text-lg font-semibold">Đánh giá ({formatNumber(reviews.total)})</h2>
+        {reviews.items.length === 0 ? (
+          <p className="text-sm text-muted">Chưa có đánh giá nào.</p>
+        ) : (
+          <ul className="space-y-1 text-sm">
+            {reviews.items.map((review) => (
+              <li key={review.id}>
+                {review.productName} · {review.rating}/5 · <span className="text-muted">{REVIEW_STATUS_LABELS[review.status]}</span>
+                {review.comment && <span className="text-muted"> · {review.comment}</span>}
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
     </>
   );

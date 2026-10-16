@@ -122,7 +122,7 @@ Ghi nhớ kỹ thuật của dự án:
   Bảng `coupons`, `coupon_redemptions`; `/admin/ma-giam-gia`; ô mã ở trang thanh toán, máy chủ tính lại; tăng lượt dùng trong giao dịch đặt hàng; huỷ đơn trả lượt.
   Xong khi: test EC-06 (từng lý do từ chối, mã hợp lệ cho đúng tổng tiền), EC-07, hai đơn cùng tranh lượt cuối cùng.
 
-- [ ] **T19 — Đánh giá.** Cần T05. YC-KH-05; YC-DG-01, 02; YC-QT-08.
+- [x] **T19 — Đánh giá.** Cần T05. YC-KH-05; YC-DG-01, 02; YC-QT-08.
   Bảng `reviews`; khách đã đăng nhập gửi đánh giá cho dòng đơn thuộc đơn `completed` (mỗi dòng một lần); trang sản phẩm hiện đánh giá đã duyệt, điểm trung bình, số đánh giá; `/admin/danh-gia` duyệt, ẩn, lọc.
   Xong khi: test điều kiện gửi, chỉ hiện `approved`, chuyển trạng thái đúng luật.
 
@@ -249,6 +249,8 @@ Ghi nhớ kỹ thuật của dự án:
 | 16/10/2026 | T18 | Mã giảm giá: số tiền cố định hoặc phần trăm (làm tròn xuống, có trần), đơn tối thiểu tính trên cả giỏ, giới hạn danh mục tính cả danh mục con; không giảm phí vận chuyển, phí vận chuyển tính trên tạm tính trước giảm | QT-21 |
 | 16/10/2026 | T18 | Lượt dùng ghi trong cùng giao dịch đặt hàng (`coupon_redemptions` + `used_count`, ràng buộc `used_count ≤ usage_limit`); mã bị sửa, tắt, hết lượt giữa chừng thì cả đơn không tạo; huỷ đơn (L11, L12, L13) trả lượt một lần | EC-06, EC-07 |
 | 16/10/2026 | T18 | Khách không phân biệt được mã không tồn tại với mã đã tắt; xem trước mã giới hạn 30 lần / 15 phút mỗi IP. Mã đã dùng không xoá, chỉ tắt | Chống dò mã |
+| 16/10/2026 | T19 | Khách gửi đánh giá ở trang tài khoản (mục Sản phẩm chờ đánh giá), mỗi dòng đơn của đơn `completed` một lần; điều kiện kiểm tra trong chính câu INSERT, khoá duy nhất `order_item_id` chống gửi trùng | YC-DG-01 |
+| 16/10/2026 | T19 | Trang sản phẩm hiện 20 đánh giá đã duyệt mới nhất, điểm trung bình làm tròn 1 chữ số, qua hàm cache gắn PRODUCTS_TAG; duyệt, ẩn thì làm mới thẻ này. Hồ sơ khách trong quản trị liệt kê đánh giá của khách | YC-DG-02, YC-KH-02 |
 
 ## Vướng mắc
 

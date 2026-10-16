@@ -3,8 +3,8 @@ import { ProductGrid, ProductImage } from "@/components/product/ProductCard";
 import { PurchasePanel } from "@/components/product/PurchasePanel";
 import RobotViewerLoader from "@/components/three/RobotViewerLoader";
 import { getCategory } from "@/lib/catalog";
-import { formatVnd } from "@/lib/format";
 import { getModelFeatures, modelKey } from "@/lib/model-features";
+import { formatDate, formatVnd } from "@/lib/format";
 import type { Product, ProductSummary } from "@/lib/types";
 import modelCredits from "@/data/model-credits.json";
 
@@ -17,11 +17,14 @@ export function ProductView({
   product,
   linked = [],
   related = [],
+  reviews,
   preview = false,
 }: {
   product: Product;
   linked?: Product[];
   related?: ProductSummary[];
+  // Đánh giá đã duyệt (YC-DG-02); bản xem trước của quản trị không truyền.
+  reviews?: { average: number; count: number; items: { id: string; userName: string; rating: number; comment: string; createdAt: number }[] };
   preview?: boolean;
 }) {
   const category = getCategory(product.category);
@@ -87,6 +90,11 @@ export function ProductView({
             {category && <p className="text-xs font-semibold tracking-wide text-brand-strong uppercase">{category.name}</p>}
             <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{product.name}</h1>
             <p className="text-muted">{product.tagline}</p>
+            {reviews && reviews.count > 0 && (
+              <a href="#danh-gia" className="inline-block text-sm text-muted hover:text-fg">
+                <span aria-hidden="true" className="text-warning">★</span> {reviews.average.toLocaleString("vi-VN")}/5 · {reviews.count} đánh giá
+              </a>
+            )}
           </div>
           <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
             <p className="text-3xl font-bold tabular-nums">{formatVnd(product.price)}</p>
@@ -143,6 +151,33 @@ export function ProductView({
           )}
         </div>
       </div>
+
+      {reviews && (
+        <section id="danh-gia" aria-labelledby="danh-gia-tieu-de" className="space-y-4 border-t border-line pt-6">
+          <h2 id="danh-gia-tieu-de" className="text-2xl font-semibold tracking-tight">
+            Đánh giá {reviews.count > 0 && <span className="text-base font-normal text-muted">({reviews.average.toLocaleString("vi-VN")}/5 từ {reviews.count} đánh giá)</span>}
+          </h2>
+          {reviews.count === 0 ? (
+            <p className="text-sm text-muted">Chưa có đánh giá nào. Khách đã mua có thể đánh giá trong trang tài khoản sau khi đơn hoàn tất.</p>
+          ) : (
+            <ul className="divide-y divide-line rounded-xl border border-line bg-surface">
+              {reviews.items.map((review) => (
+                <li key={review.id} className="space-y-1 p-4 text-sm">
+                  <p className="flex flex-wrap items-center gap-x-3">
+                    <span className="text-warning" role="img" aria-label={`${review.rating} trên 5 sao`}>
+                      {"★".repeat(review.rating)}
+                      <span className="text-line">{"★".repeat(5 - review.rating)}</span>
+                    </span>
+                    <span className="font-medium">{review.userName}</span>
+                    <span className="text-muted">{formatDate(review.createdAt)}</span>
+                  </p>
+                  {review.comment && <p className="whitespace-pre-line text-muted">{review.comment}</p>}
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
 
       {related.length > 0 && (
         <section aria-labelledby="lien-quan" className="pt-6">

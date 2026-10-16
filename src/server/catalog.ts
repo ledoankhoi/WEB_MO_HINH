@@ -11,6 +11,7 @@ import {
   listRelatedProducts,
   queryProducts,
 } from "./repo/products";
+import { listApprovedReviews } from "./repo/reviews";
 
 // Mọi dữ liệu danh mục hiển thị cho khách đều gắn thẻ này. Khi sản phẩm hoặc tồn kho thay đổi,
 // Server Action gọi updateTag(PRODUCTS_TAG) để trang được dựng lại.
@@ -29,6 +30,14 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
   }
   cacheLife("hours");
   return product;
+}
+
+// Đánh giá đã duyệt của một sản phẩm; duyệt, ẩn xong gọi updateTag(PRODUCTS_TAG).
+export async function getProductReviews(productId: string) {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(PRODUCTS_TAG);
+  return listApprovedReviews(productId);
 }
 
 export async function searchProducts(query: {
