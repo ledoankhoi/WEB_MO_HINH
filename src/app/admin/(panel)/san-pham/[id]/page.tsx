@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { first, isId } from "@/components/admin/parts";
 import { ProductForm } from "@/components/admin/ProductForm";
 import { MediaPanel } from "@/components/admin/MediaPanel";
+import { ModelUpload } from "@/components/admin/ModelUpload";
 import { VariantsPanel } from "@/components/admin/VariantsPanel";
 import { ProductView } from "@/components/product/ProductView";
 import { Notice } from "@/components/ui/Notice";
@@ -74,6 +75,7 @@ export default async function AdminEditProductPage({ params, searchParams }: Pag
       )}
 
       {tab === "media" && <MediaPanel productId={product.id} media={await listMedia(product.id)} cover={product.image} canEdit={canEdit} />}
+      {tab === "media" && canEdit && <ModelUpload productId={product.id} modelUrl={product.modelUrl} />}
 
       {tab === "xem-truoc" && (
         <div className="space-y-6 rounded-2xl border border-dashed border-line p-4 sm:p-6">

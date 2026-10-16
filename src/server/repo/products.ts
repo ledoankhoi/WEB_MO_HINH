@@ -583,6 +583,22 @@ export async function addMedia(productId: string, url: string, alt: string, audi
   return id;
 }
 
+// YC-SP-10: gắn file .glb mới cho sản phẩm (một dòng product_media loại model và products.model_url).
+// Trả về id dòng media, hoặc null khi sản phẩm không còn.
+export async function setProductModel(productId: string, url: string, audit?: AuditEntry): Promise<string | null> {
+  const db = await getDb();
+  const id = newId();
+  const now = Date.now();
+  const [inserted] = await db.batch([
+    {
+      sql: "INSERT INTO product_media (id, product_id, kind, url, sort_order, created_at) SELECT ?, id, 'model', ?, 0, ? FROM products WHERE id = ?",
+      args: [id, url, now, productId],
+    },
+    withAudit({ sql: "UPDATE products SET model_url = ?, updated_at = ? WHERE id = ?", args: [url, now, productId] }, audit),
+  ]);
+  return inserted.rowsAffected > 0 ? id : null;
+}
+
 // Sửa chữ thay thế, đổi thứ tự (lên/xuống), đặt làm ảnh đại diện hoặc xoá một ảnh. Trả về false khi ảnh không
 // thuộc sản phẩm. Xoá ảnh đang là ảnh đại diện thì lấy ảnh kế tiếp (hoặc để trống).
 export async function updateMedia(

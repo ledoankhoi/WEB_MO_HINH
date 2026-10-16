@@ -136,7 +136,7 @@ Ghi nhớ kỹ thuật của dự án:
   Tiêu đề, mô tả meta cho sản phẩm, danh mục, trang dùng trong `generateMetadata`; alt ảnh; bảng `slug_redirects`, đổi slug thì slug cũ chuyển hướng 308.
   Xong khi: test lưu slug cũ và tra chuyển hướng; smoke kiểm một slug cũ trả 308.
 
-- [ ] **T22 — Tải mô hình 3D qua quản trị.** Cần T07. YC-SP-10; Q18.
+- [x] **T22 — Tải mô hình 3D qua quản trị.** Cần T07. YC-SP-10; Q18.
   Máy chủ cấp URL tải lên có chữ ký (Supabase Storage), trình duyệt tải thẳng file `.glb` tối đa 25 MB, máy chủ kiểm tra 12 byte đầu (`glTF`, phiên bản 2), sai thì xoá; cập nhật `product_media` và `products.model_url`. Nhắc trong giao diện rằng file phải nén sẵn và mô hình CC BY phải có mục trong `src/data/model-credits.json`.
   Xong khi: test kiểm tra chữ ký với bản giả của Storage.
 
@@ -254,6 +254,7 @@ Ghi nhớ kỹ thuật của dự án:
 | 16/10/2026 | T20 | Nút yêu thích trên thẻ và trang sản phẩm đọc trạng thái qua `GET /api/wishlist` một lần mỗi trang (trang sản phẩm được cache chung nên không dựng sẵn trạng thái của từng khách); chưa đăng nhập thì chuyển tới đăng nhập kèm `next`. Danh sách ở trang tài khoản và hồ sơ khách; xếp hạng yêu thích nhiều nhất (`topWishlisted`) đưa vào báo cáo T23 | YC-DG-03, YC-KH-06 |
 | 16/10/2026 | T21 | Chuyển hướng slug cũ làm trong `src/proxy.ts` (mã 308), vì trang sản phẩm dựng trong Suspense nên chuyển hướng từ trang chỉ ra thẻ meta. Proxy giữ bảng slug cũ trong bộ nhớ một phút, chỉ tra với đường dẫn `/san-pham/<slug>`; `slug_redirects` trỏ tới sản phẩm nên đổi nhiều lần vẫn về slug hiện tại, slug được dùng lại thì bỏ chuyển hướng | YC-SP-09 |
 | 16/10/2026 | T21 | SEO sản phẩm là một nhóm ô trong form sản phẩm (tiêu đề ≤ 70, mô tả ≤ 160 ký tự, trống thì dùng tên và mô tả ngắn), kèm canonical; trang lọc danh mục lấy tiêu đề, mô tả từ danh mục. Ảnh trên thẻ sản phẩm để alt rỗng vì tên đứng ngay cạnh | YC-SP-09 |
+| 16/10/2026 | T22 | Tải .glb hai bước qua Server Action: xin URL có chữ ký (tên file `models/<sản phẩm>-<ngẫu nhiên>.glb` do máy chủ đặt), trình duyệt PUT thẳng lên Storage, rồi máy chủ đọc 12 byte đầu bằng Range: `glTF`, phiên bản 2, độ dài khai báo khớp kích thước file và không quá 25 MB; sai thì xoá file. Đúng thì thêm `product_media` loại model và đổi `model_url` trong một giao dịch. Chưa kiểm thử với Supabase thật trong phiên này | YC-SP-10, Q18 |
 
 ## Vướng mắc
 

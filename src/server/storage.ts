@@ -29,6 +29,26 @@ export async function uploadObject(path: string, data: Uint8Array<ArrayBuffer>, 
   return publicUrl(path);
 }
 
+// Q18: URL tải lên có chữ ký, trình duyệt gửi thẳng file (PUT) tới Storage mà không đi qua máy chủ này.
+export async function createSignedUploadUrl(path: string): Promise<string> {
+  const { url, auth } = config();
+  const response = await fetch(`${url}/storage/v1/object/upload/sign/${BUCKET}/${path}`, { method: "POST", headers: auth });
+  if (!response.ok) throw new Error(`Không tạo được URL tải lên: HTTP ${response.status}`);
+  const body = (await response.json()) as { url?: string };
+  if (!body.url) throw new Error("Storage không trả về URL tải lên");
+  return `${url}/storage/v1${body.url}`;
+}
+
+// Đọc vài byte đầu của file đã tải lên và tổng kích thước (từ Content-Range). null nếu chưa có file.
+export async function readObjectHead(path: string, length: number): Promise<{ bytes: Uint8Array; size: number } | null> {
+  const { url, auth } = config();
+  const response = await fetch(`${url}/storage/v1/object/${BUCKET}/${path}`, { headers: { ...auth, Range: `bytes=0-${length - 1}` } });
+  if (!response.ok) return null;
+  const bytes = new Uint8Array(await response.arrayBuffer()).subarray(0, length);
+  const total = Number(/\/(\d+)$/.exec(response.headers.get("content-range") ?? "")?.[1] ?? bytes.length);
+  return { bytes, size: total };
+}
+
 // Xoá file đã tải lên; lỗi xoá không làm hỏng thao tác chính (file mồ côi vô hại).
 export async function deleteObject(path: string): Promise<void> {
   const { url, auth } = config();

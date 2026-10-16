@@ -16,6 +16,7 @@ import { authorize } from "@/server/auth/session";
 import { FORBIDDEN, changes, isId, staffWith } from "@/server/staff-action";
 import { writeAudit } from "@/server/repo/audit";
 import { deleteObject } from "@/server/storage";
+import { finishModelUpload, startModelUpload } from "@/server/media-upload";
 import {
   canPublish,
   deleteProduct,
@@ -356,6 +357,26 @@ export async function mediaAction(
   updateTag(PRODUCTS_TAG);
   refresh();
   return { ok: true };
+}
+
+// YC-SP-10, Q18: tải mô hình .glb thẳng lên Storage bằng URL có chữ ký (file tới 25 MB vượt giới hạn Server
+// Action và Route Handler), rồi máy chủ kiểm tra phần đầu file trước khi gắn vào sản phẩm.
+export async function startModelUploadAction(productId: string): Promise<{ ok: true; path: string; uploadUrl: string } | { ok: false; message: string }> {
+  const audit = await staffWith("catalog.edit");
+  if (!audit) return { ok: false, message: FORBIDDEN.message! };
+  if (!isId(productId)) return { ok: false, message: "Yêu cầu không hợp lệ." };
+  return startModelUpload(productId);
+}
+
+export async function finishModelUploadAction(productId: string, path: string): Promise<FormState> {
+  const audit = await staffWith("catalog.edit");
+  if (!audit) return FORBIDDEN;
+  if (!isId(productId) || typeof path !== "string") return { message: "Yêu cầu không hợp lệ." };
+  const result = await finishModelUpload(productId, path, audit({ action: "product_media.model", entity: "products", entityId: productId, summary: "Tải mô hình 3D" }));
+  if (!result.ok) return { message: result.message };
+  updateTag(PRODUCTS_TAG);
+  refresh();
+  return { ok: true, message: "Đã tải mô hình 3D và gắn vào sản phẩm." };
 }
 
 // YC-KH-03: khoá, mở khoá tài khoản khách (quyền customers.manage); khoá thì mất mọi phiên ngay.
