@@ -77,7 +77,11 @@ function VariantForm({ productId, variant, basePath }: { productId: string; vari
           ))}
         </div>
       </div>
-      {errors.colors && <p className="text-xs text-danger">{errors.colors}</p>}
+      {errors.colors && (
+        <p role="alert" className="text-xs text-danger">
+          {errors.colors}
+        </p>
+      )}
       <div className="flex flex-wrap gap-2">
         <Button type="submit" pending={pending}>
           {variant ? "Lưu biến thể" : "Thêm biến thể"}

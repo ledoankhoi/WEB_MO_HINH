@@ -30,7 +30,7 @@ export default async function AdminCustomerPage({ params }: PageProps<"/admin/kh
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="space-y-1">
           <h1 className="text-3xl font-bold tracking-tight">{customer.name}</h1>
-          <p className="text-sm text-muted">
+          <p className="text-sm break-words text-muted">
             {customer.email} · {customer.phone || "chưa có số điện thoại"} · đăng ký {formatDate(customer.createdAt)}
           </p>
           <div className="flex flex-wrap gap-2 text-sm">

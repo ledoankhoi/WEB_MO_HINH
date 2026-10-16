@@ -148,7 +148,7 @@ Ghi nhớ kỹ thuật của dự án:
   `scripts/backup.mjs` và script `backup`: đọc mọi bảng có trong `meta`/migration, ghi JSON vào `data/backups/<thời điểm>/`. Test: dựng dữ liệu trên PGlite, sao lưu, khôi phục vào PGlite trống, so khớp và chạy đối soát. Không có lệnh khôi phục vào CSDL thật.
   Xong khi: test OPS-01; ghi cách dùng vào CLAUDE.md phần Lệnh.
 
-- [ ] **T25 — Rà soát khả năng truy cập và giao diện hẹp.** Cần T23.
+- [x] **T25 — Rà soát khả năng truy cập và giao diện hẹp.** Cần T23.
   Mọi form quản trị có nhãn, thông báo lỗi gắn với ô nhập, dùng được bằng bàn phím; bảng dài cuộn ngang trong khung, không tràn trang ở chiều rộng 375 px; trang lỗi trong `/admin` không lộ chi tiết kỹ thuật (YC-VH-03).
   Xong khi: lint qua, smoke qua; ghi những gì đã rà vào commit.
 
@@ -257,6 +257,7 @@ Ghi nhớ kỹ thuật của dự án:
 | 16/10/2026 | T22 | Tải .glb hai bước qua Server Action: xin URL có chữ ký (tên file `models/<sản phẩm>-<ngẫu nhiên>.glb` do máy chủ đặt), trình duyệt PUT thẳng lên Storage, rồi máy chủ đọc 12 byte đầu bằng Range: `glTF`, phiên bản 2, độ dài khai báo khớp kích thước file và không quá 25 MB; sai thì xoá file. Đúng thì thêm `product_media` loại model và đổi `model_url` trong một giao dịch. Chưa kiểm thử với Supabase thật trong phiên này | YC-SP-10, Q18 |
 | 16/10/2026 | T23 | Báo cáo bán hàng tính theo ngày đặt, chia ngày theo UTC+7; mặc định 30 ngày gần nhất lấy mốc từ đồng hồ CSDL; tối đa 366 ngày. Doanh thu chỉ đơn `completed`, bán chạy bỏ đơn huỷ, yêu thích nhiều nhất tính mọi thời điểm. Biểu đồ là thanh CSS trong bảng theo ngày. CSV `ban-hang` (theo ngày) và `ban-chay` qua `/admin/xuat/[loai]`, kiểm quyền `reports.view`, khoảng ngày sai trả 400 | YC-BC-01, 03 |
 | 16/10/2026 | T24 | `npm run backup` đọc mọi bảng của schema public trong một giao dịch REPEATABLE READ chỉ đọc, ghi mỗi bảng một file JSON và `manifest.json` (số dòng) vào `data/backups/<thời điểm UTC>/`; bytea ghi base64. Không sao lưu lược đồ (khôi phục vào CSDL đã chạy migration). Hàm khôi phục chỉ có trong `scripts/backup-lib.mjs` cho test, không có lệnh khôi phục vào CSDL thật. Đã chạy thử với Supabase: 34 bảng, 327 dòng. Dòng hướng dẫn trong CLAUDE.md để T26 (file đang có thay đổi của phiên khác) | YC-VH-01, OPS-01 |
+| 16/10/2026 | T25 | Rà bằng đọc mã (không có trình duyệt tự động trong dự án): mọi ô nhập có nhãn (Field, label bọc ngoài, aria-label hoặc label sr-only); lỗi của nhóm ô (số sao, phương thức thanh toán, màu) gắn bằng aria-describedby và role=alert; Notice có role status/alert; viền focus chung ở globals.css; mọi bảng nằm trong khung cuộn ngang; trình đơn quản trị cuộn ngang dưới lg; email dài trong hồ sơ khách được ngắt dòng; trang lỗi chung chỉ báo "Đã có lỗi xảy ra", không lộ chi tiết. Chưa đo thật ở 375 px | YC-VH-03 |
 
 ## Vướng mắc
 

@@ -109,7 +109,7 @@ export function CheckoutForm({ defaults, paymentMethods }: { defaults: Defaults;
         </SelectField>
         <TextAreaField label="Ghi chú" name="note" maxLength={500} defaultValue={value("note")} error={state.errors?.note} />
 
-        <fieldset className="space-y-2">
+        <fieldset className="space-y-2" aria-describedby={state.errors?.paymentMethod ? "paymentMethod-error" : undefined}>
           <legend className="mb-1 text-sm font-medium">Phương thức thanh toán</legend>
           {paymentMethods.map((method) => (
             <label key={method} className="flex cursor-pointer items-center gap-3 rounded-xl border border-line px-4 py-3 text-sm has-checked:border-brand has-checked:bg-brand/5">
@@ -117,7 +117,11 @@ export function CheckoutForm({ defaults, paymentMethods }: { defaults: Defaults;
               {PAYMENT_METHOD_LABELS[method]}
             </label>
           ))}
-          {state.errors?.paymentMethod && <p className="text-xs text-danger">{state.errors.paymentMethod}</p>}
+          {state.errors?.paymentMethod && (
+            <p id="paymentMethod-error" role="alert" className="text-xs text-danger">
+              {state.errors.paymentMethod}
+            </p>
+          )}
         </fieldset>
       </div>
 

@@ -20,7 +20,7 @@ export function ReviewForm({ orderItemId, title }: { orderItemId: number; title:
       </p>
       {state.message && <Notice tone={state.ok ? "success" : "error"}>{state.message}</Notice>}
       <input type="hidden" name="orderItemId" value={orderItemId} />
-      <fieldset>
+      <fieldset aria-describedby={state.errors?.rating ? `${id}-loi` : undefined}>
         <legend className="mb-1 text-sm">Số sao</legend>
         <div className="flex flex-wrap gap-3">
           {[5, 4, 3, 2, 1].map((star) => (
@@ -30,7 +30,11 @@ export function ReviewForm({ orderItemId, title }: { orderItemId: number; title:
             </label>
           ))}
         </div>
-        {state.errors?.rating && <p className="mt-1 text-xs text-danger">{state.errors.rating}</p>}
+        {state.errors?.rating && (
+          <p id={`${id}-loi`} role="alert" className="mt-1 text-xs text-danger">
+            {state.errors.rating}
+          </p>
+        )}
       </fieldset>
       <TextAreaField label="Nhận xét (không bắt buộc)" name={`comment-${orderItemId}`} rows={2} maxLength={1000} defaultValue={state.values?.comment} error={state.errors?.comment} />
       <Button type="submit" size="sm" pending={pending}>
