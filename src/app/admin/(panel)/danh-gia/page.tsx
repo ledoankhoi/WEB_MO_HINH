@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ReviewButtons } from "@/components/admin/ReviewButtons";
-import { BADGE, Empty, Pager, TABLE, TABLE_WRAP, chip, first, pageNumber } from "@/components/admin/parts";
+import { BADGE, Empty, FilterPanel, Pager, TABLE, TABLE_WRAP, first, pageNumber } from "@/components/admin/parts";
 import { formatDateTime, formatNumber } from "@/lib/format";
 import { requireStaff } from "@/server/auth/session";
 import { REVIEW_STATUSES, REVIEW_STATUS_LABELS, listReviews } from "@/server/repo/reviews";
@@ -26,26 +26,26 @@ export default async function ReviewsPage({ searchParams }: PageProps<"/admin/da
   return (
     <>
       <h1 className="text-3xl font-bold tracking-tight">Đánh giá ({formatNumber(total)})</h1>
-      <nav aria-label="Lọc theo trạng thái" className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
-        <Link href={href({ "trang-thai": "" })} className={chip(!status)}>
-          Tất cả
-        </Link>
-        {REVIEW_STATUSES.map((value) => (
-          <Link key={value} href={href({ "trang-thai": value })} className={chip(status === value)}>
-            {REVIEW_STATUS_LABELS[value]}
-          </Link>
-        ))}
-      </nav>
-      <nav aria-label="Lọc theo số sao" className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
-        <Link href={href({ sao: "" })} className={chip(!rating)}>
-          Mọi số sao
-        </Link>
-        {[5, 4, 3, 2, 1].map((value) => (
-          <Link key={value} href={href({ sao: String(value) })} className={chip(rating === value)}>
-            {value} sao
-          </Link>
-        ))}
-      </nav>
+      <FilterPanel
+        active={[status && REVIEW_STATUS_LABELS[status], rating && `${rating} sao`].filter((label): label is string => Boolean(label))}
+        clearHref="/admin/danh-gia"
+        groups={[
+          {
+            label: "Trạng thái",
+            items: [
+              { key: "", href: href({ "trang-thai": "" }), label: "Tất cả", active: !status },
+              ...REVIEW_STATUSES.map((value) => ({ key: value, href: href({ "trang-thai": value }), label: REVIEW_STATUS_LABELS[value], active: status === value })),
+            ],
+          },
+          {
+            label: "Số sao",
+            items: [
+              { key: "", href: href({ sao: "" }), label: "Mọi số sao", active: !rating },
+              ...[5, 4, 3, 2, 1].map((value) => ({ key: String(value), href: href({ sao: String(value) }), label: `${value} sao`, active: rating === value })),
+            ],
+          },
+        ]}
+      />
 
       {items.length === 0 ? (
         <Empty>Không có đánh giá nào khớp bộ lọc.</Empty>

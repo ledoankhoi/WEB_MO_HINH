@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ChevronDown, SlidersHorizontal } from "lucide-react";
 
 export const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value) ?? "";
 
@@ -40,5 +41,62 @@ export function Pager({ page, pages, href }: { page: number; pages: number; href
         </Link>
       )}
     </nav>
+  );
+}
+
+export type ChipGroup = { label: string; items: { key: string; href: string; label: string; active: boolean }[] };
+
+// Khung "Bộ lọc" đóng/mở dùng chung cho các trang danh sách quản trị: gom các hàng chip lọc
+// và form tìm kiếm vào một chỗ. Đóng khi chưa lọc gì; tự mở và hiện nhãn khi đang lọc.
+export function FilterPanel({
+  active,
+  clearHref,
+  groups = [],
+  children,
+}: {
+  active: string[];
+  clearHref: string;
+  groups?: ChipGroup[];
+  children?: React.ReactNode;
+}) {
+  return (
+    <details open={active.length > 0} className="group rounded-xl border border-line bg-surface">
+      <summary className="flex cursor-pointer list-none items-center gap-2 px-4 py-3 text-sm font-semibold select-none [&::-webkit-details-marker]:hidden">
+        <SlidersHorizontal className="size-4 shrink-0" aria-hidden />
+        Bộ lọc
+        {active.length > 0 ? (
+          <span className="flex min-w-0 flex-wrap gap-1.5 font-normal">
+            {active.map((label) => (
+              <span key={label} className={BADGE}>
+                {label}
+              </span>
+            ))}
+          </span>
+        ) : (
+          <span className="font-normal text-muted">Chưa lọc</span>
+        )}
+        <ChevronDown className="ml-auto size-4 shrink-0 transition group-open:rotate-180" aria-hidden />
+      </summary>
+      <div className="space-y-4 border-t border-line px-4 py-4">
+        {groups.map((group) => (
+          <div key={group.label} className="space-y-2">
+            <p className="text-xs font-semibold tracking-wide text-muted uppercase">{group.label}</p>
+            <nav aria-label={`Lọc theo ${group.label.toLowerCase()}`} className="flex flex-wrap gap-2">
+              {group.items.map((item) => (
+                <Link key={item.key} href={item.href} className={chip(item.active)}>
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
+        ))}
+        {children}
+        {active.length > 0 && (
+          <Link href={clearHref} className="inline-block text-sm font-medium text-muted underline-offset-4 hover:text-fg hover:underline">
+            Xoá bộ lọc
+          </Link>
+        )}
+      </div>
+    </details>
   );
 }

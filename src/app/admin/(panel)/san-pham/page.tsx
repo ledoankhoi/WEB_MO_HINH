@@ -1,6 +1,6 @@
 import Form from "next/form";
 import Link from "next/link";
-import { BADGE, Empty, Pager, TABLE, TABLE_WRAP, chip, first, isId, pageNumber } from "@/components/admin/parts";
+import { BADGE, Empty, Pager, TABLE, TABLE_WRAP, FilterPanel, first, isId, pageNumber } from "@/components/admin/parts";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Field, SelectField } from "@/components/ui/Field";
 import { formatNumber, formatVnd } from "@/lib/format";
@@ -46,40 +46,48 @@ export default async function AdminProductsPage({ searchParams }: PageProps<"/ad
         )}
       </div>
 
-      <nav aria-label="Lọc theo trạng thái" className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
-        <Link href={href({ "trang-thai": "" })} className={chip(!status)}>
-          Tất cả
-        </Link>
-        {(Object.entries(STATUS_LABELS) as [ProductStatus, string][]).map(([value, label]) => (
-          <Link key={value} href={href({ "trang-thai": value })} className={chip(status === value)}>
-            {label}
-          </Link>
-        ))}
-      </nav>
-
-      <Form action="/admin/san-pham" className="grid gap-4 rounded-xl border border-line bg-surface p-5 sm:grid-cols-[1fr_12rem_12rem_auto] sm:items-end" role="search">
-        {status && <input type="hidden" name="trang-thai" value={status} />}
-        <Field label="Tên hoặc SKU" name="q" type="search" defaultValue={q} maxLength={60} />
-        <SelectField label="Danh mục" name="danh-muc" defaultValue={category}>
-          <option value="">Mọi danh mục</option>
-          {categories.map((c) => (
-            <option key={c.id} value={c.slug}>
-              {c.name}
-            </option>
-          ))}
-        </SelectField>
-        <SelectField label="Thương hiệu" name="thuong-hieu" defaultValue={brandId}>
-          <option value="">Mọi thương hiệu</option>
-          {brands.map((b) => (
-            <option key={b.id} value={b.id}>
-              {b.name}
-            </option>
-          ))}
-        </SelectField>
-        <Button type="submit" size="sm">
-          Lọc
-        </Button>
-      </Form>
+      <FilterPanel
+        active={[
+          status && STATUS_LABELS[status],
+          q && `“${q}”`,
+          category && (categoryName.get(category) ?? category),
+          brandId && (brands.find((b) => b.id === brandId)?.name ?? "Thương hiệu"),
+        ].filter((label): label is string => Boolean(label))}
+        clearHref="/admin/san-pham"
+        groups={[
+          {
+            label: "Trạng thái",
+            items: [
+              { key: "", href: href({ "trang-thai": "" }), label: "Tất cả", active: !status },
+              ...(Object.entries(STATUS_LABELS) as [ProductStatus, string][]).map(([value, label]) => ({ key: value, href: href({ "trang-thai": value }), label, active: status === value })),
+            ],
+          },
+        ]}
+      >
+        <Form action="/admin/san-pham" className="grid gap-4 sm:grid-cols-[1fr_12rem_12rem_auto] sm:items-end" role="search">
+          {status && <input type="hidden" name="trang-thai" value={status} />}
+          <Field label="Tên hoặc SKU" name="q" type="search" defaultValue={q} maxLength={60} />
+          <SelectField label="Danh mục" name="danh-muc" defaultValue={category}>
+            <option value="">Mọi danh mục</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.slug}>
+                {c.name}
+              </option>
+            ))}
+          </SelectField>
+          <SelectField label="Thương hiệu" name="thuong-hieu" defaultValue={brandId}>
+            <option value="">Mọi thương hiệu</option>
+            {brands.map((b) => (
+              <option key={b.id} value={b.id}>
+                {b.name}
+              </option>
+            ))}
+          </SelectField>
+          <Button type="submit" size="sm">
+            Lọc
+          </Button>
+        </Form>
+      </FilterPanel>
 
       {items.length === 0 ? (
         <Empty>Không có sản phẩm nào phù hợp.</Empty>
