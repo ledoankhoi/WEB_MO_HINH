@@ -1,6 +1,6 @@
 # 05. Kiến trúc, phân quyền và bảo mật
 
-Mô tả hệ thống như mã nguồn ngày 16/10/2026 (nhánh `auto/quan-tri-kho`). Tên bảng, hàm và đường dẫn giữ nguyên như trong mã. Danh sách Server Action và Route Handler ở [06](06-api.md), kết quả kiểm thử ở [07](07-kiem-thu.md).
+Mô tả hệ thống như mã nguồn ngày 16/10/2026 (nhánh `auto/quan-tri-kho`); bổ sung tìm kiếm bằng ảnh ngày 04/11/2026 (mục 10). Tên bảng, hàm và đường dẫn giữ nguyên như trong mã. Danh sách Server Action và Route Handler ở [06](06-api.md), kết quả kiểm thử ở [07](07-kiem-thu.md).
 
 ## 1. Tổng quan
 
@@ -11,6 +11,7 @@ Mô tả hệ thống như mã nguồn ngày 16/10/2026 (nhánh `auto/quan-tri-k
 | Xem 3D | Three.js qua `@react-three/fiber`, `@react-three/drei` | Chỉ chạy ở trình duyệt (`RobotViewerLoader`, `ssr: false`) |
 | Cơ sở dữ liệu | PostgreSQL trên Supabase, thư viện `pg` | Test dùng PGlite (PostgreSQL trong bộ nhớ) |
 | Lưu file | Supabase Storage, bucket công khai `media` | Ảnh sản phẩm, ảnh banner, mô hình `.glb` |
+| Tìm kiếm bằng ảnh (AI) | CLIP ViT-B/32 (ONNX, nén 8 bit) chạy bằng ONNX Runtime Web trong Web Worker ở trình duyệt | Máy chủ chỉ xếp hạng vector, không chạy mô hình; chi tiết ở [08](08-tich-hop-ai.md) và mục 11 |
 
 Ứng dụng chạy trên một tiến trình Node.js. Lần truy vấn đầu tiên chạy mọi migration còn thiếu trong `src/server/db/migrations.ts` và nạp dữ liệu mẫu, dưới một khoá tư vấn (`pg_advisory_xact_lock`) để nhiều tiến trình khởi động cùng lúc không chạy trùng.
 
@@ -100,7 +101,9 @@ Phân tách nhiệm vụ trong kho: người tạo phiếu điều chỉnh khôn
 | Gọi thẳng Server Action | Mọi action tự kiểm tra phiên, quyền và từng trường đầu vào (kiểu, độ dài, mẫu id `^[a-f0-9]{20}$`); file `"use server"` chỉ export action, hàm dùng chung đặt ở `src/server/staff-action.ts` |
 | Tiêm SQL | Mọi giá trị đi qua tham số; tên cột, bảng chỉ lấy từ hằng trong mã |
 | Giá, tồn do trình duyệt gửi | Máy chủ lấy giá và tồn từ CSDL; giá trình duyệt gửi chỉ để phát hiện giá vừa đổi; mã giảm giá được tính lại khi đặt hàng |
-| Dò mật khẩu, mã đơn, mã giảm giá | Giới hạn tần suất trong bảng `rate_limits`: đăng ký 10/giờ/IP; đăng nhập 8 lần/15 phút/email và 40/15 phút/IP; đổi mật khẩu 8/15 phút; đặt hàng 20/giờ/IP; tra cứu đơn 10/15 phút/IP; thử mã giảm giá 30/15 phút/IP. Mã giảm giá không tồn tại và đã tắt báo cùng một câu |
+| Dò mật khẩu, mã đơn, mã giảm giá | Giới hạn tần suất trong bảng `rate_limits`: đăng ký 10/giờ/IP; đăng nhập 8 lần/15 phút/email và 40/15 phút/IP; đổi mật khẩu 8/15 phút; đặt hàng 20/giờ/IP; tra cứu đơn 10/15 phút/IP; thử mã giảm giá 30/15 phút/IP; tìm bằng ảnh 30/phút/IP. Mã giảm giá không tồn tại và đã tắt báo cùng một câu |
+| Ảnh của khách khi tìm bằng ảnh | Ảnh không rời trình duyệt: chỉ vector 512 số được gửi lên (thân yêu cầu ≤ 64 KB). Máy chủ kiểm tra số chiều, giá trị hữu hạn, mã mô hình; nhật ký không có ảnh, IP hay tài khoản |
+| Vector do trình duyệt quản trị gửi khi lập chỉ mục | Kiểm tra từng vector góc nhìn (512 số, hữu hạn, độ dài 1 ± 0,01, ≤ 24 góc) và đường dẫn mô hình 3D lúc dựng; máy chủ tự gộp vector đại diện. Kết quả hiệu chỉnh được dựng lại chỉ với các trường đã biết |
 | Tải file độc | Ảnh nhận diện theo chữ ký file thật (WebP, PNG, JPEG), tối đa 5 MB; mô hình `.glb` kiểm tra 12 byte đầu (`glTF`, phiên bản 2, độ dài khớp kích thước) và tối đa 25 MB, sai thì xoá. Tên file do máy chủ đặt |
 | Tiêm công thức vào CSV | Ô chữ bắt đầu bằng `=`, `+`, `@`, hoặc `-` không theo sau là số được thêm dấu `'` |
 | Lộ liên kết đơn hàng | Trang đơn theo token bí mật có `robots: noindex` và `referrer: no-referrer` |
@@ -115,7 +118,14 @@ Phân tách nhiệm vụ trong kho: người tạo phiếu điều chỉnh khôn
 - Mô hình `.glb` tới 25 MB tải hai bước: Server Action cấp URL có chữ ký, trình duyệt gửi thẳng file lên Storage, rồi một Server Action khác kiểm tra phần đầu file và gắn vào sản phẩm (`product_media` loại `model`, `products.model_url`).
 - Mô hình và ảnh gốc không nằm trong git; `npm run models`, `npm run media` đưa lên Storage (xem [09](09-mo-hinh-3d.md)).
 
-## 10. Vận hành
+## 10. Tìm kiếm bằng ảnh
+
+- Thư viện vector lập ở trình duyệt của quản trị (`/admin/tim-bang-anh`): three.js dựng 12 góc mỗi dạng từ file `.glb`, worker ONNX trích đặc trưng, Server Action `saveImageIndexAction` kiểm tra rồi lưu (`image_search_index`). Khách tìm ở `/tim-bang-anh`: worker trích đặc trưng ảnh của khách, `POST /api/tim-bang-anh` xếp hạng và quyết định.
+- Mô hình ONNX (mặc định tải từ Hugging Face, khoảng 89 MB) được worker lưu trong Cache Storage của trình duyệt; thư viện ONNX Runtime (khoảng 14 MB WebAssembly) phục vụ tĩnh từ `public/image-search/ort/`, do `scripts/copy-ort.mjs` chép từ `node_modules` khi `npm install` (postinstall) và trước `dev`, `build`.
+- Chỉ mục và ngưỡng đọc qua hàm `"use cache"` trong `src/server/image-search.ts`, gắn thẻ `IMAGE_SEARCH_TAG` (và `PRODUCTS_TAG` vì kèm giá, tồn); lập chỉ mục, xoá, đổi ngưỡng thì `updateTag(IMAGE_SEARCH_TAG)`.
+- Đầu trang cửa hàng chỉ hiện nút máy ảnh khi có sản phẩm tìm được (đếm bằng một câu SQL, có cache).
+
+## 11. Vận hành
 
 - `npm run backup`: sao lưu mọi bảng thành JSON trong `data/backups/<thời điểm>/`, đọc trong một giao dịch `REPEATABLE READ` chỉ đọc. Khôi phục chỉ được diễn tập trong test (OPS-01), không có lệnh khôi phục vào CSDL thật.
 - `npm run smoke`: bật máy chủ phát triển ở cổng 3100, mở mọi trang với phiên quản trị tạm, kiểm tra mã trả về và dấu hiệu lỗi.

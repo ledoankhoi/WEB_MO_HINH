@@ -4,6 +4,8 @@ Thiết kế đích cho **bước 1** (trang thương mại điện tử cốt l
 
 **Tình trạng:** bản thiết kế, chưa cài đặt. Mã nguồn hiện tại vẫn dùng cấu trúc cũ (bảng `products` không có biến thể).
 
+**Cập nhật 04/11/2026:** thêm hai bảng cho tìm kiếm bằng ảnh (mục 13).
+
 **Cập nhật 15/10/2026** cho giai đoạn quản trị và kho ([10-quan-tri-va-kho.md](10-quan-tri-va-kho.md)): nhóm kho viết lại theo vị trí và phiếu kho (mục 4); thêm vai trò, nhật ký, nhà cung cấp, nội dung cửa hàng, mã giảm giá (mục 12). Phần nào ở mục 12 khác với các mục trước thì mục 12 đúng.
 
 ## 1. Quy ước chung
@@ -553,3 +555,45 @@ Chỉ mục: `(entity, entity_id)`, `(actor_id, created_at)`, `created_at`. Ch�
 ### 12.6. Chuyển đổi
 
 Theo quyết định Q1, migration được xoá và tạo lại các bảng danh mục, đơn hàng, kho, rồi nạp lại dữ liệu mẫu. Tồn ban đầu của dữ liệu mẫu phải đi qua một phiếu nhập đã ghi sổ (mã `PN-SEED`) để sổ kho và số dư khớp nhau ngay từ đầu. Không sửa migration đã commit; mỗi thay đổi là một migration mới ở cuối mảng.
+
+## 13. Tìm kiếm bằng ảnh (04/11/2026, migration `016_image_search`)
+
+Căn cứ: [08-tich-hop-ai.md](08-tich-hop-ai.md). Hai bảng mới đều bật RLS, không khai báo policy (như mục 1). Vector lưu dạng float32 nối liền trong `BYTEA` (4 byte mỗi số, little-endian), không dùng pgvector vì danh mục còn nhỏ (08 mục 3).
+
+### `image_search_index` — vector của từng sản phẩm
+
+| Cột | Kiểu | Ràng buộc | Ghi chú |
+| --- | --- | --- | --- |
+| product_id | TEXT | FK → products.id, `ON DELETE CASCADE` | Xoá sản phẩm thì xoá luôn chỉ mục |
+| model | TEXT | NOT NULL | Mã mô hình trích đặc trưng, ví dụ `clip-vit-b32-openai-q8`. Vector của hai mô hình không so được với nhau |
+| form | TEXT | CHECK: `default`, `alt` | Dạng chính, dạng biến hình (ví dụ dạng xe) |
+| form_label | TEXT | NOT NULL, mặc định rỗng | Ví dụ "Dạng robot", "Dạng xe" |
+| dim | SMALLINT | CHECK > 0 | Số chiều (512) |
+| views | SMALLINT | CHECK 1–24 | Số góc nhìn đã gộp (12) |
+| embedding | BYTEA | CHECK `octet_length = 4 · dim` | Vector đại diện: trung bình các góc, đã chuẩn hoá |
+| view_embeddings | BYTEA | CHECK `octet_length = 4 · dim · views` | Vector từng góc, cho hiệu chỉnh và so sánh maxview |
+| consistency | REAL | NOT NULL | ‖z̄‖, độ nhất quán giữa các góc |
+| source_url | TEXT | NOT NULL, mặc định rỗng | `products.model_url` lúc lập; khác giá trị hiện tại thì trang quản trị báo cần lập lại |
+| created_by | TEXT | FK → users.id, NULL | |
+| created_at | BIGINT | NOT NULL | |
+
+Khoá chính `(product_id, model, form)`; chỉ mục `(model)`. Lập lại thì xoá các dòng cũ của cùng sản phẩm và mô hình rồi thêm mới trong một giao dịch, kèm dòng `audit_logs` (`image_search.index`, `image_search.unindex`).
+
+### `image_search_logs` — nhật ký lượt tìm
+
+| Cột | Kiểu | Ràng buộc | Ghi chú |
+| --- | --- | --- | --- |
+| id | BIGINT | PK, tự tăng | |
+| model | TEXT | NOT NULL | |
+| top_product_id | TEXT | FK → products.id, `ON DELETE SET NULL` | Sản phẩm hạng 1 (kể cả khi bị từ chối) |
+| top_score, second_score | REAL | NOT NULL | s₁, s₂ |
+| accepted | BOOLEAN | NOT NULL | |
+| reason | TEXT | CHECK: `match`, `low-score`, `ambiguous`, `empty` | |
+| tau, delta | REAL | NOT NULL | Ngưỡng lúc tìm |
+| candidates | SMALLINT | NOT NULL | Số sản phẩm được so |
+| client_ms | INTEGER | NULL | Thời gian tiền xử lý và trích đặc trưng ở trình duyệt |
+| created_at | BIGINT | NOT NULL | |
+
+Chỉ mục `(created_at)`. **Không lưu ảnh** hay bất kỳ dữ liệu nào nhận ra được người tìm (không có IP, không có tài khoản).
+
+Ngưỡng τ, δ lưu ở `site_settings` (mục 12.3), khoá `image_search`.

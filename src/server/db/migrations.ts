@@ -686,4 +686,53 @@ export const MIGRATIONS: Migration[] = [
       "ALTER TABLE slug_redirects ENABLE ROW LEVEL SECURITY",
     ],
   },
+  {
+    // Tìm kiếm bằng ảnh (YC-AI-01..08, docs/chuan/08-tich-hop-ai.md). Mỗi sản phẩm một dòng cho mỗi dạng
+    // (`default`: dáng đứng/dạng robot, `alt`: dạng biến hình) và mỗi mô hình trích đặc trưng: vector đại diện
+    // (trung bình các góc nhìn, đã chuẩn hoá) và vector của từng góc, lưu float32 nối liền trong BYTEA
+    // (4 byte mỗi số). `source_url` là products.model_url lúc lập chỉ mục, để biết khi nào cần lập lại.
+    // Nhật ký tìm kiếm chỉ ghi điểm và quyết định, không lưu ảnh của khách.
+    id: "016_image_search",
+    statements: [
+      `CREATE TABLE image_search_index (
+        product_id TEXT NOT NULL REFERENCES products (id) ON DELETE CASCADE,
+        model TEXT NOT NULL,
+        form TEXT NOT NULL,
+        form_label TEXT NOT NULL DEFAULT '',
+        dim SMALLINT NOT NULL,
+        views SMALLINT NOT NULL,
+        embedding BYTEA NOT NULL,
+        view_embeddings BYTEA NOT NULL,
+        consistency REAL NOT NULL,
+        source_url TEXT NOT NULL DEFAULT '',
+        created_by TEXT REFERENCES users (id),
+        created_at BIGINT NOT NULL,
+        PRIMARY KEY (product_id, model, form),
+        CONSTRAINT form_valid CHECK (form IN ('default', 'alt')),
+        CONSTRAINT dim_valid CHECK (dim > 0),
+        CONSTRAINT views_valid CHECK (views BETWEEN 1 AND 24),
+        CONSTRAINT embedding_size CHECK (octet_length(embedding) = 4 * dim),
+        CONSTRAINT view_embeddings_size CHECK (octet_length(view_embeddings) = 4 * dim * views)
+      )`,
+      "CREATE INDEX idx_image_search_index_model ON image_search_index (model)",
+      `CREATE TABLE image_search_logs (
+        id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+        model TEXT NOT NULL,
+        top_product_id TEXT REFERENCES products (id) ON DELETE SET NULL,
+        top_score REAL NOT NULL,
+        second_score REAL NOT NULL,
+        accepted BOOLEAN NOT NULL,
+        reason TEXT NOT NULL,
+        tau REAL NOT NULL,
+        delta REAL NOT NULL,
+        candidates SMALLINT NOT NULL,
+        client_ms INTEGER,
+        created_at BIGINT NOT NULL,
+        CONSTRAINT reason_valid CHECK (reason IN ('match', 'low-score', 'ambiguous', 'empty'))
+      )`,
+      "CREATE INDEX idx_image_search_logs_created ON image_search_logs (created_at)",
+      "ALTER TABLE image_search_index ENABLE ROW LEVEL SECURITY",
+      "ALTER TABLE image_search_logs ENABLE ROW LEVEL SECURITY",
+    ],
+  },
 ];

@@ -13,6 +13,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // ONNX Runtime Web chép từ node_modules (scripts/copy-ort.mjs), đã nén sẵn.
+    "public/image-search/ort/**",
   ]),
 ]);
 

@@ -1,6 +1,6 @@
 # 07. Kiểm thử
 
-Kế hoạch và kết quả kiểm thử phần quản trị website và quản lý kho, chạy ngày 16/10/2026 trên nhánh `auto/quan-tri-kho` (commit T25 `5f8ce01`). Kịch bản nghiệm thu lấy từ [10](10-quan-tri-va-kho.md) mục 7.
+Kế hoạch và kết quả kiểm thử phần quản trị website và quản lý kho, chạy ngày 16/10/2026 trên nhánh `auto/quan-tri-kho` (commit T25 `5f8ce01`). Kịch bản nghiệm thu lấy từ [10](10-quan-tri-va-kho.md) mục 7. Phần tìm kiếm bằng ảnh kiểm thử ngày 04/11/2026 trên nhánh `feat/tim-bang-anh` (mục 2, cuối).
 
 ## 1. Cách kiểm thử
 
@@ -46,6 +46,19 @@ Hai lần không ổn định ghi nhận trong phiên (lần chạy lại đều
 
 - `coupons.test.ts` một lần lỗi ở bước chuẩn bị CSDL khi chạy song song 18 file (5 test bị bỏ qua), nhiều khả năng quá `hookTimeout` 30 giây khi máy bận.
 - `npm run build` một lần báo hàm `"use cache"` quá giờ khi dựng sẵn `/san-pham/rx-78-2-gundam`; build dựng sẵn mọi trang sản phẩm qua mạng tới Supabase.
+
+### Tìm kiếm bằng ảnh (04/11/2026)
+
+Chi tiết tính năng và số liệu chạy thử ở [08](08-tich-hop-ai.md) mục 9, 10.
+
+| Hạng mục | Kết quả |
+| --- | --- |
+| `npm run typecheck`, `npm run lint` | Qua, không lỗi, không cảnh báo |
+| `npm test` | 25 file, 158 test, tất cả qua (`image-search.test.ts`: 28 test) |
+| `npm run build` | Qua, trên PostgreSQL 17 chạy tại máy. Máy chạy thử không ra được Google Fonts nên dùng `NEXT_FONT_GOOGLE_MOCKED_RESPONSES` thay phông Inter; chưa build trên Supabase |
+| `npm run smoke` | Qua trên PostgreSQL 17 tại máy: 58 trang đúng mã mong đợi, gồm `/tim-bang-anh` và `/admin/tim-bang-anh` (bỏ qua trang chi tiết khách vì CSDL mới chưa có khách) |
+| `next start` | `/tim-bang-anh` 200; `/image-search/worker.js`, `ort.wasm.bundle.min.mjs` 200; `ort-wasm-simd-threaded.wasm` 200, kiểu `application/wasm`; `POST /api/tim-bang-anh` trả 400 với vector sai, 409 `not-ready` khi chưa có chỉ mục |
+| Đầu-cuối trong trình duyệt (Playwright, Chromium) | CSDL PGlite qua cổng PostgreSQL, `next dev`, 10 mô hình `.glb` công khai, mô hình OpenCLIP tự xuất. Qua các bước: trang khách báo chưa bật; quản trị đăng nhập, lập chỉ mục 10 sản phẩm (xem trước 12 góc), lập lại một sản phẩm; hiệu chỉnh 10 × 8 ảnh, áp dụng ngưỡng; khách tìm 5 ảnh (2 đúng, 2 hàng không bán bị từ chối, 1 từ chối oan rồi đúng sau khi khoanh vùng); nút máy ảnh ở đầu trang; giao diện điện thoại (iPhone 13) có nút "Chụp ảnh" |
 
 ## 3. Kịch bản nghiệm thu
 
@@ -97,11 +110,12 @@ Ngoài các kịch bản trên:
 | SEO | `seo.test.ts`, `proxy.test.ts` | Lưu meta; slug cũ về slug hiện tại; tách tên miền |
 | Báo cáo | `dashboard.test.ts`, `sales-reports.test.ts` | Số liệu với dữ liệu dựng sẵn, chia ngày theo UTC+7, CSV theo quyền |
 | Hàm thuần | `format.test.ts`, `vietqr.test.ts` | Định dạng tiền, ngày giờ Việt Nam, slug, phí vận chuyển, mã VietQR |
+| Tìm kiếm bằng ảnh | `image-search.test.ts` | Vector, gộp góc nhìn và hệ thức ‖z̄‖²; tiền xử lý; xếp hạng nhiều dạng; luật τ/δ; hiệu chỉnh (giữ FAR, xác định); bỏ một sản phẩm, Recall@K, MRR, maxview, CSV; lưu chỉ mục có kiểm tra, CSDL chặn số byte sai; sản phẩm ngừng bán; ngưỡng và làm sạch kết quả hiệu chỉnh; quyền; API và giới hạn tần suất; xoá theo sản phẩm |
 
 `npm run smoke` còn kiểm tra trên CSDL thật: slug cũ trả 308 (dòng tạm trong `slug_redirects`, xoá khi xong), CSV báo cáo bán hàng trả 200, `/admin` trên tên miền cửa hàng trả 404.
 
 ## 5. Giới hạn
 
-- Không có kiểm thử đầu cuối bằng trình duyệt thật (dự án không cài Playwright): giao diện ở chiều rộng 375 px, thao tác bằng bàn phím mới được rà bằng đọc mã. Luồng tải `.glb` đã chạy với Storage thật bằng script, chưa bấm qua giao diện.
+- Không có kiểm thử đầu cuối bằng trình duyệt thật trong bộ test của dự án (dự án không cài Playwright): giao diện ở chiều rộng 375 px, thao tác bằng bàn phím mới được rà bằng đọc mã. Luồng tải `.glb` đã chạy với Storage thật bằng script, chưa bấm qua giao diện. Riêng tìm kiếm bằng ảnh đã chạy đầu-cuối bằng Playwright trên máy (mục 2), chưa chạy trên Supabase và Netlify, chưa thử với mô hình mặc định tải từ Hugging Face và chưa có ảnh chụp thật.
 - PERF-01 đo trên PGlite trong bộ nhớ, chưa đo trên Supabase.
 - Nghiệm thu với người dùng thật (UAT) chưa làm (tài liệu 10 mục 8).

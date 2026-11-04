@@ -34,6 +34,11 @@ yarn-error.log*
 # file nặng (mô hình 3D, ảnh gốc) nằm trên Supabase Storage, không đưa lên git
 /data/
 
+# ONNX Runtime Web cho tìm kiếm bằng ảnh: scripts/copy-ort.mjs chép từ node_modules khi cài đặt và trước dev, build
+/public/image-search/ort/
+# mô hình ONNX tự xuất để chạy thử trên máy (bản dùng thật tải từ NEXT_PUBLIC_IMAGE_SEARCH_MODEL_URL)
+/public/image-search/models/
+
 # env files (can opt-in for committing if needed)
 .env*
 !.env.example

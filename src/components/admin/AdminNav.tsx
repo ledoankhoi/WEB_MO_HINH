@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Boxes, Image as ImageIcon, Menu, NotebookText, Settings, ClipboardList, FileText, Scale, ShieldAlert, Star, TicketPercent, FolderTree, MapPin, Truck, LayoutDashboard, ChartColumn, Library, Package, ReceiptText, ScrollText, Tag, Undo2, UserCog, Users } from "lucide-react";
+import { Boxes, Image as ImageIcon, Menu, NotebookText, Settings, ClipboardList, FileText, Scale, ShieldAlert, Star, TicketPercent, FolderTree, MapPin, Truck, LayoutDashboard, ChartColumn, Library, Package, ReceiptText, ScanSearch, ScrollText, Tag, Undo2, UserCog, Users } from "lucide-react";
 import { can, type Permission, type Role } from "@/lib/permissions";
 import type { OrderPulse } from "@/lib/types";
 import { useOrderAlerts } from "./OrderAlerts";
@@ -41,6 +41,7 @@ const GROUPS: { label?: string; links: { href: string; label: string; icon: type
       { href: "/admin/danh-muc", label: "Danh mục", icon: FolderTree, permission: "catalog.view" },
       { href: "/admin/thuong-hieu", label: "Thương hiệu", icon: Tag, permission: "catalog.view" },
       { href: "/admin/series", label: "Series", icon: Library, permission: "catalog.view" },
+      { href: "/admin/tim-bang-anh", label: "Tìm bằng ảnh (AI)", icon: ScanSearch, permission: "catalog.view" },
       { href: "/admin/nha-cung-cap", label: "Nhà cung cấp", icon: Truck, permission: "inventory.setup" },
     ],
   },

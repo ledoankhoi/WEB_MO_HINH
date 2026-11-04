@@ -91,3 +91,12 @@ Mã giảm giá; đổi trả và hoàn tiền; cổng thanh toán; hàng đặt
 | Giá vốn | Bình quân gia quyền di động | Chưa có |
 | CSDL | Supabase chỉ có dữ liệu mẫu; cho phép migration xoá và tạo lại bảng | |
 | Cách làm | Làm từng việc theo [../ke-hoach/backlog-quan-tri-kho.md](../ke-hoach/backlog-quan-tri-kho.md) trên nhánh `auto/quan-tri-kho`, trong phiên có người theo dõi. Đã thử chạy tự động (T00–T03) rồi **bỏ hẳn** vì tốn hạn mức | |
+
+## 7. Thay đổi ngày 04/11/2026: phần AI
+
+| Chủ đề | Quyết định mới | Thay cho |
+| --- | --- | --- |
+| Tính năng AI | **Tìm kiếm sản phẩm bằng ảnh dựa trên biểu diễn đa góc nhìn từ mô hình 3D**: đã cài đặt, đặc tả ở [08-tich-hop-ai.md](08-tich-hop-ai.md). Tìm theo mô tả chữ (phần mở rộng của đề tài) chưa cài đặt | Mục 1 "Tình trạng phần AI", mục 4 bước 2, dòng đầu mục 5 |
+| Cách làm AI | Dùng bộ mã hoá ảnh CLIP ViT-B/32 đã huấn luyện sẵn, **đóng băng**, làm bộ trích đặc trưng. Phần dự án tự xây dựng: dựng thư viện ảnh đa góc nhìn từ mô hình 3D, gộp góc nhìn, xếp hạng theo dạng, luật từ chối hàng không bán và cách hiệu chỉnh ngưỡng (ảnh giả lập, bỏ một sản phẩm), giao thức đánh giá | Mục 1 "Cách làm AI" (không dùng mô hình có sẵn của bên thứ ba) |
+| Nơi chạy mô hình | Trình duyệt của khách và của quản trị (ONNX Runtime Web). Máy chủ chỉ nhận vector 512 số, không nhận ảnh, không lưu ảnh | |
+| Dữ liệu hành vi | Tìm bằng ảnh không cần dữ liệu hành vi để chạy; nhật ký lượt tìm chỉ ghi điểm và quyết định | Mục 4 "Ghi nhận hành vi" vẫn giữ cho các hướng AI sau |

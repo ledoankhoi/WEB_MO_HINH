@@ -1,6 +1,6 @@
 # 06. Server Action và Route Handler
 
-Danh sách mọi điểm vào máy chủ mà trình duyệt gọi được, như mã nguồn ngày 16/10/2026. Mọi Server Action là một điểm cuối HTTP công khai (gọi thẳng được, không cần đi qua giao diện), nên mỗi action tự kiểm tra phiên, quyền và dữ liệu đầu vào. Quyền theo ma trận ở [05](05-kien-truc.md) mục 7; `admin` có mọi quyền.
+Danh sách mọi điểm vào máy chủ mà trình duyệt gọi được, như mã nguồn ngày 16/10/2026 (bổ sung tìm kiếm bằng ảnh ngày 04/11/2026). Mọi Server Action là một điểm cuối HTTP công khai (gọi thẳng được, không cần đi qua giao diện), nên mỗi action tự kiểm tra phiên, quyền và dữ liệu đầu vào. Quyền theo ma trận ở [05](05-kien-truc.md) mục 7; `admin` có mọi quyền.
 
 Ký hiệu cột Phiên: **—** không cần đăng nhập; **Khách** cần phiên cửa hàng (`rs_session`); **NV: quyền** cần phiên quản trị (`rs_admin`) và quyền đó. Cột Nhật ký: có ghi `audit_logs` khi thao tác đổi dữ liệu.
 
@@ -53,6 +53,15 @@ Kết quả trả về của form theo kiểu `FormState`: `{ ok?, message?, err
 | `setCustomerActiveAction(id, active)` | NV: `customers.manage` | Khoá, mở khoá tài khoản khách; khoá thì xoá mọi phiên | Có |
 | `createStaffAction`, `updateStaffAction` | NV: `staff.manage` | Tạo tài khoản nhân viên; đổi vai trò, khoá, mở khoá; không hạ quyền hoặc khoá admin cuối cùng | Có |
 
+### `src/app/actions/image-search.ts` (tìm kiếm bằng ảnh, [08](08-tich-hop-ai.md))
+
+| Action | Phiên | Việc | Nhật ký |
+| --- | --- | --- | --- |
+| `saveImageIndexAction(payload)` | NV: `catalog.edit` | Lưu chỉ mục của một sản phẩm: mỗi dạng (`default`, `alt`) 1–24 vector góc nhìn base64 (512 số float32, đã chuẩn hoá). Từ chối khi sai mã mô hình, vector sai, dạng trùng, hoặc `sourceUrl` khác `products.model_url` hiện tại. Máy chủ tự gộp trung bình, thay toàn bộ dòng cũ của cùng mô hình | Có (`image_search.index`) |
+| `deleteImageIndexAction(productId)` | NV: `catalog.edit` | Xoá chỉ mục của sản phẩm với mô hình đang dùng | Có (`image_search.unindex`) |
+| `loadCalibrationAction()` | NV: `catalog.edit` | Vector đại diện và vector từng góc của mọi sản phẩm đang bán đã lập chỉ mục, cho hiệu chỉnh chạy ở trình duyệt | |
+| `saveThresholdsAction({ tau, delta, calibration })` | NV: `catalog.edit` | Đặt τ ∈ [0, 1], δ ∈ [0, 2]. Kèm kết quả hiệu chỉnh đúng cặp ngưỡng thì ghi `source: calibrated` cùng bản đã làm sạch của kết quả; khác cặp thì `manual` và bỏ kết quả | Có (`image_search.thresholds`) |
+
 ### `src/app/actions/inventory.ts`
 
 | Action | Phiên | Việc | Nhật ký |
@@ -83,6 +92,7 @@ Kết quả trả về của form theo kiểu `FormState`: `{ ok?, message?, err
 | --- | --- | --- | --- |
 | `GET /api/cart?ids=` | — | Giá, tồn hiện tại của các biến thể trong giỏ | Tối đa 50 mã; `no-store` |
 | `GET /api/wishlist` | — | Mã sản phẩm khách đã yêu thích; `{ ids: null }` khi chưa đăng nhập | `private, no-store` |
+| `POST /api/tim-bang-anh` | — | Tìm bằng ảnh: thân JSON `{ model, embedding: number[512], clientMs? }`. Trả `{ accepted, reason, s1, s2, tau, delta, candidates, results: [{ product, score, form, label }] }`, tối đa 8 sản phẩm đang bán, xếp giảm dần | 30 lượt/phút/IP (429 kèm `Retry-After`); thân > 64 KB trả 413; vector sai 400; `model` khác mô hình đang dùng 409 `model-mismatch`; chưa có chỉ mục 409 `not-ready`; `no-store`. Ghi `image_search_logs` sau khi trả lời (`after`) |
 | `GET /media/[file]` | — | Ảnh đại diện lưu trong CSDL (dữ liệu cũ), cache vĩnh viễn theo phiên bản trong tên | |
 | `POST /admin/api/anh` | NV: `catalog.edit` (ảnh sản phẩm) hoặc `content.edit` (`target=banner`) | Tải ảnh WebP, PNG, JPEG ≤ 5 MB lên Storage | Kiểm tra chữ ký file; có nhật ký |
 | `GET /admin/xuat/ton-kho` | NV: `inventory.view` | CSV tồn kho theo bộ lọc; cột giá vốn chỉ khi có `cost.view` | Tối đa 20.000 dòng |

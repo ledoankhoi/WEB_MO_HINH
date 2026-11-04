@@ -61,7 +61,7 @@ const ANCHOR_STEPS = 12;
 
 // Hộp bao theo đỉnh đã biến dạng theo xương. Một số file có vài đỉnh hoặc bộ phận ẩn nằm rất xa mô hình;
 // khi đó hộp chính xác phình to bất thường, nên thay bằng hộp bỏ 0,5% đỉnh xa nhất ở mỗi đầu.
-function measure(root: Object3D): Box3 {
+export function measure(root: Object3D): Box3 {
   root.updateMatrixWorld(true);
   const exact = new Box3().setFromObject(root, true);
   const xs: number[] = [];
@@ -95,15 +95,15 @@ function measure(root: Object3D): Box3 {
 }
 
 // Ghi lại và khôi phục vị trí, góc xoay, tỉ lệ của mọi node trong mô hình.
-type Snapshot = [Object3D, Vector3, Object3D["quaternion"], Vector3][];
+export type Snapshot = [Object3D, Vector3, Object3D["quaternion"], Vector3][];
 
-function snapshot(root: Object3D): Snapshot {
+export function snapshot(root: Object3D): Snapshot {
   const nodes: Snapshot = [];
   root.traverse((node) => nodes.push([node, node.position.clone(), node.quaternion.clone(), node.scale.clone()]));
   return nodes;
 }
 
-function restore(nodes: Snapshot) {
+export function restore(nodes: Snapshot) {
   for (const [node, position, quaternion, scale] of nodes) {
     node.position.copy(position);
     node.quaternion.copy(quaternion);
@@ -112,7 +112,7 @@ function restore(nodes: Snapshot) {
 }
 
 // Đặt mô hình vào đúng một thời điểm của clip rồi đứng yên ở đó (không phát liên tục).
-function poseAt(mixer: AnimationMixer, clip: AnimationClip, fraction: number) {
+export function poseAt(mixer: AnimationMixer, clip: AnimationClip, fraction: number) {
   mixer.stopAllAction();
   mixer.clipAction(clip).play();
   // Hoạt ảnh lặp vòng: đúng thời điểm cuối sẽ quay về khung đầu, nên dừng ngay trước đó.
