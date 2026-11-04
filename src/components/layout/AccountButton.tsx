@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { User } from "lucide-react";
+import { AnimateIcon, User } from "@/components/animate/icons";
 import { getCurrentUser } from "@/server/auth/session";
 
 const ICON_BUTTON =
@@ -19,9 +19,11 @@ export async function AccountButton() {
   const user = await getCurrentUser();
   if (!user) {
     return (
-      <Link href="/dang-nhap" className={ICON_BUTTON} aria-label="Đăng nhập">
-        <User className="size-5" aria-hidden />
-      </Link>
+      <AnimateIcon animateOnHover asChild>
+        <Link href="/dang-nhap" className={ICON_BUTTON} aria-label="Đăng nhập">
+          <User className="size-5" aria-hidden />
+        </Link>
+      </AnimateIcon>
     );
   }
 

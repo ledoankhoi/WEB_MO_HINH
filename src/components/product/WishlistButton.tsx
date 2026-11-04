@@ -1,7 +1,7 @@
 "use client";
 
-import { useSyncExternalStore, useTransition } from "react";
-import { Heart } from "lucide-react";
+import { useState, useSyncExternalStore, useTransition } from "react";
+import { AnimateIcon, Heart } from "@/components/animate/icons";
 import { usePathname, useRouter } from "next/navigation";
 import { setWishlistAction } from "@/app/actions/wishlist";
 import { showToast } from "@/components/ui/Toaster";
@@ -29,9 +29,16 @@ function subscribe(listener: () => void) {
 export function WishlistButton({ productId, name, className = "" }: { productId: string; name: string; className?: string }) {
   const router = useRouter();
   const pathname = usePathname();
-  const current = useSyncExternalStore(subscribe, () => ids, () => null);
+  const current = useSyncExternalStore(
+    subscribe,
+    () => ids,
+    () => null,
+  );
   const active = current?.has(productId) ?? false;
   const [pending, startTransition] = useTransition();
+  // Trái tim nảy lên khi rê chuột và khi vừa thêm vào yêu thích.
+  const [hovered, setHovered] = useState(false);
+  const [popped, setPopped] = useState(false);
 
   return (
     <button
@@ -52,14 +59,22 @@ export function WishlistButton({ productId, name, className = "" }: { productId:
           }
           const next = new Set(ids);
           if (active) next.delete(productId);
-          else next.add(productId);
+          else {
+            next.add(productId);
+            setPopped(true);
+            window.setTimeout(() => setPopped(false), 700);
+          }
           ids = next;
           emit();
         })
       }
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       className={`inline-flex size-10 items-center justify-center rounded-full border border-line bg-surface transition hover:border-brand disabled:opacity-60 ${className}`}
     >
-      <Heart aria-hidden className={`size-5 ${active ? "fill-danger text-danger" : "text-muted"}`} />
+      <AnimateIcon animate={hovered || popped}>
+        <Heart aria-hidden className={`size-5 transition-colors ${active ? "fill-danger text-danger" : "text-muted"}`} />
+      </AnimateIcon>
     </button>
   );
 }

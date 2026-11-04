@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Form from "next/form";
 import Link from "next/link";
 import { Search } from "lucide-react";
+import { FilterNav } from "@/components/product/FilterNav";
 import { ProductGrid } from "@/components/product/ProductCard";
 import { buttonClass } from "@/components/ui/Button";
 import { site } from "@/config/site";
@@ -66,16 +67,14 @@ async function Results({ searchParams }: { searchParams: SearchParams }) {
         />
       </Form>
 
-      <nav aria-label="Lọc theo danh mục" className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
-        <Link href={href({ loai: "" })} className={chip(!category)}>
-          Tất cả
-        </Link>
-        {CATEGORIES.map((c) => (
-          <Link key={c.slug} href={href({ loai: c.slug })} className={chip(category === c.slug)}>
-            {c.name}
-          </Link>
-        ))}
-      </nav>
+      <FilterNav
+        label="Lọc theo danh mục"
+        active={category || "tat-ca"}
+        items={[
+          { value: "tat-ca", href: href({ loai: "" }), label: "Tất cả" },
+          ...CATEGORIES.map((c) => ({ value: c.slug, href: href({ loai: c.slug }), label: c.name })),
+        ]}
+      />
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
         <p className="text-muted" role="status">

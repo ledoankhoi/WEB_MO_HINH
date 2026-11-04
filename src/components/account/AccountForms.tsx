@@ -7,6 +7,7 @@ import { Field, SelectField } from "@/components/ui/Field";
 import { Notice } from "@/components/ui/Notice";
 import { PROVINCES } from "@/lib/catalog";
 import type { CurrentUser, FormState } from "@/lib/types";
+import { Switch } from "@/components/animate/Switch";
 
 const INITIAL: FormState = {};
 const card = "space-y-4 rounded-xl border border-line bg-surface p-5 sm:p-6";
@@ -34,9 +35,9 @@ export function ProfileForm({ user }: { user: CurrentUser }) {
           <option key={province}>{province}</option>
         ))}
       </SelectField>
-      <label className="flex items-center gap-2.5 text-sm">
-        <input type="checkbox" name="marketingConsent" defaultChecked={user.marketingConsent} className="size-4 accent-brand" />
+      <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-line px-4 py-3 text-sm">
         Nhận tin khuyến mãi, hàng mới qua email
+        <Switch name="marketingConsent" defaultChecked={user.marketingConsent} />
       </label>
       <Button type="submit" pending={pending}>
         Lưu thay đổi

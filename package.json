@@ -19,12 +19,15 @@
     "test:pg": "node --env-file-if-exists=.env.local scripts/test-pg.mjs"
   },
   "dependencies": {
+    "@animate-ui/react": "^2.4.2",
     "@react-three/drei": "^10.7.9",
     "@react-three/fiber": "^9.8.1",
     "lucide-react": "^1.54.0",
+    "motion": "^14.9.0",
     "next": "16.4.0",
     "pg": "^8.23.1",
     "qrcode": "^1.5.4",
+    "radix-ui": "^1.8.1",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "server-only": "^0.0.1",

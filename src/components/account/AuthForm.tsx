@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { Notice } from "@/components/ui/Notice";
 import type { FormState } from "@/lib/types";
+import { Checkbox } from "@/components/animate/Checkbox";
 
 const INITIAL: FormState = {};
 
@@ -42,8 +43,8 @@ export function AuthForm({ mode, next }: { mode: keyof typeof ACTIONS; next: str
         <>
           <Field label="Nhập lại mật khẩu" name="confirm" type="password" required autoComplete="new-password" error={state.errors?.confirm} />
           {/* YC-KH-04: không đánh dấu sẵn đồng ý nhận tin. */}
-          <label className="flex items-center gap-2.5 text-sm">
-            <input type="checkbox" name="marketingConsent" className="size-4 accent-brand" />
+          <label className="flex cursor-pointer items-center gap-2.5 text-sm">
+            <Checkbox name="marketingConsent" />
             Nhận tin khuyến mãi, hàng mới qua email
           </label>
         </>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ProductGrid, ProductImage } from "@/components/product/ProductCard";
+import { ProductTabs } from "@/components/product/ProductTabs";
 import { PurchasePanel } from "@/components/product/PurchasePanel";
 import { WishlistButton } from "@/components/product/WishlistButton";
 import RobotViewerLoader from "@/components/three/RobotViewerLoader";
@@ -131,28 +132,35 @@ export function ProductView({
             </section>
           )}
 
-          <section aria-labelledby="mo-ta" className="border-t border-line pt-6">
-            <h2 id="mo-ta" className="mb-3 text-lg font-semibold">
-              Chi tiết sản phẩm
-            </h2>
-            <div className="prose-store text-sm leading-relaxed whitespace-pre-line text-muted">{product.description}</div>
+          <section aria-label="Thông tin sản phẩm" className="border-t border-line pt-6">
+            <ProductTabs
+              tabs={[
+                {
+                  value: "chi-tiet",
+                  label: "Chi tiết sản phẩm",
+                  content: <div className="prose-store text-sm leading-relaxed whitespace-pre-line text-muted">{product.description}</div>,
+                },
+                ...(product.specs.length > 0
+                  ? [
+                      {
+                        value: "thong-so",
+                        label: `Thông số (${product.specs.length})`,
+                        content: (
+                          <dl className="divide-y divide-line text-sm">
+                            {product.specs.map((spec) => (
+                              <div key={spec.label} className="grid grid-cols-[9rem_1fr] gap-3 py-2.5">
+                                <dt className="text-muted">{spec.label}</dt>
+                                <dd>{spec.value}</dd>
+                              </div>
+                            ))}
+                          </dl>
+                        ),
+                      },
+                    ]
+                  : []),
+              ]}
+            />
           </section>
-
-          {product.specs.length > 0 && (
-            <section aria-labelledby="thong-so" className="border-t border-line pt-6">
-              <h2 id="thong-so" className="mb-3 text-lg font-semibold">
-                Thông số
-              </h2>
-              <dl className="divide-y divide-line text-sm">
-                {product.specs.map((spec) => (
-                  <div key={spec.label} className="grid grid-cols-[9rem_1fr] gap-3 py-2.5">
-                    <dt className="text-muted">{spec.label}</dt>
-                    <dd>{spec.value}</dd>
-                  </div>
-                ))}
-              </dl>
-            </section>
-          )}
         </div>
       </div>
 

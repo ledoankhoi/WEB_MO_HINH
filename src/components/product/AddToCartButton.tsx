@@ -1,6 +1,6 @@
 "use client";
 
-import { ShoppingCart } from "lucide-react";
+import { AnimateIcon, ShoppingCart } from "@/components/animate/icons";
 import { Button } from "@/components/ui/Button";
 import { showToast } from "@/components/ui/Toaster";
 import { cart } from "@/lib/cart";
@@ -28,21 +28,24 @@ export function AddToCartButton({
     );
   }
 
+  // Rê chuột vào nút thì xe đẩy trong nút chạy hiệu ứng.
   return (
-    <Button
-      size={size}
-      full={full}
-      onClick={() => {
-        const added = cart.add(id, quantity, stock);
-        if (added > 0) {
-          showToast(`Đã thêm ${name} vào giỏ hàng.`, { action: { href: "/gio-hang", label: "Xem giỏ" } });
-        } else {
-          showToast("Giỏ hàng đã có số lượng tối đa có thể mua của sản phẩm này.", { tone: "error" });
-        }
-      }}
-    >
-      <ShoppingCart className="size-4" aria-hidden />
-      Thêm vào giỏ hàng
-    </Button>
+    <AnimateIcon animateOnHover className={full ? "block w-full" : "inline-flex"}>
+      <Button
+        size={size}
+        full={full}
+        onClick={() => {
+          const added = cart.add(id, quantity, stock);
+          if (added > 0) {
+            showToast(`Đã thêm ${name} vào giỏ hàng.`, { action: { href: "/gio-hang", label: "Xem giỏ" } });
+          } else {
+            showToast("Giỏ hàng đã có số lượng tối đa có thể mua của sản phẩm này.", { tone: "error" });
+          }
+        }}
+      >
+        <ShoppingCart className="size-4" aria-hidden />
+        Thêm vào giỏ hàng
+      </Button>
+    </AnimateIcon>
   );
 }

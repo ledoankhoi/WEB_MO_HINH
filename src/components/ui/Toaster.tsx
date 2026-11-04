@@ -2,7 +2,9 @@
 
 import { useSyncExternalStore } from "react";
 import Link from "next/link";
-import { CircleAlert, CircleCheck, X } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
+import { CircleAlert } from "lucide-react";
+import { AnimateIcon, Check, X } from "@/components/animate/icons";
 
 type Toast = {
   id: number;
@@ -55,32 +57,44 @@ export function Toaster() {
       aria-live="polite"
       className="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex flex-col items-center gap-2 px-4 sm:inset-x-auto sm:right-4 sm:items-end"
     >
-      {items.map((toast) => (
-        <div
-          key={toast.id}
-          className="pointer-events-auto flex w-full max-w-sm animate-toast-in items-start gap-3 rounded-2xl border border-line bg-surface px-4 py-3 text-sm shadow-lg shadow-black/10"
-        >
-          {toast.tone === "success" ? (
-            <CircleCheck className="mt-0.5 size-4 shrink-0 text-success" aria-hidden />
-          ) : (
-            <CircleAlert className="mt-0.5 size-4 shrink-0 text-danger" aria-hidden />
-          )}
-          <p className="min-w-0 flex-1 text-fg">{toast.message}</p>
-          {toast.action && (
-            <Link href={toast.action.href} className="shrink-0 font-semibold text-brand-strong hover:underline">
-              {toast.action.label}
-            </Link>
-          )}
-          <button
-            type="button"
-            onClick={() => dismiss(toast.id)}
-            className="shrink-0 text-muted hover:text-fg"
-            aria-label="Đóng thông báo"
+      <AnimatePresence initial={false}>
+        {items.map((toast) => (
+          <motion.div
+            key={toast.id}
+            layout
+            initial={{ opacity: 0, y: 24, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, x: 40, scale: 0.95, transition: { duration: 0.18 } }}
+            transition={{ type: "spring", stiffness: 420, damping: 32 }}
+            className="pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-2xl border border-line bg-surface px-4 py-3 text-sm shadow-lg shadow-black/10"
           >
-            <X className="size-4" aria-hidden />
-          </button>
-        </div>
-      ))}
+            {toast.tone === "success" ? (
+              // Dấu tích được vẽ ra khi thông báo hiện lên.
+              <span className="mt-0.5 grid size-4 shrink-0 place-items-center rounded-full bg-success text-white">
+                <Check animate animation="path" className="size-3" strokeWidth={3} aria-hidden />
+              </span>
+            ) : (
+              <CircleAlert className="mt-0.5 size-4 shrink-0 text-danger" aria-hidden />
+            )}
+            <p className="min-w-0 flex-1 text-fg">{toast.message}</p>
+            {toast.action && (
+              <Link href={toast.action.href} className="shrink-0 font-semibold text-brand-strong hover:underline">
+                {toast.action.label}
+              </Link>
+            )}
+            <AnimateIcon animateOnHover asChild>
+              <button
+                type="button"
+                onClick={() => dismiss(toast.id)}
+                className="shrink-0 text-muted hover:text-fg"
+                aria-label="Đóng thông báo"
+              >
+                <X className="size-4" aria-hidden />
+              </button>
+            </AnimateIcon>
+          </motion.div>
+        ))}
+      </AnimatePresence>
     </div>
   );
 }

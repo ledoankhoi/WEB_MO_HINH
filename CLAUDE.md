@@ -31,6 +31,7 @@ Website thương mại điện tử bán mô hình robot sưu tầm, có xem và
 ## Quy ước
 - Giao diện tiếng Việt, nền sáng; màu lấy từ biến trong `src/app/globals.css` (`bg-surface`, `text-muted`, `border-line`, `bg-brand`...).
 - Tiền tệ VND qua `formatVnd` (`src/lib/format.ts`).
+- Hiệu ứng động dùng Animate UI (`@animate-ui/react`, chạy trên `motion`): các thành phần đã tô màu theo giao diện ở `src/components/animate/` (Tabs, RadioGroup, Checkbox, Switch, số chạy `AnimatedNumber`/`AnimatedVnd`), biểu tượng động ở `src/components/animate/icons/` (chép từ registry của Animate UI, thêm biểu tượng mới theo cách đó). Radio, checkbox, switch của Animate UI nhận `name` và vẫn gửi giá trị trong FormData.
 - Canvas WebGL chỉ chạy ở client: dùng `RobotViewerLoader` (`next/dynamic`, `ssr: false`).
 - Đọc cookie, `params`, `searchParams` phải nằm trong component dưới `<Suspense>`. Dữ liệu danh mục công khai đi qua các hàm `"use cache"` trong `src/server/catalog.ts`; sau khi ghi thì gọi `updateTag(PRODUCTS_TAG)`.
 - Không gọi `Date.now()` trong lúc dựng trang (Next.js báo lỗi prerender); dùng đồng hồ CSDL hoặc gọi trong Server Action.

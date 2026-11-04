@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { Trash2 } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
+import { AnimatedVnd } from "@/components/animate/AnimatedNumber";
+import { AnimateIcon, Trash2 } from "@/components/animate/icons";
 import { ProductImage } from "@/components/product/ProductCard";
 import { QuantityStepper } from "@/components/product/PurchasePanel";
 import { Button, ButtonLink } from "@/components/ui/Button";
@@ -21,21 +23,21 @@ export function OrderSummary({ totals, couponCode }: { totals: { subtotal: numbe
     <dl className="space-y-2 text-sm">
       <div className="flex justify-between">
         <dt className="text-muted">Tạm tính</dt>
-        <dd className="tabular-nums">{formatVnd(totals.subtotal)}</dd>
+        <dd><AnimatedVnd amount={totals.subtotal} /></dd>
       </div>
       {!!totals.discount && (
         <div className="flex justify-between">
           <dt className="text-muted">Giảm giá{couponCode && ` (${couponCode})`}</dt>
-          <dd className="tabular-nums">−{formatVnd(totals.discount)}</dd>
+          <dd><AnimatedVnd amount={-totals.discount} /></dd>
         </div>
       )}
       <div className="flex justify-between">
         <dt className="text-muted">Phí vận chuyển</dt>
-        <dd className="tabular-nums">{totals.shipping === 0 ? "Miễn phí" : formatVnd(totals.shipping)}</dd>
+        <dd>{totals.shipping === 0 ? "Miễn phí" : <AnimatedVnd amount={totals.shipping} />}</dd>
       </div>
       <div className="flex justify-between border-t border-line pt-3 text-base font-semibold">
         <dt>Tổng cộng</dt>
-        <dd className="tabular-nums">{formatVnd(totals.total)}</dd>
+        <dd><AnimatedVnd amount={totals.total} /></dd>
       </div>
     </dl>
   );
@@ -71,52 +73,61 @@ export function CartView() {
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_22rem]">
-      <ul className="divide-y divide-line rounded-xl border border-line bg-surface">
-        {rows.map((row) => (
-          <li key={row.id} className="flex gap-4 p-4">
-            <div className="product-stage size-24 shrink-0 overflow-hidden rounded-lg">
-              <ProductImage src={row.product?.image ?? null} alt="" className="size-full p-1" />
-            </div>
-            <div className="min-w-0 flex-1 space-y-2">
-              <div className="flex items-start justify-between gap-3">
-                {row.product ? (
-                  <Link href={`/san-pham/${row.product.slug}`} className="font-semibold hover:underline">
-                    {row.product.name}
-                  </Link>
-                ) : (
-                  <span className="font-semibold">Sản phẩm không còn tồn tại</span>
-                )}
-                <button
-                  type="button"
-                  onClick={() => cart.remove(row.id)}
-                  className="shrink-0 text-muted transition hover:text-danger"
-                  aria-label={`Xoá ${row.product?.name ?? "sản phẩm"} khỏi giỏ`}
-                >
-                  <Trash2 className="size-4" aria-hidden />
-                </button>
+      <ul className="divide-y divide-line overflow-hidden rounded-xl border border-line bg-surface">
+        <AnimatePresence initial={false}>
+          {rows.map((row) => (
+            <motion.li
+              key={row.id}
+              layout
+              exit={{ opacity: 0, height: 0, transition: { duration: 0.25 } }}
+              className="flex gap-4 p-4"
+            >
+              <div className="product-stage size-24 shrink-0 overflow-hidden rounded-lg">
+                <ProductImage src={row.product?.image ?? null} alt="" className="size-full p-1" />
               </div>
-              {row.product && <p className="text-sm text-muted tabular-nums">{formatVnd(row.product.price)}</p>}
-              {row.issue && <p className="text-sm text-danger">{ISSUE_TEXT[row.issue]}</p>}
-              {row.product && row.maxQty > 0 && (
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  {row.issue === "over_stock" ? (
-                    <Button size="sm" variant="secondary" onClick={() => cart.setQuantity(row.id, row.maxQty)}>
-                      Giảm còn {row.maxQty}
-                    </Button>
+              <div className="min-w-0 flex-1 space-y-2">
+                <div className="flex items-start justify-between gap-3">
+                  {row.product ? (
+                    <Link href={`/san-pham/${row.product.slug}`} className="font-semibold hover:underline">
+                      {row.product.name}
+                    </Link>
                   ) : (
-                    <QuantityStepper
-                      value={row.qty}
-                      max={row.maxQty}
-                      onChange={(value) => cart.setQuantity(row.id, value)}
-                      label={`Số lượng ${row.product.name}`}
-                    />
+                    <span className="font-semibold">Sản phẩm không còn tồn tại</span>
                   )}
-                  <p className="font-semibold tabular-nums">{formatVnd(row.lineTotal)}</p>
+                  <AnimateIcon animateOnHover asChild>
+                    <button
+                      type="button"
+                      onClick={() => cart.remove(row.id)}
+                      className="shrink-0 text-muted transition hover:text-danger"
+                      aria-label={`Xoá ${row.product?.name ?? "sản phẩm"} khỏi giỏ`}
+                    >
+                      <Trash2 className="size-4" aria-hidden />
+                    </button>
+                  </AnimateIcon>
                 </div>
-              )}
-            </div>
-          </li>
-        ))}
+                {row.product && <p className="text-sm text-muted tabular-nums">{formatVnd(row.product.price)}</p>}
+                {row.issue && <p className="text-sm text-danger">{ISSUE_TEXT[row.issue]}</p>}
+                {row.product && row.maxQty > 0 && (
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    {row.issue === "over_stock" ? (
+                      <Button size="sm" variant="secondary" onClick={() => cart.setQuantity(row.id, row.maxQty)}>
+                        Giảm còn {row.maxQty}
+                      </Button>
+                    ) : (
+                      <QuantityStepper
+                        value={row.qty}
+                        max={row.maxQty}
+                        onChange={(value) => cart.setQuantity(row.id, value)}
+                        label={`Số lượng ${row.product.name}`}
+                      />
+                    )}
+                    <AnimatedVnd amount={row.lineTotal} className="font-semibold" />
+                  </div>
+                )}
+              </div>
+            </motion.li>
+          ))}
+        </AnimatePresence>
       </ul>
 
       <aside className="h-fit space-y-4 rounded-xl border border-line bg-surface p-5">

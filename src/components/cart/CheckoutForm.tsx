@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { placeOrderAction, previewCouponAction, type CheckoutState } from "@/app/actions/orders";
+import { RadioGroup, RadioGroupItem, radioCardClass } from "@/components/animate/RadioGroup";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Field, SelectField, TextAreaField } from "@/components/ui/Field";
 import { Notice } from "@/components/ui/Notice";
@@ -109,20 +110,30 @@ export function CheckoutForm({ defaults, paymentMethods }: { defaults: Defaults;
         </SelectField>
         <TextAreaField label="Ghi chú" name="note" maxLength={500} defaultValue={value("note")} error={state.errors?.note} />
 
-        <fieldset className="space-y-2" aria-describedby={state.errors?.paymentMethod ? "paymentMethod-error" : undefined}>
-          <legend className="mb-1 text-sm font-medium">Phương thức thanh toán</legend>
-          {paymentMethods.map((method) => (
-            <label key={method} className="flex cursor-pointer items-center gap-3 rounded-xl border border-line px-4 py-3 text-sm has-checked:border-brand has-checked:bg-brand/5">
-              <input type="radio" name="paymentMethod" value={method} defaultChecked={method === selectedMethod} className="accent-brand" />
-              {PAYMENT_METHOD_LABELS[method]}
-            </label>
-          ))}
+        <div className="space-y-2">
+          <p id="paymentMethod-label" className="mb-1 text-sm font-medium">
+            Phương thức thanh toán
+          </p>
+          {/* RadioGroup của Animate UI; `name` giúp giá trị vẫn nằm trong FormData gửi đi. */}
+          <RadioGroup
+            name="paymentMethod"
+            defaultValue={selectedMethod}
+            aria-labelledby="paymentMethod-label"
+            aria-describedby={state.errors?.paymentMethod ? "paymentMethod-error" : undefined}
+          >
+            {paymentMethods.map((method) => (
+              <label key={method} className={radioCardClass}>
+                <RadioGroupItem value={method} />
+                {PAYMENT_METHOD_LABELS[method]}
+              </label>
+            ))}
+          </RadioGroup>
           {state.errors?.paymentMethod && (
             <p id="paymentMethod-error" role="alert" className="text-xs text-danger">
               {state.errors.paymentMethod}
             </p>
           )}
-        </fieldset>
+        </div>
       </div>
 
       <aside className="h-fit space-y-4 rounded-xl border border-line bg-surface p-5">
