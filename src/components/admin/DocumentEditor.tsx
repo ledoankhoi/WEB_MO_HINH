@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { Trash2 } from "lucide-react";
+import { useEffect, useRef, useState, useTransition } from "react";
+import { ChevronDown, Plus, Trash2 } from "lucide-react";
 import { createDocumentAction, documentAction, resolveQuarantineAction, saveDraftAction, startStocktakeAction, type DocumentActionKey } from "@/app/actions/inventory";
 import { Button } from "@/components/ui/Button";
 import { Field, SelectField, TextAreaField } from "@/components/ui/Field";
@@ -293,16 +293,59 @@ export function DocumentButtons({ id, allowed }: { id: string; allowed: Document
   );
 }
 
-export function CreateDocumentButton({ type }: { type: StockDocumentType }) {
+// Một nút "Tạo phiếu" mở danh sách loại phiếu, thay cho sáu nút nằm ngang.
+export function CreateDocumentMenu({ types }: { types: readonly StockDocumentType[] }) {
+  const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
   const [result, setResult] = useState<FormState>({});
+  const root = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const close = (event: MouseEvent | KeyboardEvent) => {
+      if (event instanceof KeyboardEvent ? event.key === "Escape" : !root.current?.contains(event.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", close);
+    document.addEventListener("keydown", close);
+    return () => {
+      document.removeEventListener("mousedown", close);
+      document.removeEventListener("keydown", close);
+    };
+  }, [open]);
+
+  const create = (type: StockDocumentType) => {
+    setOpen(false);
+    startTransition(async () => setResult(await createDocumentAction(type)));
+  };
+
   return (
-    <>
-      <Button size="sm" disabled={pending} onClick={() => startTransition(async () => setResult(await createDocumentAction(type)))}>
-        Tạo {DOCUMENT_TYPE_LABELS[type].toLowerCase()}
+    <div ref={root} className="relative">
+      <Button size="sm" disabled={pending} aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((value) => !value)}>
+        <Plus className="size-4" aria-hidden />
+        {pending ? "Đang tạo…" : "Tạo phiếu"}
+        <ChevronDown className={`size-4 transition ${open ? "rotate-180" : ""}`} aria-hidden />
       </Button>
-      {result.message && <Notice tone="error">{result.message}</Notice>}
-    </>
+      {open && (
+        <div role="menu" className="absolute right-0 z-20 mt-2 w-60 overflow-hidden rounded-xl border border-line bg-surface py-1 shadow-lg">
+          {types.map((type) => (
+            <button
+              key={type}
+              type="button"
+              role="menuitem"
+              onClick={() => create(type)}
+              className="block w-full px-4 py-2 text-left text-sm hover:bg-raised"
+            >
+              {DOCUMENT_TYPE_LABELS[type]}
+            </button>
+          ))}
+        </div>
+      )}
+      {result.message && (
+        <div className="absolute right-0 z-10 mt-2 w-72">
+          <Notice tone="error">{result.message}</Notice>
+        </div>
+      )}
+    </div>
   );
 }
 

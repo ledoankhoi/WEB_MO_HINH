@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { CreateDocumentButton } from "@/components/admin/DocumentEditor";
+import { ChevronDown, SlidersHorizontal } from "lucide-react";
+import { CreateDocumentMenu } from "@/components/admin/DocumentEditor";
 import { BADGE, Empty, Pager, TABLE, TABLE_WRAP, chip, first, pageNumber } from "@/components/admin/parts";
 import { formatDateTime, formatNumber } from "@/lib/format";
 import { can } from "@/lib/permissions";
@@ -24,6 +25,7 @@ export default async function DocumentsPage({ searchParams }: PageProps<"/admin/
   const type = isDocumentType(typeParam) ? typeParam : undefined;
   const status = isDocumentStatus(statusParam) ? statusParam : undefined;
   const page = pageNumber(params.trang);
+  const activeFilters = Number(Boolean(type)) + Number(Boolean(status));
   const { items, total } = await listDocuments({ type, status, page, pageSize: PAGE_SIZE });
 
   const href = (changes: Record<string, string>) => {
@@ -37,35 +39,58 @@ export default async function DocumentsPage({ searchParams }: PageProps<"/admin/
     <>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-3xl font-bold tracking-tight">Phiếu kho ({formatNumber(total)})</h1>
-        {can(user.role, "inventory.draft") && (
-          <div className="flex flex-wrap gap-2">
-            {DOCUMENT_TYPES.map((value) => (
-              <CreateDocumentButton key={value} type={value} />
-            ))}
-          </div>
-        )}
+        {can(user.role, "inventory.draft") && <CreateDocumentMenu types={DOCUMENT_TYPES} />}
       </div>
 
-      <nav aria-label="Lọc theo loại phiếu" className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
-        <Link href={href({ loai: "" })} className={chip(!type)}>
-          Mọi loại
-        </Link>
-        {DOCUMENT_TYPES.map((value) => (
-          <Link key={value} href={href({ loai: value })} className={chip(type === value)}>
-            {DOCUMENT_TYPE_LABELS[value]}
-          </Link>
-        ))}
-      </nav>
-      <nav aria-label="Lọc theo trạng thái" className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
-        <Link href={href({ "trang-thai": "" })} className={chip(!status)}>
-          Mọi trạng thái
-        </Link>
-        {DOCUMENT_STATUSES.map((value) => (
-          <Link key={value} href={href({ "trang-thai": value })} className={chip(status === value)}>
-            {DOCUMENT_STATUS_LABELS[value]}
-          </Link>
-        ))}
-      </nav>
+      {/* Bộ lọc gom vào một khung đóng/mở; tự mở khi đang lọc để thấy điều kiện đang áp dụng. */}
+      <details open={activeFilters > 0} className="group rounded-xl border border-line bg-surface">
+        <summary className="flex cursor-pointer list-none items-center gap-2 px-4 py-3 text-sm font-semibold select-none [&::-webkit-details-marker]:hidden">
+          <SlidersHorizontal className="size-4" aria-hidden />
+          Bộ lọc
+          {activeFilters > 0 ? (
+            <span className="flex flex-wrap gap-1.5 font-normal">
+              {type && <span className={BADGE}>{DOCUMENT_TYPE_LABELS[type]}</span>}
+              {status && <span className={BADGE}>{DOCUMENT_STATUS_LABELS[status]}</span>}
+            </span>
+          ) : (
+            <span className="font-normal text-muted">Mọi loại · Mọi trạng thái</span>
+          )}
+          <ChevronDown className="ml-auto size-4 transition group-open:rotate-180" aria-hidden />
+        </summary>
+        <div className="space-y-3 border-t border-line px-4 py-4">
+          <div className="space-y-2">
+            <p className="text-xs font-semibold tracking-wide text-muted uppercase">Loại phiếu</p>
+            <nav aria-label="Lọc theo loại phiếu" className="flex flex-wrap gap-2">
+              <Link href={href({ loai: "" })} className={chip(!type)}>
+                Mọi loại
+              </Link>
+              {DOCUMENT_TYPES.map((value) => (
+                <Link key={value} href={href({ loai: value })} className={chip(type === value)}>
+                  {DOCUMENT_TYPE_LABELS[value]}
+                </Link>
+              ))}
+            </nav>
+          </div>
+          <div className="space-y-2">
+            <p className="text-xs font-semibold tracking-wide text-muted uppercase">Trạng thái</p>
+            <nav aria-label="Lọc theo trạng thái" className="flex flex-wrap gap-2">
+              <Link href={href({ "trang-thai": "" })} className={chip(!status)}>
+                Mọi trạng thái
+              </Link>
+              {DOCUMENT_STATUSES.map((value) => (
+                <Link key={value} href={href({ "trang-thai": value })} className={chip(status === value)}>
+                  {DOCUMENT_STATUS_LABELS[value]}
+                </Link>
+              ))}
+            </nav>
+          </div>
+          {activeFilters > 0 && (
+            <Link href="/admin/kho/phieu" className="inline-block text-sm font-medium text-muted underline-offset-4 hover:text-fg hover:underline">
+              Xoá bộ lọc
+            </Link>
+          )}
+        </div>
+      </details>
 
       {items.length === 0 ? (
         <Empty>Không có phiếu nào phù hợp.</Empty>
