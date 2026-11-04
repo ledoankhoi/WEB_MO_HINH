@@ -20,8 +20,11 @@ export async function proxy(request: NextRequest) {
     if (isAdminPath) return notFound(request);
     const product = PRODUCT_PATH.exec(pathname);
     if (product) {
-      const { findSlugRedirect } = await import("@/server/slug-redirects");
-      const target = await findSlugRedirect(product[1]);
+      // Có nơi chạy proxy ở edge (ví dụ Netlify Edge Functions), không nạp được `pg`: khi đó bỏ qua
+      // chuyển hướng slug cũ thay vì làm trang sản phẩm lỗi 500.
+      const target = await import("@/server/slug-redirects")
+        .then(({ findSlugRedirect }) => findSlugRedirect(product[1]))
+        .catch(() => null);
       if (target) {
         const url = request.nextUrl.clone();
         url.pathname = `/san-pham/${target}`;
