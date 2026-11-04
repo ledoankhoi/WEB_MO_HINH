@@ -273,6 +273,73 @@ describe("phiếu xuất, chuyển vị trí, hàng trả, hàng cách ly (T10)"
     expect(await balance(variantId)).toMatchObject({ onHand: 2, quarantined: 2 });
   });
 
+  it("YC-KHO-08: phiếu hàng trả gắn đơn chỉ nhận lại hàng đã xuất cho đơn, không trùng với L11", async () => {
+    const variantId = await stocked("HT01", 5);
+    const other = await stocked("HT02", 1);
+    const db = await getDb();
+    await db.execute({ sql: "UPDATE products SET status = 'published' WHERE id = (SELECT product_id FROM product_variants WHERE id = ?)", args: [variantId] });
+    const orders = await import("@/server/repo/orders");
+    const place = async () => {
+      const placed = await orders.createOrder({
+        userId: null,
+        paymentMethod: "cod",
+        customerName: "Khách",
+        customerPhone: "0901234567",
+        customerEmail: "",
+        shippingAddress: "1 Lê Lợi",
+        shippingCity: "Huế",
+        note: "",
+        idempotencyKey: null,
+        items: [{ variantId, quantity: 2, expectedPrice: 500000 }],
+      });
+      if (!placed.ok) throw new Error("không đặt được đơn");
+      const code = (await orders.findOrderById(placed.order.id))!.code;
+      return { id: placed.order.id, code };
+    };
+    const quarantine = (await warehouse.listLocations()).find((l) => l.type === "quarantine")!.id;
+    const returnLine = (id: string, qty: number) => ({ ...line(id, { qty }), locationId: quarantine });
+
+    // Đơn chưa bàn giao vận chuyển: hàng vẫn trong kho, không có gì để nhận trả.
+    const first = await place();
+    const early = await newDocument("return");
+    expect((await actions.saveDraftAction(early, { orderCode: first.code, lines: [returnLine(variantId, 1)] })).message).toMatch(/chưa xuất kho/);
+
+    for (const key of ["confirm", "start_packing", "packed"] as const) expect(await orders.applyOrderAction(first.id, key)).toBe(true);
+    expect(await orders.applyOrderAction(first.id, "hand_over", undefined, { tracking: { carrier: "GHN", code: "GHN0001" } })).toBe(true);
+    expect(await balance(variantId)).toMatchObject({ onHand: 3, quarantined: 0 });
+
+    const doc = await newDocument("return");
+    // Sản phẩm không có trong đơn, hoặc trả nhiều hơn số đã giao: bị chặn.
+    expect((await actions.saveDraftAction(doc, { orderCode: first.code, lines: [returnLine(other, 1)] })).message).toMatch(/không thuộc đơn/);
+    expect((await actions.saveDraftAction(doc, { orderCode: first.code, lines: [returnLine(variantId, 3)] })).message).toMatch(/chỉ còn 2/);
+    expect((await actions.saveDraftAction(doc, { orderCode: first.code, lines: [returnLine(variantId, 1)] })).ok).toBe(true);
+    expect((await actions.documentAction(doc, "post")).ok).toBe(true);
+    expect(await balance(variantId)).toMatchObject({ onHand: 3, quarantined: 1 });
+
+    // Đã có phiếu trả cho đơn: L11 nhận cả đơn sẽ cộng trùng nên bị chặn.
+    expect(await orders.applyOrderAction(first.id, "delivery_failed")).toBe(true);
+    expect(await orders.applyOrderAction(first.id, "receive_return")).toBe(false);
+    expect(await balance(variantId)).toMatchObject({ onHand: 3, quarantined: 1 });
+
+    // Hai phiếu nháp cùng nhận 1 món cuối: phiếu thứ hai bị chặn ở bước ghi sổ (kiểm lại trong giao dịch).
+    const a = await newDocument("return");
+    const b = await newDocument("return");
+    for (const id of [a, b]) expect((await actions.saveDraftAction(id, { orderCode: first.code, lines: [returnLine(variantId, 1)] })).ok).toBe(true);
+    expect((await actions.documentAction(a, "post")).ok).toBe(true);
+    expect((await actions.documentAction(b, "post")).message).toMatch(/chỉ còn 0/);
+    expect(await balance(variantId)).toMatchObject({ onHand: 3, quarantined: 2 });
+
+    // Ngược lại: đơn đã nhận hoàn bằng L11 thì phiếu trả cho đơn đó bị chặn.
+    const second = await place();
+    for (const key of ["confirm", "start_packing", "packed"] as const) expect(await orders.applyOrderAction(second.id, key)).toBe(true);
+    expect(await orders.applyOrderAction(second.id, "hand_over", undefined, { tracking: { carrier: "GHN", code: "GHN0002" } })).toBe(true);
+    expect(await orders.applyOrderAction(second.id, "delivery_failed")).toBe(true);
+    expect(await orders.applyOrderAction(second.id, "receive_return")).toBe(true);
+    const late = await newDocument("return");
+    expect((await actions.saveDraftAction(late, { orderCode: second.code, lines: [returnLine(variantId, 1)] })).message).toMatch(/chỉ còn 0/);
+    expect(await balance(variantId)).toMatchObject({ onHand: 1, quarantined: 4 });
+  });
+
   it("YC-KHO-09: hàng cách ly bán lại được thì chuyển về kệ; huỷ hàng thì xuất hư hỏng", async () => {
     const variantId = await stocked("KHO09", 4);
     const quarantine = (await warehouse.listLocations()).find((l) => l.type === "quarantine")!.id;

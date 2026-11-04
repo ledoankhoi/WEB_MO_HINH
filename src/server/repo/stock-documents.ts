@@ -316,6 +316,20 @@ export async function postDocument(id: string, entry: AuditEntry): Promise<PostR
       move({ variantId: line.variantId, locationId: line.toLocationId, type: "transfer_in", qtyDelta: qty });
     }
   } else if (document.type === "return") {
+    if (document.orderId) {
+      // Phiếu gắn đơn chỉ nhận lại đúng hàng đã xuất cho đơn đó, trừ phần đã nhận về (L11 hoặc phiếu trả khác).
+      // Thiếu kiểm tra này thì phiếu trả cho đơn chưa giao, hoặc trả trùng với L11, sẽ làm tồn tăng khống.
+      const totals = new Map<string, number>();
+      for (const line of document.lines) totals.set(line.variantId, (totals.get(line.variantId) ?? 0) + (line.qty ?? 0));
+      const problem = await returnProblem(document.orderId, totals, id);
+      if (problem) return { ok: false, reason: "invalid", message: problem };
+      // Khoá đơn để L11 và các phiếu trả khác của cùng đơn chạy lần lượt; điều kiện kiểm lại trong giao dịch.
+      statements.push({ sql: "SELECT id FROM orders WHERE id = ? FOR UPDATE", args: [document.orderId] });
+      for (const [variantId, qty] of totals) {
+        guard.sql += ` AND ${RETURNABLE_SQL} >= ?`;
+        guard.args.push(id, document.orderId, variantId, qty);
+      }
+    }
     // Hàng trả luôn vào khu cách ly, chưa bán lại được (YC-KHO-08, Q15).
     for (const line of document.lines) {
       if ((line.qty ?? 0) > 0) move({ variantId: line.variantId, locationId: line.locationId, type: "return_in", qtyDelta: line.qty ?? 0, orderId: document.orderId });
@@ -361,6 +375,38 @@ export async function postDocument(id: string, entry: AuditEntry): Promise<PostR
     if (isConstraintError(error)) return { ok: false, reason: "stock" };
     throw error;
   }
+}
+
+// Số còn nhận trả được của một biến thể trong một đơn: đã xuất (L6) trừ đã nhận về, không tính dòng của
+// chính phiếu đang ghi sổ. Tham số: id phiếu, id đơn, id biến thể.
+const RETURNABLE_SQL = `(SELECT COALESCE(-SUM(qty_delta) FILTER (WHERE type = 'ship'), 0)
+                               - COALESCE(SUM(qty_delta) FILTER (WHERE type = 'return_in' AND document_id IS DISTINCT FROM ?), 0)
+                         FROM stock_movements WHERE order_id = ? AND variant_id = ?)`;
+
+// Lý do phiếu hàng trả gắn đơn không hợp lệ (đơn chưa xuất kho, sản phẩm không thuộc đơn, trả quá số đã giao),
+// hoặc null. `totals`: tổng số lượng theo biến thể trên phiếu.
+export async function returnProblem(orderId: string, totals: Map<string, number>, documentId: string): Promise<string | null> {
+  const db = await getDb();
+  const [order, rows] = await db.batch([
+    { sql: "SELECT code FROM orders WHERE id = ?", args: [orderId] },
+    {
+      sql: `SELECT m.variant_id, v.sku,
+                   COALESCE(-SUM(m.qty_delta) FILTER (WHERE m.type = 'ship'), 0) AS shipped,
+                   COALESCE(SUM(m.qty_delta) FILTER (WHERE m.type = 'return_in' AND m.document_id IS DISTINCT FROM ?), 0) AS returned
+            FROM stock_movements m JOIN product_variants v ON v.id = m.variant_id
+            WHERE m.order_id = ? GROUP BY m.variant_id, v.sku`,
+      args: [documentId, orderId],
+    },
+  ]);
+  const code = String(order.rows[0]?.code ?? "");
+  const byVariant = new Map(rows.rows.map((row) => [String(row.variant_id), { sku: String(row.sku), left: Number(row.shipped) - Number(row.returned), shipped: Number(row.shipped) }]));
+  if (![...byVariant.values()].some((row) => row.shipped > 0)) return `Đơn ${code} chưa xuất kho (chưa bàn giao vận chuyển) nên chưa có hàng để nhận trả.`;
+  for (const [variantId, qty] of totals) {
+    const row = byVariant.get(variantId);
+    if (!row || row.shipped === 0) return `Có sản phẩm không thuộc đơn ${code}.`;
+    if (qty > row.left) return `${row.sku}: đơn ${code} chỉ còn ${Math.max(row.left, 0)} cái chưa nhận về, phiếu ghi ${qty}.`;
+  }
+  return null;
 }
 
 // Mã vị trí đầu tiên có dòng sổ kho sau thời điểm `since`, hoặc null.

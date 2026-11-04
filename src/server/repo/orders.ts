@@ -415,6 +415,11 @@ export async function applyOrderAction(id: string, key: OrderActionKey, audit?: 
   const action = ORDER_ACTIONS[key];
   if (key === "hand_over" && !options.tracking) return false;
   const condition = conditionSql(key);
+  // L11 nhận lại cả đơn. Đã có phiếu nhập hàng trả ghi sổ cho đơn này thì phần đó đã vào kho: nhận thêm bằng
+  // L11 sẽ cộng trùng, nên chặn và xử lý phần còn lại bằng phiếu hàng trả.
+  if (key === "receive_return") {
+    condition.sql += " AND NOT EXISTS (SELECT 1 FROM stock_movements m WHERE m.order_id = orders.id AND m.type = 'return_in' AND m.document_id IS NOT NULL)";
+  }
   const guard: Guard = { sql: `EXISTS (SELECT 1 FROM orders WHERE id = ? AND ${condition.sql})`, args: [id, ...condition.args] };
   const actorId = audit?.actor.id ?? null;
   const now = Date.now();
@@ -534,4 +539,40 @@ export async function listPickingOrders(limit = 50): Promise<PickingOrder[]> {
     result.push({ id: String(row.id), code: String(row.code), customerName: String(row.customer_name), createdAt: Number(row.created_at), lines });
   }
   return result;
+}
+
+export type OrderMovement = {
+  type: string;
+  sku: string;
+  qty: number;
+  reserved: number;
+  locationCode: string | null;
+  documentId: string | null;
+  documentCode: string | null;
+  createdAt: number;
+};
+
+// Các dòng sổ kho gắn với một đơn (giữ hàng, xuất giao, nhận hoàn, phiếu hàng trả), để trang đơn cho thấy
+// hàng của đơn đã trừ khỏi kho lúc nào và ở vị trí nào.
+export async function listOrderMovements(orderId: string): Promise<OrderMovement[]> {
+  const db = await getDb();
+  const result = await db.execute({
+    sql: `SELECT m.type, v.sku, m.qty_delta, m.reserved_delta, l.code AS location_code, m.document_id, d.code AS document_code, m.created_at
+          FROM stock_movements m
+          JOIN product_variants v ON v.id = m.variant_id
+          LEFT JOIN locations l ON l.id = m.location_id
+          LEFT JOIN stock_documents d ON d.id = m.document_id
+          WHERE m.order_id = ? ORDER BY m.created_at, m.id`,
+    args: [orderId],
+  });
+  return result.rows.map((row) => ({
+    type: String(row.type),
+    sku: String(row.sku),
+    qty: Number(row.qty_delta),
+    reserved: Number(row.reserved_delta),
+    locationCode: row.location_code === null ? null : String(row.location_code),
+    documentId: row.document_id === null ? null : String(row.document_id),
+    documentCode: row.document_code === null ? null : String(row.document_code),
+    createdAt: Number(row.created_at),
+  }));
 }
