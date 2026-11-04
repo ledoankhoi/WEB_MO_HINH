@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { OrderActions } from "@/components/admin/OrderActions";
+import { StageBadge } from "@/components/admin/OrdersTable";
+import { OrderProgress } from "@/components/order/OrderProgress";
+import { ACTION_STAGES, orderStage, stageNext } from "@/lib/order-stage";
 import { isId } from "@/components/admin/parts";
 import { OrderSummary } from "@/components/cart/CartView";
 import { OrderHistory } from "@/components/order/OrderHistory";
@@ -39,6 +42,8 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/don-h
     return permission !== null && can(user.role, permission) && canApply(key, order);
   });
   const badge = "rounded-full border border-line bg-surface px-3 py-1";
+  const stage = orderStage(order);
+  const next = stageNext(stage);
 
   return (
     <>
@@ -47,6 +52,21 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/don-h
         <p className="text-sm text-muted">
           Đặt lúc {formatDateTime(order.createdAt)}, cập nhật lúc {formatDateTime(order.updatedAt)}.
         </p>
+      </div>
+
+      <OrderProgress order={order} />
+
+      {/* Bước hiện tại và việc cần làm tiếp, ngay trên cùng để không phải dò ba nhãn trạng thái. */}
+      <div className={`flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl p-4 text-sm ${ACTION_STAGES.includes(stage) ? "bg-warning/10 ring-1 ring-warning/30" : "bg-raised"}`}>
+        <StageBadge stage={stage} className="text-sm" />
+        {next ? (
+          <span>
+            Việc tiếp theo: <strong>{next}</strong>
+            {allowed.length === 0 && <span className="text-muted"> (tài khoản của bạn không có quyền làm bước này)</span>}
+          </span>
+        ) : (
+          <span className="text-muted">Đơn đã kết thúc, không còn việc cần làm.</span>
+        )}
       </div>
 
       <div className="flex flex-wrap gap-2 text-sm">
@@ -78,7 +98,7 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/don-h
               </li>
             ))}
           </ul>
-          <OrderActions id={order.id} allowed={allowed} />
+          <OrderActions id={order.id} allowed={allowed} primary={allowed.find((key) => ORDER_ACTIONS[key].label === next)} />
           <OrderHistory order={order} staff />
         </div>
 

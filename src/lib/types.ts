@@ -151,3 +151,9 @@ export type FormState = {
   errors?: Record<string, string>;
   values?: Record<string, string>;
 };
+
+// Số đơn cần xử lý và đơn mới nhất, cho thanh bên quản trị hỏi định kỳ (src/app/admin/api/don-hang).
+export type OrderPulse = {
+  needsAction: number;
+  latest: { id: string; code: string; customerName: string; total: number; createdAt: number } | null;
+};

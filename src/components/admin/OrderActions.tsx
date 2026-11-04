@@ -11,7 +11,9 @@ import type { FormState } from "@/lib/types";
 const DANGER: OrderActionKey[] = ["cancel", "receive_return", "delivery_failed"];
 
 // \`allowed\`: các thao tác máy chủ đã tính là đúng điều kiện và đúng quyền của người đang xem.
-export function OrderActions({ id, allowed }: { id: string; allowed: OrderActionKey[] }) {
+// `primary`: việc tiếp theo của đơn (nút nổi bật, đứng đầu).
+export function OrderActions({ id, allowed: given, primary }: { id: string; allowed: OrderActionKey[]; primary?: OrderActionKey }) {
+  const allowed = primary && given.includes(primary) ? [primary, ...given.filter((key) => key !== primary)] : given;
   const [pending, startTransition] = useTransition();
   const [result, setResult] = useState<FormState>({});
   const [extra, setExtra] = useState({ carrier: "", code: "", reference: "" });

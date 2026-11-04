@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Boxes, Image as ImageIcon, Menu, NotebookText, Settings, ClipboardList, FileText, Scale, ShieldAlert, Star, TicketPercent, FolderTree, MapPin, Truck, LayoutDashboard, ChartColumn, Library, Package, ReceiptText, ScrollText, Tag, Undo2, UserCog, Users } from "lucide-react";
 import { can, type Permission, type Role } from "@/lib/permissions";
+import type { OrderPulse } from "@/lib/types";
+import { useOrderAlerts } from "./OrderAlerts";
 
 // Nhóm theo menu ở mục 5 của docs/chuan/10. Mỗi mục chỉ hiện với vai trò có quyền mở trang đó; quyền
 // vẫn được kiểm tra lại ở máy chủ.
@@ -12,6 +14,13 @@ const GROUPS: { label?: string; links: { href: string; label: string; icon: type
     links: [
       { href: "/admin", label: "Tổng quan", icon: LayoutDashboard, permission: "dashboard.view" },
       { href: "/admin/bao-cao", label: "Báo cáo bán hàng", icon: ChartColumn, permission: "reports.view" },
+    ],
+  },
+  {
+    label: "Bán hàng",
+    links: [
+      { href: "/admin/don-hang", label: "Đơn hàng", icon: ReceiptText, permission: "orders.view" },
+      { href: "/admin/don-hang/cho-hoan-tien", label: "Chờ hoàn tiền", icon: Undo2, permission: "payments.manage" },
     ],
   },
   {
@@ -46,13 +55,6 @@ const GROUPS: { label?: string; links: { href: string; label: string; icon: type
     ],
   },
   {
-    label: "Bán hàng",
-    links: [
-      { href: "/admin/don-hang", label: "Đơn hàng", icon: ReceiptText, permission: "orders.view" },
-      { href: "/admin/don-hang/cho-hoan-tien", label: "Chờ hoàn tiền", icon: Undo2, permission: "payments.manage" },
-    ],
-  },
-  {
     label: "Khách hàng",
     // Vai trò viewer cũng xem được danh sách khách (thông tin cá nhân bị che, SEC-02).
     links: [
@@ -69,8 +71,9 @@ const GROUPS: { label?: string; links: { href: string; label: string; icon: type
   },
 ];
 
-export function AdminNav({ role }: { role: Role }) {
+export function AdminNav({ role, pulse }: { role: Role; pulse: OrderPulse | null }) {
   const pathname = usePathname();
+  const needsAction = useOrderAlerts(pulse);
   const groups = GROUPS.map((group) => ({ ...group, links: group.links.filter((link) => can(role, link.permission) || (link.alsoViewer && role === "viewer")) })).filter(
     (group) => group.links.length > 0,
   );
@@ -100,6 +103,15 @@ export function AdminNav({ role }: { role: Role }) {
               >
                 <Icon className="size-4 shrink-0" aria-hidden />
                 {label}
+                {href === "/admin/don-hang" && needsAction > 0 && (
+                  <span
+                    className="ml-auto grid h-5 min-w-5 place-items-center rounded-full bg-danger px-1.5 text-xs font-bold text-white tabular-nums"
+                    aria-label={`${needsAction} đơn cần xử lý`}
+                    title={`${needsAction} đơn cần xử lý`}
+                  >
+                    {needsAction > 99 ? "99+" : needsAction}
+                  </span>
+                )}
               </Link>
             );
           })}

@@ -4,13 +4,15 @@ import { LogoutButton } from "@/components/account/AccountForms";
 import { AdminNav } from "@/components/admin/AdminNav";
 import { LogoMark } from "@/components/layout/Logo";
 import { site } from "@/config/site";
-import { ROLE_LABELS } from "@/lib/permissions";
+import { ROLE_LABELS, can } from "@/lib/permissions";
+import { orderPulse } from "@/server/repo/orders";
 import { requireStaff } from "@/server/auth/session";
 
 // Kiểm tra quyền trước khi vẽ khung để người ngoài không thấy gì của khu quản trị. Layout không chạy lại
 // khi chuyển trang trong khu này, nên mỗi trang vẫn tự gọi requireStaff().
 async function Shell({ children }: { children: React.ReactNode }) {
   const user = await requireStaff("dashboard.view");
+  const pulse = can(user.role, "orders.view") ? await orderPulse() : null;
 
   return (
     <div className="flex flex-1 flex-col lg:flex-row">
@@ -21,7 +23,7 @@ async function Shell({ children }: { children: React.ReactNode }) {
           <span className="rounded-full bg-raised px-2 py-0.5 text-xs font-medium text-muted">Quản trị</span>
         </Link>
 
-        <AdminNav role={user.role} />
+        <AdminNav role={user.role} pulse={pulse} />
 
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm lg:mt-auto lg:flex-col lg:items-stretch lg:border-t lg:border-line lg:pt-4">
           <p className="min-w-0 flex-1 truncate">

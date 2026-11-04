@@ -3,13 +3,13 @@
 import { useSyncExternalStore } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
-import { CircleAlert } from "lucide-react";
+import { BellRing, CircleAlert } from "lucide-react";
 import { AnimateIcon, Check, X } from "@/components/animate/icons";
 
 type Toast = {
   id: number;
   message: string;
-  tone: "success" | "error";
+  tone: "success" | "error" | "info";
   action?: { href: string; label: string };
 };
 
@@ -30,12 +30,12 @@ function dismiss(id: number) {
 }
 
 // Hiện một thông báo nổi ngắn ở góc màn hình. Gọi được từ bất kỳ Client Component nào.
-export function showToast(message: string, options: { tone?: Toast["tone"]; action?: Toast["action"] } = {}) {
+export function showToast(message: string, options: { tone?: Toast["tone"]; action?: Toast["action"]; duration?: number } = {}) {
   const id = nextId++;
   // Chỉ giữ ba thông báo gần nhất để không che nội dung.
   toasts = [...toasts.slice(-2), { id, message, tone: options.tone ?? "success", action: options.action }];
   emit();
-  window.setTimeout(() => dismiss(id), DURATION_MS);
+  window.setTimeout(() => dismiss(id), options.duration ?? DURATION_MS);
 }
 
 function subscribe(listener: () => void) {
@@ -73,6 +73,8 @@ export function Toaster() {
               <span className="mt-0.5 grid size-4 shrink-0 place-items-center rounded-full bg-success text-white">
                 <Check animate animation="path" className="size-3" strokeWidth={3} aria-hidden />
               </span>
+            ) : toast.tone === "info" ? (
+              <BellRing className="mt-0.5 size-4 shrink-0 text-brand-strong" aria-hidden />
             ) : (
               <CircleAlert className="mt-0.5 size-4 shrink-0 text-danger" aria-hidden />
             )}

@@ -8,6 +8,7 @@ import { CancelOrderButton } from "@/components/order/CancelOrderButton";
 import { Notice } from "@/components/ui/Notice";
 import { ORDER_STATUS_LABELS, PAYMENT_METHOD_LABELS, PAYMENT_STATUS_LABELS, SHIPPING_STATUS_LABELS } from "@/lib/catalog";
 import { OrderHistory } from "@/components/order/OrderHistory";
+import { OrderProgress } from "@/components/order/OrderProgress";
 import { formatDateTime, formatVnd } from "@/lib/format";
 import type { Order } from "@/lib/types";
 import { buildVietQrPayload } from "@/lib/vietqr";
@@ -80,6 +81,8 @@ async function OrderDetail({ params }: Pick<PageProps<"/don-hang/[token]">, "par
         <span className="rounded-full border border-line bg-surface px-3 py-1">{SHIPPING_STATUS_LABELS[order.shippingStatus]}</span>
         <span className="rounded-full border border-line bg-surface px-3 py-1">{PAYMENT_METHOD_LABELS[order.paymentMethod]}</span>
       </div>
+
+      <OrderProgress order={order} />
 
       {order.trackingCode && (
         <p className="text-sm">

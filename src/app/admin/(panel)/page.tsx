@@ -5,7 +5,10 @@ import { can } from "@/lib/permissions";
 import { requireStaff } from "@/server/auth/session";
 import { listBannersEndingSoon } from "@/server/repo/content";
 import { stockDashboard, storeDashboard } from "@/server/repo/dashboard";
-import { getOrderStats } from "@/server/repo/orders";
+import { countOrderStages, getOrderStats, listOrders } from "@/server/repo/orders";
+import { StageBadge } from "@/components/admin/OrdersTable";
+import { StageBoard } from "@/components/admin/StageBoard";
+import { ACTION_STAGES, orderStage, stageNext } from "@/lib/order-stage";
 import { pendingWork } from "@/server/repo/stock-reports";
 
 const card = "rounded-xl border border-line bg-surface p-5";
@@ -26,17 +29,54 @@ export default async function AdminDashboardPage() {
   const seesOrders = can(user.role, "orders.view");
   const seesPayments = can(user.role, "payments.manage");
   const seesContent = can(user.role, "content.edit");
-  const [stock, work, store, stats, endingBanners] = await Promise.all([
+  const [stock, work, store, stats, endingBanners, stageCounts, queue] = await Promise.all([
     seesStock ? stockDashboard() : null,
     seesStock ? pendingWork() : null,
     seesOrders ? storeDashboard() : null,
     seesOrders ? getOrderStats() : null,
     seesContent ? listBannersEndingSoon() : [],
+    seesOrders ? countOrderStages() : null,
+    seesOrders ? listOrders({ sort: "priority", pageSize: 6 }) : null,
   ]);
+  const urgentQueue = queue ? queue.items.filter((order) => ACTION_STAGES.includes(orderStage(order))) : [];
 
   return (
     <>
       <h1 className="text-3xl font-bold tracking-tight">Tổng quan</h1>
+
+      {/* Đơn hàng luôn ở đầu trang: việc cần làm ngay trước mọi số liệu khác. */}
+      {stageCounts && (
+        <section aria-labelledby="don-can-xu-ly" className="space-y-3">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 id="don-can-xu-ly" className="text-lg font-semibold">
+              Đơn hàng cần xử lý
+            </h2>
+            <Link href="/admin/don-hang" className="text-sm font-medium text-brand-strong hover:underline">
+              Tất cả đơn hàng
+            </Link>
+          </div>
+          <StageBoard counts={stageCounts} compact href={(key) => (key ? `/admin/don-hang?buoc=${key}` : "/admin/don-hang")} />
+          {urgentQueue.length > 0 && (
+            <ul className="divide-y divide-line rounded-xl border border-line bg-surface text-sm">
+              {urgentQueue.map((order) => {
+                const stage = orderStage(order);
+                return (
+                  <li key={order.id}>
+                    <Link href={`/admin/don-hang/${order.id}`} className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 hover:bg-raised">
+                      <span className="font-semibold">{order.code}</span>
+                      <StageBadge stage={stage} />
+                      <span className="text-muted">
+                        {order.customerName} · {formatVnd(order.total)} · {formatDateTime(order.createdAt)}
+                      </span>
+                      <span className="ml-auto font-medium text-brand-strong">{stageNext(stage)} →</span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
+      )}
       {endingBanners.length > 0 && (
         <section aria-labelledby="banner-het-lich" className={card}>
           <h2 id="banner-het-lich" className="font-semibold">

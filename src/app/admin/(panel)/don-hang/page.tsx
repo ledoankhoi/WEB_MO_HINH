@@ -1,6 +1,9 @@
 import Form from "next/form";
 import { OrdersTable } from "@/components/admin/OrdersTable";
-import { FilterPanel, Pager, first, isId, pageNumber } from "@/components/admin/parts";
+import { StageBoard } from "@/components/admin/StageBoard";
+import { ORDER_STAGES, isOrderStageKey } from "@/lib/order-stage";
+import Link from "next/link";
+import { FilterPanel, Pager, chip, first, isId, pageNumber } from "@/components/admin/parts";
 import { Button } from "@/components/ui/Button";
 import { Field, SelectField } from "@/components/ui/Field";
 import {
@@ -19,7 +22,7 @@ import {
 import { formatNumber, maskPhone, parseVnDate } from "@/lib/format";
 import { can } from "@/lib/permissions";
 import { requireStaff } from "@/server/auth/session";
-import { listOrders } from "@/server/repo/orders";
+import { countOrderStages, listOrders } from "@/server/repo/orders";
 
 const PAGE_SIZE = 20;
 const DAY = 24 * 60 * 60 * 1000;
@@ -37,7 +40,12 @@ export default async function AdminOrdersPage({ searchParams }: PageProps<"/admi
     khach: isId(first(params.khach)) ? first(params.khach) : "",
     tu: first(params.tu),
     den: first(params.den),
+    buoc: first(params.buoc),
+    "sap-xep": first(params["sap-xep"]),
   };
+  const stage = isOrderStageKey(query.buoc) ? query.buoc : undefined;
+  // Mặc định đơn cần xử lý ngay lên đầu; "moi-nhat" thì xếp theo thời gian đặt.
+  const sort = query["sap-xep"] === "moi-nhat" ? "newest" : "priority";
   const status = isOrderStatus(query["trang-thai"]) ? query["trang-thai"] : undefined;
   const shippingStatus = isShippingStatus(query["van-chuyen"]) ? query["van-chuyen"] : undefined;
   const paymentStatus = isPaymentStatus(query["thanh-toan"]) ? query["thanh-toan"] : undefined;
@@ -56,9 +64,12 @@ export default async function AdminOrdersPage({ searchParams }: PageProps<"/admi
     from: from ?? undefined,
     // Tính cả ngày cuối: lấy tới 00:00 của ngày hôm sau.
     to: toStart === null ? undefined : toStart + DAY,
+    stage,
+    sort,
     page,
     pageSize: PAGE_SIZE,
   });
+  const counts = await countOrderStages();
 
   // Tạo liên kết giữ nguyên các bộ lọc khác; đổi bộ lọc thì quay về trang 1.
   const href = (changes: Record<string, string>) => {
@@ -72,8 +83,11 @@ export default async function AdminOrdersPage({ searchParams }: PageProps<"/admi
     <>
       <h1 className="text-3xl font-bold tracking-tight">Đơn hàng ({formatNumber(total)})</h1>
 
+      <StageBoard counts={counts} active={stage} compact={stage !== "hoan-tat" && stage !== "da-huy"} href={(key) => href({ buoc: key })} />
+
       <FilterPanel
         active={[
+          stage && ORDER_STAGES[stage].label,
           status && ORDER_STATUS_LABELS[status],
           query.q && `“${query.q}”`,
           shippingStatus && SHIPPING_STATUS_LABELS[shippingStatus],
@@ -97,6 +111,8 @@ export default async function AdminOrdersPage({ searchParams }: PageProps<"/admi
         <Form action="/admin/don-hang" className="grid gap-4 sm:grid-cols-3" role="search">
           {status && <input type="hidden" name="trang-thai" value={status} />}
           {query.khach && <input type="hidden" name="khach" value={query.khach} />}
+          {stage && <input type="hidden" name="buoc" value={stage} />}
+          {sort === "newest" && <input type="hidden" name="sap-xep" value="moi-nhat" />}
           <Field label="Mã đơn, tên hoặc số điện thoại" name="q" type="search" defaultValue={query.q} maxLength={40} />
           <SelectField label="Vận chuyển" name="van-chuyen" defaultValue={shippingStatus ?? ""}>
             <option value="">Tất cả</option>
@@ -131,6 +147,16 @@ export default async function AdminOrdersPage({ searchParams }: PageProps<"/admi
           </div>
         </Form>
       </FilterPanel>
+
+      <div className="flex flex-wrap items-center gap-2 text-sm">
+        <span className="text-muted">Sắp xếp:</span>
+        <Link href={href({ "sap-xep": "" })} className={chip(sort === "priority")}>
+          Cần xử lý trước
+        </Link>
+        <Link href={href({ "sap-xep": "moi-nhat" })} className={chip(sort === "newest")}>
+          Mới nhất
+        </Link>
+      </div>
 
       <OrdersTable items={can(user.role, "customers.view") ? items : items.map((order) => ({ ...order, customerPhone: maskPhone(order.customerPhone) }))} />
       <Pager page={page} pages={Math.ceil(total / PAGE_SIZE)} href={(number) => href({ trang: number === 1 ? "" : String(number) })} />

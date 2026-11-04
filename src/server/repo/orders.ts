@@ -1,4 +1,5 @@
 import "server-only";
+import { ORDER_STAGES, ORDER_STAGE_KEYS, NEEDS_ACTION_SQL, STAGE_RANK_SQL, type OrderStageKey } from "@/lib/order-stage";
 import { site } from "@/config/site";
 import {
   ORDER_STATUSES,
@@ -12,7 +13,7 @@ import {
 } from "@/lib/catalog";
 import { ORDER_ACTIONS, conditionSql, type OrderActionKey } from "@/lib/order-flow";
 import { orderTotals, type CouponRejection } from "@/lib/pricing";
-import type { Order, OrderEvent, OrderItem, OrderSummary } from "@/lib/types";
+import type { Order, OrderEvent, OrderItem, OrderPulse, OrderSummary } from "@/lib/types";
 import { getDb, isConstraintError, type InStatement, type InValue, type Row } from "../db";
 import { newId, newOrderCode, newToken } from "../ids";
 import { withAudit, type AuditEntry } from "./audit";
@@ -329,6 +330,10 @@ export async function listOrders(query: {
   to?: number;
   // Đơn đã huỷ nhưng đã thu tiền, chờ hoàn (YC-BH-04).
   refundPending?: boolean;
+  // Bước xử lý (src/lib/order-stage.ts).
+  stage?: OrderStageKey;
+  // "priority": việc cần làm ngay lên đầu, rồi mới tới đơn mới nhất.
+  sort?: "priority" | "newest";
   page?: number;
   pageSize?: number;
 }): Promise<{ items: OrderSummary[]; total: number }> {
@@ -341,6 +346,7 @@ export async function listOrders(query: {
   if (query.from !== undefined) filters.push(["o.created_at >= ?", [query.from]]);
   if (query.to !== undefined) filters.push(["o.created_at < ?", [query.to]]);
   if (query.refundPending) filters.push(["o.status = 'cancelled' AND o.payment_status = 'paid'", []]);
+  if (query.stage) filters.push([`(${ORDER_STAGES[query.stage].sql})`, []]);
   if (query.search) {
     const like = `%${query.search.replace(/[\\%_]/g, "\\$&")}%`;
     filters.push(["(o.code = ? OR o.customer_name ILIKE ? ESCAPE '\\' OR o.customer_phone LIKE ? ESCAPE '\\')", [query.search.toUpperCase(), like, like]]);
@@ -355,7 +361,7 @@ export async function listOrders(query: {
     [
       { sql: `SELECT COUNT(*) AS total FROM orders o ${where}`, args },
       {
-        sql: `${SUMMARY_SQL} ${where} ORDER BY o.created_at DESC LIMIT ? OFFSET ?`,
+        sql: `${SUMMARY_SQL} ${where} ORDER BY ${query.sort === "priority" ? `${STAGE_RANK_SQL}, ` : ""}o.created_at DESC LIMIT ? OFFSET ?`,
         args: [...args, pageSize, (page - 1) * pageSize],
       },
     ]
@@ -575,4 +581,30 @@ export async function listOrderMovements(orderId: string): Promise<OrderMovement
     documentCode: row.document_code === null ? null : String(row.document_code),
     createdAt: Number(row.created_at),
   }));
+}
+
+// Số đơn ở từng bước xử lý.
+export async function countOrderStages(): Promise<Record<OrderStageKey, number>> {
+  const db = await getDb();
+  const result = await db.execute(
+    `SELECT ${ORDER_STAGE_KEYS.map((key, index) => `COUNT(*) FILTER (WHERE ${ORDER_STAGES[key].sql}) AS s${index}`).join(", ")} FROM orders o`,
+  );
+  const row = result.rows[0];
+  return Object.fromEntries(ORDER_STAGE_KEYS.map((key, index) => [key, Number(row[`s${index}`] ?? 0)])) as Record<OrderStageKey, number>;
+}
+
+// Truy vấn nhẹ cho thanh bên quản trị hỏi định kỳ: số đơn cần xử lý và đơn mới nhất.
+export async function orderPulse(): Promise<OrderPulse> {
+  const db = await getDb();
+  const [count, latest] = await db.batch([
+    `SELECT COUNT(*) AS n FROM orders o WHERE ${NEEDS_ACTION_SQL}`,
+    "SELECT id, code, customer_name, total, created_at FROM orders ORDER BY created_at DESC LIMIT 1",
+  ]);
+  const row = latest.rows[0];
+  return {
+    needsAction: Number(count.rows[0].n),
+    latest: row
+      ? { id: String(row.id), code: String(row.code), customerName: String(row.customer_name), total: Number(row.total), createdAt: Number(row.created_at) }
+      : null,
+  };
 }
