@@ -39,7 +39,7 @@ let productId: string;
 beforeAll(async () => {
   await getDb();
   await signInAs((await createUser("product_manager")).id);
-  productId = (await products.findProductBySlug("acguy"))!.id;
+  productId = (await products.findProductBySlug("mazinger-z"))!.id;
   const db = await getDb();
   await db.execute({ sql: "UPDATE products SET image = NULL WHERE id = ?", args: [productId] });
 });

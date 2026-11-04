@@ -54,6 +54,8 @@ export type Product = {
   colors: RobotColors;
   specs: ProductSpec[];
   image: string | null;
+  // Ảnh trong thư viện (product_media loại image), theo thứ tự hiển thị; ảnh thật của sản phẩm đứng trước khung 3D.
+  images: { url: string; alt: string }[];
   isFeatured: boolean;
   // SEO (YC-SP-09): trống thì dùng tên và mô tả ngắn.
   metaTitle: string;

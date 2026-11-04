@@ -8,6 +8,7 @@ import { hashPassword, isValidPassword } from "../auth/password";
 import { newId } from "../ids";
 import { DEFAULT_WAREHOUSE, movementStatements } from "../repo/inventory";
 import { MIGRATIONS } from "./migrations";
+import { PRODUCT_PHOTOS } from "@/data/product-photos";
 import { SEED_BRANDS, SEED_PRODUCTS, SEED_SERIES } from "./seed-data";
 
 export type InValue = string | number | boolean | null | Uint8Array;
@@ -35,6 +36,7 @@ const INIT_LOCK = 7291801;
 // v4: sản phẩm có biến thể, tồn kho theo vị trí (migration 005 xoá và tạo lại bảng, nên các khoá v1 đến v3 cũ không còn ý nghĩa).
 const SEED_KEY = "seed:catalog-v4";
 const SEED_PRODUCT_TYPES: Record<string, string> = { "model-kits": "model_kit", "robot-hop-the": "combiner", "phu-kien": "accessory" };
+const PHOTOS_SEED_KEY = "seed:product-photos-v1";
 const TAXONOMY_SEED_KEY = "seed:taxonomy-v1";
 
 type DbState = { backend?: Backend; ready?: Promise<Db> };
@@ -161,7 +163,39 @@ async function migrateAndSeed(backend: Backend) {
       await mark(TAXONOMY_SEED_KEY);
     }
 
-    if (done.has(SEED_KEY)) return;
+    if (!done.has(SEED_KEY)) await seedCatalog(exec);
+    if (!done.has(PHOTOS_SEED_KEY)) {
+      await seedProductPhotos(exec);
+      await mark(PHOTOS_SEED_KEY);
+    }
+  });
+}
+
+// Ảnh thật của dữ liệu mẫu (src/data/product-photos.ts). Chạy cả trên CSDL đã có dữ liệu từ trước; sản phẩm đã có
+// ảnh trong product_media (do quản trị tải lên) thì giữ nguyên.
+async function seedProductPhotos(exec: (statement: InStatement) => Promise<ResultSet>) {
+  const now = Date.UTC(2026, 10, 4);
+  for (const [slug, set] of Object.entries(PRODUCT_PHOTOS)) {
+    const found = await exec({
+      sql: "SELECT id FROM products WHERE slug = ? AND NOT EXISTS (SELECT 1 FROM product_media m WHERE m.product_id = products.id AND m.kind = 'image')",
+      args: [slug],
+    });
+    const productId = found.rows[0]?.id;
+    if (!productId) continue;
+    for (const [index, url] of set.urls.entries()) {
+      await exec({
+        sql: "INSERT INTO product_media (id, product_id, kind, url, alt, sort_order, created_at) VALUES (?, ?, 'image', ?, ?, ?, ?)",
+        args: [newId(), String(productId), url, `Ảnh sản phẩm thật ${index + 1}`, index, now],
+      });
+    }
+    await exec({ sql: "UPDATE products SET image = ? WHERE id = ?", args: [set.urls[0], String(productId)] });
+    if (set.box) {
+      await exec({ sql: "UPDATE products SET box_contents = ? WHERE id = ? AND box_contents = ''", args: [set.box.join("\n"), String(productId)] });
+    }
+  }
+}
+
+async function seedCatalog(exec: (statement: InStatement) => Promise<ResultSet>) {
     // Mô hình và ảnh nằm trên Supabase Storage (npm run media); không khai báo thì trỏ vào public/ của trang.
     const media = process.env.MEDIA_BASE_URL?.trim().replace(/\/$/, "") ?? "";
     // Mốc thời gian cố định để thứ tự "mới nhất" của dữ liệu mẫu luôn giống nhau.
@@ -238,8 +272,7 @@ async function migrateAndSeed(backend: Backend) {
         args: [unitCost, base, variantId],
       });
     }
-    await mark(SEED_KEY);
-  });
+    await exec({ sql: "INSERT INTO meta (key, value) VALUES (?, ?)", args: [SEED_KEY, new Date().toISOString()] });
 }
 
 // Tạo tài khoản quản trị đầu tiên từ biến môi trường. Không tự nâng quyền tài khoản đã tồn tại.

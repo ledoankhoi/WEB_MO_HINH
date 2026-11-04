@@ -2,7 +2,9 @@ import Link from "next/link";
 import { ProductGrid, ProductImage } from "@/components/product/ProductCard";
 import { PurchasePanel } from "@/components/product/PurchasePanel";
 import { WishlistButton } from "@/components/product/WishlistButton";
-import RobotViewerLoader from "@/components/three/RobotViewerLoader";
+import { ProductGallery } from "@/components/product/ProductGallery";
+import { PRODUCT_PHOTOS } from "@/data/product-photos";
+import { site } from "@/config/site";
 import { getCategory } from "@/lib/catalog";
 import { getModelFeatures, modelKey } from "@/lib/model-features";
 import { formatDate, formatVnd } from "@/lib/format";
@@ -31,6 +33,10 @@ export function ProductView({
   const category = getCategory(product.category);
   const credit = credits[modelKey(product.modelUrl) ?? ""];
   const features = getModelFeatures(product.modelUrl);
+  // Ghi nguồn khi ảnh đang hiển thị là ảnh của dữ liệu mẫu lấy từ cửa hàng khác.
+  const seededPhotos = PRODUCT_PHOTOS[product.slug];
+  const photoSet = seededPhotos && product.images.some((image) => seededPhotos.urls.includes(image.url)) ? seededPhotos : null;
+  const boxItems = product.boxContents.split("\n").map((line) => line.trim()).filter(Boolean);
   const status = product.stock <= 0 ? "Hết hàng" : product.stock <= 3 ? `Sắp hết hàng (còn ${product.stock})` : "Còn hàng";
 
   return (
@@ -50,40 +56,45 @@ export function ProductView({
       </nav>
 
       <div className="grid gap-8 lg:grid-cols-[1.15fr_1fr] lg:gap-12">
-        <div className="space-y-2 lg:sticky lg:top-24 lg:self-start">
-          <div className="product-stage h-[380px] overflow-hidden rounded-2xl border border-line sm:h-[520px]">
-            <RobotViewerLoader
-              model={product.model}
-              colors={product.colors}
-              modelUrl={product.modelUrl}
-              features={features}
-              label={`Mô hình 3D của ${product.name}`}
-            />
-          </div>
-          <p className="text-xs text-muted">
-            Mô hình 3D tương tác: kéo để xoay, giữ Ctrl và cuộn để phóng to.
-            {features?.transform &&
-              (features.transform.kind === "combine"
-                ? " Bấm Hợp thể để xem các thành viên ghép lại."
-                : " Bấm nút đổi dạng để chuyển giữa dạng xe và dạng robot.")}
-          </p>
-          {credit && (
-            <p className="text-xs text-muted">
-              Mô hình 3D:{" "}
-              <a href={credit.sourceUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-fg">
-                {credit.title}
-              </a>{" "}
-              của{" "}
-              <a href={credit.authorUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-fg">
-                {credit.author}
-              </a>
-              , giấy phép{" "}
-              <a href={credit.licenseUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-fg">
-                {credit.license}
-              </a>
-              .
-            </p>
-          )}
+        <div className="lg:sticky lg:top-24 lg:self-start">
+          <ProductGallery
+            name={product.name}
+            photos={product.images}
+            source={photoSet ? { host: photoSet.source, url: photoSet.sourceUrl } : null}
+            viewer={{
+              model: product.model,
+              colors: product.colors,
+              modelUrl: product.modelUrl,
+              features,
+              label: `Mô hình 3D của ${product.name}`,
+            }}
+            hint={`Kéo để xoay, giữ Ctrl và cuộn để phóng to.${
+              features?.transform
+                ? features.transform.kind === "combine"
+                  ? " Bấm Hợp thể để xem các thành viên ghép lại."
+                  : " Bấm nút đổi dạng để chuyển giữa dạng xe và dạng robot."
+                : ""
+            }`}
+            credit={
+              credit && (
+                <p className="text-xs text-muted">
+                  Mô hình 3D:{" "}
+                  <a href={credit.sourceUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-fg">
+                    {credit.title}
+                  </a>{" "}
+                  của{" "}
+                  <a href={credit.authorUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-fg">
+                    {credit.author}
+                  </a>
+                  , giấy phép{" "}
+                  <a href={credit.licenseUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-fg">
+                    {credit.license}
+                  </a>
+                  .
+                </p>
+              )
+            }
+          />
         </div>
 
         <div className="space-y-6">
@@ -109,6 +120,19 @@ export function ProductView({
           ) : (
             <PurchasePanel name={product.name} variants={product.variants.filter((v) => v.isActive)} />
           )}
+
+          <ul className="grid gap-2 text-sm sm:grid-cols-3">
+            {[
+              ["Hàng chính hãng", "Nguyên hộp, có tem nhà sản xuất"],
+              ["Đóng gói chống sốc", `Miễn phí giao từ ${formatVnd(site.shipping.freeFrom)}`],
+              ["Đổi trả " + site.policy.returnDays + " ngày", "Lỗi do nhà sản xuất hoặc vận chuyển"],
+            ].map(([title, note]) => (
+              <li key={title} className="rounded-xl border border-line bg-surface p-3">
+                <p className="font-medium">{title}</p>
+                <p className="text-xs text-muted">{note}</p>
+              </li>
+            ))}
+          </ul>
 
           {linked.length > 0 && (
             <section aria-labelledby="hop-the" className="border-t border-line pt-6">
@@ -137,6 +161,19 @@ export function ProductView({
             </h2>
             <div className="prose-store text-sm leading-relaxed whitespace-pre-line text-muted">{product.description}</div>
           </section>
+
+          {boxItems.length > 0 && (
+            <section aria-labelledby="trong-hop" className="border-t border-line pt-6">
+              <h2 id="trong-hop" className="mb-3 text-lg font-semibold">
+                Trong hộp có gì
+              </h2>
+              <ul className="list-disc space-y-1 pl-5 text-sm text-muted">
+                {boxItems.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </section>
+          )}
 
           {product.specs.length > 0 && (
             <section aria-labelledby="thong-so" className="border-t border-line pt-6">

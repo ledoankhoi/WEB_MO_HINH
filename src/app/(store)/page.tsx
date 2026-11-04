@@ -4,6 +4,8 @@ import { ProductGrid } from "@/components/product/ProductCard";
 import RobotViewerLoader from "@/components/three/RobotViewerLoader";
 import { ButtonLink } from "@/components/ui/Button";
 import { CATEGORIES } from "@/lib/catalog";
+import { formatVnd } from "@/lib/format";
+import { site } from "@/config/site";
 import { HeroBanner, StripBanners } from "@/components/content/Banners";
 import { getActiveBanners, getCategoryCounts, getFeaturedProducts, getProductBySlug, searchProducts } from "@/server/catalog";
 
@@ -46,8 +48,8 @@ export default async function Home() {
               KHÁM PHÁ THẾ GIỚI ROBOT SƯU TẦM
             </h1>
             <p className="max-w-lg text-base text-muted sm:text-lg">
-              Từ những huyền thoại biến hình đến các siêu robot hợp thể Nhật Bản — khám phá bộ sưu tập dành cho những
-              người đam mê mô hình.
+              Gunpla Bandai, Transformers Takara Tomy và Hasbro, robot hợp thể Super Sentai: hàng chính hãng nguyên hộp,
+              ảnh thật từng sản phẩm, giao tận nơi trên toàn quốc.
             </p>
             <div className="flex flex-wrap gap-3">
               <ButtonLink href="/san-pham" size="lg">
@@ -55,7 +57,7 @@ export default async function Home() {
               </ButtonLink>
               {hero && (
                 <ButtonLink href={`/san-pham/${hero.slug}`} size="lg" variant="secondary">
-                  Xem mô hình 3D
+                  Xem sản phẩm nổi bật
                 </ButtonLink>
               )}
             </div>
@@ -74,6 +76,19 @@ export default async function Home() {
       </section>
 
       <div className="mx-auto max-w-7xl space-y-16 px-4 py-14 sm:px-6">
+        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-label="Cam kết của cửa hàng">
+          {[
+            ["Hàng chính hãng", "Bandai Spirits, Takara Tomy, Hasbro. Nguyên hộp, nguyên seal."],
+            ["Ảnh thật từng sản phẩm", "Ảnh hộp và ảnh mô hình hoàn thiện, kèm mô hình 3D để xoay xem."],
+            ["Giao hàng toàn quốc", `Đóng gói chống sốc, miễn phí từ ${formatVnd(site.shipping.freeFrom)}.`],
+            [`Đổi trả ${site.policy.returnDays} ngày`, "Khi hàng lỗi do nhà sản xuất hoặc vận chuyển."],
+          ].map(([title, note]) => (
+            <li key={title} className="rounded-xl border border-line bg-surface p-4">
+              <p className="font-semibold">{title}</p>
+              <p className="mt-1 text-sm text-muted">{note}</p>
+            </li>
+          ))}
+        </ul>
         <StripBanners banners={stripBanners} />
         <section aria-labelledby="danh-muc">
           <h2 id="danh-muc" className="mb-6 text-2xl font-semibold tracking-tight sm:text-3xl">
