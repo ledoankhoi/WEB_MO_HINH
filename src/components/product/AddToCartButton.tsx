@@ -1,25 +1,51 @@
 "use client";
 
-import { AnimateIcon, ShoppingCart } from "@/components/animate/icons";
+import { useRouter } from "next/navigation";
+import { AnimateIcon, Plus, ShoppingCart } from "@/components/animate/icons";
 import { Button } from "@/components/ui/Button";
 import { showToast } from "@/components/ui/Toaster";
 import { cart } from "@/lib/cart";
 
-export function AddToCartButton({
-  id,
-  name,
-  stock,
-  quantity = 1,
-  size = "sm",
-  full = false,
-}: {
+type Props = {
   id: string;
   name: string;
   stock: number;
   quantity?: number;
   size?: "sm" | "lg";
   full?: boolean;
-}) {
+  // Nút tròn chỉ có biểu tượng, dùng trong thẻ sản phẩm.
+  compact?: boolean;
+  label?: string;
+};
+
+// Thêm vào giỏ; trả về true nếu thêm được.
+function addToCart(id: string, name: string, stock: number, quantity: number): boolean {
+  const added = cart.add(id, quantity, stock);
+  if (added > 0) {
+    showToast(`Đã thêm ${name} vào giỏ hàng.`, { action: { href: "/gio-hang", label: "Xem giỏ" } });
+    return true;
+  }
+  showToast("Giỏ hàng đã có số lượng tối đa có thể mua của sản phẩm này.", { tone: "error" });
+  return false;
+}
+
+export function AddToCartButton({ id, name, stock, quantity = 1, size = "sm", full = false, compact = false, label = "Thêm vào giỏ hàng" }: Props) {
+  if (compact) {
+    return (
+      <AnimateIcon animateOnHover asChild>
+        <button
+          type="button"
+          disabled={stock <= 0}
+          onClick={() => addToCart(id, name, stock, quantity)}
+          aria-label={stock <= 0 ? `${name} đã hết hàng` : `Thêm ${name} vào giỏ hàng`}
+          className="grid size-11 shrink-0 place-items-center rounded-full bg-brand text-brand-ink transition hover:brightness-95 active:scale-95 disabled:cursor-not-allowed disabled:bg-raised disabled:text-muted"
+        >
+          <Plus className="size-5" strokeWidth={2.4} aria-hidden />
+        </button>
+      </AnimateIcon>
+    );
+  }
+
   if (stock <= 0) {
     return (
       <Button variant="secondary" size={size} full={full} disabled>
@@ -31,21 +57,29 @@ export function AddToCartButton({
   // Rê chuột vào nút thì xe đẩy trong nút chạy hiệu ứng.
   return (
     <AnimateIcon animateOnHover className={full ? "block w-full" : "inline-flex"}>
-      <Button
-        size={size}
-        full={full}
-        onClick={() => {
-          const added = cart.add(id, quantity, stock);
-          if (added > 0) {
-            showToast(`Đã thêm ${name} vào giỏ hàng.`, { action: { href: "/gio-hang", label: "Xem giỏ" } });
-          } else {
-            showToast("Giỏ hàng đã có số lượng tối đa có thể mua của sản phẩm này.", { tone: "error" });
-          }
-        }}
-      >
+      <Button size={size} full={full} onClick={() => addToCart(id, name, stock, quantity)}>
         <ShoppingCart className="size-4" aria-hidden />
-        Thêm vào giỏ hàng
+        {label}
       </Button>
     </AnimateIcon>
+  );
+}
+
+// Thêm vào giỏ rồi đi thẳng tới trang đặt hàng.
+export function BuyNowButton({ id, stock, quantity = 1 }: { id: string; stock: number; quantity?: number }) {
+  const router = useRouter();
+  if (stock <= 0) return null;
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        // Đã có đủ số lượng trong giỏ thì vẫn sang trang đặt hàng.
+        cart.add(id, quantity, stock);
+        router.push("/thanh-toan");
+      }}
+      className="inline-flex h-12 w-full items-center justify-center rounded-full bg-fg px-7 text-base font-semibold text-bg transition hover:bg-fg/85"
+    >
+      Mua ngay
+    </button>
   );
 }

@@ -30,6 +30,7 @@ Website thương mại điện tử bán mô hình robot sưu tầm, có xem và
 
 ## Quy ước
 - Giao diện tiếng Việt, nền sáng; màu lấy từ biến trong `src/app/globals.css` (`bg-surface`, `text-muted`, `border-line`, `bg-brand`...).
+- Trang cửa hàng `/san-pham` lọc qua tham số URL: `loai`, `gia-tu`, `gia-den`, `con-hang=1`, `thuong-hieu`, `series` (slug), `sap-xep`, `trang`; cột lọc là `ShopFilters` (form GET), lựa chọn lấy từ `getFilterOptions`.
 - Tiền tệ VND qua `formatVnd` (`src/lib/format.ts`).
 - Hiệu ứng động dùng Animate UI (`@animate-ui/react`, chạy trên `motion`): các thành phần đã tô màu theo giao diện ở `src/components/animate/` (Tabs, RadioGroup, Checkbox, Switch, số chạy `AnimatedNumber`/`AnimatedVnd`), biểu tượng động ở `src/components/animate/icons/` (chép từ registry của Animate UI, thêm biểu tượng mới theo cách đó). Radio, checkbox, switch của Animate UI nhận `name` và vẫn gửi giá trị trong FormData.
 - Canvas WebGL chỉ chạy ở client: dùng `RobotViewerLoader` (`next/dynamic`, `ssr: false`).
@@ -43,4 +44,4 @@ Website thương mại điện tử bán mô hình robot sưu tầm, có xem và
 Phần quản trị website và quản lý kho đã xong trên nhánh `auto/quan-tri-kho` (T00–T26, chưa gộp vào `main`; xem mục "Báo cáo cuối" trong `docs/ke-hoach/backlog-quan-tri-kho.md`). Đặc tả: `docs/chuan/10-quan-tri-va-kho.md`; kiến trúc, API, kiểm thử: `docs/chuan/05-kien-truc.md`, `06-api.md`, `07-kiem-thu.md`. Khi tài liệu chuẩn và mã nguồn khác nhau, `docs/chuan/` đúng. **Không dùng chạy tự động** (`claude -p` theo vòng lặp, `/loop`): chủ dự án đã bỏ vì tốn hạn mức; mỗi việc làm trong phiên có người theo dõi.
 
 ## Chưa làm
-Cổng thanh toán trực tuyến, gửi email, sitemap, sổ địa chỉ, lọc sản phẩm theo thương hiệu, series, khoảng giá, ghi nhận hành vi người dùng và phần AI (`docs/chuan/00-quyet-dinh-nen-tang.md`). Việc cần người thật làm trước khi mở bán: `docs/chuan/10-quan-tri-va-kho.md` mục 8.
+Cổng thanh toán trực tuyến, gửi email, sitemap, sổ địa chỉ, ghi nhận hành vi người dùng và phần AI (`docs/chuan/00-quyet-dinh-nen-tang.md`). Việc cần người thật làm trước khi mở bán: `docs/chuan/10-quan-tri-va-kho.md` mục 8.

@@ -87,6 +87,29 @@ describe("dữ liệu mẫu", () => {
     expect(wildcard.total).toBe(0);
   });
 
+  it("lọc theo khoảng giá, còn hàng, thương hiệu và series", async () => {
+    const all = (await products.queryProducts({ pageSize: 100 })).items;
+    const options = await products.listFilterOptions();
+    expect(options.priceMin).toBe(Math.min(...all.map((p) => p.price)));
+    expect(options.priceMax).toBe(Math.max(...all.map((p) => p.price)));
+
+    const ranged = await products.queryProducts({ minPrice: 1_000_000, maxPrice: 2_000_000, pageSize: 100 });
+    expect(ranged.total).toBe(all.filter((p) => p.price >= 1_000_000 && p.price <= 2_000_000).length);
+    expect(ranged.items.every((p) => p.price >= 1_000_000 && p.price <= 2_000_000)).toBe(true);
+
+    const inStock = await products.queryProducts({ inStock: true, pageSize: 100 });
+    expect(inStock.total).toBe(all.filter((p) => p.stock > 0).length);
+
+    expect(options.brands.length).toBeGreaterThan(0);
+    for (const [kind, list] of [["brand", options.brands], ["series", options.series]] as const) {
+      for (const option of list) {
+        const result = await products.queryProducts({ [kind]: option.slug, pageSize: 100 });
+        expect(result.total).toBe(option.count);
+      }
+    }
+    expect((await products.queryProducts({ brand: "khong-co-thuong-hieu-nay" })).total).toBe(0);
+  });
+
   it("phân trang đúng tổng số", async () => {
     const page2 = await products.queryProducts({ page: 2, pageSize: 5 });
     expect(page2.total).toBe(39);

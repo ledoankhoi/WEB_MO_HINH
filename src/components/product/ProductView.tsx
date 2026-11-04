@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { ProductGrid, ProductImage } from "@/components/product/ProductCard";
+import { MobileBuyBar } from "@/components/product/MobileBuyBar";
+import { ProductGallery } from "@/components/product/ProductGallery";
 import { ProductTabs } from "@/components/product/ProductTabs";
 import { PurchasePanel } from "@/components/product/PurchasePanel";
 import { WishlistButton } from "@/components/product/WishlistButton";
-import RobotViewerLoader from "@/components/three/RobotViewerLoader";
+import { site } from "@/config/site";
 import { getCategory } from "@/lib/catalog";
 import { getModelFeatures, modelKey } from "@/lib/model-features";
 import { formatDate, formatVnd } from "@/lib/format";
@@ -20,6 +22,7 @@ export function ProductView({
   linked = [],
   related = [],
   reviews,
+  media = [],
   preview = false,
 }: {
   product: Product;
@@ -27,6 +30,8 @@ export function ProductView({
   related?: ProductSummary[];
   // Đánh giá đã duyệt (YC-DG-02); bản xem trước của quản trị không truyền.
   reviews?: { average: number; count: number; items: { id: string; userName: string; rating: number; comment: string; createdAt: number }[] };
+  // Ảnh phụ trong thư viện ảnh (không gồm mô hình 3D).
+  media?: { url: string; alt: string }[];
   preview?: boolean;
 }) {
   const category = getCategory(product.category);
@@ -34,8 +39,77 @@ export function ProductView({
   const features = getModelFeatures(product.modelUrl);
   const status = product.stock <= 0 ? "Hết hàng" : product.stock <= 3 ? `Sắp hết hàng (còn ${product.stock})` : "Còn hàng";
 
+  const specs =
+    product.specs.length > 0 ? (
+      <dl className="grid gap-x-12 text-sm sm:grid-cols-2">
+        {product.specs.map((spec) => (
+          <div key={spec.label} className="grid grid-cols-[9rem_1fr] gap-3 border-b border-line/70 py-3">
+            <dt className="text-muted">{spec.label}</dt>
+            <dd>{spec.value}</dd>
+          </div>
+        ))}
+      </dl>
+    ) : null;
+
+  const reviewList = reviews && (
+    <div className="space-y-4">
+      {reviews.count === 0 ? (
+        <p className="text-sm text-muted">Chưa có đánh giá nào. Khách đã mua có thể đánh giá trong trang tài khoản sau khi đơn hoàn tất.</p>
+      ) : (
+        <ul className="divide-y divide-line rounded-xl border border-line">
+          {reviews.items.map((review) => (
+            <li key={review.id} className="space-y-1 p-4 text-sm">
+              <p className="flex flex-wrap items-center gap-x-3">
+                <span className="text-warning" role="img" aria-label={`${review.rating} trên 5 sao`}>
+                  {"★".repeat(review.rating)}
+                  <span className="text-line">{"★".repeat(5 - review.rating)}</span>
+                </span>
+                <span className="font-medium">{review.userName}</span>
+                <span className="text-muted">{formatDate(review.createdAt)}</span>
+              </p>
+              {review.comment && <p className="whitespace-pre-line text-muted">{review.comment}</p>}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+
+  const linkedList = linked.length > 0 && (
+    <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {linked.map((item) => (
+        <li key={item.id}>
+          <Link
+            href={`/san-pham/${item.slug}`}
+            className="flex items-center gap-3 rounded-2xl border border-line p-2 pr-4 transition hover:border-brand"
+          >
+            <ProductImage src={item.image} alt="" className="product-stage size-14 shrink-0 rounded-xl" />
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm font-semibold">{item.name}</span>
+              <span className="text-sm text-muted tabular-nums">{formatVnd(item.price)}</span>
+            </span>
+          </Link>
+        </li>
+      ))}
+    </ul>
+  );
+
+  const tabs = [
+    {
+      value: "chi-tiet",
+      label: "Chi tiết",
+      content: <div className="prose-store max-w-3xl text-sm leading-relaxed whitespace-pre-line text-muted">{product.description}</div>,
+    },
+    ...(specs ? [{ value: "thong-so", label: `Thông số (${product.specs.length})`, content: specs }] : []),
+    ...(linkedList ? [{ value: "hop-the", label: features?.members ? `Hợp thể (${linked.length})` : "Hợp thể thành", content: linkedList }] : []),
+    ...(reviewList ? [{ value: "danh-gia", label: `Đánh giá (${reviews!.count})`, content: reviewList }] : []),
+  ];
+
+  const activeVariants = product.variants.filter((v) => v.isActive);
+  const defaultVariant = activeVariants.find((v) => v.isDefault) ?? activeVariants[0];
+
   return (
-    <>
+    <div className="space-y-10 pb-24 lg:pb-0">
       <nav aria-label="Đường dẫn" className="text-sm text-muted">
         <Link href="/san-pham" className="hover:text-fg">
           Cửa hàng
@@ -48,19 +122,16 @@ export function ProductView({
             </Link>
           </>
         )}
+        <span className="text-fg">{` / ${product.name}`}</span>
       </nav>
 
-      <div className="grid gap-8 lg:grid-cols-[1.15fr_1fr] lg:gap-12">
-        <div className="space-y-2 lg:sticky lg:top-24 lg:self-start">
-          <div className="product-stage h-[380px] overflow-hidden rounded-2xl border border-line sm:h-[520px]">
-            <RobotViewerLoader
-              model={product.model}
-              colors={product.colors}
-              modelUrl={product.modelUrl}
-              features={features}
-              label={`Mô hình 3D của ${product.name}`}
-            />
-          </div>
+      <div className="-mt-4 flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-10">
+        <div className="min-w-0 flex-1 space-y-2">
+          <ProductGallery
+            viewer={{ model: product.model, colors: product.colors, modelUrl: product.modelUrl, features, label: `Mô hình 3D của ${product.name}` }}
+            images={[...(product.image ? [{ url: product.image, alt: product.name }] : []), ...media.filter((m) => m.url !== product.image)]}
+            name={product.name}
+          />
           <p className="text-xs text-muted">
             Mô hình 3D tương tác: kéo để xoay, giữ Ctrl và cuộn để phóng to.
             {features?.transform &&
@@ -87,13 +158,13 @@ export function ProductView({
           )}
         </div>
 
-        <div className="space-y-6">
+        <aside aria-label="Mua hàng" className="space-y-5 rounded-3xl border border-line bg-surface p-6 lg:sticky lg:top-24 lg:w-[26rem] lg:shrink-0 sm:p-7">
+          <div className="flex items-start justify-between gap-3">
+            {category && <p className="pt-2 text-xs font-bold tracking-wider text-brand-strong uppercase">{category.name}</p>}
+            {!preview && <WishlistButton productId={product.id} name={product.name} className="ml-auto shrink-0" />}
+          </div>
           <div className="space-y-2">
-            {category && <p className="text-xs font-semibold tracking-wide text-brand-strong uppercase">{category.name}</p>}
-            <div className="flex items-start justify-between gap-3">
-              <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{product.name}</h1>
-              {!preview && <WishlistButton productId={product.id} name={product.name} className="shrink-0" />}
-            </div>
+            <h1 className="text-2xl leading-tight font-extrabold tracking-tight sm:text-3xl">{product.name}</h1>
             <p className="text-muted">{product.tagline}</p>
             {reviews && reviews.count > 0 && (
               <a href="#danh-gia" className="inline-block text-sm text-muted hover:text-fg">
@@ -101,104 +172,60 @@ export function ProductView({
               </a>
             )}
           </div>
-          <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-            <p className="text-3xl font-bold tabular-nums">{formatVnd(product.price)}</p>
-            <p className={`text-sm font-medium ${product.stock > 0 ? "text-success" : "text-danger"}`}>{status}</p>
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <p className="text-3xl font-extrabold tabular-nums">{formatVnd(product.price)}</p>
+            {product.compareAtPrice !== null && product.compareAtPrice > product.price && (
+              <p className="text-muted line-through tabular-nums">{formatVnd(product.compareAtPrice)}</p>
+            )}
+            <p className={`text-sm font-semibold ${product.stock > 0 ? "text-success" : "text-danger"}`}>{status}</p>
           </div>
           {preview ? (
             <p className="rounded-lg border border-dashed border-line p-3 text-sm text-muted">Bản xem trước: nút mua hàng không hoạt động.</p>
           ) : (
-            <PurchasePanel name={product.name} variants={product.variants.filter((v) => v.isActive)} />
+            <PurchasePanel name={product.name} variants={activeVariants} />
           )}
 
-          {linked.length > 0 && (
-            <section aria-labelledby="hop-the" className="border-t border-line pt-6">
-              <h2 id="hop-the" className="mb-3 text-lg font-semibold">
-                {features?.members ? "Các thành viên hợp thể" : "Hợp thể thành"}
-              </h2>
-              <ul className="flex flex-wrap gap-2">
+          {features?.members && linked.length > 0 && (
+            <div className="space-y-2.5 border-t border-line pt-4">
+              <p className="text-sm font-bold">Hoặc mua lẻ từng thành viên</p>
+              <ul className="space-y-1.5">
                 {linked.map((item) => (
                   <li key={item.id}>
-                    <Link
-                      href={`/san-pham/${item.slug}`}
-                      className="flex items-center gap-2 rounded-full border border-line bg-surface py-1 pr-4 pl-1 text-sm font-medium transition hover:border-brand hover:text-brand"
-                    >
-                      <ProductImage src={item.image} alt="" className="product-stage size-10 rounded-full" />
-                      {item.name}
+                    <Link href={`/san-pham/${item.slug}`} className="flex items-center gap-3 rounded-xl p-1 text-sm hover:bg-raised">
+                      <ProductImage src={item.image} alt="" className="product-stage size-9 shrink-0 rounded-lg" />
+                      <span className="min-w-0 flex-1 truncate">{item.name}</span>
+                      <span className="font-semibold tabular-nums">{formatVnd(item.price)}</span>
                     </Link>
                   </li>
                 ))}
               </ul>
-            </section>
+            </div>
           )}
 
-          <section aria-label="Thông tin sản phẩm" className="border-t border-line pt-6">
-            <ProductTabs
-              tabs={[
-                {
-                  value: "chi-tiet",
-                  label: "Chi tiết sản phẩm",
-                  content: <div className="prose-store text-sm leading-relaxed whitespace-pre-line text-muted">{product.description}</div>,
-                },
-                ...(product.specs.length > 0
-                  ? [
-                      {
-                        value: "thong-so",
-                        label: `Thông số (${product.specs.length})`,
-                        content: (
-                          <dl className="divide-y divide-line text-sm">
-                            {product.specs.map((spec) => (
-                              <div key={spec.label} className="grid grid-cols-[9rem_1fr] gap-3 py-2.5">
-                                <dt className="text-muted">{spec.label}</dt>
-                                <dd>{spec.value}</dd>
-                              </div>
-                            ))}
-                          </dl>
-                        ),
-                      },
-                    ]
-                  : []),
-              ]}
-            />
-          </section>
-        </div>
+          <ul className="grid grid-cols-3 gap-2 border-t border-line pt-4 text-center text-xs text-muted">
+            <li>Miễn phí ship từ {formatVnd(site.shipping.freeFrom)}</li>
+            <li>Đổi trả {site.policy.returnDays} ngày</li>
+            <li>Bảo hành {site.policy.warrantyMonths} tháng</li>
+          </ul>
+        </aside>
       </div>
 
-      {reviews && (
-        <section id="danh-gia" aria-labelledby="danh-gia-tieu-de" className="space-y-4 border-t border-line pt-6">
-          <h2 id="danh-gia-tieu-de" className="text-2xl font-semibold tracking-tight">
-            Đánh giá {reviews.count > 0 && <span className="text-base font-normal text-muted">({reviews.average.toLocaleString("vi-VN")}/5 từ {reviews.count} đánh giá)</span>}
-          </h2>
-          {reviews.count === 0 ? (
-            <p className="text-sm text-muted">Chưa có đánh giá nào. Khách đã mua có thể đánh giá trong trang tài khoản sau khi đơn hoàn tất.</p>
-          ) : (
-            <ul className="divide-y divide-line rounded-xl border border-line bg-surface">
-              {reviews.items.map((review) => (
-                <li key={review.id} className="space-y-1 p-4 text-sm">
-                  <p className="flex flex-wrap items-center gap-x-3">
-                    <span className="text-warning" role="img" aria-label={`${review.rating} trên 5 sao`}>
-                      {"★".repeat(review.rating)}
-                      <span className="text-line">{"★".repeat(5 - review.rating)}</span>
-                    </span>
-                    <span className="font-medium">{review.userName}</span>
-                    <span className="text-muted">{formatDate(review.createdAt)}</span>
-                  </p>
-                  {review.comment && <p className="whitespace-pre-line text-muted">{review.comment}</p>}
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-      )}
+      <section aria-label="Mô tả, thông số và đánh giá" className="rounded-3xl border border-line bg-surface p-5 sm:p-7">
+        <ProductTabs tabs={tabs} id="danh-gia" />
+      </section>
 
       {related.length > 0 && (
-        <section aria-labelledby="lien-quan" className="pt-6">
-          <h2 id="lien-quan" className="mb-6 text-2xl font-semibold tracking-tight">
+        <section aria-labelledby="lien-quan">
+          <h2 id="lien-quan" className="mb-5 text-2xl font-bold tracking-tight">
             Sản phẩm liên quan
           </h2>
           <ProductGrid products={related} />
         </section>
       )}
-    </>
+
+      {!preview && defaultVariant && (
+        <MobileBuyBar productId={product.id} variantId={defaultVariant.id} name={product.name} price={defaultVariant.price} stock={defaultVariant.stock} />
+      )}
+    </div>
   );
 }

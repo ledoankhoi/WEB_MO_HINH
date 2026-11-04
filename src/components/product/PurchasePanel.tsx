@@ -7,7 +7,7 @@ import { RadioGroup, RadioGroupItem, radioCardClass } from "@/components/animate
 import { site } from "@/config/site";
 import { formatVnd } from "@/lib/format";
 import type { ProductVariant } from "@/lib/types";
-import { AddToCartButton } from "./AddToCartButton";
+import { AddToCartButton, BuyNowButton } from "./AddToCartButton";
 
 export function QuantityStepper({
   value,
@@ -78,6 +78,9 @@ export function PurchasePanel({ name, variants }: { name: string; variants: Prod
       )}
       <div className="min-w-48 flex-1">
         <AddToCartButton id={variant.id} name={label} stock={stock} quantity={Math.min(quantity, max)} size="lg" full />
+      </div>
+      <div className="w-full">
+        <BuyNowButton id={variant.id} stock={stock} quantity={Math.min(quantity, max)} />
       </div>
     </div>
   );

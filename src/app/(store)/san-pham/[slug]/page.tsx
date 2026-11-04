@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProductView } from "@/components/product/ProductView";
 import { getModelFeatures } from "@/lib/model-features";
-import { getProductBySlug, getProductReviews, getProductSlugs, getRelatedProducts } from "@/server/catalog";
+import { getProductBySlug, getProductMedia, getProductReviews, getProductSlugs, getRelatedProducts } from "@/server/catalog";
 
 type Props = PageProps<"/san-pham/[slug]">;
 
@@ -31,13 +31,17 @@ async function ProductDetail({ params }: Pick<Props, "params">) {
   // Bộ hợp thể: dạng ghép liệt kê các thành viên, thành viên trỏ về dạng ghép.
   const linkedSlugs = features?.members ?? (features?.combinesInto ? [features.combinesInto] : []);
   const linked = (await Promise.all(linkedSlugs.map((slug) => getProductBySlug(slug)))).filter((item) => item !== null);
-  const [related, reviews] = await Promise.all([getRelatedProducts(product.category, product.id, 4), getProductReviews(product.id)]);
-  return <ProductView product={product} linked={linked} related={related} reviews={reviews} />;
+  const [related, reviews, media] = await Promise.all([
+    getRelatedProducts(product.category, product.id, 4),
+    getProductReviews(product.id),
+    getProductMedia(product.id),
+  ]);
+  return <ProductView product={product} linked={linked} related={related} reviews={reviews} media={media} />;
 }
 
 export default function ProductPage({ params }: Props) {
   return (
-    <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6">
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
       <Suspense fallback={<p className="py-32 text-center text-sm text-muted">Đang tải sản phẩm...</p>}>
         <ProductDetail params={params} />
       </Suspense>

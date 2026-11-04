@@ -159,6 +159,12 @@ export type ProductQuery = {
   sort?: SortValue;
   page?: number;
   pageSize?: number;
+  // Bộ lọc của trang cửa hàng: khoảng giá (VND, theo biến thể mặc định), chỉ còn hàng, thương hiệu và series (slug).
+  minPrice?: number;
+  maxPrice?: number;
+  inStock?: boolean;
+  brand?: string;
+  series?: string;
   // Trang quản trị cần thấy cả sản phẩm đang ẩn.
   includeInactive?: boolean;
 };
@@ -171,6 +177,23 @@ export async function queryProducts(query: ProductQuery): Promise<{ items: Produ
   if (query.category) {
     where.push("category = ?");
     args.push(query.category);
+  }
+  if (query.minPrice !== undefined) {
+    where.push("price >= ?");
+    args.push(query.minPrice);
+  }
+  if (query.maxPrice !== undefined) {
+    where.push("price <= ?");
+    args.push(query.maxPrice);
+  }
+  if (query.inStock) where.push("stock > 0");
+  if (query.brand) {
+    where.push("brand_id = (SELECT id FROM brands WHERE slug = ?)");
+    args.push(query.brand);
+  }
+  if (query.series) {
+    where.push("series_id = (SELECT id FROM series WHERE slug = ?)");
+    args.push(query.series);
   }
   // Mỗi từ khoá phải xuất hiện trong search_text (đã bỏ dấu), nên "robot hinh nguoi" vẫn khớp "Robot hình người".
   for (const term of foldText(query.q ?? "").split(" ").filter(Boolean).slice(0, 6)) {
@@ -194,6 +217,28 @@ export async function queryProducts(query: ProductQuery): Promise<{ items: Produ
     ]
   );
   return { items: rows.rows.map(toSummary), total: Number(count.rows[0].total) };
+}
+
+export type FilterOption = { slug: string; name: string; count: number };
+
+// Thương hiệu, series có sản phẩm đang bán, và khoảng giá của toàn cửa hàng, cho cột lọc ở /san-pham.
+export async function listFilterOptions(): Promise<{ brands: FilterOption[]; series: FilterOption[]; priceMin: number; priceMax: number }> {
+  const db = await getDb();
+  const options = (table: "brands" | "series", column: "brand_id" | "series_id") =>
+    `SELECT t.slug, t.name, COUNT(*)::int AS n FROM ${table} t JOIN product_list p ON p.${column} = t.id AND p.is_active
+     GROUP BY t.slug, t.name ORDER BY t.name`;
+  const [brands, series, prices] = await db.batch([
+    options("brands", "brand_id"),
+    options("series", "series_id"),
+    "SELECT COALESCE(MIN(price), 0) AS lo, COALESCE(MAX(price), 0) AS hi FROM product_list WHERE is_active",
+  ]);
+  const toOption = (row: Row) => ({ slug: String(row.slug), name: String(row.name), count: Number(row.n) });
+  return {
+    brands: brands.rows.map(toOption),
+    series: series.rows.map(toOption),
+    priceMin: Number(prices.rows[0].lo),
+    priceMax: Number(prices.rows[0].hi),
+  };
 }
 
 export async function listFeaturedProducts(limit: number): Promise<ProductSummary[]> {

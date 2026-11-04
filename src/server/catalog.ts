@@ -8,6 +8,8 @@ import {
   findProductBySlug,
   listActiveSlugs,
   listFeaturedProducts,
+  listFilterOptions,
+  listMedia,
   listRelatedProducts,
   queryProducts,
 } from "./repo/products";
@@ -46,6 +48,11 @@ export async function searchProducts(query: {
   sort: SortValue;
   page: number;
   pageSize: number;
+  minPrice?: number;
+  maxPrice?: number;
+  inStock?: boolean;
+  brand?: string;
+  series?: string;
 }): Promise<{ items: ProductSummary[]; total: number }> {
   "use cache";
   cacheLife("hours");
@@ -56,7 +63,28 @@ export async function searchProducts(query: {
     sort: query.sort,
     page: query.page,
     pageSize: query.pageSize,
+    minPrice: query.minPrice,
+    maxPrice: query.maxPrice,
+    inStock: query.inStock || undefined,
+    brand: query.brand || undefined,
+    series: query.series || undefined,
   });
+}
+
+// Ảnh phụ của sản phẩm (thư viện ảnh trong quản trị) cho dải ảnh nhỏ ở trang sản phẩm.
+export async function getProductMedia(productId: string): Promise<{ url: string; alt: string }[]> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(PRODUCTS_TAG);
+  return (await listMedia(productId)).map(({ url, alt }) => ({ url, alt }));
+}
+
+// Lựa chọn cho cột lọc của trang cửa hàng.
+export async function getFilterOptions() {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(PRODUCTS_TAG);
+  return listFilterOptions();
 }
 
 export async function getFeaturedProducts(limit: number): Promise<ProductSummary[]> {

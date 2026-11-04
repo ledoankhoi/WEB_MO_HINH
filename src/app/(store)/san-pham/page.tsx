@@ -1,14 +1,15 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import Form from "next/form";
 import Link from "next/link";
-import { Search } from "lucide-react";
-import { FilterNav } from "@/components/product/FilterNav";
+import { X } from "lucide-react";
 import { ProductGrid } from "@/components/product/ProductCard";
+import { ShopFilters } from "@/components/product/ShopFilters";
+import { SortSelect } from "@/components/product/SortSelect";
 import { buttonClass } from "@/components/ui/Button";
 import { site } from "@/config/site";
-import { CATEGORIES, SORT_OPTIONS, isCategorySlug, isSortValue } from "@/lib/catalog";
-import { searchProducts } from "@/server/catalog";
+import { CATEGORIES, isCategorySlug, isSortValue } from "@/lib/catalog";
+import { formatVnd } from "@/lib/format";
+import { getFilterOptions, searchProducts } from "@/server/catalog";
 
 type SearchParams = PageProps<"/san-pham">["searchParams"];
 
@@ -22,10 +23,16 @@ export async function generateMetadata({ searchParams }: { searchParams: SearchP
   return { title: category.name, description: category.description, alternates: { canonical: `/san-pham?loai=${category.slug}` } };
 }
 
-const chip = (active: boolean) =>
-  `rounded-full border px-3.5 py-1.5 text-sm font-medium whitespace-nowrap transition ${
-    active ? "border-fg bg-fg text-bg" : "border-line bg-surface text-muted hover:border-fg/30 hover:text-fg"
+const pill = (active: boolean) =>
+  `grid h-10 min-w-10 place-items-center rounded-full border px-3 text-sm font-medium transition ${
+    active ? "border-fg bg-fg text-bg" : "border-line bg-surface text-fg hover:border-fg/30"
   }`;
+
+// Giá nhập trên URL: số nguyên không âm, bỏ qua giá trị không hợp lệ.
+const priceParam = (value: string) => {
+  const number = Number.parseInt(value.replace(/\D/g, ""), 10);
+  return Number.isFinite(number) && number >= 0 ? number : undefined;
+};
 
 async function Results({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
@@ -34,106 +41,142 @@ async function Results({ searchParams }: { searchParams: SearchParams }) {
   const sortParam = first(params["sap-xep"]);
   const sort = isSortValue(sortParam) ? sortParam : "moi-nhat";
   const page = Math.min(Math.max(Number.parseInt(first(params.trang), 10) || 1, 1), 1000);
+  const minPrice = priceParam(first(params["gia-tu"]));
+  const maxPrice = priceParam(first(params["gia-den"]));
+  const inStock = first(params["con-hang"]) === "1";
 
-  const { items, total } = await searchProducts({ q, category, sort, page, pageSize: site.pageSize });
+  const options = await getFilterOptions();
+  const brand = options.brands.some((b) => b.slug === first(params["thuong-hieu"])) ? first(params["thuong-hieu"]) : "";
+  const series = options.series.some((s) => s.slug === first(params.series)) ? first(params.series) : "";
+
+  const { items, total } = await searchProducts({ q, category, sort, page, pageSize: site.pageSize, minPrice, maxPrice, inStock, brand, series });
   const pages = Math.max(1, Math.ceil(total / site.pageSize));
+  const categoryInfo = CATEGORIES.find((c) => c.slug === category);
 
   // Tạo liên kết giữ nguyên các bộ lọc khác; đổi bộ lọc thì quay về trang 1.
+  const current: Record<string, string> = {
+    q,
+    loai: category,
+    "gia-tu": minPrice === undefined ? "" : String(minPrice),
+    "gia-den": maxPrice === undefined ? "" : String(maxPrice),
+    "con-hang": inStock ? "1" : "",
+    "thuong-hieu": brand,
+    series,
+    "sap-xep": sort === "moi-nhat" ? "" : sort,
+  };
   const href = (changes: Record<string, string>) => {
     const next = new URLSearchParams();
-    const merged = { q, loai: category, "sap-xep": sort === "moi-nhat" ? "" : sort, trang: "", ...changes };
-    for (const [key, value] of Object.entries(merged)) if (value) next.set(key, value);
+    for (const [key, value] of Object.entries({ ...current, trang: "", ...changes })) if (value) next.set(key, value);
     const query = next.toString();
     return query ? `/san-pham?${query}` : "/san-pham";
   };
-  const filtered = Boolean(q || category || sort !== "moi-nhat");
+
+  // Bộ lọc đang bật, bấm để bỏ từng cái.
+  const active = [
+    q && { label: `“${q}”`, href: href({ q: "" }) },
+    categoryInfo && { label: categoryInfo.name, href: href({ loai: "" }) },
+    (minPrice !== undefined || maxPrice !== undefined) && {
+      label: `${minPrice !== undefined ? formatVnd(minPrice) : "0 ₫"} – ${maxPrice !== undefined ? formatVnd(maxPrice) : "không giới hạn"}`,
+      href: href({ "gia-tu": "", "gia-den": "" }),
+    },
+    inStock && { label: "Còn hàng", href: href({ "con-hang": "" }) },
+    brand && { label: options.brands.find((b) => b.slug === brand)!.name, href: href({ "thuong-hieu": "" }) },
+    series && { label: options.series.find((s) => s.slug === series)!.name, href: href({ series: "" }) },
+  ].filter((item): item is { label: string; href: string } => Boolean(item));
 
   return (
     <>
-      <Form action="/san-pham" className="relative max-w-md" role="search">
-        {category && <input type="hidden" name="loai" value={category} />}
-        <label htmlFor="shop-search" className="sr-only">
-          Tìm theo tên sản phẩm
-        </label>
-        <Search className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted" aria-hidden />
-        <input
-          id="shop-search"
-          name="q"
-          type="search"
-          defaultValue={q}
-          maxLength={80}
-          placeholder="Tìm theo tên sản phẩm..."
-          className="h-11 w-full rounded-full border border-line bg-surface pr-4 pl-10 text-sm focus:border-brand focus:ring-2 focus:ring-brand/25 focus:outline-none"
-        />
-      </Form>
-
-      <FilterNav
-        label="Lọc theo danh mục"
-        active={category || "tat-ca"}
-        items={[
-          { value: "tat-ca", href: href({ loai: "" }), label: "Tất cả" },
-          ...CATEGORIES.map((c) => ({ value: c.slug, href: href({ loai: c.slug }), label: c.name })),
-        ]}
-      />
-
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-        <p className="text-muted" role="status">
-          {total} sản phẩm{q ? ` cho “${q}”` : ""}
-        </p>
-        <nav aria-label="Sắp xếp" className="flex flex-wrap items-center gap-x-3 gap-y-1 sm:ml-auto">
-          <span className="text-muted">Sắp xếp:</span>
-          {SORT_OPTIONS.map((option) => (
-            <Link
-              key={option.value}
-              href={href({ "sap-xep": option.value === "moi-nhat" ? "" : option.value })}
-              aria-current={sort === option.value ? "true" : undefined}
-              className={sort === option.value ? "font-semibold text-fg underline underline-offset-4" : "text-muted hover:text-fg"}
-            >
-              {option.label}
-            </Link>
-          ))}
-        </nav>
-        {filtered && (
-          <Link href="/san-pham" className="font-medium text-brand-strong hover:underline">
-            Xoá bộ lọc
+      <div className="space-y-1">
+        <nav aria-label="Đường dẫn" className="text-sm text-muted">
+          <Link href="/" className="hover:text-fg">
+            Trang chủ
           </Link>
-        )}
+          {" / "}
+          <Link href="/san-pham" className="hover:text-fg">
+            Cửa hàng
+          </Link>
+          {categoryInfo && <span className="text-fg">{` / ${categoryInfo.name}`}</span>}
+        </nav>
+        <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">{categoryInfo?.name ?? (q ? `Kết quả cho “${q}”` : "Cửa hàng")}</h1>
+        <p className="text-muted">{categoryInfo?.description ?? "Toàn bộ mô hình robot sưu tầm, xem và xoay 3D trước khi mua."}</p>
       </div>
 
-      {items.length > 0 ? (
-        <ProductGrid products={items} />
-      ) : (
-        <div className="rounded-xl border border-dashed border-line bg-surface px-6 py-16 text-center">
-          <p className="font-semibold">Không tìm thấy sản phẩm phù hợp</p>
-          <p className="mt-1 text-sm text-muted">Hãy thử từ khoá khác hoặc bỏ bớt bộ lọc.</p>
-          <Link href="/san-pham" className={`${buttonClass({ variant: "secondary", size: "sm" })} mt-5`}>
-            Xem tất cả sản phẩm
-          </Link>
-        </div>
-      )}
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-8">
+        <ShopFilters
+          key={JSON.stringify(current)}
+          values={{ q, sort: current["sap-xep"], category, minPrice: current["gia-tu"], maxPrice: current["gia-den"], inStock, brand, series }}
+          categories={CATEGORIES.map((c) => ({ slug: c.slug, name: c.name }))}
+          brands={options.brands}
+          series={options.series}
+          priceMin={options.priceMin}
+          priceMax={options.priceMax}
+          activeCount={active.length - (q ? 1 : 0)}
+        />
 
-      {pages > 1 && (
-        <nav aria-label="Phân trang" className="flex justify-center gap-2">
-          {Array.from({ length: pages }, (_, index) => index + 1).map((number) => (
-            <Link
-              key={number}
-              href={href({ trang: number === 1 ? "" : String(number) })}
-              aria-current={number === page ? "page" : undefined}
-              className={chip(number === page)}
-            >
-              {number}
-            </Link>
-          ))}
-        </nav>
-      )}
+        <div className="min-w-0 flex-1 space-y-5">
+          <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-line bg-surface py-2.5 pr-3 pl-4">
+            <p className="mr-auto text-sm text-muted" role="status">
+              <b className="text-fg">{total}</b> sản phẩm
+            </p>
+            {active.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="inline-flex items-center gap-1.5 rounded-full bg-brand/10 py-1.5 pr-2.5 pl-3 text-sm font-semibold text-brand-ink transition hover:bg-brand/20"
+                aria-label={`Bỏ lọc ${item.label}`}
+              >
+                {item.label}
+                <X className="size-3.5" aria-hidden />
+              </Link>
+            ))}
+            <SortSelect value={sort} />
+          </div>
+
+          {items.length > 0 ? (
+            <ProductGrid products={items} columns={3} />
+          ) : (
+            <div className="rounded-2xl border border-dashed border-line bg-surface px-6 py-16 text-center">
+              <p className="font-semibold">Không tìm thấy sản phẩm phù hợp</p>
+              <p className="mt-1 text-sm text-muted">Hãy thử từ khoá khác hoặc bỏ bớt bộ lọc.</p>
+              <Link href="/san-pham" className={`${buttonClass({ variant: "secondary", size: "sm" })} mt-5`}>
+                Xem tất cả sản phẩm
+              </Link>
+            </div>
+          )}
+
+          {pages > 1 && (
+            <nav aria-label="Phân trang" className="flex flex-wrap justify-center gap-2 pt-2">
+              {page > 1 && (
+                <Link href={href({ trang: page === 2 ? "" : String(page - 1) })} className={`${pill(false)} px-4`}>
+                  ← Trang trước
+                </Link>
+              )}
+              {Array.from({ length: pages }, (_, index) => index + 1).map((number) => (
+                <Link
+                  key={number}
+                  href={href({ trang: number === 1 ? "" : String(number) })}
+                  aria-current={number === page ? "page" : undefined}
+                  className={pill(number === page)}
+                >
+                  {number}
+                </Link>
+              ))}
+              {page < pages && (
+                <Link href={href({ trang: String(page + 1) })} className={`${pill(false)} px-4`}>
+                  Trang sau →
+                </Link>
+              )}
+            </nav>
+          )}
+        </div>
+      </div>
     </>
   );
 }
 
 export default function ShopPage({ searchParams }: PageProps<"/san-pham">) {
   return (
-    <div className="mx-auto max-w-7xl space-y-6 px-4 py-10 sm:px-6">
-      <h1 className="text-3xl font-bold tracking-tight">Cửa hàng</h1>
+    <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6">
       {/* Tham số URL chỉ biết lúc có yêu cầu, nên phần kết quả nằm dưới Suspense. */}
       <Suspense fallback={<p className="py-20 text-center text-sm text-muted">Đang tải sản phẩm...</p>}>
         <Results searchParams={searchParams} />
