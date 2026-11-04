@@ -7,9 +7,10 @@ import { OrderHistory } from "@/components/order/OrderHistory";
 import { ORDER_STATUS_LABELS, PAYMENT_METHOD_LABELS, PAYMENT_STATUS_LABELS, SHIPPING_STATUS_LABELS } from "@/lib/catalog";
 import { formatDateTime, formatVnd, maskEmail, maskPhone, maskText } from "@/lib/format";
 import { ORDER_ACTION_KEYS, ORDER_ACTIONS, canApply } from "@/lib/order-flow";
+import { MOVEMENT_LABELS } from "@/lib/stock";
 import { can } from "@/lib/permissions";
 import { requireStaff } from "@/server/auth/session";
-import { findOrderById } from "@/server/repo/orders";
+import { findOrderById, listOrderMovements } from "@/server/repo/orders";
 
 export default async function AdminOrderPage({ params }: PageProps<"/admin/don-hang/[id]">) {
   const { id } = await params;
@@ -20,6 +21,17 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/don-h
     ? { ...found, customerPhone: maskPhone(found.customerPhone), customerEmail: found.customerEmail && maskEmail(found.customerEmail), shippingAddress: maskText(found.shippingAddress) }
     : found;
   if (!order) notFound();
+  const movements = await listOrderMovements(order.id);
+  const shipped = -movements.filter((m) => m.type === "ship").reduce((sum, m) => sum + m.qty, 0);
+  const returned = movements.filter((m) => m.type === "return_in").reduce((sum, m) => sum + m.qty, 0);
+  const ordered = order.items.reduce((sum, item) => sum + item.quantity, 0);
+  // Tóm tắt một câu: hàng của đơn đang ở đâu so với tồn kho.
+  const stockNote =
+    order.status === "cancelled" && shipped === 0
+      ? "Đơn đã huỷ trước khi xuất kho: hàng giữ cho đơn đã được trả lại khả dụng."
+      : shipped === 0
+        ? `Đang giữ ${ordered} sản phẩm cho đơn (đã trừ khỏi Khả dụng). Thực có chỉ giảm khi bấm “Bàn giao vận chuyển”.`
+        : `Đã xuất kho ${shipped} sản phẩm khi bàn giao vận chuyển (Thực có đã giảm).${returned > 0 ? ` Đã nhận về ${returned} vào khu cách ly.` : ""}`;
 
   // Chỉ những thao tác đúng điều kiện của đơn và đúng quyền của người xem (máy chủ vẫn kiểm tra lại).
   const allowed = ORDER_ACTION_KEYS.filter((key) => {
@@ -83,6 +95,30 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/don-h
               ))}
             </div>
           )}
+          <div className="space-y-2 border-t border-line pt-4">
+            <p className="font-semibold">Kho</p>
+            <p className="text-muted">{stockNote}</p>
+            {movements.length > 0 && (
+              <ul className="space-y-1">
+                {movements.map((m, index) => (
+                  <li key={index} className="flex flex-wrap gap-x-1.5">
+                    <span>{MOVEMENT_LABELS[m.type] ?? m.type}</span>
+                    <span className="font-mono">{m.sku}</span>
+                    <span className="tabular-nums">
+                      {m.qty !== 0 ? `${m.qty > 0 ? "+" : ""}${m.qty}` : `giữ ${m.reserved > 0 ? "+" : ""}${m.reserved}`}
+                    </span>
+                    {m.locationCode && <span className="text-muted">@ {m.locationCode}</span>}
+                    {m.documentId && (
+                      <Link href={`/admin/kho/phieu/${m.documentId}`} className="font-mono text-brand-strong hover:underline">
+                        {m.documentCode}
+                      </Link>
+                    )}
+                    <span className="text-muted">· {formatDateTime(m.createdAt)}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
           <div className="space-y-1 border-t border-line pt-4">
             <p className="font-semibold">Giao tới</p>
             <p>

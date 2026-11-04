@@ -4,7 +4,7 @@ import { refresh, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { PRODUCT_TYPES, isRobotModelKey, type ProductSpec } from "@/lib/catalog";
 import { slugify } from "@/lib/format";
-import { ORDER_ACTIONS, isOrderActionKey, type OrderActionKey } from "@/lib/order-flow";
+import { ORDER_ACTIONS, canApply, isOrderActionKey, type OrderActionKey } from "@/lib/order-flow";
 import { ROLE_LABELS, isStaffRole } from "@/lib/permissions";
 import type { FormState, ProductStatus } from "@/lib/types";
 import { isEmail, isHexColor, parseMoney, readText } from "@/lib/validation";
@@ -438,9 +438,14 @@ export async function orderAction(
   });
   if (changed && "stock" in action) updateTag(PRODUCTS_TAG);
   refresh();
-  return changed
-    ? { ok: true, message: `Đã thực hiện: ${action.label}.` }
-    : { message: "Đơn hàng không còn ở trạng thái cho phép thao tác này. Trang vừa được tải lại." };
+  if (changed) return { ok: true, message: `Đã thực hiện: ${action.label}.` };
+  // Đơn vẫn đúng trạng thái mà không làm được: nêu lý do về kho thay vì báo chung chung.
+  const after = await findOrderById(id);
+  if (after && canApply(key, after)) {
+    if (key === "hand_over") return { message: "Không đủ hàng ở các vị trí kệ hàng để xuất cho đơn này. Kiểm tra tồn theo vị trí (hàng có thể đang nằm ở khu cách ly)." };
+    if (key === "receive_return") return { message: "Đơn đã có phiếu nhập hàng trả ghi sổ, hoặc kho chưa có vị trí cách ly đang dùng. Nhận phần còn lại bằng phiếu nhập hàng trả." };
+  }
+  return { message: "Đơn hàng không còn ở trạng thái cho phép thao tác này. Trang vừa được tải lại." };
 }
 
 export async function createStaffAction(_prev: FormState, form: FormData): Promise<FormState> {

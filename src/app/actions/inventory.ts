@@ -18,6 +18,7 @@ import {
   findDocument,
   locationsInOpenStocktakes,
   postDocument,
+  returnProblem,
   saveDraft,
   startStocktake,
   type DraftInput,
@@ -274,6 +275,12 @@ export async function saveDraftAction(id: string, payload: DraftPayload): Promis
   }
   // YC-KHO-06: điều chỉnh giảm bắt buộc ghi chú.
   if (type === "adjustment" && lines.some((line) => (line.qty ?? 0) < 0) && !textOf(payload.note, 500)) errors.push("Điều chỉnh giảm cần ghi chú lý do cụ thể.");
+  if (errors.length === 0 && type === "return" && orderId) {
+    const totals = new Map<string, number>();
+    for (const line of lines) totals.set(line.variantId, (totals.get(line.variantId) ?? 0) + (line.qty ?? 0));
+    const problem = await returnProblem(orderId, totals, id);
+    if (problem) errors.push(problem);
+  }
   if (errors.length > 0) return { message: errors.slice(0, 8).join(" ") };
 
   try {
