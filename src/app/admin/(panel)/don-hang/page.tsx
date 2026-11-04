@@ -1,7 +1,6 @@
 import Form from "next/form";
-import Link from "next/link";
 import { OrdersTable } from "@/components/admin/OrdersTable";
-import { Pager, chip, first, isId, pageNumber } from "@/components/admin/parts";
+import { FilterPanel, Pager, first, isId, pageNumber } from "@/components/admin/parts";
 import { Button } from "@/components/ui/Button";
 import { Field, SelectField } from "@/components/ui/Field";
 import {
@@ -73,56 +72,65 @@ export default async function AdminOrdersPage({ searchParams }: PageProps<"/admi
     <>
       <h1 className="text-3xl font-bold tracking-tight">Đơn hàng ({formatNumber(total)})</h1>
 
-      <nav aria-label="Lọc theo trạng thái đơn" className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
-        <Link href={href({ "trang-thai": "" })} className={chip(!status)}>
-          Tất cả
-        </Link>
-        {ORDER_STATUSES.map((value) => (
-          <Link key={value} href={href({ "trang-thai": value })} className={chip(status === value)}>
-            {ORDER_STATUS_LABELS[value]}
-          </Link>
-        ))}
-      </nav>
-
-      <Form action="/admin/don-hang" className="grid gap-4 rounded-xl border border-line bg-surface p-5 sm:grid-cols-3" role="search">
-        {status && <input type="hidden" name="trang-thai" value={status} />}
-        {query.khach && <input type="hidden" name="khach" value={query.khach} />}
-        <Field label="Mã đơn, tên hoặc số điện thoại" name="q" type="search" defaultValue={query.q} maxLength={40} />
-        <SelectField label="Vận chuyển" name="van-chuyen" defaultValue={shippingStatus ?? ""}>
-          <option value="">Tất cả</option>
-          {SHIPPING_STATUSES.map((value) => (
-            <option key={value} value={value}>
-              {SHIPPING_STATUS_LABELS[value]}
-            </option>
-          ))}
-        </SelectField>
-        <SelectField label="Thanh toán" name="thanh-toan" defaultValue={paymentStatus ?? ""}>
-          <option value="">Tất cả</option>
-          {PAYMENT_STATUSES.map((value) => (
-            <option key={value} value={value}>
-              {PAYMENT_STATUS_LABELS[value]}
-            </option>
-          ))}
-        </SelectField>
-        <SelectField label="Phương thức" name="phuong-thuc" defaultValue={paymentMethod ?? ""}>
-          <option value="">Tất cả</option>
-          {PAYMENT_METHODS.map((value) => (
-            <option key={value} value={value}>
-              {PAYMENT_METHOD_LABELS[value]}
-            </option>
-          ))}
-        </SelectField>
-        <Field label="Từ ngày" name="tu" type="date" defaultValue={query.tu} />
-        <Field label="Đến ngày" name="den" type="date" defaultValue={query.den} />
-        <div className="flex items-center gap-4 sm:col-span-3">
-          <Button type="submit" size="sm">
-            Lọc
-          </Button>
-          <Link href="/admin/don-hang" className="text-sm font-medium text-brand-strong hover:underline">
-            Xoá bộ lọc
-          </Link>
-        </div>
-      </Form>
+      <FilterPanel
+        active={[
+          status && ORDER_STATUS_LABELS[status],
+          query.q && `“${query.q}”`,
+          shippingStatus && SHIPPING_STATUS_LABELS[shippingStatus],
+          paymentStatus && PAYMENT_STATUS_LABELS[paymentStatus],
+          paymentMethod && PAYMENT_METHOD_LABELS[paymentMethod],
+          from !== null && `Từ ${query.tu}`,
+          toStart !== null && `Đến ${query.den}`,
+          query.khach && "Một khách hàng",
+        ].filter((label): label is string => Boolean(label))}
+        clearHref="/admin/don-hang"
+        groups={[
+          {
+            label: "Trạng thái đơn",
+            items: [
+              { key: "", href: href({ "trang-thai": "" }), label: "Tất cả", active: !status },
+              ...ORDER_STATUSES.map((value) => ({ key: value, href: href({ "trang-thai": value }), label: ORDER_STATUS_LABELS[value], active: status === value })),
+            ],
+          },
+        ]}
+      >
+        <Form action="/admin/don-hang" className="grid gap-4 sm:grid-cols-3" role="search">
+          {status && <input type="hidden" name="trang-thai" value={status} />}
+          {query.khach && <input type="hidden" name="khach" value={query.khach} />}
+          <Field label="Mã đơn, tên hoặc số điện thoại" name="q" type="search" defaultValue={query.q} maxLength={40} />
+          <SelectField label="Vận chuyển" name="van-chuyen" defaultValue={shippingStatus ?? ""}>
+            <option value="">Tất cả</option>
+            {SHIPPING_STATUSES.map((value) => (
+              <option key={value} value={value}>
+                {SHIPPING_STATUS_LABELS[value]}
+              </option>
+            ))}
+          </SelectField>
+          <SelectField label="Thanh toán" name="thanh-toan" defaultValue={paymentStatus ?? ""}>
+            <option value="">Tất cả</option>
+            {PAYMENT_STATUSES.map((value) => (
+              <option key={value} value={value}>
+                {PAYMENT_STATUS_LABELS[value]}
+              </option>
+            ))}
+          </SelectField>
+          <SelectField label="Phương thức" name="phuong-thuc" defaultValue={paymentMethod ?? ""}>
+            <option value="">Tất cả</option>
+            {PAYMENT_METHODS.map((value) => (
+              <option key={value} value={value}>
+                {PAYMENT_METHOD_LABELS[value]}
+              </option>
+            ))}
+          </SelectField>
+          <Field label="Từ ngày" name="tu" type="date" defaultValue={query.tu} />
+          <Field label="Đến ngày" name="den" type="date" defaultValue={query.den} />
+          <div className="flex items-center gap-4 sm:col-span-3">
+            <Button type="submit" size="sm">
+              Lọc
+            </Button>
+          </div>
+        </Form>
+      </FilterPanel>
 
       <OrdersTable items={can(user.role, "customers.view") ? items : items.map((order) => ({ ...order, customerPhone: maskPhone(order.customerPhone) }))} />
       <Pager page={page} pages={Math.ceil(total / PAGE_SIZE)} href={(number) => href({ trang: number === 1 ? "" : String(number) })} />

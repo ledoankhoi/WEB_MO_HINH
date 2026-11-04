@@ -1,6 +1,6 @@
 import Form from "next/form";
 import Link from "next/link";
-import { BADGE, Empty, Pager, TABLE, TABLE_WRAP, chip, first, isId, pageNumber } from "@/components/admin/parts";
+import { BADGE, Empty, FilterPanel, Pager, TABLE, TABLE_WRAP, first, isId, pageNumber } from "@/components/admin/parts";
 import { Button } from "@/components/ui/Button";
 import { Field, SelectField } from "@/components/ui/Field";
 import { formatNumber, formatVnd } from "@/lib/format";
@@ -44,32 +44,39 @@ export default async function StockPage({ searchParams }: PageProps<"/admin/kho"
         </a>
       </div>
 
-      <Form action="/admin/kho" className="grid gap-4 rounded-xl border border-line bg-surface p-5 sm:grid-cols-[1fr_12rem_auto] sm:items-end" role="search">
-        {filter && <input type="hidden" name="loc" value={filter} />}
-        <Field label="SKU, mã vạch hoặc tên" name="q" type="search" defaultValue={q} maxLength={60} />
-        <SelectField label="Vị trí" name="vi-tri" defaultValue={locationId}>
-          <option value="">Mọi vị trí</option>
-          {locations.map((location) => (
-            <option key={location.id} value={location.id}>
-              {location.code}
-            </option>
-          ))}
-        </SelectField>
-        <Button type="submit" size="sm">
-          Lọc
-        </Button>
-      </Form>
-
-      <nav aria-label="Lọc theo tình trạng" className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
-        <Link href={href({ loc: "" })} className={chip(!filter)}>
-          Tất cả
-        </Link>
-        {(Object.entries(STOCK_FILTERS) as [StockFilter, string][]).map(([value, label]) => (
-          <Link key={value} href={href({ loc: value })} className={chip(filter === value)}>
-            {label}
-          </Link>
-        ))}
-      </nav>
+      <FilterPanel
+        active={[
+          filter && STOCK_FILTERS[filter],
+          q && `“${q}”`,
+          locationId && (locations.find((location) => location.id === locationId)?.code ?? "Vị trí"),
+        ].filter((label): label is string => Boolean(label))}
+        clearHref="/admin/kho"
+        groups={[
+          {
+            label: "Tình trạng",
+            items: [
+              { key: "", href: href({ loc: "" }), label: "Tất cả", active: !filter },
+              ...(Object.entries(STOCK_FILTERS) as [StockFilter, string][]).map(([value, label]) => ({ key: value, href: href({ loc: value }), label, active: filter === value })),
+            ],
+          },
+        ]}
+      >
+        <Form action="/admin/kho" className="grid gap-4 sm:grid-cols-[1fr_12rem_auto] sm:items-end" role="search">
+          {filter && <input type="hidden" name="loc" value={filter} />}
+          <Field label="SKU, mã vạch hoặc tên" name="q" type="search" defaultValue={q} maxLength={60} />
+          <SelectField label="Vị trí" name="vi-tri" defaultValue={locationId}>
+            <option value="">Mọi vị trí</option>
+            {locations.map((location) => (
+              <option key={location.id} value={location.id}>
+                {location.code}
+              </option>
+            ))}
+          </SelectField>
+          <Button type="submit" size="sm">
+            Lọc
+          </Button>
+        </Form>
+      </FilterPanel>
 
       {items.length === 0 ? (
         <Empty>Không có SKU nào phù hợp.</Empty>
