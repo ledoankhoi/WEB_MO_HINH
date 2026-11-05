@@ -36,6 +36,12 @@ Kết quả trả về của form theo kiểu `FormState`: `{ ok?, message?, err
 | `submitReviewAction` | Khách | Đánh giá 1–5 sao, nhận xét ≤ 1000 ký tự cho một dòng đơn | Chỉ dòng đơn thuộc đơn `completed` của chính khách, mỗi dòng một lần; vào trạng thái `pending` |
 | `setWishlistAction(productId, on)` | Khách | Thêm hoặc bỏ yêu thích | Chưa đăng nhập trả `{ login: true }`; chỉ sản phẩm `published`; không tạo dòng trùng |
 
+### `src/app/actions/stock-alerts.ts`
+
+| Action | Phiên | Việc | Ghi chú |
+| --- | --- | --- | --- |
+| `requestStockAlertAction(variantId, contact)` | Khách hoặc vãng lai | "Báo khi có hàng" cho một biến thể: ghi email (chữ thường) hoặc số điện thoại (chuẩn hoá 0xxxxxxxxx) vào `stock_alerts` | Đã đăng nhập mà để trống liên hệ thì dùng email tài khoản; vãng lai để trống trả `{ needContact: true }`. Chỉ biến thể đang bật của sản phẩm `published`; một yêu cầu đang chờ cho mỗi liên hệ và biến thể (đăng ký lặp trả `ok` kèm lời báo); tối đa 30 yêu cầu đang chờ mỗi liên hệ. Chưa gửi email tự động |
+
 ## 2. Quản trị
 
 ### `src/app/actions/admin.ts`
@@ -85,6 +91,7 @@ Kết quả trả về của form theo kiểu `FormState`: `{ ok?, message?, err
 | `savePageAction`, `pageAction` | NV: `content.edit` | Trang thông tin: lưu nháp, xuất bản (thêm một bản lưu), gỡ, khôi phục bản cũ | Có |
 | `saveCouponAction` | NV: `coupons.manage` | Tạo, sửa, bật, tắt mã giảm giá; hạn mức không nhỏ hơn số lượt đã dùng | Có |
 | `moderateReviewAction(id, status)` | NV: `reviews.moderate` | Duyệt hoặc ẩn đánh giá (`pending` → `approved`/`hidden`, `approved` ⇄ `hidden`) | Có |
+| `markStockAlertsNotifiedAction(ids)` | NV: `customers.manage` | Đánh dấu đã báo khách có hàng (1–100 yêu cầu đang chờ); danh sách ở `/admin/khach-hang/cho-hang` (xem cần `customers.view`) | Có (`stock_alert.notify`, mỗi yêu cầu một dòng) |
 
 ## 3. Route Handler
 
@@ -92,6 +99,7 @@ Kết quả trả về của form theo kiểu `FormState`: `{ ok?, message?, err
 | --- | --- | --- | --- |
 | `GET /api/cart?ids=` | — | Giá, tồn hiện tại của các biến thể trong giỏ | Tối đa 50 mã; `no-store` |
 | `GET /api/wishlist` | — | Mã sản phẩm khách đã yêu thích; `{ ids: null }` khi chưa đăng nhập | `private, no-store` |
+| `GET /api/goi-y?q=` | — | Gợi ý cho ô tìm kiếm ở đầu trang: `{ terms, products, total }`, tối đa 3 cụm từ (`src/lib/search-suggest.ts`) và 5 sản phẩm đang bán | Từ khoá dưới 2 ký tự trả rỗng, không truy vấn; cắt còn 80 ký tự; `public, max-age=60` |
 | `POST /api/tim-bang-anh` | — | Tìm bằng ảnh: thân JSON `{ model, embedding: number[512], clientMs? }`. Trả `{ accepted, reason, s1, s2, tau, delta, candidates, results: [{ product, score, form, label }] }`, tối đa 8 sản phẩm đang bán, xếp giảm dần | 30 lượt/phút/IP (429 kèm `Retry-After`); thân > 64 KB trả 413; vector sai 400; `model` khác mô hình đang dùng 409 `model-mismatch`; chưa có chỉ mục 409 `not-ready`; `no-store`. Ghi `image_search_logs` sau khi trả lời (`after`) |
 | `GET /media/[file]` | — | Ảnh đại diện lưu trong CSDL (dữ liệu cũ), cache vĩnh viễn theo phiên bản trong tên | |
 | `POST /admin/api/anh` | NV: `catalog.edit` (ảnh sản phẩm) hoặc `content.edit` (`target=banner`) | Tải ảnh WebP, PNG, JPEG ≤ 5 MB lên Storage | Kiểm tra chữ ký file; có nhật ký |

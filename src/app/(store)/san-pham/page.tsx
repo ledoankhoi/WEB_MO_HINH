@@ -44,12 +44,13 @@ async function Results({ searchParams }: { searchParams: SearchParams }) {
   const minPrice = priceParam(first(params["gia-tu"]));
   const maxPrice = priceParam(first(params["gia-den"]));
   const inStock = first(params["con-hang"]) === "1";
+  const transformable = first(params["bien-hinh"]) === "1";
 
   const options = await getFilterOptions();
   const brand = options.brands.some((b) => b.slug === first(params["thuong-hieu"])) ? first(params["thuong-hieu"]) : "";
   const series = options.series.some((s) => s.slug === first(params.series)) ? first(params.series) : "";
 
-  const { items, total } = await searchProducts({ q, category, sort, page, pageSize: site.pageSize, minPrice, maxPrice, inStock, brand, series });
+  const { items, total } = await searchProducts({ q, category, sort, page, pageSize: site.pageSize, minPrice, maxPrice, inStock, brand, series, transformable });
   const pages = Math.max(1, Math.ceil(total / site.pageSize));
   const categoryInfo = CATEGORIES.find((c) => c.slug === category);
 
@@ -60,6 +61,7 @@ async function Results({ searchParams }: { searchParams: SearchParams }) {
     "gia-tu": minPrice === undefined ? "" : String(minPrice),
     "gia-den": maxPrice === undefined ? "" : String(maxPrice),
     "con-hang": inStock ? "1" : "",
+    "bien-hinh": transformable ? "1" : "",
     "thuong-hieu": brand,
     series,
     "sap-xep": sort === "moi-nhat" ? "" : sort,
@@ -80,6 +82,7 @@ async function Results({ searchParams }: { searchParams: SearchParams }) {
       href: href({ "gia-tu": "", "gia-den": "" }),
     },
     inStock && { label: "Còn hàng", href: href({ "con-hang": "" }) },
+    transformable && { label: "Có biến hình 3D", href: href({ "bien-hinh": "" }) },
     brand && { label: options.brands.find((b) => b.slug === brand)!.name, href: href({ "thuong-hieu": "" }) },
     series && { label: options.series.find((s) => s.slug === series)!.name, href: href({ series: "" }) },
   ].filter((item): item is { label: string; href: string } => Boolean(item));
@@ -104,7 +107,7 @@ async function Results({ searchParams }: { searchParams: SearchParams }) {
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-8">
         <ShopFilters
           key={JSON.stringify(current)}
-          values={{ q, sort: current["sap-xep"], category, minPrice: current["gia-tu"], maxPrice: current["gia-den"], inStock, brand, series }}
+          values={{ q, sort: current["sap-xep"], category, minPrice: current["gia-tu"], maxPrice: current["gia-den"], inStock, transformable, brand, series }}
           categories={CATEGORIES.map((c) => ({ slug: c.slug, name: c.name }))}
           brands={options.brands}
           series={options.series}

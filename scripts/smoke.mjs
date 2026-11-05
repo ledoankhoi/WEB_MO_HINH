@@ -67,6 +67,8 @@ const PAGES = [
   { path: "/admin/khach-hang" },
   { path: "/admin/khach-hang?q=a" },
   { path: "/admin/khach-hang/:customerId" },
+  { path: "/admin/khach-hang/cho-hang" },
+  { path: "/admin/khach-hang/cho-hang?trang-thai=da-bao" },
   { path: "/admin/nhan-vien" },
   { path: "/admin/nhat-ky" },
   { path: "/admin/nhat-ky?hanh-dong=auth.admin_login&tu=2026-01-01&den=2026-12-31" },

@@ -13,8 +13,10 @@ type Props = {
   quantity?: number;
   size?: "sm" | "lg";
   full?: boolean;
-  // Nút tròn chỉ có biểu tượng, dùng trong thẻ sản phẩm.
+  // Nút tròn chỉ có biểu tượng.
   compact?: boolean;
+  // Thanh đen phủ hết chiều ngang, dùng trong thẻ sản phẩm (giao diện "Hộp mô hình").
+  bar?: boolean;
   label?: string;
 };
 
@@ -29,7 +31,24 @@ function addToCart(id: string, name: string, stock: number, quantity: number): b
   return false;
 }
 
-export function AddToCartButton({ id, name, stock, quantity = 1, size = "sm", full = false, compact = false, label = "Thêm vào giỏ hàng" }: Props) {
+export function AddToCartButton({ id, name, stock, quantity = 1, size = "sm", full = false, compact = false, bar = false, label = "Thêm vào giỏ hàng" }: Props) {
+  if (bar) {
+    return (
+      <AnimateIcon animateOnHover asChild>
+        <button
+          type="button"
+          disabled={stock <= 0}
+          onClick={() => addToCart(id, name, stock, quantity)}
+          aria-label={stock <= 0 ? `${name} đã hết hàng` : `Thêm ${name} vào giỏ hàng`}
+          className="inline-flex h-12 w-full items-center justify-center gap-2 bg-ink font-condensed text-[19px] font-extrabold text-white uppercase transition hover:bg-brand disabled:cursor-not-allowed disabled:bg-raised disabled:text-muted"
+        >
+          <ShoppingCart className="size-5" aria-hidden />
+          {label}
+        </button>
+      </AnimateIcon>
+    );
+  }
+
   if (compact) {
     return (
       <AnimateIcon animateOnHover asChild>

@@ -67,6 +67,22 @@ export const MODEL_FEATURES: Record<string, ModelFeatures> = {
   },
 };
 
+// Tên file của các mô hình có clip biến hình hoặc hợp thể (bộ lọc "Có biến hình 3D" của cửa hàng).
+export const TRANSFORMABLE_MODEL_KEYS: readonly string[] = Object.entries(MODEL_FEATURES)
+  .filter(([, features]) => features.transform)
+  .map(([key]) => key);
+
+// Biểu thức chính quy (cú pháp PostgreSQL) khớp cột model_url của các mô hình trên. Tên file chỉ gồm chữ thường,
+// số và gạch ngang nên không cần thoát ký tự.
+export const TRANSFORMABLE_MODEL_URL_PATTERN = "/models/(" + TRANSFORMABLE_MODEL_KEYS.join("|") + ")\\.glb$";
+
+// Nhãn 3D trên thẻ sản phẩm: "Hợp thể 3D", "Biến hình 3D" hoặc không có.
+export function transformLabel(modelUrl: string | null | undefined): string | null {
+  const transform = getModelFeatures(modelUrl)?.transform;
+  if (!transform) return null;
+  return transform.kind === "combine" ? "Hợp thể 3D" : "Biến hình 3D";
+}
+
 // "/models/bruticus.glb" hoặc đường dẫn đầy đủ trên kho media đều cho ra "bruticus".
 export function modelKey(modelUrl: string | null | undefined): string | null {
   return modelUrl?.match(/\/models\/([^/]+)\.glb$/)?.[1] ?? null;

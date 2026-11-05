@@ -1,13 +1,14 @@
 import "server-only";
 import { isRobotModelKey, type ProductSpec, type RobotColors, type RobotModelKey, type SortValue } from "@/lib/catalog";
 import { foldText } from "@/lib/format";
+import { TRANSFORMABLE_MODEL_URL_PATTERN } from "@/lib/model-features";
 import type { CartProduct, Product, ProductStatus, ProductSummary, ProductVariant } from "@/lib/types";
 import { getDb, type InValue, type Row } from "../db";
 import { newId } from "../ids";
 import { auditStatement, withAudit, type AuditEntry } from "./audit";
 
 // product_list (migration 005): sản phẩm ghép biến thể mặc định, cột giá, tồn, màu là của biến thể đó.
-export const SUMMARY_COLUMNS = "id, variant_id, slug, name, tagline, category, price, compare_at_price, stock, image, is_featured";
+export const SUMMARY_COLUMNS = "id, variant_id, slug, name, tagline, category, price, compare_at_price, stock, image, is_featured, model_url";
 
 const ORDER_BY: Record<SortValue, string> = {
   "moi-nhat": "created_at DESC, id",
@@ -102,6 +103,7 @@ export function toSummary(row: Row): ProductSummary {
     stock: Number(row.stock),
     image: row.image === null ? null : String(row.image),
     isFeatured: Boolean(row.is_featured),
+    modelUrl: row.model_url === null || row.model_url === undefined ? null : String(row.model_url),
   };
 }
 
@@ -172,6 +174,8 @@ export type ProductQuery = {
   inStock?: boolean;
   brand?: string;
   series?: string;
+  // Chỉ sản phẩm có mô hình 3D biến hình hoặc hợp thể được (src/lib/model-features.ts).
+  transformable?: boolean;
   // Trang quản trị cần thấy cả sản phẩm đang ẩn.
   includeInactive?: boolean;
 };
@@ -201,6 +205,10 @@ export async function queryProducts(query: ProductQuery): Promise<{ items: Produ
   if (query.series) {
     where.push("series_id = (SELECT id FROM series WHERE slug = ?)");
     args.push(query.series);
+  }
+  if (query.transformable) {
+    where.push("model_url ~ ?");
+    args.push(TRANSFORMABLE_MODEL_URL_PATTERN);
   }
   // Mỗi từ khoá phải xuất hiện trong search_text (đã bỏ dấu), nên "robot hinh nguoi" vẫn khớp "Robot hình người".
   for (const term of foldText(query.q ?? "").split(" ").filter(Boolean).slice(0, 6)) {
@@ -279,6 +287,36 @@ export async function countProductsByCategory(): Promise<Record<string, number>>
   const db = await getDb();
   const result = await db.execute("SELECT category, COUNT(*) AS total FROM product_list WHERE is_active GROUP BY category");
   return Object.fromEntries(result.rows.map((row) => [String(row.category), Number(row.total)]));
+}
+
+export type MenuFacet = { slug: string; name: string; count: number };
+export type CategoryMenuData = { series: MenuFacet[]; brands: MenuFacet[]; transformable: number; featured: ProductSummary | null };
+
+// Menu danh mục mở rộng ở đầu trang: series, thương hiệu (nhiều sản phẩm trước), số mẫu có mô hình 3D biến hình
+// được và một sản phẩm nổi bật của từng danh mục. Chỉ tính sản phẩm đang bán.
+export async function listCategoryMenuData(): Promise<Record<string, CategoryMenuData>> {
+  const db = await getDb();
+  const facet = (table: "series" | "brands", column: "series_id" | "brand_id") =>
+    `SELECT p.category, t.slug, t.name, COUNT(*)::int AS n FROM product_list p JOIN ${table} t ON t.id = p.${column}
+     WHERE p.is_active GROUP BY p.category, t.slug, t.name ORDER BY p.category, n DESC, t.name`;
+  const [series, brands, transformable, featured] = await db.batch([
+    facet("series", "series_id"),
+    facet("brands", "brand_id"),
+    {
+      sql: "SELECT category, COUNT(*)::int AS n FROM product_list WHERE is_active AND model_url ~ ? GROUP BY category",
+      args: [TRANSFORMABLE_MODEL_URL_PATTERN],
+    },
+    `SELECT DISTINCT ON (category) ${SUMMARY_COLUMNS} FROM product_list WHERE is_active
+     ORDER BY category, is_featured DESC, created_at DESC, id`,
+  ]);
+  const data: Record<string, CategoryMenuData> = {};
+  const entry = (category: unknown) => (data[String(category)] ??= { series: [], brands: [], transformable: 0, featured: null });
+  const toFacet = (row: Row): MenuFacet => ({ slug: String(row.slug), name: String(row.name), count: Number(row.n) });
+  for (const row of series.rows) entry(row.category).series.push(toFacet(row));
+  for (const row of brands.rows) entry(row.category).brands.push(toFacet(row));
+  for (const row of transformable.rows) entry(row.category).transformable = Number(row.n);
+  for (const row of featured.rows) entry(row.category).featured = toSummary(row);
+  return data;
 }
 
 

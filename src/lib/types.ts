@@ -68,10 +68,10 @@ export type Product = {
   updatedAt: number;
 };
 
-// Phần dữ liệu đủ để vẽ thẻ sản phẩm.
+// Phần dữ liệu đủ để vẽ thẻ sản phẩm. `modelUrl` để biết mô hình 3D có clip biến hình hay hợp thể (nhãn trên thẻ).
 export type ProductSummary = Pick<
   Product,
-  "id" | "variantId" | "slug" | "name" | "tagline" | "category" | "price" | "compareAtPrice" | "stock" | "image" | "isFeatured"
+  "id" | "variantId" | "slug" | "name" | "tagline" | "category" | "price" | "compareAtPrice" | "stock" | "image" | "isFeatured" | "modelUrl"
 >;
 
 // Dữ liệu mới nhất của một dòng trong giỏ hàng (giá, tồn kho) do máy chủ trả về. `id` là mã biến thể.

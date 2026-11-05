@@ -16,6 +16,7 @@ export type ShopFilterValues = {
   minPrice: string;
   maxPrice: string;
   inStock: boolean;
+  transformable: boolean;
   brand: string;
   series: string;
 };
@@ -141,6 +142,11 @@ export function ShopFilters({
         <label className="flex cursor-pointer items-center justify-between gap-3 text-sm font-medium">
           Chỉ hiện còn hàng
           <Switch name="con-hang" value="1" defaultChecked={values.inStock} onCheckedChange={submit} />
+        </label>
+
+        <label className="flex cursor-pointer items-center justify-between gap-3 text-sm font-medium">
+          Có biến hình, hợp thể 3D
+          <Switch name="bien-hinh" value="1" defaultChecked={values.transformable} onCheckedChange={submit} />
         </label>
 
         {brands.length > 0 && (

@@ -2,14 +2,14 @@ import Link from "next/link";
 import { AnimateIcon, User } from "@/components/animate/icons";
 import { getCurrentUser } from "@/server/auth/session";
 
-const ICON_BUTTON =
-  "grid size-10 place-items-center rounded-full text-fg transition hover:bg-raised hover:text-brand";
+const SQUARE =
+  "grid size-[52px] place-items-center border-3 border-ink bg-surface shadow-[4px_4px_0_var(--color-ink)] transition hover:bg-raised";
 
 // Hiển thị ngay trong khung tĩnh của trang trong lúc chờ đọc phiên đăng nhập.
 export function AccountButtonFallback() {
   return (
-    <Link href="/tai-khoan" className={ICON_BUTTON} aria-label="Tài khoản">
-      <User className="size-5" aria-hidden />
+    <Link href="/tai-khoan" className={SQUARE} aria-label="Tài khoản">
+      <User className="size-[22px]" aria-hidden />
     </Link>
   );
 }
@@ -20,8 +20,8 @@ export async function AccountButton() {
   if (!user) {
     return (
       <AnimateIcon animateOnHover asChild>
-        <Link href="/dang-nhap" className={ICON_BUTTON} aria-label="Đăng nhập">
-          <User className="size-5" aria-hidden />
+        <Link href="/dang-nhap" className={SQUARE} aria-label="Đăng nhập">
+          <User className="size-[22px]" aria-hidden />
         </Link>
       </AnimateIcon>
     );
@@ -29,12 +29,8 @@ export async function AccountButton() {
 
   const initial = user.name.trim().charAt(0).toUpperCase() || "?";
   return (
-    <>
-      <Link href="/tai-khoan" className={ICON_BUTTON} aria-label={`Tài khoản của ${user.name}`}>
-        <span className="grid size-8 place-items-center rounded-full bg-brand/15 text-sm font-bold text-brand">
-          {initial}
-        </span>
-      </Link>
-    </>
+    <Link href="/tai-khoan" className={SQUARE} aria-label={`Tài khoản của ${user.name}`}>
+      <span className="grid size-8 place-items-center bg-cobalt font-condensed text-lg font-black text-white">{initial}</span>
+    </Link>
   );
 }

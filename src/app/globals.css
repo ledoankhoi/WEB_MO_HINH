@@ -1,9 +1,11 @@
 @import "tailwindcss";
 
-/* Phông chữ do next/font nạp trong layout gốc (có đủ bộ ký tự tiếng Việt). */
+/* Phông chữ do next/font nạp (có đủ bộ ký tự tiếng Việt): Inter ở layout gốc, Barlow và Barlow Condensed ở khung
+   cửa hàng (StoreFrame). `font-condensed` là chữ hẹp đậm của tiêu đề, nút, nhãn trong cửa hàng. */
 @theme inline {
   --font-sans: var(--font-body), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-display: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-condensed: var(--font-barlow-condensed), "Arial Narrow", ui-sans-serif, sans-serif;
 }
 
 /* Bảng màu của giao diện sáng. Dùng qua các lớp như bg-surface, text-muted, border-line, text-brand. */
@@ -21,6 +23,9 @@
   --color-danger: #dc2626;
   --color-success: #047857;
   --color-warning: #b45309;
+  /* Màu phụ và màu viền đậm của giao diện cửa hàng (xem .store-skin). */
+  --color-cobalt: #1f4fd8;
+  --color-ink: #191a1c;
 }
 
 @layer base {
@@ -78,4 +83,92 @@
   .prose-store p + p {
     margin-top: 0.9em;
   }
+
+  /* Nền chấm in lưới của giao diện cửa hàng, phía sau ảnh sản phẩm. */
+  .halftone {
+    background-color: #f1f2f4;
+    background-image: radial-gradient(#cfd2d8 1.3px, transparent 1.4px);
+    background-size: 12px 12px;
+  }
+
+  /* Sọc chéo xanh coban của khối giới thiệu đầu trang chủ. */
+  .stripes-cobalt {
+    background: repeating-linear-gradient(-45deg, #2a5ce6 0 18px, #1f4fd8 18px 36px);
+  }
+
+  /* Chữ chỉ có viền (tên cửa hàng cỡ lớn ở chân trang). */
+  .outline-text {
+    color: transparent;
+    -webkit-text-stroke: 3px var(--color-ink);
+  }
+}
+
+/* Giao diện "Hộp mô hình" (Mẫu B) của cửa hàng: nền trắng, mực đen, đỏ cho thao tác chính, xanh coban làm màu phụ,
+   viền đen dày và bóng đổ lệch. Chỉ áp bên trong khung cửa hàng (StoreFrame); khu quản trị giữ bảng màu gốc.
+   Các quy tắc dưới đây cố ý nằm ngoài @layer để thắng lớp tiện ích của Tailwind. */
+.store-skin {
+  --font-body: var(--font-barlow);
+  --color-bg: #ffffff;
+  --color-surface: #ffffff;
+  --color-raised: #f1f2f4;
+  --color-line: #dcdee3;
+  --color-fg: #111111;
+  --color-muted: #4a4d55;
+  --color-brand: #d7261e;
+  --color-brand-strong: #b31d16;
+  --color-brand-ink: #ffffff;
+  --color-sale: #d7261e;
+  --color-cobalt: #1f4fd8;
+  --color-ink: #111111;
+  background-color: var(--color-bg);
+  color: var(--color-fg);
+}
+
+.store-skin ::selection {
+  background-color: color-mix(in srgb, var(--color-cobalt) 30%, transparent);
+}
+
+.store-skin :focus-visible {
+  outline: 3px solid var(--color-cobalt);
+  outline-offset: 2px;
+}
+
+.store-skin .product-stage {
+  background: #f1f2f4 radial-gradient(#cfd2d8 1.3px, transparent 1.4px) 0 0 / 12px 12px;
+}
+
+/* Nút dùng chung (components/ui/Button): góc vuông, chữ hẹp in hoa; nút chính và nút phụ có viền đen và bóng lệch. */
+.store-skin .btn {
+  border-radius: 0;
+  font-family: var(--font-barlow-condensed), "Arial Narrow", sans-serif;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.store-skin .btn-sm {
+  height: 2.75rem;
+  font-size: 1rem;
+}
+.store-skin .btn-md {
+  height: 3rem;
+  font-size: 1.0625rem;
+}
+.store-skin .btn-lg {
+  height: 3.75rem;
+  padding-inline: 1.5rem;
+  font-size: 1.375rem;
+}
+.store-skin .btn-primary,
+.store-skin .btn-secondary {
+  border: 3px solid var(--color-ink);
+  box-shadow: 4px 4px 0 var(--color-ink);
+}
+.store-skin .btn-secondary {
+  background-color: #ffffff;
+}
+.store-skin .btn-secondary:hover {
+  background-color: var(--color-raised);
+}
+.store-skin .btn-danger {
+  border-width: 2px;
 }

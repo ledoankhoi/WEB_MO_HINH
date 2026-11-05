@@ -1,39 +1,17 @@
 "use client";
 
-import { useState, useSyncExternalStore, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { AnimateIcon, Heart } from "@/components/animate/icons";
 import { usePathname, useRouter } from "next/navigation";
 import { setWishlistAction } from "@/app/actions/wishlist";
 import { showToast } from "@/components/ui/Toaster";
+import { getWishlistIds, setWishlistIds, useWishlistIds } from "./wishlist-store";
 
-// Danh sách yêu thích tải một lần cho cả trang (mọi nút dùng chung). null: chưa tải hoặc chưa đăng nhập.
-let ids: ReadonlySet<string> | null = null;
-let loading: Promise<void> | null = null;
-const listeners = new Set<() => void>();
-const emit = () => listeners.forEach((listener) => listener());
-
-function subscribe(listener: () => void) {
-  listeners.add(listener);
-  loading ??= fetch("/api/wishlist", { cache: "no-store" })
-    .then((response) => response.json() as Promise<{ ids: string[] | null }>)
-    .then((body) => {
-      ids = body.ids ? new Set(body.ids) : null;
-      // Chưa đăng nhập: lần gắn nút sau (ví dụ sau khi đăng nhập) tải lại.
-      if (!body.ids) loading = null;
-      emit();
-    })
-    .catch(() => {});
-  return () => listeners.delete(listener);
-}
-
+// Nút trái tim vuông viền đen (giao diện "Hộp mô hình"). Chưa đăng nhập thì chuyển tới trang đăng nhập.
 export function WishlistButton({ productId, name, className = "" }: { productId: string; name: string; className?: string }) {
   const router = useRouter();
   const pathname = usePathname();
-  const current = useSyncExternalStore(
-    subscribe,
-    () => ids,
-    () => null,
-  );
+  const current = useWishlistIds();
   const active = current?.has(productId) ?? false;
   const [pending, startTransition] = useTransition();
   // Trái tim nảy lên khi rê chuột và khi vừa thêm vào yêu thích.
@@ -57,23 +35,22 @@ export function WishlistButton({ productId, name, className = "" }: { productId:
             showToast("Không cập nhật được danh sách yêu thích.", { tone: "error" });
             return;
           }
-          const next = new Set(ids);
+          const next = new Set(getWishlistIds());
           if (active) next.delete(productId);
           else {
             next.add(productId);
             setPopped(true);
             window.setTimeout(() => setPopped(false), 700);
           }
-          ids = next;
-          emit();
+          setWishlistIds(next);
         })
       }
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className={`inline-flex size-10 items-center justify-center rounded-full border border-line bg-surface transition hover:border-brand disabled:opacity-60 ${className}`}
+      className={`inline-flex size-11 items-center justify-center border-2 border-ink bg-surface text-ink transition hover:bg-raised disabled:opacity-60 ${className}`}
     >
       <AnimateIcon animate={hovered || popped}>
-        <Heart aria-hidden className={`size-5 transition-colors ${active ? "fill-danger text-danger" : "text-muted"}`} />
+        <Heart aria-hidden strokeWidth={2.4} className={`size-5 transition-colors ${active ? "fill-brand text-brand" : ""}`} />
       </AnimateIcon>
     </button>
   );

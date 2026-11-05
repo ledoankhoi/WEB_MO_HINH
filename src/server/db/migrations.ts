@@ -735,4 +735,26 @@ export const MIGRATIONS: Migration[] = [
       "ALTER TABLE image_search_logs ENABLE ROW LEVEL SECURITY",
     ],
   },
+  {
+    // "Báo khi có hàng": khách để lại email hoặc số điện thoại cho một phiên bản đang hết hàng; nhân viên xem danh
+    // sách ở /admin/khach-hang/cho-hang và đánh dấu đã báo (chưa có gửi email tự động). Mỗi liên hệ chỉ có một yêu
+    // cầu đang chờ cho mỗi phiên bản.
+    id: "017_stock_alerts",
+    statements: [
+      `CREATE TABLE stock_alerts (
+        id TEXT PRIMARY KEY,
+        variant_id TEXT NOT NULL REFERENCES product_variants (id) ON DELETE CASCADE,
+        user_id TEXT REFERENCES users (id) ON DELETE SET NULL,
+        contact TEXT NOT NULL,
+        contact_kind TEXT NOT NULL,
+        created_at BIGINT NOT NULL,
+        notified_at BIGINT,
+        notified_by TEXT REFERENCES users (id) ON DELETE SET NULL,
+        CONSTRAINT contact_kind_valid CHECK (contact_kind IN ('email', 'phone'))
+      )`,
+      "CREATE UNIQUE INDEX idx_stock_alerts_pending ON stock_alerts (variant_id, contact) WHERE notified_at IS NULL",
+      "CREATE INDEX idx_stock_alerts_created ON stock_alerts (created_at)",
+      "ALTER TABLE stock_alerts ENABLE ROW LEVEL SECURITY",
+    ],
+  },
 ];

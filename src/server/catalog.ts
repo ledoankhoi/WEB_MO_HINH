@@ -1,17 +1,20 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
-import type { SortValue } from "@/lib/catalog";
+import { CATEGORIES, type SortValue } from "@/lib/catalog";
+import { suggestTerms, type SearchSuggestions } from "@/lib/search-suggest";
 import type { Product, ProductSummary } from "@/lib/types";
 import { activeAnnouncement, findPublishedPage, getSettings, listActiveBanners, listNavItems, type InfoPage, type AnnouncementSettings, type Banner, type NavItem, type SiteSettings } from "./repo/content";
 import {
   countProductsByCategory,
   findProductBySlug,
   listActiveSlugs,
+  listCategoryMenuData,
   listFeaturedProducts,
   listFilterOptions,
   listMedia,
   listRelatedProducts,
   queryProducts,
+  type MenuFacet,
 } from "./repo/products";
 import { listApprovedReviews } from "./repo/reviews";
 
@@ -53,6 +56,7 @@ export async function searchProducts(query: {
   inStock?: boolean;
   brand?: string;
   series?: string;
+  transformable?: boolean;
 }): Promise<{ items: ProductSummary[]; total: number }> {
   "use cache";
   cacheLife("hours");
@@ -68,7 +72,61 @@ export async function searchProducts(query: {
     inStock: query.inStock || undefined,
     brand: query.brand || undefined,
     series: query.series || undefined,
+    transformable: query.transformable || undefined,
   });
+}
+
+// Gợi ý trong ô tìm kiếm ở đầu trang (/api/goi-y): vài cụm từ và vài sản phẩm khớp nhất.
+export async function getSearchSuggestions(q: string): Promise<SearchSuggestions> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(PRODUCTS_TAG);
+  const { items, total } = await queryProducts({ q, sort: "noi-bat", pageSize: 30 });
+  return {
+    terms: suggestTerms(q, items.map((item) => item.name)),
+    products: items.slice(0, 5).map(({ slug, name, category, price, image, stock, modelUrl }) => ({ slug, name, category, price, image, stock, modelUrl })),
+    total,
+  };
+}
+
+export type MegaMenuCategory = {
+  slug: string;
+  name: string;
+  description: string;
+  count: number;
+  series: MenuFacet[];
+  brands: MenuFacet[];
+  transformable: number;
+  featured: ProductSummary | null;
+};
+
+// Menu danh mục mở rộng ở đầu trang: các danh mục đang có hàng, theo thứ tự của CATEGORIES.
+export async function getMegaMenu(): Promise<MegaMenuCategory[]> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(PRODUCTS_TAG);
+  const [counts, data] = await Promise.all([countProductsByCategory(), listCategoryMenuData()]);
+  return CATEGORIES.filter((category) => (counts[category.slug] ?? 0) > 0).map((category) => {
+    const facets = data[category.slug];
+    return {
+      slug: category.slug,
+      name: category.name,
+      description: category.description,
+      count: counts[category.slug] ?? 0,
+      series: facets?.series.slice(0, 6) ?? [],
+      brands: facets?.brands.slice(0, 6) ?? [],
+      transformable: facets?.transformable ?? 0,
+      featured: facets?.featured ?? null,
+    };
+  });
+}
+
+// Phụ kiện còn hàng, rẻ trước: gợi ý "thường mua kèm" trong giỏ hàng xem nhanh.
+export async function getAddOnProducts(): Promise<ProductSummary[]> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(PRODUCTS_TAG);
+  return (await queryProducts({ category: "phu-kien", inStock: true, sort: "gia-tang", pageSize: 12 })).items;
 }
 
 // Ảnh phụ của sản phẩm (thư viện ảnh trong quản trị) cho dải ảnh nhỏ ở trang sản phẩm.

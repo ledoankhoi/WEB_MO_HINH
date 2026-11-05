@@ -21,8 +21,11 @@ const SIZES: Record<Size, string> = {
   lg: "h-12 px-7 text-base",
 };
 
+// Lớp `btn btn-<kiểu> btn-<cỡ>` để giao diện cửa hàng (.store-skin trong globals.css) đổi dáng nút; khu quản trị
+// không có lớp đó nên giữ nút tròn.
 export function buttonClass({ variant = "primary", size = "md", full = false }: StyleProps = {}): string {
   return [
+    `btn btn-${variant} btn-${size}`,
     "inline-flex items-center justify-center gap-2 rounded-full font-semibold whitespace-nowrap transition",
     "disabled:cursor-not-allowed disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50",
     VARIANTS[variant],

@@ -1,17 +1,19 @@
 import Link from "next/link";
-import { ArrowRight, Box, RotateCcw, ShieldCheck, Truck } from "lucide-react";
+import { ArrowRight, Camera, QrCode, RotateCcw, ShieldCheck, Truck } from "lucide-react";
 import { HeroBanner, StripBanners } from "@/components/content/Banners";
-import { HeroShowcase, type HeroItem } from "@/components/content/HeroShowcase";
+import { ComboHero } from "@/components/home/ComboHero";
+import { ShelfTabs, type ShelfTab } from "@/components/home/ShelfTabs";
 import { ProductGrid, ProductImage } from "@/components/product/ProductCard";
-import { ProductTabs } from "@/components/product/ProductTabs";
-import { buttonClass } from "@/components/ui/Button";
+import { ButtonLink } from "@/components/ui/Button";
 import { site } from "@/config/site";
-import { CATEGORIES, getCategory } from "@/lib/catalog";
 import { formatVnd } from "@/lib/format";
-import { getModelFeatures, MODEL_FEATURES } from "@/lib/model-features";
-import { getActiveBanners, getCategoryCounts, getFeaturedProducts, getProductBySlug, searchProducts } from "@/server/catalog";
+import { IMAGE_SEARCH_MODEL } from "@/lib/image-search";
+import { MODEL_FEATURES } from "@/lib/model-features";
+import { getActiveBanners, getFeaturedProducts, getMegaMenu, getProductBySlug, getSiteSettings, searchProducts } from "@/server/catalog";
+import { getImageSearchStatus } from "@/server/image-search";
+import { getBankAccount } from "@/server/payment";
 
-// Bộ hợp thể đầu tiên đang bán (theo thứ tự trong MODEL_FEATURES) cho dải giới thiệu hợp thể.
+// Bộ hợp thể đầu tiên đang bán (theo thứ tự trong MODEL_FEATURES) cho khối mở đầu trang chủ.
 async function findCombiner() {
   for (const [slug, features] of Object.entries(MODEL_FEATURES)) {
     if (!features.members) continue;
@@ -23,145 +25,164 @@ async function findCombiner() {
   return null;
 }
 
+// Màu dải tên của ô danh mục, lần lượt xanh coban, đỏ, đen.
+const TILE_COLORS = ["bg-cobalt", "bg-brand", "bg-ink"];
+
+function SectionHeading({ id, children, bar }: { id: string; children: string; bar: string }) {
+  return (
+    <div className="flex flex-col gap-2.5">
+      <h2 id={id} className="font-condensed text-[clamp(2.5rem,5vw,3.5rem)] leading-none font-black uppercase italic">
+        {children}
+      </h2>
+      <span aria-hidden className={`h-2.5 w-28 ${bar}`} />
+    </div>
+  );
+}
+
 export default async function Home() {
-  const [featured, newest, counts, banners, combiner] = await Promise.all([
-    getFeaturedProducts(8),
-    searchProducts({ q: "", category: "", sort: "moi-nhat", page: 1, pageSize: 8 }),
-    getCategoryCounts(),
-    getActiveBanners(),
+  const shelf = (filter: Partial<Parameters<typeof searchProducts>[0]>) =>
+    searchProducts({ q: "", category: "", sort: "moi-nhat", page: 1, pageSize: 8, ...filter });
+  const [combiner, featured, categories, banners, settings, imageSearchStatus, newest, transformable, underMillion, inStock] = await Promise.all([
     findCombiner(),
+    getFeaturedProducts(8),
+    getMegaMenu(),
+    getActiveBanners(),
+    getSiteSettings(),
+    getImageSearchStatus(IMAGE_SEARCH_MODEL.id),
+    shelf({}),
+    shelf({ transformable: true }),
+    shelf({ maxPrice: 999_999 }),
+    shelf({ inStock: true }),
   ]);
   // Không có banner thì trang chủ giữ nguyên như trước (YC-CMS-02).
   const heroBanner = banners.find((banner) => banner.placement === "home_hero");
   const stripBanners = banners.filter((banner) => banner.placement === "home_strip");
+  const heroProduct = combiner?.product ?? (featured[0] ? await getProductBySlug(featured[0].slug) : null);
+  const policy = settings.policy ?? site.policy;
+  const imageSearch = imageSearchStatus.products > 0;
+  // Ví dụ minh hoạ trong dải "Tìm bằng ảnh": một mẫu biến hình được, không có thì mẫu nổi bật.
+  const example = transformable.items[0] ?? featured[0];
 
-  // Bốn sản phẩm nổi bật đầu tiên đổi qua lại ở đầu trang.
-  const heroProducts = (await Promise.all(featured.slice(0, 4).map((item) => getProductBySlug(item.slug)))).filter((p) => p !== null);
-  const heroItems: HeroItem[] = heroProducts.map((product) => ({
-    slug: product.slug,
-    name: product.name,
-    tagline: product.tagline,
-    categoryName: getCategory(product.category)?.name ?? "Mô hình",
-    price: product.price,
-    stock: product.stock,
-    variantId: product.variantId,
-    image: product.image,
-    viewer: {
-      model: product.model,
-      colors: product.colors,
-      modelUrl: product.modelUrl,
-      features: getModelFeatures(product.modelUrl),
-      label: `Mô hình 3D của ${product.name}`,
-    },
-  }));
-
-  // Ảnh đại diện cho từng danh mục: sản phẩm mới nhất của danh mục đó.
-  const categoryImages = await Promise.all(
-    CATEGORIES.map(async (category) => (await searchProducts({ q: "", category: category.slug, sort: "moi-nhat", page: 1, pageSize: 1 })).items[0]?.image ?? null),
-  );
+  const tabs: ShelfTab[] = [
+    { key: "tat-ca", label: "Tất cả", href: "/san-pham", items: newest.items },
+    { key: "bien-hinh", label: "Có biến hình 3D", href: "/san-pham?bien-hinh=1", items: transformable.items },
+    { key: "duoi-1-trieu", label: "Dưới 1 triệu", href: "/san-pham?gia-den=999999", items: underMillion.items },
+    { key: "con-hang", label: "Còn hàng", href: "/san-pham?con-hang=1", items: inStock.items },
+  ]
+    .filter((tab) => tab.items.length > 0)
+    .map(({ items, ...tab }) => ({ ...tab, content: <ProductGrid products={items} /> }));
 
   const perks = [
-    { icon: Box, title: "Xem 3D trước khi mua", text: "Xoay, phóng to, xem biến hình" },
-    { icon: Truck, title: "Miễn phí vận chuyển", text: `Đơn từ ${formatVnd(site.shipping.freeFrom)}` },
-    { icon: RotateCcw, title: `Đổi trả ${site.policy.returnDays} ngày`, text: "Theo chính sách cửa hàng" },
-    { icon: ShieldCheck, title: `Bảo hành ${site.policy.warrantyMonths} tháng`, text: "Theo chính sách cửa hàng" },
+    { icon: Truck, text: `Giao miễn phí từ ${formatVnd(site.shipping.freeFrom)}` },
+    { icon: RotateCcw, text: `Đổi trả ${policy.returnDays} ngày` },
+    { icon: ShieldCheck, text: `Bảo hành ${policy.warrantyMonths} tháng` },
+    { icon: QrCode, text: getBankAccount() ? "VietQR hoặc COD" : "Trả tiền khi nhận hàng" },
   ];
 
   return (
-    <div className="mx-auto max-w-7xl space-y-16 px-4 pt-6 pb-16 sm:px-6 sm:pt-8">
+    <div className="mx-auto max-w-7xl space-y-24 px-4 pt-8 sm:px-6 lg:pt-10">
       {heroBanner && <HeroBanner banner={heroBanner} />}
-      {heroItems.length > 0 ? (
-        <HeroShowcase items={heroItems} />
+      {heroProduct ? (
+        <ComboHero product={heroProduct} members={combiner?.members ?? []} />
       ) : (
-        <section className="rounded-[1.75rem] border border-line bg-surface p-10">
-          <h1 className="text-4xl font-extrabold tracking-tight">Khám phá thế giới robot sưu tầm</h1>
-          <Link href="/san-pham" className={`${buttonClass({ size: "lg" })} mt-6`}>
+        <section className="border-3 border-ink bg-cobalt p-10 text-white shadow-[10px_10px_0_var(--color-ink)]">
+          <h1 className="font-condensed text-6xl font-black uppercase italic">Khám phá thế giới robot sưu tầm</h1>
+          <ButtonLink href="/san-pham" variant="secondary" size="lg" className="mt-6">
             Khám phá bộ sưu tập
-          </Link>
+          </ButtonLink>
         </section>
       )}
 
       <StripBanners banners={stripBanners} />
 
-      <section aria-labelledby="danh-muc">
-        <div className="mb-5 flex items-end justify-between gap-4">
-          <h2 id="danh-muc" className="text-2xl font-bold tracking-tight sm:text-3xl">
-            Mua theo dòng robot
-          </h2>
-          <Link href="/san-pham" className="flex shrink-0 items-center gap-1 text-sm font-semibold text-brand-strong hover:underline">
-            Tất cả sản phẩm <ArrowRight className="size-4" aria-hidden />
-          </Link>
-        </div>
-        <ul className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-4 sm:overflow-visible sm:px-0 lg:grid-cols-7">
-          {CATEGORIES.map((category, index) => (
-            <li key={category.slug} className="w-36 shrink-0 snap-start sm:w-auto">
-              <Link href={`/san-pham?loai=${category.slug}`} className="group flex flex-col gap-2">
-                <span className="product-stage block aspect-square overflow-hidden rounded-2xl border border-line transition group-hover:border-brand">
-                  <ProductImage src={categoryImages[index]} alt="" className="size-full p-3 transition duration-500 group-hover:scale-105" />
-                </span>
-                <span className="text-sm leading-snug font-semibold">{category.name}</span>
-                <span className="-mt-1.5 text-xs text-muted">{counts[category.slug] ?? 0} sản phẩm</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <section aria-label="Sản phẩm">
-        <ProductTabs
-          tabs={[
-            { value: "moi", label: "Hàng mới về", content: <ProductGrid products={newest.items} /> },
-            ...(featured.length > 0 ? [{ value: "noi-bat", label: "Nổi bật", content: <ProductGrid products={featured} /> }] : []),
-          ]}
-          action={
-            <Link href="/san-pham" className="flex items-center gap-1 text-sm font-semibold text-brand-strong hover:underline">
-              Xem tất cả <ArrowRight className="size-4" aria-hidden />
-            </Link>
-          }
-        />
-      </section>
-
-      {combiner && (
-        <section aria-labelledby="hop-the" className="grid overflow-hidden rounded-[1.75rem] bg-fg text-bg lg:grid-cols-2">
-          <div className="flex flex-col gap-5 p-8 sm:p-12">
-            <p className="text-xs font-bold tracking-[0.2em] text-brand uppercase">Robot hợp thể</p>
-            <h2 id="hop-the" className="text-3xl leading-tight font-extrabold sm:text-4xl">
-              Xem từng thành viên ghép lại thành {combiner.product.name.split(" (")[0]}
-            </h2>
-            <p className="text-bg/70">
-              Mua lẻ từng thành viên hoặc cả bộ. Mô hình 3D cho thấy mỗi món nằm ở đâu khi hợp thể.
-            </p>
-            {combiner.members.length > 0 && (
-              <ul className="flex flex-wrap gap-2">
-                {combiner.members.map((member) => (
-                  <li key={member.id}>
-                    <Link href={`/san-pham/${member.slug}`} className="inline-flex rounded-full border border-bg/20 px-3.5 py-2 text-sm transition hover:border-brand hover:text-brand">
-                      {member.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-            <Link href={`/san-pham/${combiner.product.slug}`} className={`${buttonClass({ size: "lg" })} mt-2 self-start`}>
-              Xem hợp thể 3D
+      {categories.length > 0 && (
+        <section aria-labelledby="danh-muc">
+          <div className="mb-14 flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+            <SectionHeading id="danh-muc" bar="bg-brand">
+              Chọn dòng robot
+            </SectionHeading>
+            <Link href="/san-pham" className="border-b-3 border-ink font-condensed text-xl font-extrabold uppercase hover:text-brand">
+              Tất cả sản phẩm
             </Link>
           </div>
-          <div className="relative min-h-72 bg-bg/5">
-            <ProductImage src={combiner.product.image} alt={combiner.product.name} className="absolute inset-0 size-full p-8" />
-          </div>
+          <ul className="grid grid-cols-2 gap-x-5 gap-y-14 sm:grid-cols-3 lg:grid-cols-6">
+            {categories.map((category, index) => (
+              <li key={category.slug}>
+                <Link
+                  href={`/san-pham?loai=${category.slug}`}
+                  className="group flex h-full flex-col border-3 border-ink bg-surface shadow-[6px_6px_0_var(--color-ink)] transition hover:-translate-y-1"
+                >
+                  <span className="halftone grid h-36 place-items-center">
+                    <ProductImage src={category.featured?.image ?? null} alt="" className="-mt-11 h-44 w-full p-1 transition duration-300 group-hover:scale-105" />
+                  </span>
+                  <span
+                    className={`flex flex-1 items-center justify-between gap-2 border-t-3 border-ink px-3.5 py-3 font-condensed text-[21px] leading-[1.05] font-extrabold text-white uppercase ${TILE_COLORS[index % TILE_COLORS.length]}`}
+                  >
+                    {category.name}
+                    <ArrowRight className="size-5 shrink-0" strokeWidth={2.6} aria-hidden />
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </section>
       )}
 
-      <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {perks.map(({ icon: Icon, title, text }) => (
-          <li key={title} className="flex items-center gap-4 rounded-2xl border border-line bg-surface p-5">
-            <span className="grid size-11 shrink-0 place-items-center rounded-full bg-brand/10 text-brand-strong">
-              <Icon className="size-5" aria-hidden />
-            </span>
-            <span>
-              <span className="block font-bold">{title}</span>
-              <span className="text-sm text-muted">{text}</span>
-            </span>
+      {tabs.length > 0 && (
+        <section aria-labelledby="moi-ve">
+          <ShelfTabs
+            heading={
+              <SectionHeading id="moi-ve" bar="bg-cobalt">
+                Mới về kệ
+              </SectionHeading>
+            }
+            tabs={tabs}
+          />
+        </section>
+      )}
+
+      {imageSearch && (
+        <section
+          aria-labelledby="tim-anh"
+          className="grid items-center gap-10 border-3 border-ink bg-brand p-6 text-white shadow-[10px_10px_0_var(--color-ink)] sm:p-10 lg:grid-cols-2 lg:p-12"
+        >
+          <div className="flex flex-col gap-5">
+            <p className="-rotate-3 self-start border-3 border-ink bg-surface px-3.5 py-1 font-condensed text-lg font-extrabold text-ink uppercase">Tìm bằng ảnh</p>
+            <h2 id="tim-anh" className="pt-1 font-condensed text-[clamp(3rem,6vw,4.5rem)] leading-[0.95] font-black uppercase italic">
+              Chụp. Tải lên.
+              <br />
+              Tìm ra.
+            </h2>
+            <p className="max-w-[44ch] text-lg leading-relaxed font-medium">
+              Có ảnh một mô hình mà chưa biết tên? Tải ảnh lên, {site.name} đối chiếu với ảnh chụp nhiều góc từ mô hình 3D và gợi ý mẫu giống nhất.
+            </p>
+            <ButtonLink href="/tim-bang-anh" variant="secondary" size="lg" className="mt-2 self-start">
+              <Camera className="size-5" strokeWidth={2.6} aria-hidden />
+              Tải ảnh lên
+            </ButtonLink>
+          </div>
+          {example && (
+            <div aria-hidden className="flex flex-wrap items-center justify-center gap-5">
+              <div className="w-52 -rotate-5 border-3 border-ink bg-surface p-3 pb-4">
+                <ProductImage src={example.image} alt="" className="halftone h-48 w-full" />
+                <p className="mt-2.5 font-condensed text-base font-extrabold text-ink uppercase">Ảnh của bạn</p>
+              </div>
+              <span className="font-condensed text-6xl font-black text-ink">→</span>
+              <div className="w-52 rotate-3 border-3 border-ink bg-surface p-3 pb-4 text-ink shadow-[6px_6px_0_var(--color-ink)]">
+                <ProductImage src={example.image} alt="" className="h-44 w-full" />
+                <p className="mt-2 font-condensed text-lg leading-tight font-extrabold uppercase">{example.name}</p>
+                <p className="mt-1 font-condensed text-2xl font-black italic tabular-nums">{formatVnd(example.price)}</p>
+              </div>
+            </div>
+          )}
+        </section>
+      )}
+
+      <ul aria-label="Cam kết của cửa hàng" className="grid bg-ink text-white sm:grid-cols-2 lg:grid-cols-4">
+        {perks.map(({ icon: Icon, text }) => (
+          <li key={text} className="flex items-center gap-3 px-6 py-5">
+            <Icon className="size-7 shrink-0" strokeWidth={2.2} aria-hidden />
+            <span className="font-condensed text-[21px] leading-tight font-extrabold uppercase">{text}</span>
           </li>
         ))}
       </ul>
