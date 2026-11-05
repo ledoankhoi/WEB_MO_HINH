@@ -703,29 +703,6 @@ export const SEED_PRODUCTS: SeedProduct[] = [
     featured: false,
   },
   {
-    slug: "mighty-morphin-megazord",
-    name: "Mighty Morphin Megazord",
-    tagline: "Năm Zord khủng long ghép thành một siêu robot",
-    description:
-      "Megazord là siêu robot của loạt Mighty Morphin Power Rangers (1993), chuyển thể từ Daizyujin của Kyōryū Sentai Zyuranger.\n\nNăm Zord gồm khủng long bạo chúa, voi ma mút, hổ răng kiếm, mastodon và pterodactyl, tách rời được và ghép thành Megazord hoàn chỉnh. Kèm Power Sword.",
-    category: "robot-hop-the",
-    price: 2_890_000,
-    compareAtPrice: null,
-    stock: 3,
-    model: "mech",
-    colors: { primary: "#c9302c", secondary: "#2b2f36", accent: "#e6c24a" },
-    specs: [
-      { label: "Dòng phim", value: "Mighty Morphin Power Rangers (1993)" },
-      { label: "Bản gốc", value: "Daizyujin, Kyōryū Sentai Zyuranger" },
-      { label: "Hãng sản xuất", value: "Bandai" },
-      { label: "Chiều cao", value: "Khoảng 25 cm (dạng ghép)" },
-      { label: "Hợp thể", value: "5 Zord" },
-      { label: "Chất liệu", value: "Nhựa ABS, chi tiết hợp kim" },
-      { label: "Độ tuổi", value: "Từ 8 tuổi" },
-    ],
-    featured: true,
-  },
-  {
     slug: "wild-force-megazord",
     name: "Wild Force Megazord",
     tagline: "Megazord từ các Zord thú hoang dã",
@@ -772,98 +749,6 @@ export const SEED_PRODUCTS: SeedProduct[] = [
     featured: false,
   },
   {
-    slug: "evangelion-unit-01",
-    name: "Evangelion Unit-01",
-    tagline: "Cỗ máy tím xanh của Shinji Ikari",
-    description:
-      "Unit-01 là Evangelion do Shinji Ikari điều khiển trong Neon Genesis Evangelion (1995), dáng người cao gầy với sừng đơn trên đầu.\n\nFigure hoàn thiện, khớp cử động nhiều cho những tư thế bạo lực đặc trưng của Unit-01. Kèm dao progressive knife và súng palette rifle.",
-    category: "mecha-anime",
-    price: 1_850_000,
-    compareAtPrice: null,
-    stock: 6,
-    model: "humanoid",
-    colors: { primary: "#6a3fa0", secondary: "#3cc463", accent: "#f08a24" },
-    specs: [
-      { label: "Dòng phim", value: "Neon Genesis Evangelion (1995)" },
-      { label: "Hãng sản xuất", value: "Bandai Spirits" },
-      { label: "Dòng sản phẩm", value: "Figure hoàn thiện" },
-      { label: "Chiều cao", value: "Khoảng 17 cm" },
-      { label: "Chất liệu", value: "Nhựa ABS, PVC" },
-      { label: "Phụ kiện", value: "Progressive knife, palette rifle" },
-      { label: "Độ tuổi", value: "Từ 15 tuổi" },
-    ],
-    featured: true,
-  },
-  {
-    slug: "mazinger-z",
-    name: "Mazinger Z",
-    tagline: "Siêu robot khởi đầu thể loại robot điều khiển",
-    description:
-      "Mazinger Z của Go Nagai (1972) là siêu robot đầu tiên do người lái ngồi trong buồng điều khiển, mở đường cho cả thể loại mecha.\n\nFigure tạo hình cổ điển với ngực đỏ hình chữ V và đầu mang tàu Pilder. Kèm bàn tay Rocket Punch tách rời.",
-    category: "mecha-anime",
-    price: 1_590_000,
-    compareAtPrice: null,
-    stock: 5,
-    model: "retro",
-    colors: { primary: "#2b2f36", secondary: "#8d939c", accent: "#d93a2b" },
-    specs: [
-      { label: "Dòng phim", value: "Mazinger Z (1972)" },
-      { label: "Tác giả", value: "Go Nagai" },
-      { label: "Dòng sản phẩm", value: "Figure hoàn thiện" },
-      { label: "Chiều cao", value: "Khoảng 18 cm" },
-      { label: "Chất liệu", value: "Nhựa ABS, PVC" },
-      { label: "Phụ kiện", value: "Rocket Punch, bàn tay thay thế" },
-      { label: "Độ tuổi", value: "Từ 15 tuổi" },
-    ],
-    featured: false,
-  },
-  {
-    slug: "mazinger-z-jet-scrander",
-    name: "Mazinger Z kèm Jet Scrander",
-    tagline: "Bản hợp kim có đôi cánh bay Jet Scrander",
-    description:
-      "Jet Scrander là bộ cánh giúp Mazinger Z bay lượn, xuất hiện từ giữa loạt phim gốc năm 1972.\n\nPhiên bản figure hợp kim, cánh gắn sau lưng tháo rời được và có thể trưng bày riêng. Khối lượng nặng tay, sơn bóng.",
-    category: "figure",
-    price: 3_490_000,
-    compareAtPrice: null,
-    stock: 2,
-    model: "retro",
-    colors: { primary: "#2b2f36", secondary: "#8d939c", accent: "#d93a2b" },
-    specs: [
-      { label: "Dòng phim", value: "Mazinger Z (1972)" },
-      { label: "Tác giả", value: "Go Nagai" },
-      { label: "Dòng sản phẩm", value: "Figure hợp kim" },
-      { label: "Chiều cao", value: "Khoảng 18 cm" },
-      { label: "Chất liệu", value: "Hợp kim kẽm, nhựa ABS" },
-      { label: "Phụ kiện", value: "Jet Scrander, đế trưng bày" },
-      { label: "Độ tuổi", value: "Từ 15 tuổi" },
-    ],
-    featured: false,
-  },
-  {
-    slug: "shin-getter-robo-2",
-    name: "Shin Getter-2",
-    tagline: "Dạng tốc độ của Shin Getter Robo với mũi khoan",
-    description:
-      "Shin Getter Robo ghép từ ba Getter Machine, mỗi thứ tự ghép cho ra một robot khác nhau. Shin Getter-2 là dạng tốc độ cao với tay phải là mũi khoan.\n\nMô hình tạo hình theo bản OVA Shin Getter Robo vs Neo Getter Robo, thân trắng và áo choàng ngắn.",
-    category: "robot-hop-the",
-    price: 1_790_000,
-    compareAtPrice: null,
-    stock: 3,
-    model: "humanoid",
-    colors: { primary: "#eef0f3", secondary: "#2b2f36", accent: "#d93a2b" },
-    specs: [
-      { label: "Dòng phim", value: "Shin Getter Robo (OVA)" },
-      { label: "Tác giả", value: "Go Nagai, Ken Ishikawa" },
-      { label: "Dòng sản phẩm", value: "Figure hoàn thiện" },
-      { label: "Chiều cao", value: "Khoảng 19 cm" },
-      { label: "Hợp thể", value: "3 Getter Machine" },
-      { label: "Chất liệu", value: "Nhựa ABS, PVC" },
-      { label: "Độ tuổi", value: "Từ 15 tuổi" },
-    ],
-    featured: false,
-  },
-  {
     slug: "zaku-machine-gun",
     name: "Súng máy Zaku 1/100",
     tagline: "Bộ vũ khí thay thế cho Zaku II cấp Master Grade",
@@ -905,6 +790,17 @@ export const SEED_PRODUCTS: SeedProduct[] = [
     ],
     featured: false,
   },
+];
+
+// Mẫu đã bỏ khỏi dữ liệu mẫu vì mô hình 3D không đạt chuẩn (file không có clip biến hình, hợp thể hay dáng, mô hình
+// vỡ hình hoặc mất màu). CSDL đã nạp mẫu từ trước thì chuyển các sản phẩm này sang `archived` một lần, không xoá bản ghi
+// để đơn hàng cũ vẫn trỏ được; CSDL mới không nạp chúng.
+export const RETIRED_SEED_SLUGS = [
+  "mighty-morphin-megazord",
+  "evangelion-unit-01",
+  "mazinger-z",
+  "mazinger-z-jet-scrander",
+  "shin-getter-robo-2",
 ];
 
 const specValues = (...labels: string[]) =>

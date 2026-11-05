@@ -17,6 +17,7 @@
     "smoke": "node --env-file-if-exists=.env.local scripts/smoke.mjs",
     "models": "node --env-file-if-exists=.env.local scripts/sketchfab.mjs",
     "media": "node --env-file-if-exists=.env.local scripts/media.mjs",
+    "models:audit": "node scripts/audit-models.mjs",
     "backup": "node --env-file-if-exists=.env.local scripts/backup.mjs",
     "test:pg": "node --env-file-if-exists=.env.local scripts/test-pg.mjs",
     "postinstall": "node scripts/copy-ort.mjs"

@@ -13,6 +13,7 @@ Website thương mại điện tử bán mô hình robot sưu tầm, có xem và
 - `npm run build`: build production
 - `npm run lint`, `npm run typecheck`, `npm test`
 - `npm run models`: tải mô hình `.glb` gốc từ Sketchfab theo `scripts/sketchfab-models.json` vào `data/models-raw/` (cần `SKETCHFAB_API_TOKEN`); tác giả và giấy phép ghi vào `src/data/model-credits.json`, hiện dưới khung 3D
+- `npm run models:audit`: đọc clip hoạt ảnh của từng mô hình, đối chiếu `src/lib/model-features.ts`, báo mẫu chưa đạt chuẩn biến hình/dáng (`--remote` đọc từ Supabase, không cần `data/`)
 - `npm run media`: nén mô hình (meshopt, texture WebP) rồi tải mô hình và ảnh `data/products/*.webp` lên Supabase Storage, bucket công khai `media` (cần `SUPABASE_URL`, `SUPABASE_SECRET_KEY`)
 - `npm run smoke`: bật `next dev` ở cổng 3100, mở mọi trang (cửa hàng và quản trị) với phiên quản trị tạm, báo trang trả sai mã hoặc có dấu hiệu lỗi (cần `DATABASE_URL`, `ADMIN_EMAIL`)
 - `npm run test:pg`: chạy bộ test trên PostgreSQL thật (`DATABASE_URL`), mỗi file một schema tạm, xoá khi xong; chậm (khoảng 20 phút), dùng khi cần kiểm tra trên Supabase

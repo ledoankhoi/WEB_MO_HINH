@@ -28,9 +28,9 @@ describe("ảnh thật của dữ liệu mẫu (src/data/product-photos.ts)", ()
   });
 
   it("sản phẩm chưa có ảnh thật giữ ảnh cũ và thư viện trống", async () => {
-    const product = (await products.findProductBySlug("mazinger-z"))!;
+    const product = (await products.findProductBySlug("muteki-shogun"))!;
     expect(product.images).toEqual([]);
-    expect(product.image).toMatch(/\/products\/mazinger-z\.webp$/);
+    expect(product.image).toMatch(/\/products\/muteki-shogun\.webp$/);
   });
 
   it("chạy lại khởi tạo không nhân đôi ảnh", async () => {

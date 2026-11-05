@@ -58,7 +58,7 @@ afterAll(cleanup);
 describe("dữ liệu mẫu", () => {
   it("chỉ được nạp một lần, mỗi sản phẩm có một biến thể mặc định và tồn qua phiếu PN-SEED", async () => {
     const first = await products.queryProducts({ pageSize: 100 });
-    expect(first.total).toBe(39);
+    expect(first.total).toBe(34);
     expect(first.items[0].slug).toBe("bruticus");
 
     const db = await getDb();
@@ -68,7 +68,7 @@ describe("dữ liệu mẫu", () => {
       "SELECT status FROM stock_documents WHERE code = 'PN-SEED'",
     ]);
     expect(Number(marks.rows[0].n)).toBe(1);
-    expect(Number(variants.rows[0].n)).toBe(39);
+    expect(Number(variants.rows[0].n)).toBe(34);
     expect(documents.rows).toEqual([{ status: "posted" }]);
 
     const bruticus = (await products.findProductBySlug("bruticus"))!;
@@ -112,7 +112,7 @@ describe("dữ liệu mẫu", () => {
 
   it("phân trang đúng tổng số", async () => {
     const page2 = await products.queryProducts({ page: 2, pageSize: 5 });
-    expect(page2.total).toBe(39);
+    expect(page2.total).toBe(34);
     expect(page2.items).toHaveLength(5);
   });
 });

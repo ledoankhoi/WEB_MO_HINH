@@ -9,7 +9,7 @@ import { newId } from "../ids";
 import { DEFAULT_WAREHOUSE, movementStatements } from "../repo/inventory";
 import { MIGRATIONS } from "./migrations";
 import { PRODUCT_PHOTOS } from "@/data/product-photos";
-import { SEED_BRANDS, SEED_PRODUCTS, SEED_SERIES } from "./seed-data";
+import { RETIRED_SEED_SLUGS, SEED_BRANDS, SEED_PRODUCTS, SEED_SERIES } from "./seed-data";
 
 export type InValue = string | number | boolean | null | Uint8Array;
 export type Row = Record<string, unknown>;
@@ -38,6 +38,7 @@ const SEED_KEY = "seed:catalog-v4";
 const SEED_PRODUCT_TYPES: Record<string, string> = { "model-kits": "model_kit", "robot-hop-the": "combiner", "phu-kien": "accessory" };
 const PHOTOS_SEED_KEY = "seed:product-photos-v1";
 const TAXONOMY_SEED_KEY = "seed:taxonomy-v1";
+const RETIRE_SEED_KEY = "seed:retire-models-v1";
 
 type DbState = { backend?: Backend; ready?: Promise<Db> };
 const globalState = globalThis as unknown as { __robostoreDb?: DbState };
@@ -168,6 +169,19 @@ async function migrateAndSeed(backend: Backend) {
       await seedProductPhotos(exec);
       await mark(PHOTOS_SEED_KEY);
     }
+    if (!done.has(RETIRE_SEED_KEY)) {
+      await retireSeedProducts(exec);
+      await mark(RETIRE_SEED_KEY);
+    }
+  });
+}
+
+// Ẩn các mẫu không đạt chuẩn mô hình 3D (RETIRED_SEED_SLUGS). Chỉ đổi trạng thái, giữ bản ghi, biến thể và sổ kho
+// để đơn hàng cũ và đối soát kho vẫn khớp.
+export async function retireSeedProducts(exec: (statement: InStatement) => Promise<ResultSet>) {
+  await exec({
+    sql: `UPDATE products SET status = 'archived', is_featured = false WHERE slug IN (${RETIRED_SEED_SLUGS.map(() => "?").join(", ")}) AND status <> 'archived'`,
+    args: RETIRED_SEED_SLUGS,
   });
 }
 

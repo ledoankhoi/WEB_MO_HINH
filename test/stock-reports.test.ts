@@ -130,7 +130,7 @@ describe("PERF-01: 1.000 biến thể", () => {
       await fn();
       return performance.now() - started;
     };
-    expect((await reports.listStock({ withCost: true, pageSize: 50 })).total).toBeGreaterThanOrEqual(1039);
+    expect((await reports.listStock({ withCost: true, pageSize: 50 })).total).toBeGreaterThanOrEqual(1034);
     expect(await time(() => reports.listStock({ withCost: true, pageSize: 50 }))).toBeLessThan(300);
     expect(await time(() => reports.listStock({ q: "PERF-99", withCost: false }))).toBeLessThan(300);
     expect(await time(() => products.queryProducts({ pageSize: 12 }))).toBeLessThan(300);

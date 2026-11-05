@@ -212,6 +212,14 @@ Các tính năng đều dựa trên **hoạt ảnh có sẵn trong file `.glb`**
 ## 8. Hạn chế hiện tại
 
 - **Chụp ảnh chưa có lệnh riêng** (vẫn đúng sau đợt 15/10). Bước 3.5 hiện làm bằng một trang và script tạm khi phát triển, chưa có `npm run`.
-- **Hai mô hình không có màu.** Sazabi và Mazinger Z Jet Scrander hiện màu trắng, vì file gốc không chứa vật liệu màu.
+- **Mô hình không có màu.** Sazabi hiện màu trắng, vì file gốc không chứa vật liệu màu. (Mazinger Z Jet Scrander cùng lỗi này đã bị loại, xem mục 9.)
 - **Thời hạn lưu đệm cố định 1 ngày.** Thay mô hình mà giữ tên file thì khách quen có thể thấy bản cũ tối đa 1 ngày. Muốn lưu đệm lâu hơn thì đặt tên file kèm phiên bản (ví dụ `zeta-gundam-v2.glb`).
 - **Bản quyền nhân vật.** Mô hình là fan art về các thương hiệu có bản quyền (Bandai/Sunrise, Hasbro/Takara Tomy…), chỉ phù hợp cho mục đích học thuật. Bán hàng thật cần thay bằng mô hình do cửa hàng sở hữu hoặc được cấp phép.
+
+## 9. Kiểm tra chuẩn tương tác và các mẫu đã loại (cập nhật 05/11/2026)
+
+**Chuẩn.** Mỗi robot phải có clip biến hình hoặc hợp thể, hoặc ít nhất hai dáng có sẵn trong file `.glb` (mục 4.4); phụ kiện được miễn. Lệnh `npm run models:audit` (`scripts/audit-models.mjs`) đọc clip hoạt ảnh trong từng file (`data/models/`, hoặc `-- --remote` để đọc thẳng từ Supabase Storage), đối chiếu với `src/lib/model-features.ts`, in từng mẫu đạt hay thiếu và trả mã thoát 1 nếu có mẫu chưa đạt hoặc khai báo trỏ tới clip không có trong file.
+
+**Đã loại 5 mẫu** không đạt chuẩn: Mighty Morphin Megazord, Evangelion Unit-01, Mazinger Z, Mazinger Z kèm Jet Scrander, Shin Getter-2 (file tĩnh, không có clip nào; vài file còn vỡ hình hoặc mất màu). Cách loại: bỏ khỏi `seed-data.ts`, `scripts/sketchfab-models.json`, `src/data/model-credits.json`; CSDL đã nạp mẫu từ trước thì bước một lần `seed:retire-models-v1` (`RETIRED_SEED_SLUGS`, `src/server/db/index.ts`) chuyển chúng sang `archived`, giữ bản ghi để đơn hàng cũ còn trỏ được. File trên Supabase Storage chưa xoá.
+
+**Kết quả kiểm tra 34 mẫu còn lại:** 13 đạt (Bruticus và 5 thành viên Combaticons, 5 mẫu Alliance, 2 phụ kiện). 21 chưa đạt, đều là file tĩnh không có clip: 10 mẫu Gundam (RX-78-2, Zeta, Strike Freedom, Exia, Full Armor Unicorn, Phenex, Wing, Char's Zaku II, Sazabi, Acguy), 8 mẫu Transformers (Bumblebee, Bumblebee Transformers One, Optimus Prime G1 và ROTB, Arcee, Megatron 2007, Soundwave, Starscream), Grimlock (có 4 clip thú nhưng không có biến hình), Wild Force Megazord, Muteki Shogun. Cần thay bằng mô hình có hoạt ảnh hoặc chấp nhận chỉ xem và xoay.
