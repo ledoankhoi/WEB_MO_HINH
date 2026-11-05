@@ -1,60 +1,144 @@
 "use client";
 
 import { useState } from "react";
-import { Box } from "lucide-react";
 import RobotViewerLoader from "@/components/three/RobotViewerLoader";
 import type { RobotViewerProps } from "@/components/three/RobotViewer";
-import { ProductImage } from "./ProductCard";
 
-// Khung trưng bày bên trái trang sản phẩm: mô hình 3D là mục đầu, sau đó ảnh đại diện và ảnh phụ.
-// Dải ảnh nhỏ đứng dọc bên trái trên màn hình rộng, nằm ngang dưới khung trên điện thoại.
+type Photo = { url: string; alt: string };
+
+// Khung ảnh của trang sản phẩm: ảnh thật của sản phẩm (ảnh hộp, ảnh mô hình hoàn thiện) là nội dung chính, mô hình
+// 3D là tab phụ để xoay xem dáng. Ảnh ngoài hỏng (cửa hàng nguồn đổi đường dẫn) thì tự bỏ qua; hỏng hết thì mở tab 3D.
 export function ProductGallery({
-  viewer,
-  images,
   name,
+  photos,
+  source,
+  viewer,
+  hint,
+  credit,
 }: {
-  viewer: RobotViewerProps;
-  images: { url: string; alt: string }[];
   name: string;
+  photos: Photo[];
+  // Trang nguồn của ảnh thật (tên miền + đường dẫn), để ghi nguồn bên dưới.
+  source: { host: string; url: string } | null;
+  viewer: RobotViewerProps;
+  hint: string;
+  credit: React.ReactNode;
 }) {
-  // -1: mô hình 3D, còn lại là vị trí ảnh.
-  const [selected, setSelected] = useState(-1);
-  const thumb = (active: boolean) =>
-    `grid size-16 shrink-0 place-items-center overflow-hidden rounded-2xl border-2 bg-surface text-xs font-bold transition sm:size-[4.5rem] ${
-      active ? "border-brand" : "border-line hover:border-fg/30"
-    }`;
+  const [failed, setFailed] = useState<string[]>([]);
+  const visible = photos.filter((photo) => !failed.includes(photo.url));
+  const [tab, setTab] = useState<"photos" | "3d">(photos.length > 0 ? "photos" : "3d");
+  const [active, setActive] = useState(0);
+  const current = visible[Math.min(active, visible.length - 1)];
+  const showPhotos = tab === "photos" && visible.length > 0;
+
+  const onError = (url: string) => {
+    setFailed((list) => (list.includes(url) ? list : [...list, url]));
+    setActive(0);
+  };
 
   return (
-    <div className="flex flex-col-reverse gap-3 lg:flex-row">
-      {images.length > 0 && (
-        <div className="flex gap-2.5 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0" role="group" aria-label="Chọn ảnh xem">
-          <button type="button" onClick={() => setSelected(-1)} aria-pressed={selected === -1} aria-label="Xem mô hình 3D" className={thumb(selected === -1)}>
-            <span className="flex flex-col items-center gap-0.5">
-              <Box className="size-5" aria-hidden />
-              3D
-            </span>
-          </button>
-          {images.map((image, index) => (
-            <button
-              key={image.url}
-              type="button"
-              onClick={() => setSelected(index)}
-              aria-pressed={selected === index}
-              aria-label={`Xem ảnh ${index + 1}`}
-              className={`${thumb(selected === index)} product-stage`}
-            >
-              <ProductImage src={image.url} alt="" className="size-full p-1.5" />
-            </button>
-          ))}
+    <div className="space-y-3">
+      {photos.length > 0 && (
+        <div role="tablist" aria-label="Cách xem sản phẩm" className="inline-flex rounded-full border border-line bg-surface p-1 text-sm">
+          <TabButton selected={showPhotos} disabled={visible.length === 0} onClick={() => setTab("photos")}>
+            Ảnh thật ({visible.length})
+          </TabButton>
+          <TabButton selected={!showPhotos} onClick={() => setTab("3d")}>
+            Xem 3D
+          </TabButton>
         </div>
       )}
-      <div className="product-stage relative h-[380px] w-full min-w-0 overflow-hidden rounded-3xl border border-line sm:h-[560px] lg:w-auto lg:flex-1">
-        {selected === -1 ? (
-          <RobotViewerLoader {...viewer} />
-        ) : (
-          <ProductImage src={images[selected].url} alt={images[selected].alt || `${name}, ảnh ${selected + 1}`} className="size-full p-6" />
-        )}
-      </div>
+
+      {showPhotos && current ? (
+        <>
+          <div className="relative h-[380px] overflow-hidden rounded-2xl border border-line bg-white sm:h-[520px]">
+            {/* Ảnh của cửa hàng nguồn, kích thước khác nhau nên không qua next/image. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              key={current.url}
+              src={current.url}
+              alt={current.alt ? `${name}: ${current.alt}` : name}
+              referrerPolicy="no-referrer"
+              onError={() => onError(current.url)}
+              className="size-full object-contain p-4"
+            />
+            {visible.length > 1 && (
+              <>
+                <NavButton side="left" label="Ảnh trước" onClick={() => setActive((i) => (i - 1 + visible.length) % visible.length)} />
+                <NavButton side="right" label="Ảnh sau" onClick={() => setActive((i) => (i + 1) % visible.length)} />
+              </>
+            )}
+          </div>
+          {visible.length > 1 && (
+            <ul className="flex gap-2 overflow-x-auto pb-1" aria-label="Ảnh nhỏ">
+              {visible.map((photo, index) => (
+                <li key={photo.url} className="shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setActive(index)}
+                    aria-label={`Xem ảnh ${index + 1}`}
+                    aria-current={photo.url === current.url}
+                    className={`size-16 overflow-hidden rounded-lg border bg-white transition sm:size-20 ${
+                      photo.url === current.url ? "border-brand ring-2 ring-brand/30" : "border-line hover:border-fg/40"
+                    }`}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={photo.url} alt="" referrerPolicy="no-referrer" loading="lazy" onError={() => onError(photo.url)} className="size-full object-contain p-1" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          {source && (
+            <p className="text-xs text-muted">
+              Ảnh sản phẩm thật, nguồn:{" "}
+              <a href={source.url} target="_blank" rel="noopener noreferrer" className="underline hover:text-fg">
+                {source.host}
+              </a>
+              .
+            </p>
+          )}
+        </>
+      ) : (
+        <>
+          <div className="product-stage h-[380px] overflow-hidden rounded-2xl border border-line sm:h-[520px]">
+            <RobotViewerLoader {...viewer} />
+          </div>
+          <p className="text-xs text-muted">
+            {photos.length > 0 && <strong className="font-medium text-fg">Mô hình 3D minh hoạ, có thể khác chi tiết so với sản phẩm thật. </strong>}
+            {hint}
+          </p>
+          {credit}
+        </>
+      )}
     </div>
+  );
+}
+
+function TabButton({ selected, disabled, onClick, children }: { selected: boolean; disabled?: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={selected}
+      disabled={disabled}
+      onClick={onClick}
+      className={`rounded-full px-4 py-1.5 font-medium transition disabled:opacity-40 ${selected ? "bg-fg text-bg" : "text-muted hover:text-fg"}`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function NavButton({ side, label, onClick }: { side: "left" | "right"; label: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      onClick={onClick}
+      className={`absolute top-1/2 ${side === "left" ? "left-3" : "right-3"} grid size-10 -translate-y-1/2 place-items-center rounded-full border border-line bg-surface/90 text-lg shadow-sm transition hover:bg-surface`}
+    >
+      <span aria-hidden="true">{side === "left" ? "‹" : "›"}</span>
+    </button>
   );
 }

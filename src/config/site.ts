@@ -4,7 +4,7 @@ export const site = {
   name: "ROBOTICA",
   slogan: "Mô hình robot sưu tầm",
   description:
-    "Cửa hàng mô hình robot sưu tầm. Xem và xoay từng mô hình 3D ngay trên trình duyệt trước khi đặt mua.",
+    "Cửa hàng mô hình robot sưu tầm chính hãng: Gunpla, Transformers, Super Sentai. Ảnh thật từng sản phẩm, kèm mô hình 3D để xoay xem dáng trước khi đặt mua.",
   // Dùng cho sitemap, thẻ Open Graph và liên kết tuyệt đối.
   url: (process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/+$/, ""),
   contact: {

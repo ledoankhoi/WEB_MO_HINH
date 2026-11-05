@@ -53,7 +53,7 @@ function toVariant(row: Row): ProductVariant {
   };
 }
 
-function toProduct(row: Row, variants: ProductVariant[]): Product {
+function toProduct(row: Row, variants: ProductVariant[], images: Product["images"] = []): Product {
   const model = String(row.model);
   return {
     id: String(row.id),
@@ -77,6 +77,7 @@ function toProduct(row: Row, variants: ProductVariant[]): Product {
     colors: colorsOf(row),
     specs: parseSpecs(row.specs),
     image: row.image === null ? null : String(row.image),
+    images,
     isFeatured: Boolean(row.is_featured),
     metaTitle: String(row.meta_title ?? ""),
     metaDescription: String(row.meta_description ?? ""),
@@ -112,15 +113,21 @@ const VARIANT_STOCK = "COALESCE((SELECT SUM(i.on_hand - i.reserved) FROM invento
 
 async function loadProduct(where: string, arg: string): Promise<Product | null> {
   const db = await getDb();
-  const [product, variants] = await db.batch([
+  const [product, variants, media] = await db.batch([
     { sql: `SELECT * FROM product_list WHERE ${where}`, args: [arg] },
     {
       sql: `SELECT v.*, ${VARIANT_STOCK} AS stock, ${VARIANT_USED} AS locked FROM product_variants v
             WHERE v.product_id = (SELECT id FROM products WHERE ${where}) ORDER BY v.sort_order, v.created_at, v.id`,
       args: [arg],
     },
+    {
+      sql: `SELECT url, alt FROM product_media WHERE kind = 'image' AND product_id = (SELECT id FROM products WHERE ${where})
+            ORDER BY sort_order, created_at`,
+      args: [arg],
+    },
   ]);
-  return product.rows[0] ? toProduct(product.rows[0], variants.rows.map(toVariant)) : null;
+  const images = media.rows.map((row) => ({ url: String(row.url), alt: String(row.alt) }));
+  return product.rows[0] ? toProduct(product.rows[0], variants.rows.map(toVariant), images) : null;
 }
 
 export const findProductBySlug = (slug: string) => loadProduct("slug = ?", slug);

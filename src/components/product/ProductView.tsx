@@ -1,10 +1,11 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { ProductGrid, ProductImage } from "@/components/product/ProductCard";
 import { MobileBuyBar } from "@/components/product/MobileBuyBar";
 import { ProductGallery } from "@/components/product/ProductGallery";
 import { ProductTabs } from "@/components/product/ProductTabs";
 import { PurchasePanel } from "@/components/product/PurchasePanel";
 import { WishlistButton } from "@/components/product/WishlistButton";
+import { PRODUCT_PHOTOS } from "@/data/product-photos";
 import { site } from "@/config/site";
 import { getCategory } from "@/lib/catalog";
 import { getModelFeatures, modelKey } from "@/lib/model-features";
@@ -37,6 +38,10 @@ export function ProductView({
   const category = getCategory(product.category);
   const credit = credits[modelKey(product.modelUrl) ?? ""];
   const features = getModelFeatures(product.modelUrl);
+  // Ghi nguồn khi ảnh đang hiển thị là ảnh của dữ liệu mẫu lấy từ cửa hàng khác.
+  const seededPhotos = PRODUCT_PHOTOS[product.slug];
+  const photoSet = seededPhotos && product.images.some((image) => seededPhotos.urls.includes(image.url)) ? seededPhotos : null;
+  const boxItems = product.boxContents.split("\n").map((line) => line.trim()).filter(Boolean);
   const status = product.stock <= 0 ? "Hết hàng" : product.stock <= 3 ? `Sắp hết hàng (còn ${product.stock})` : "Còn hàng";
 
   const specs =
@@ -100,6 +105,21 @@ export function ProductView({
       label: "Chi tiết",
       content: <div className="prose-store max-w-3xl text-sm leading-relaxed whitespace-pre-line text-muted">{product.description}</div>,
     },
+    ...(boxItems.length > 0
+      ? [
+          {
+            value: "trong-hop",
+            label: "Trong hộp",
+            content: (
+              <ul className="list-disc space-y-1 pl-5 text-sm text-muted">
+                {boxItems.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            ),
+          },
+        ]
+      : []),
     ...(specs ? [{ value: "thong-so", label: `Thông số (${product.specs.length})`, content: specs }] : []),
     ...(linkedList ? [{ value: "hop-the", label: features?.members ? `Hợp thể (${linked.length})` : "Hợp thể thành", content: linkedList }] : []),
     ...(reviewList ? [{ value: "danh-gia", label: `Đánh giá (${reviews!.count})`, content: reviewList }] : []),
@@ -128,34 +148,37 @@ export function ProductView({
       <div className="-mt-4 flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-10">
         <div className="min-w-0 flex-1 space-y-2">
           <ProductGallery
-            viewer={{ model: product.model, colors: product.colors, modelUrl: product.modelUrl, features, label: `Mô hình 3D của ${product.name}` }}
-            images={[...(product.image ? [{ url: product.image, alt: product.name }] : []), ...media.filter((m) => m.url !== product.image)]}
             name={product.name}
+            photos={media.length > 0 ? media : product.images}
+            source={photoSet ? { host: photoSet.source, url: photoSet.sourceUrl } : null}
+            viewer={{ model: product.model, colors: product.colors, modelUrl: product.modelUrl, features, label: `Mô hình 3D của ${product.name}` }}
+            hint={`Kéo để xoay, giữ Ctrl và cuộn để phóng to.${
+              features?.transform
+                ? features.transform.kind === "combine"
+                  ? " Bấm Hợp thể để xem các thành viên ghép lại."
+                  : " Bấm nút đổi dạng để chuyển giữa dạng xe và dạng robot."
+                : ""
+            }`}
+            credit={
+              credit && (
+                <p className="text-xs text-muted">
+                  Mô hình 3D:{" "}
+                  <a href={credit.sourceUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-fg">
+                    {credit.title}
+                  </a>{" "}
+                  của{" "}
+                  <a href={credit.authorUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-fg">
+                    {credit.author}
+                  </a>
+                  , giấy phép{" "}
+                  <a href={credit.licenseUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-fg">
+                    {credit.license}
+                  </a>
+                  .
+                </p>
+              )
+            }
           />
-          <p className="text-xs text-muted">
-            Mô hình 3D tương tác: kéo để xoay, giữ Ctrl và cuộn để phóng to.
-            {features?.transform &&
-              (features.transform.kind === "combine"
-                ? " Bấm Hợp thể để xem các thành viên ghép lại."
-                : " Bấm nút đổi dạng để chuyển giữa dạng xe và dạng robot.")}
-          </p>
-          {credit && (
-            <p className="text-xs text-muted">
-              Mô hình 3D:{" "}
-              <a href={credit.sourceUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-fg">
-                {credit.title}
-              </a>{" "}
-              của{" "}
-              <a href={credit.authorUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-fg">
-                {credit.author}
-              </a>
-              , giấy phép{" "}
-              <a href={credit.licenseUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-fg">
-                {credit.license}
-              </a>
-              .
-            </p>
-          )}
         </div>
 
         <aside aria-label="Mua hàng" className="space-y-5 rounded-3xl border border-line bg-surface p-6 lg:sticky lg:top-24 lg:w-[26rem] lg:shrink-0 sm:p-7">
