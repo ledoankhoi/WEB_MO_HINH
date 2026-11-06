@@ -5,6 +5,7 @@
 | [chuan/](chuan/README.md) | **Bộ tài liệu chuẩn.** Nguồn đúng duy nhất về phạm vi, nghiệp vụ và thiết kế. Mọi tài liệu khác và mã nguồn phải khớp với bộ này. |
 | [tham-khao/](tham-khao/README.md) | Tài liệu nghiệp vụ thu thập từ bên ngoài. Chỉ để đối chiếu, không dùng làm căn cứ. |
 | [AI/](AI/README.md) | Nghiên cứu và kế hoạch phần AI: gợi ý sản phẩm dựa trên hành vi tương tác 3D. Thay đổi nào động tới CSDL hay website vẫn phải ghi vào `chuan/` trước. |
+| [giaithich/](giaithich/noi-luu-du-lieu.md) | Giải thích nhanh cho người mới vào dự án, ví dụ dữ liệu và file nằm ở đâu. Chỉ tóm tắt; chi tiết và căn cứ vẫn ở `chuan/`. |
 | [ke-hoach/](ke-hoach/backlog-quan-tri-kho.md) | Danh sách việc đang làm và quy tắc làm việc. Theo dõi tiến độ, không phải căn cứ nghiệp vụ. |
 
 Khi hai nơi mâu thuẫn, `chuan/` đúng. Muốn đổi một quyết định thì sửa trong `chuan/` trước, rồi mới sửa mã nguồn.
