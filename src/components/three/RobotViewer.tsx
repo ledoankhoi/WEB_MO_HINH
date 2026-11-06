@@ -126,15 +126,13 @@ export default function RobotViewer({ label, bare = false, onReady, ...source }:
   // Đang ở dạng cuối (robot, hoặc đã hợp thể), hoặc đang chạy về đó.
   const atEnd = playTo !== null ? playTo === 1 : progress >= 0.5;
 
-  // Bấm khi đang chạy thì quay ngược lại từ đúng vị trí hiện tại.
+  // Bấm khi đang chạy thì quay ngược lại từ đúng vị trí hiện tại. Hoạt ảnh biến hình chạy cả khi hệ điều hành bật
+  // "giảm chuyển động": đó là nội dung người xem chủ động bấm để xem (hoạt ảnh thiết yếu theo WCAG 2.3.3), không phải
+  // hiệu ứng trang trí. Nhiều máy Windows tắt "Animation effects" sẵn, nếu nhảy thẳng thì người xem tưởng mô hình
+  // không biến hình được.
   const toggleForm = () => {
-    const target = atEnd ? 0 : 1;
     setPose(null);
-    if (reducedMotion) {
-      // Người dùng tắt hiệu ứng chuyển động: nhảy thẳng tới dạng đích.
-      setPlayTo(null);
-      moveTo(target);
-    } else setPlayTo(target);
+    setPlayTo(atEnd ? 0 : 1);
   };
 
   // Dáng có sẵn luôn ở dạng robot hoàn chỉnh.

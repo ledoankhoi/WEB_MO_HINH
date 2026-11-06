@@ -40,10 +40,17 @@ async function load(slug) {
   return readFileSync(file);
 }
 
+// Sản phẩm mẫu, cộng các mô hình khai báo trong MODEL_FEATURES mà chỉ có trên CSDL thật (thêm qua trang quản trị):
+// những mô hình đó vẫn được đọc file và đối chiếu clip như sản phẩm mẫu.
+const targets = SEED_PRODUCTS.map((product) => ({ slug: product.slug, accessory: product.category === "phu-kien", seeded: true }));
+for (const slug of Object.keys(MODEL_FEATURES)) {
+  if (!targets.some((target) => target.slug === slug)) targets.push({ slug, accessory: false, seeded: false });
+}
+
 const rows = [];
-for (const product of SEED_PRODUCTS) {
+for (const product of targets) {
   const features = MODEL_FEATURES[product.slug];
-  const row = { slug: product.slug, accessory: product.category === "phu-kien", clips: [], transform: false, poses: 0, problems: [] };
+  const row = { slug: product.slug, accessory: product.accessory, seeded: product.seeded, clips: [], transform: false, poses: 0, problems: [] };
   try {
     const gltf = readGltf(await load(product.slug));
     row.clips = (gltf.animations ?? []).map((a) => a.name);
@@ -61,15 +68,11 @@ for (const product of SEED_PRODUCTS) {
   rows.push(row);
 }
 
-for (const [slug] of Object.entries(MODEL_FEATURES)) {
-  if (!SEED_PRODUCTS.some((p) => p.slug === slug)) rows.push({ slug, clips: [], problems: ["có trong MODEL_FEATURES nhưng không có sản phẩm mẫu"] });
-}
-
 const bad = rows.filter((row) => row.problems.length);
 for (const row of rows) {
   const mark = row.problems.length ? "THIẾU" : "đạt  ";
   const info = row.accessory ? "phụ kiện" : `biến hình: ${row.transform ? "có" : "không"}, dáng: ${row.poses}, clip trong file: ${row.clips.length}`;
-  console.log(`${mark}  ${row.slug.padEnd(28)} ${info}${row.problems.length ? `  <- ${row.problems.join("; ")}` : ""}`);
+  console.log(`${mark}  ${row.slug.padEnd(28)} ${info}${row.seeded ? "" : "  (ngoài dữ liệu mẫu)"}${row.problems.length ? `  <- ${row.problems.join("; ")}` : ""}`);
 }
 console.log(`\n${rows.length - bad.length}/${rows.length} đạt chuẩn, ${bad.length} chưa đạt.`);
 process.exitCode = bad.length ? 1 : 0;

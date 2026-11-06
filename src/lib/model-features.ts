@@ -36,6 +36,32 @@ function alliance(extra: Partial<Record<"idle" | "win" | "transform", string>> =
   };
 }
 
+// Các dáng có sẵn của bộ clip Transformers Alliance, mỗi dáng một thời điểm trong clip.
+const ALLIANCE_POSES = {
+  guard: { label: "Thủ thế", clip: "guard", at: 0.5 },
+  attack: { label: "Tấn công", clip: "attack01", at: 0.45 },
+  joyful: { label: "Chiến thắng", clip: "emo_joyful", at: 0.5 },
+  rage: { label: "Giận dữ", clip: "emo_rage", at: 0.55 },
+} satisfies Record<string, ModelPose>;
+
+// Mô hình Transformers Alliance khai báo từng clip một. Danh sách dáng đã đo trên từng file (thân đứng thẳng, mặt
+// lệch không quá 45° với dáng đứng, 60° với các dáng khác); clip bị xoay nằm hoặc quay ngang thì bỏ.
+// `stand` là clip dáng đứng: clip đứng yên (`idle01`, `idle02`) hoặc khung đầu clip vui mừng khi clip đứng yên của
+// file bị quay ngang. Không có dáng đứng đạt thì để null, khung xem mở đầu ở dáng đầu tiên trong `poses`.
+function allianceModel(input: {
+  from: string | null;
+  transform?: string;
+  stand: string | null;
+  poses: (keyof typeof ALLIANCE_POSES)[];
+}): ModelFeatures {
+  const poses: ModelPose[] = input.stand ? [{ label: "Đứng", clip: input.stand, at: 0 }] : [];
+  poses.push(...input.poses.map((key) => ALLIANCE_POSES[key]));
+  return {
+    ...(input.from ? { transform: { kind: "transform" as const, clip: input.transform ?? "transform_r", from: input.from, to: "Dạng robot" } } : {}),
+    poses,
+  };
+}
+
 // Thành viên Combaticons (Earth Wars G2). Dùng clip thường (biến hình tại chỗ); bản `_hero` cho xe bay
 // vào từ xa nên dạng xe nằm ngoài khung nhìn.
 function combaticon(clip: string, from: string): ModelFeatures {
@@ -65,6 +91,51 @@ export const MODEL_FEATURES: Record<string, ModelFeatures> = {
       { label: "Giận dữ", clip: "emo_rage", at: 0.55 },
     ],
   },
+
+  // Các mẫu Alliance còn lại. Defensor và Menasor không có clip dạng xe (`vehicle_idle01`, `transform_v`) và clip
+  // `transform_r` không mở đầu bằng dạng xe rõ ràng, nên chỉ có dáng.
+  "alliance-arcee": allianceModel({ from: "Dạng xe", stand: "emo_joyful", poses: ["guard", "joyful", "rage"] }),
+  "alliance-grimlock": allianceModel({ from: "Khủng long", stand: "idle01", poses: ["joyful"] }),
+  blades: allianceModel({ from: "Trực thăng", stand: "idle01", poses: ["attack", "joyful", "rage"] }),
+  bonecrusher: allianceModel({ from: "Xe ủi", stand: "emo_joyful", poses: ["attack", "joyful", "rage"] }),
+  breakdown: allianceModel({ from: "Dạng xe", stand: "idle01", poses: ["attack", "joyful", "rage"] }),
+  cliffjumper: allianceModel({ from: "Dạng xe", stand: "emo_joyful", poses: ["joyful", "rage"] }),
+  "dead-end": allianceModel({ from: "Dạng xe", stand: "emo_joyful", poses: ["guard", "joyful", "rage"] }),
+  defensor: allianceModel({ from: null, stand: "idle01", poses: ["attack", "joyful", "rage"] }),
+  devastator: allianceModel({ from: "Dạng thay thế", transform: "transform_r_Garage", stand: "idle01", poses: ["joyful", "rage"] }),
+  "drag-strip": allianceModel({ from: "Dạng xe", stand: "emo_joyful", poses: ["joyful", "rage"] }),
+  "first-aid": allianceModel({ from: "Xe cứu thương", stand: "emo_joyful", poses: ["joyful"] }),
+  galvatron: allianceModel({ from: "Dạng thay thế", stand: "idle01", poses: ["guard", "joyful", "rage"] }),
+  groove: allianceModel({ from: "Mô tô", stand: null, poses: ["rage", "guard"] }),
+  hook: allianceModel({ from: "Xe cẩu", stand: "idle01", poses: ["attack", "joyful"] }),
+  "hot-spot": allianceModel({ from: "Xe cứu hoả", stand: "idle01", poses: ["guard", "joyful", "rage"] }),
+  hound: allianceModel({ from: "Dạng xe", stand: "emo_joyful", poses: ["guard", "joyful", "rage"] }),
+  ironhide: allianceModel({ from: "Dạng xe", stand: "idle01", poses: ["attack", "joyful", "rage"] }),
+  jazz: allianceModel({ from: "Dạng xe", stand: "idle02", poses: ["joyful"] }),
+  jetfire: allianceModel({ from: "Máy bay", stand: "idle01", poses: ["attack", "rage"] }),
+  "long-haul": allianceModel({ from: "Xe tải", stand: "emo_joyful", poses: ["guard", "joyful", "rage"] }),
+  menasor: allianceModel({ from: null, stand: "idle01", poses: ["joyful", "rage"] }),
+  mixmaster: allianceModel({ from: "Xe trộn bê tông", stand: "emo_joyful", poses: ["attack", "joyful", "rage"] }),
+  motormaster: allianceModel({ from: "Xe đầu kéo", stand: "idle01", poses: ["guard", "joyful"] }),
+  "optimus-primal": allianceModel({ from: "Khỉ đột", stand: "idle01", poses: ["joyful", "rage"] }),
+  "predacon-megatron": allianceModel({ from: "Khủng long", stand: "idle01", poses: ["joyful", "rage"] }),
+  "rodimus-prime": allianceModel({ from: "Dạng xe", stand: "idle01", poses: ["joyful", "rage"] }),
+  scavenger: allianceModel({ from: "Xe xúc", stand: "emo_joyful", poses: ["attack", "joyful"] }),
+  scrapper: allianceModel({ from: "Xe xúc lật", stand: "emo_joyful", poses: ["joyful"] }),
+  shockwave: allianceModel({ from: "Dạng thay thế", transform: "transform_r_Garage", stand: "emo_joyful", poses: ["joyful", "rage"] }),
+  skywarp: allianceModel({ from: "Máy bay", transform: "transform_r_Garage", stand: "emo_joyful", poses: ["attack", "joyful", "rage"] }),
+  slag: allianceModel({ from: "Khủng long", stand: "idle01", poses: ["attack", "joyful"] }),
+  sludge: allianceModel({ from: "Khủng long", stand: "emo_joyful", poses: ["guard", "attack", "joyful", "rage"] }),
+  snarl: allianceModel({ from: "Khủng long", stand: "idle01", poses: ["joyful", "rage"] }),
+  "star-saber": allianceModel({ from: "Máy bay", transform: "transform_r_Garage", stand: "idle02", poses: ["joyful"] }),
+  streetwise: allianceModel({ from: "Xe cảnh sát", stand: null, poses: ["guard", "rage"] }),
+  swoop: allianceModel({ from: "Thằn lằn bay", stand: "emo_joyful", poses: ["guard", "joyful", "rage"] }),
+  thundercracker: allianceModel({ from: "Máy bay", transform: "transform_r_Garage", stand: "emo_joyful", poses: ["attack", "joyful", "rage"] }),
+  "ultra-magnus": allianceModel({ from: "Xe đầu kéo", stand: "idle02", poses: ["guard", "attack", "joyful", "rage"] }),
+  volcanicus: allianceModel({ from: "Dạng thay thế", stand: "idle01", poses: ["attack", "joyful", "rage"] }),
+  waspinator: allianceModel({ from: "Ong bắp cày", stand: "emo_joyful", poses: ["joyful"] }),
+  wheeljack: allianceModel({ from: "Dạng xe", stand: "emo_joyful", poses: ["joyful", "rage"] }),
+  wildrider: allianceModel({ from: "Dạng xe", stand: null, poses: ["guard", "attack", "joyful", "rage"] }),
 };
 
 // Tên file của các mô hình có clip biến hình hoặc hợp thể (bộ lọc "Có biến hình 3D" của cửa hàng).
