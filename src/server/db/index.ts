@@ -36,9 +36,11 @@ const INIT_LOCK = 7291801;
 // v4: sản phẩm có biến thể, tồn kho theo vị trí (migration 005 xoá và tạo lại bảng, nên các khoá v1 đến v3 cũ không còn ý nghĩa).
 const SEED_KEY = "seed:catalog-v4";
 const SEED_PRODUCT_TYPES: Record<string, string> = { "model-kits": "model_kit", "robot-hop-the": "combiner", "phu-kien": "accessory" };
-const PHOTOS_SEED_KEY = "seed:product-photos-v1";
+// Khoá ghi theo ngày: "seed:product-photos-v2" đã bị một nhánh khác dùng trên cùng CSDL Supabase. Thêm ảnh thì đổi ngày.
+const PHOTOS_SEED_KEY = "seed:product-photos-2026-11-06";
 const TAXONOMY_SEED_KEY = "seed:taxonomy-v1";
 const RETIRE_SEED_KEY = "seed:retire-models-v1";
+const CARD_IMAGE_SEED_KEY = "seed:card-image-3d-v1";
 
 type DbState = { backend?: Backend; ready?: Promise<Db> };
 const globalState = globalThis as unknown as { __robostoreDb?: DbState };
@@ -173,6 +175,10 @@ async function migrateAndSeed(backend: Backend) {
       await retireSeedProducts(exec);
       await mark(RETIRE_SEED_KEY);
     }
+    if (!done.has(CARD_IMAGE_SEED_KEY)) {
+      await restoreModelCardImages(exec);
+      await mark(CARD_IMAGE_SEED_KEY);
+    }
   });
 }
 
@@ -185,8 +191,21 @@ export async function retireSeedProducts(exec: (statement: InStatement) => Promi
   });
 }
 
+// Bản đầu (seed:product-photos-v1) đã đặt ảnh thật đầu tiên làm ảnh đại diện. Trả các sản phẩm đó về ảnh dựng 3D,
+// chỉ khi ảnh đại diện vẫn là một ảnh thật của dữ liệu mẫu (ảnh do quản trị tự đổi thì giữ).
+export async function restoreModelCardImages(exec: (statement: InStatement) => Promise<ResultSet>) {
+  const media = process.env.MEDIA_BASE_URL?.trim().replace(/\/$/, "") ?? "";
+  for (const [slug, set] of Object.entries(PRODUCT_PHOTOS)) {
+    await exec({
+      sql: `UPDATE products SET image = ? WHERE slug = ? AND image IN (${set.urls.map(() => "?").join(", ")})`,
+      args: [`${media}/products/${slug}.webp`, slug, ...set.urls],
+    });
+  }
+}
+
 // Ảnh thật của dữ liệu mẫu (src/data/product-photos.ts). Chạy cả trên CSDL đã có dữ liệu từ trước; sản phẩm đã có
-// ảnh trong product_media (do quản trị tải lên) thì giữ nguyên.
+// ảnh trong product_media (do quản trị tải lên) thì giữ nguyên. Ảnh thật chỉ vào thư viện ảnh (trang chi tiết); ảnh
+// đại diện trên thẻ sản phẩm, giỏ hàng, menu vẫn là ảnh dựng từ mô hình 3D để mọi sản phẩm cùng một kiểu.
 async function seedProductPhotos(exec: (statement: InStatement) => Promise<ResultSet>) {
   const now = Date.UTC(2026, 10, 4);
   for (const [slug, set] of Object.entries(PRODUCT_PHOTOS)) {
@@ -202,7 +221,6 @@ async function seedProductPhotos(exec: (statement: InStatement) => Promise<Resul
         args: [newId(), String(productId), url, `Ảnh sản phẩm thật ${index + 1}`, index, now],
       });
     }
-    await exec({ sql: "UPDATE products SET image = ? WHERE id = ?", args: [set.urls[0], String(productId)] });
     if (set.box) {
       await exec({ sql: "UPDATE products SET box_contents = ? WHERE id = ? AND box_contents = ''", args: [set.box.join("\n"), String(productId)] });
     }
