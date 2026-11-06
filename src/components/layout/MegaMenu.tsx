@@ -2,12 +2,12 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { ArrowRight, ChevronDown, ChevronRight, LayoutGrid, X } from "lucide-react";
 import { ProductImage } from "@/components/product/ProductCard";
 import { formatVnd } from "@/lib/format";
 import { transformLabel } from "@/lib/model-features";
 import type { MegaMenuCategory } from "@/server/catalog";
+import { OnNavigate } from "./OnNavigate";
 
 const PRICE_RANGES = [
   { label: "Dưới 1 triệu ₫", query: "gia-den=999999" },
@@ -22,17 +22,10 @@ const GROUP_LINK = "block py-1.5 text-[15px] font-medium hover:text-brand hover:
 // Nút "Tất cả danh mục" ở thanh danh mục và bảng menu mở rộng ngay dưới thanh. Rê chuột hoặc chuyển tiêu điểm tới một
 // danh mục ở cột trái để xem nhóm lọc của danh mục đó. Esc, bấm ra ngoài hoặc chọn một mục thì đóng.
 export function MegaMenu({ categories }: { categories: MegaMenuCategory[] }) {
-  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [activeSlug, setActiveSlug] = useState(categories[0]?.slug ?? "");
-  const [shownPath, setShownPath] = useState(pathname);
   const panelId = useId();
   const root = useRef<HTMLDivElement>(null);
-
-  if (pathname !== shownPath) {
-    setShownPath(pathname);
-    if (open) setOpen(false);
-  }
 
   useEffect(() => {
     if (!open) return;
@@ -58,6 +51,8 @@ export function MegaMenu({ categories }: { categories: MegaMenuCategory[] }) {
 
   return (
     <div ref={root}>
+      {/* Sang trang khác thì đóng. */}
+      <OnNavigate onChange={close} />
       <button
         type="button"
         aria-expanded={open}

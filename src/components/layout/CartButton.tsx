@@ -2,7 +2,6 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { Minus, Plus, ShoppingBag, Truck, X } from "lucide-react";
 import { ProductImage } from "@/components/product/ProductCard";
 import { showToast } from "@/components/ui/Toaster";
@@ -10,6 +9,7 @@ import { site } from "@/config/site";
 import { cart, useCart, useCartCount } from "@/lib/cart";
 import { formatVnd } from "@/lib/format";
 import type { ProductSummary } from "@/lib/types";
+import { OnNavigate } from "./OnNavigate";
 
 const ISSUE_TEXT = { unavailable: "Không còn bán", out_of_stock: "Đã hết hàng", over_stock: "Vượt số còn lại" } as const;
 
@@ -20,17 +20,9 @@ const badge = (count: number) => (count > 99 ? "99+" : String(count));
 export function CartButton({ addOns }: { addOns: ProductSummary[] }) {
   const count = useCartCount();
   const { rows, totals, loading, canCheckout } = useCart();
-  const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const [shownPath, setShownPath] = useState(pathname);
   const panelId = useId();
   const root = useRef<HTMLDivElement>(null);
-
-  // Sang trang khác thì đóng.
-  if (pathname !== shownPath) {
-    setShownPath(pathname);
-    if (open) setOpen(false);
-  }
 
   useEffect(() => {
     if (!open) return;
@@ -59,6 +51,8 @@ export function CartButton({ addOns }: { addOns: ProductSummary[] }) {
 
   return (
     <div ref={root} className="relative">
+      {/* Sang trang khác thì đóng. */}
+      <OnNavigate onChange={() => setOpen(false)} />
       <Link
         href="/gio-hang"
         aria-label={label}

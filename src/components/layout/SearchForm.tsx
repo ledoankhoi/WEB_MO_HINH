@@ -3,12 +3,13 @@
 import { useEffect, useId, useRef, useState } from "react";
 import Form from "next/form";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Camera, Search } from "lucide-react";
 import { getCategory } from "@/lib/catalog";
 import { formatVnd } from "@/lib/format";
 import { transformLabel } from "@/lib/model-features";
 import type { SearchSuggestions } from "@/lib/search-suggest";
+import { OnNavigate } from "./OnNavigate";
 
 type Option = { id: string; href: string };
 
@@ -21,24 +22,15 @@ const memo = new Map<string, SearchSuggestions>();
 // `imageSearch`: có nút "Bằng ảnh" mở trang tìm bằng ảnh (/tim-bang-anh).
 export function SearchForm({ className = "", id = "site-search", imageSearch = false }: { className?: string; id?: string; imageSearch?: boolean }) {
   const router = useRouter();
-  const pathname = usePathname();
   const listId = useId();
   const [value, setValue] = useState("");
   // Lần tải gần nhất: vẫn hiện trong lúc chờ kết quả của từ khoá mới.
   const [latest, setLatest] = useState<SearchSuggestions>(EMPTY);
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
-  const [shownPath, setShownPath] = useState(pathname);
   const input = useRef<HTMLInputElement>(null);
   const query = value.replace(/\s+/g, " ").trim();
   const data = query.length < 2 ? EMPTY : (memo.get(query) ?? latest);
-
-  // Sang trang khác thì đóng gợi ý.
-  if (pathname !== shownPath) {
-    setShownPath(pathname);
-    setOpen(false);
-    setActive(-1);
-  }
 
   useEffect(() => {
     if (query.length < 2 || memo.has(query)) return;
@@ -78,6 +70,13 @@ export function SearchForm({ className = "", id = "site-search", imageSearch = f
 
   return (
     <Form action="/san-pham" role="search" className={`relative ${className}`} onSubmit={() => setOpen(false)}>
+      {/* Sang trang khác thì đóng gợi ý. */}
+      <OnNavigate
+        onChange={() => {
+          setOpen(false);
+          setActive(-1);
+        }}
+      />
       <div className="flex h-12 items-stretch border-3 border-ink bg-surface sm:h-14">
         <label htmlFor={id} className="sr-only">
           Tìm kiếm sản phẩm
