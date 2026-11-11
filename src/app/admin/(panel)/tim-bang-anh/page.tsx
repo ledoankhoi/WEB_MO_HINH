@@ -9,6 +9,7 @@ import { IMAGE_SEARCH_MODEL, type DecisionReason } from "@/lib/image-search";
 import { can } from "@/lib/permissions";
 import { requireStaff } from "@/server/auth/session";
 import { getImageSearchSettings, imageSearchStats, listIndexStatus } from "@/server/repo/image-search";
+import { AdminSuspense } from "@/components/admin/AdminSuspense";
 
 export const metadata: Metadata = { title: "Tìm kiếm bằng ảnh" };
 
@@ -32,7 +33,15 @@ function Card({ label, value, note }: { label: string; value: React.ReactNode; n
 }
 
 // YC-AI-05..08 (docs/chuan/08-tich-hop-ai.md): lập chỉ mục, hiệu chỉnh ngưỡng, theo dõi lượt tìm bằng ảnh.
-export default async function ImageSearchAdminPage() {
+export default function ImageSearchAdminPage() {
+  return (
+    <AdminSuspense>
+      <ImageSearchAdminPageContent />
+    </AdminSuspense>
+  );
+}
+
+async function ImageSearchAdminPageContent() {
   const user = await requireStaff("catalog.view", "/admin/tim-bang-anh");
   const canEdit = can(user.role, "catalog.edit");
   const model = IMAGE_SEARCH_MODEL.id;

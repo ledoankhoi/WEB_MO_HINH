@@ -36,7 +36,7 @@ describe("khách hàng (T17)", () => {
     expect(lan).toMatchObject({ marketingConsent: true, isActive: true, marketingConsentAt: expect.any(Number) });
     expect((await users.listCustomers({ q: "minh" })).items[0]).toMatchObject({ marketingConsent: false, marketingConsentAt: null });
 
-    await users.updateUserProfile(customerId, { name: "Trần Lan", phone: "0912345678", address: "", city: "", marketingConsent: false });
+    await users.setMarketingConsent(customerId, false);
     expect((await users.listCustomers({ id: customerId })).items[0]).toMatchObject({ marketingConsent: false, marketingConsentAt: null });
   });
 

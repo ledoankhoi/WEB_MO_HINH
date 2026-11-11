@@ -5,7 +5,7 @@ export const CATEGORIES = [
   { slug: "super-sentai", name: "Super Sentai & Tokusatsu", description: "Siêu robot và nhân vật theo phong cách tokusatsu Nhật Bản." },
   { slug: "robot-hop-the", name: "Robot hợp thể", description: "Những cỗ máy ghép từ nhiều thành phần thành một siêu robot." },
   { slug: "mecha-anime", name: "Mecha & Anime", description: "Mecha và robot bước ra từ thế giới hoạt hình." },
-  { slug: "model-kits", name: "Mô hình lắp ráp", description: "Bộ kit tự lắp cho người thích tự tay hoàn thiện mô hình." },
+  { slug: "model-kits", name: "Gundam", description: "Bộ kit tự lắp cho người thích tự tay hoàn thiện mô hình." },
   { slug: "figure", name: "Figure sưu tầm", description: "Figure và mô hình trưng bày dành cho nhà sưu tầm." },
   { slug: "phu-kien", name: "Phụ kiện & linh kiện", description: "Đế trưng bày, linh kiện thay thế và phụ kiện đi kèm." },
 ] as const;
@@ -102,19 +102,29 @@ export function isOrderStatus(value: string): value is OrderStatus {
   return (ORDER_STATUSES as readonly string[]).includes(value);
 }
 
-export const PAYMENT_METHODS = ["cod", "bank"] as const;
+export const PAYMENT_METHODS = ["cod", "bank", "vnpay"] as const;
 export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
 
 export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   cod: "Thanh toán khi nhận hàng (COD)",
   bank: "Chuyển khoản ngân hàng",
+  vnpay: "Thẻ ATM, QR ngân hàng, thẻ quốc tế (VNPay)",
 };
 
-export const PAYMENT_STATUSES = ["unpaid", "paid", "refunded"] as const;
+export function isPaymentMethod(value: unknown): value is PaymentMethod {
+  return typeof value === "string" && (PAYMENT_METHODS as readonly string[]).includes(value);
+}
+
+// deposit_paid: đơn có hàng đặt trước đã nhận tiền cọc, còn phần còn lại (src/lib/preorder.ts).
+export const PAYMENT_STATUSES = ["unpaid", "deposit_paid", "paid", "refunded"] as const;
 export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
+
+// Đã thu tiền (cọc hoặc đủ): đơn huỷ ở trạng thái này phải hoàn tiền.
+export const COLLECTED_PAYMENT_STATUSES = ["deposit_paid", "paid"] as const satisfies readonly PaymentStatus[];
 
 export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
   unpaid: "Chưa thanh toán",
+  deposit_paid: "Đã đặt cọc",
   paid: "Đã thanh toán",
   refunded: "Đã hoàn tiền",
 };

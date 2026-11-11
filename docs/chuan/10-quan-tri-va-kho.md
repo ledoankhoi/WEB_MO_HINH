@@ -92,11 +92,12 @@ Ma trận (● có quyền):
 | `inventory.setup` | Vị trí kho, nhà cung cấp, ngưỡng sắp hết | ● | | ● | | | | | | |
 | `orders.view` | Xem đơn hàng | ● | | ● | ● | ● | ● | | ● | ● |
 | `orders.process` | L3, L7, L9, L10, L13 | ● | | | | ● | | | | |
-| `orders.fulfil` | L4, L5, L6, L11 | ● | | ● | ● | ● | | | | |
-| `payments.manage` | L2, L14 | ● | | | | | | | ● | |
+| `orders.fulfil` | L4, L5, L6, L11, phân bổ hàng đặt trước | ● | | ● | ● | ● | | | | |
+| `payments.manage` | L2, L14, L15 (nhận cọc đặt trước) | ● | | | | | | | ● | |
 | `customers.view` | Danh sách, hồ sơ khách (đủ thông tin liên hệ) | ● | | | | ● | ● | | ● | |
 | `customers.manage` | Khoá, mở khoá tài khoản khách | ● | | | | | ● | | | |
 | `reviews.moderate` | Duyệt, ẩn đánh giá | ● | | | | | ● | | | |
+| `community.moderate` | Cộng đồng: duyệt, ẩn bài và bình luận, xử lý báo cáo (thêm 07/11/2026, docs/ke-hoach/mo-rong-cua-hang.md) | ● | | | | | ● | ● | | |
 | `content.edit` | Banner, menu, trang, thanh thông báo, thông tin liên hệ | ● | | | | | | ● | | |
 | `coupons.manage` | Mã giảm giá | ● | | | | | | ● | | |
 | `reports.view` | Báo cáo và xuất CSV | ● | ● | ● | | | | ● | ● | ● |
@@ -242,6 +243,7 @@ Cột **Mức** theo kế hoạch: P0 bắt buộc, P1 nên có. Mã yêu cầu 
 | | Mã giảm giá | `/admin/ma-giam-gia` | `coupons.manage` |
 | Khách hàng | Khách hàng | `/admin/khach-hang`, `/admin/khach-hang/[id]` | `customers.view` hoặc vai trò `viewer` |
 | | Đánh giá | `/admin/danh-gia` | `reviews.moderate` |
+| | Cộng đồng | `/admin/cong-dong` | `community.moderate` |
 | Báo cáo | Báo cáo | `/admin/bao-cao` | `reports.view` |
 | | Xuất CSV | `/admin/xuat/[loai]` (Route Handler) | như trang tương ứng |
 | Cài đặt | Nhân viên | `/admin/nhan-vien` | `staff.manage` |

@@ -19,15 +19,24 @@ import {
   isPaymentStatus,
   isShippingStatus,
 } from "@/lib/catalog";
-import { formatNumber, maskPhone, parseVnDate } from "@/lib/format";
+import { maskPhone, parseVnDate } from "@/lib/format";
 import { can } from "@/lib/permissions";
 import { requireStaff } from "@/server/auth/session";
 import { countOrderStages, listOrders } from "@/server/repo/orders";
+import { AdminSuspense } from "@/components/admin/AdminSuspense";
 
 const PAGE_SIZE = 20;
 const DAY = 24 * 60 * 60 * 1000;
 
-export default async function AdminOrdersPage({ searchParams }: PageProps<"/admin/don-hang">) {
+export default function AdminOrdersPage(props: PageProps<"/admin/don-hang">) {
+  return (
+    <AdminSuspense>
+      <AdminOrdersPageContent {...props} />
+    </AdminSuspense>
+  );
+}
+
+async function AdminOrdersPageContent({ searchParams }: PageProps<"/admin/don-hang">) {
   const user = await requireStaff("orders.view", "/admin/don-hang");
   const params = await searchParams;
   // Chỉ nhận giá trị có trong danh sách; giá trị lạ trên URL bị bỏ qua.
@@ -81,7 +90,7 @@ export default async function AdminOrdersPage({ searchParams }: PageProps<"/admi
 
   return (
     <>
-      <h1 className="text-3xl font-bold tracking-tight">Đơn hàng ({formatNumber(total)})</h1>
+      <h1 className="text-3xl font-bold tracking-tight">Đơn hàng</h1>
 
       <StageBoard counts={counts} active={stage} compact={stage !== "hoan-tat" && stage !== "da-huy"} href={(key) => href({ buoc: key })} />
 

@@ -9,11 +9,20 @@ import type { ProductStatus } from "@/lib/types";
 import { requireStaff } from "@/server/auth/session";
 import { listAdminProducts } from "@/server/repo/products";
 import { listTaxonomy } from "@/server/repo/taxonomy";
+import { AdminSuspense } from "@/components/admin/AdminSuspense";
 
 const STATUS_LABELS: Record<ProductStatus, string> = { draft: "Nháp", published: "Đang bán", archived: "Lưu trữ" };
 const PAGE_SIZE = 30;
 
-export default async function AdminProductsPage({ searchParams }: PageProps<"/admin/san-pham">) {
+export default function AdminProductsPage(props: PageProps<"/admin/san-pham">) {
+  return (
+    <AdminSuspense>
+      <AdminProductsPageContent {...props} />
+    </AdminSuspense>
+  );
+}
+
+async function AdminProductsPageContent({ searchParams }: PageProps<"/admin/san-pham">) {
   const user = await requireStaff("catalog.view", "/admin/san-pham");
   const params = await searchParams;
   const [categories, brands] = await Promise.all([listTaxonomy("categories"), listTaxonomy("brands")]);
@@ -38,7 +47,7 @@ export default async function AdminProductsPage({ searchParams }: PageProps<"/ad
   return (
     <>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-3xl font-bold tracking-tight">Sản phẩm ({formatNumber(total)})</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Sản phẩm</h1>
         {can(user.role, "catalog.edit") && (
           <ButtonLink href="/admin/san-pham/moi" size="sm">
             Thêm sản phẩm

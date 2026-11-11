@@ -4,16 +4,25 @@ import { formatNumber } from "@/lib/format";
 import { can } from "@/lib/permissions";
 import { requireStaff } from "@/server/auth/session";
 import { listQuarantineStock } from "@/server/repo/warehouse";
+import { AdminSuspense } from "@/components/admin/AdminSuspense";
 
 // YC-KHO-09: hàng hoàn, hàng lỗi khi nhận đang chờ kiểm tra. Không bán được cho tới khi chuyển về kệ hàng.
-export default async function QuarantinePage() {
+export default function QuarantinePage() {
+  return (
+    <AdminSuspense>
+      <QuarantinePageContent />
+    </AdminSuspense>
+  );
+}
+
+async function QuarantinePageContent() {
   const user = await requireStaff("inventory.view", "/admin/kho/cach-ly");
   const rows = await listQuarantineStock();
   const canDraft = can(user.role, "inventory.draft");
 
   return (
     <>
-      <h1 className="text-3xl font-bold tracking-tight">Hàng cách ly ({formatNumber(rows.reduce((sum, row) => sum + row.qty, 0))})</h1>
+      <h1 className="text-3xl font-bold tracking-tight">Hàng cách ly</h1>
       <p className="text-sm text-muted">
         Kiểm tra từng món rồi chọn: bán lại được (tạo phiếu chuyển về kệ hàng) hoặc huỷ hàng (tạo phiếu xuất hư hỏng). Phiếu tạo ra ở trạng thái nháp, cần gửi và ghi sổ như mọi phiếu khác.
       </p>

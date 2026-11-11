@@ -6,9 +6,18 @@ import { site } from "@/config/site";
 import { formatDateTime } from "@/lib/format";
 import { requireStaff } from "@/server/auth/session";
 import { listPageRevisions, listPages } from "@/server/repo/content";
+import { AdminSuspense } from "@/components/admin/AdminSuspense";
 
 // YC-CMS-04, 07: trang thông tin, phiên bản và xem trước (Q20). `?sua=<id>` mở trang để sửa.
-export default async function InfoPagesPage({ searchParams }: PageProps<"/admin/noi-dung/trang">) {
+export default function InfoPagesPage(props: PageProps<"/admin/noi-dung/trang">) {
+  return (
+    <AdminSuspense>
+      <InfoPagesPageContent {...props} />
+    </AdminSuspense>
+  );
+}
+
+async function InfoPagesPageContent({ searchParams }: PageProps<"/admin/noi-dung/trang">) {
   await requireStaff("content.edit", "/admin/noi-dung/trang");
   const [pages, params] = await Promise.all([listPages(), searchParams]);
   const editing = pages.find((page) => page.id === first(params.sua));
@@ -16,7 +25,7 @@ export default async function InfoPagesPage({ searchParams }: PageProps<"/admin/
 
   return (
     <>
-      <h1 className="text-3xl font-bold tracking-tight">Trang thông tin ({pages.length})</h1>
+      <h1 className="text-3xl font-bold tracking-tight">Trang thông tin</h1>
       <div className={TABLE_WRAP}>
         <table className={TABLE}>
           <thead>

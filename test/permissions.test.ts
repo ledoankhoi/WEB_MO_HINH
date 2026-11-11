@@ -64,6 +64,7 @@ const EXPECTED: Record<string, string> = {
   "customers.view": "●···●●·●·",
   "customers.manage": "●····●···",
   "reviews.moderate": "●····●···",
+  "community.moderate": "●····●●··",
   "content.edit": "●·····●··",
   "coupons.manage": "●·····●··",
   "reports.view": "●●●···●●●",

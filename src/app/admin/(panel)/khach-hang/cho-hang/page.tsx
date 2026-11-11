@@ -5,12 +5,21 @@ import { formatDateTime, formatNumber } from "@/lib/format";
 import { can } from "@/lib/permissions";
 import { requireStaff } from "@/server/auth/session";
 import { listStockAlerts } from "@/server/repo/stock-alerts";
+import { AdminSuspense } from "@/components/admin/AdminSuspense";
 
 const PAGE_SIZE = 30;
 
 // "Báo khi có hàng": khách để lại email hoặc số điện thoại cho phiên bản đang hết. Cửa hàng chưa gửi email tự động,
 // nên nhân viên liên hệ khách rồi bấm "Đã báo". Phiên bản đã có hàng lại đứng đầu danh sách.
-export default async function StockAlertsPage({ searchParams }: PageProps<"/admin/khach-hang/cho-hang">) {
+export default function StockAlertsPage(props: PageProps<"/admin/khach-hang/cho-hang">) {
+  return (
+    <AdminSuspense>
+      <StockAlertsPageContent {...props} />
+    </AdminSuspense>
+  );
+}
+
+async function StockAlertsPageContent({ searchParams }: PageProps<"/admin/khach-hang/cho-hang">) {
   const user = await requireStaff("customers.view", "/admin/khach-hang/cho-hang");
   const params = await searchParams;
   const status = first(params["trang-thai"]) === "da-bao" ? "notified" : "pending";
@@ -30,7 +39,7 @@ export default async function StockAlertsPage({ searchParams }: PageProps<"/admi
     <>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight">Khách chờ hàng ({formatNumber(total)})</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Khách chờ hàng</h1>
           <p className="text-sm text-muted">Khách bấm “Báo khi có hàng” ở sản phẩm đang hết. Liên hệ khách khi phiên bản có hàng lại rồi đánh dấu đã báo.</p>
         </div>
         {canMark && status === "pending" && readyIds.length > 0 && <MarkNotifiedButton ids={readyIds} label={`Đã báo ${readyIds.length} khách có hàng`} />}

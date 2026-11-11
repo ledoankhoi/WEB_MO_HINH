@@ -99,6 +99,7 @@ Ngoài các kịch bản trên:
 | Chức năng | File test | Nội dung chính |
 | --- | --- | --- |
 | Vòng đời đơn L2–L14 | `orders.test.ts` | COD và chuyển khoản đi hết vòng đời; giao thất bại, giao lại; huỷ song song chỉ giải phóng hàng một lần; hoàn tiền đúng một lần |
+| Đặt trước, cọc, L15 (04 mục 5.1) | `preorder.test.ts` | Dòng đặt trước không giữ tồn, chiếm suất; hết suất, ngừng nhận thì từ chối; hai khách tranh suất cuối chỉ một người được; cọc → xác nhận → chờ hàng (L4 bị chặn) → phân bổ theo thứ tự đặt, không nhảy cóc, bỏ qua đơn chưa cọc → giao, thu phần còn lại → hoàn tất; huỷ đơn đã cọc hoàn đúng số đã thu; đơn trộn hàng có sẵn trả đúng phần đã giữ; VNPay khớp lượt với khoản đang chờ; đối soát kho khớp sau mọi bước |
 | Ma trận quyền | `permissions.test.ts` | Khớp từng ô bảng ở tài liệu 10 mục 3; trang thiếu quyền trả 404 |
 | Sản phẩm, biến thể, ảnh | `products-admin.test.ts`, `media.test.ts`, `taxonomy.test.ts` | Điều kiện xuất bản, khoá SKU khi có sổ kho, lịch sử giá, danh mục 2 cấp |
 | Mô hình 3D | `model-upload.test.ts` | Chỉ `catalog.edit` xin được URL; sai chữ ký, phiên bản, độ dài, quá 25 MB thì xoá; đường dẫn lạ bị từ chối |

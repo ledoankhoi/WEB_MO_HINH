@@ -1,5 +1,10 @@
 import { TaxonomyPage } from "@/components/admin/TaxonomyPage";
+import { AdminSuspense } from "@/components/admin/AdminSuspense";
 
 export default function AdminCategoriesPage({ searchParams }: PageProps<"/admin/danh-muc">) {
-  return <TaxonomyPage kind="categories" searchParams={searchParams} />;
+  return (
+    <AdminSuspense>
+      <TaxonomyPage kind="categories" searchParams={searchParams} />
+    </AdminSuspense>
+  );
 }

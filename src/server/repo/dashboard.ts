@@ -34,7 +34,7 @@ export async function storeDashboard(): Promise<StoreDashboard> {
     `SELECT p.id, p.name, p.stock FROM product_list p LEFT JOIN inventory i ON i.variant_id = p.variant_id
      WHERE p.is_active AND p.is_featured AND p.stock <= COALESCE(i.low_stock_threshold, 3) ORDER BY p.stock, p.name LIMIT 10`,
     { sql: `SELECT COUNT(*) AS n FROM orders WHERE payment_method = 'bank' AND status = 'pending' AND payment_status = 'unpaid' AND created_at < ${NOW} - ?`, args: [OVERDUE_MS] },
-    "SELECT COUNT(*) AS n FROM orders WHERE status = 'cancelled' AND payment_status = 'paid'",
+    "SELECT COUNT(*) AS n FROM orders WHERE status = 'cancelled' AND payment_status IN ('paid', 'deposit_paid')",
   ]);
   return {
     ordersToday: Number(today.rows[0].n),

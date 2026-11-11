@@ -160,17 +160,39 @@ export async function deleteNavItem(id: string, entry: AuditEntry): Promise<bool
 }
 
 // Đường dẫn cố định của cửa hàng mà menu được trỏ tới.
-const FIXED_PATHS = ["/", "/san-pham", "/gio-hang", "/thanh-toan", "/tai-khoan", "/tra-cuu-don-hang", "/dang-nhap", "/dang-ky"];
+const FIXED_PATHS = [
+  "/",
+  "/san-pham",
+  "/gio-hang",
+  "/thanh-toan",
+  "/tai-khoan",
+  "/tra-cuu-don-hang",
+  "/dang-nhap",
+  "/dang-ky",
+  "/trung-bay",
+  "/gacha",
+  "/cong-dong",
+  "/truyen-tranh",
+  "/nhiem-vu",
+  "/tin-tuc",
+  "/hang-sap-ve",
+];
+// Trang nhận tham số trên URL (bộ lọc, bảng xếp hạng, chủ đề): liên kết kèm tham số vẫn hợp lệ.
+const QUERY_PATHS = ["/san-pham", "/trung-bay", "/cong-dong"];
 
 // YC-CMS-03: liên kết nội bộ phải trỏ tới trang có thật (đường dẫn cố định, trang lọc sản phẩm, sản phẩm đã
 // xuất bản). Liên kết ngoài (https://) không kiểm tra ở đây.
 export async function internalLinkExists(url: string): Promise<boolean> {
   const [path, query] = url.split("?");
-  if (FIXED_PATHS.includes(path)) return path === "/san-pham" || !query;
+  if (FIXED_PATHS.includes(path)) return QUERY_PATHS.includes(path) || !query;
   const db = await getDb();
   const page = /^\/trang\/([a-z0-9-]+)$/.exec(path);
   if (page) {
     return (await db.execute({ sql: "SELECT 1 FROM pages WHERE slug = ? AND status = 'published'", args: [page[1]] })).rows.length > 0;
+  }
+  const news = /^\/tin-tuc\/([a-z0-9-]+)$/.exec(path);
+  if (news) {
+    return (await db.execute({ sql: "SELECT 1 FROM news_posts WHERE slug = ? AND status = 'published'", args: [news[1]] })).rows.length > 0;
   }
   const product = /^\/san-pham\/([a-z0-9-]+)$/.exec(path);
   if (product) {

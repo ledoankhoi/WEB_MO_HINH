@@ -13,10 +13,19 @@ import {
 } from "@/lib/stock";
 import { requireStaff } from "@/server/auth/session";
 import { listDocuments } from "@/server/repo/stock-documents";
+import { AdminSuspense } from "@/components/admin/AdminSuspense";
 
 const PAGE_SIZE = 20;
 
-export default async function DocumentsPage({ searchParams }: PageProps<"/admin/kho/phieu">) {
+export default function DocumentsPage(props: PageProps<"/admin/kho/phieu">) {
+  return (
+    <AdminSuspense>
+      <DocumentsPageContent {...props} />
+    </AdminSuspense>
+  );
+}
+
+async function DocumentsPageContent({ searchParams }: PageProps<"/admin/kho/phieu">) {
   const user = await requireStaff("inventory.view", "/admin/kho/phieu");
   const params = await searchParams;
   const typeParam = first(params.loai);
@@ -36,7 +45,7 @@ export default async function DocumentsPage({ searchParams }: PageProps<"/admin/
   return (
     <>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-3xl font-bold tracking-tight">Phiếu kho ({formatNumber(total)})</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Phiếu kho</h1>
         {can(user.role, "inventory.draft") && <CreateDocumentMenu types={DOCUMENT_TYPES} />}
       </div>
 

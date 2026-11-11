@@ -23,6 +23,10 @@ export const site = {
   },
   // Số lượng tối đa của một sản phẩm trong một đơn hàng.
   maxQtyPerItem: 10,
+  // Đơn thanh toán khi nhận hàng (COD) từ mức này cần mã OTP gửi tới email của đơn (nghiep-vu-ban-hang mục 15).
+  codOtpFrom: 2_000_000,
+  // Thuế suất VAT đã gồm trong giá bán, dùng cho bản hoá đơn (mục 17). Kiểm lại với kế toán trước khi xuất hoá đơn thật.
+  vatPercent: 10,
   // Số sản phẩm mỗi trang ở trang danh mục.
   pageSize: 12,
 } as const;

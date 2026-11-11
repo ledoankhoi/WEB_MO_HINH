@@ -3,16 +3,25 @@ import Link from "next/link";
 import { Empty, Pager, TABLE, TABLE_WRAP, first, isId, pageNumber } from "@/components/admin/parts";
 import { Button } from "@/components/ui/Button";
 import { Field, SelectField } from "@/components/ui/Field";
-import { formatDateTime, formatNumber, parseVnDate } from "@/lib/format";
+import { formatDateTime, parseVnDate } from "@/lib/format";
 import { ROLE_LABELS, isRole } from "@/lib/permissions";
 import { requireStaff } from "@/server/auth/session";
 import { listAuditFacets, listAuditLogs } from "@/server/repo/audit";
 import { listStaff } from "@/server/repo/staff";
+import { AdminSuspense } from "@/components/admin/AdminSuspense";
 
 const PAGE_SIZE = 50;
 const DAY = 24 * 60 * 60 * 1000;
 
-export default async function AdminAuditPage({ searchParams }: PageProps<"/admin/nhat-ky">) {
+export default function AdminAuditPage(props: PageProps<"/admin/nhat-ky">) {
+  return (
+    <AdminSuspense>
+      <AdminAuditPageContent {...props} />
+    </AdminSuspense>
+  );
+}
+
+async function AdminAuditPageContent({ searchParams }: PageProps<"/admin/nhat-ky">) {
   await requireStaff("audit.view", "/admin/nhat-ky");
   const params = await searchParams;
   const [staff, facets] = await Promise.all([listStaff(), listAuditFacets()]);
@@ -50,7 +59,7 @@ export default async function AdminAuditPage({ searchParams }: PageProps<"/admin
 
   return (
     <>
-      <h1 className="text-3xl font-bold tracking-tight">Nhật ký thao tác ({formatNumber(total)})</h1>
+      <h1 className="text-3xl font-bold tracking-tight">Nhật ký thao tác</h1>
 
       <Form action="/admin/nhat-ky" className="grid gap-4 rounded-xl border border-line bg-surface p-5 sm:grid-cols-3" role="search">
         <SelectField label="Người làm" name="nguoi" defaultValue={actorId}>

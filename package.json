@@ -20,6 +20,7 @@
     "models:audit": "node scripts/audit-models.mjs",
     "backup": "node --env-file-if-exists=.env.local scripts/backup.mjs",
     "test:pg": "node --env-file-if-exists=.env.local scripts/test-pg.mjs",
+    "demo-data": "node --env-file-if-exists=.env.local scripts/demo-data.mjs",
     "postinstall": "node scripts/copy-ort.mjs"
   },
   "dependencies": {
@@ -29,6 +30,7 @@
     "lucide-react": "^1.54.0",
     "motion": "^14.9.0",
     "next": "16.4.5",
+    "nodemailer": "^10.4.0",
     "onnxruntime-web": "1.30.0",
     "pg": "^8.23.1",
     "qrcode": "^1.5.4",
@@ -43,6 +45,7 @@
     "@gltf-transform/cli": "^4.5.1",
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^24.19.1",
+    "@types/nodemailer": "^8.0.2",
     "@types/pg": "^8.23.1",
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19",

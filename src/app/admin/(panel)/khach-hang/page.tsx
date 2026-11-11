@@ -6,11 +6,20 @@ import { Field } from "@/components/ui/Field";
 import { formatDate, formatNumber, formatVnd } from "@/lib/format";
 import { maskContact, requireCustomerAccess } from "@/server/customer-access";
 import { listCustomers } from "@/server/repo/users";
+import { AdminSuspense } from "@/components/admin/AdminSuspense";
 
 const PAGE_SIZE = 20;
 
 // YC-KH-01. Vai trò viewer thấy danh sách nhưng email, số điện thoại bị che (SEC-02).
-export default async function AdminCustomersPage({ searchParams }: PageProps<"/admin/khach-hang">) {
+export default function AdminCustomersPage(props: PageProps<"/admin/khach-hang">) {
+  return (
+    <AdminSuspense>
+      <AdminCustomersPageContent {...props} />
+    </AdminSuspense>
+  );
+}
+
+async function AdminCustomersPageContent({ searchParams }: PageProps<"/admin/khach-hang">) {
   const { masked } = await requireCustomerAccess("/admin/khach-hang");
   const params = await searchParams;
   const q = first(params.q).trim().slice(0, 60);
@@ -20,7 +29,7 @@ export default async function AdminCustomersPage({ searchParams }: PageProps<"/a
 
   return (
     <>
-      <h1 className="text-3xl font-bold tracking-tight">Khách hàng ({formatNumber(total)})</h1>
+      <h1 className="text-3xl font-bold tracking-tight">Khách hàng</h1>
       {masked && <p className="text-sm text-muted">Bạn đang xem ở chế độ chỉ xem: email và số điện thoại được che.</p>}
 
       <Form action="/admin/khach-hang" className="flex max-w-xl items-end gap-3" role="search">

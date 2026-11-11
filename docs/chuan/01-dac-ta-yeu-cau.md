@@ -69,7 +69,7 @@ Ngoài phạm vi bước 1: cổng thanh toán trực tuyến, tích hợp hãng
 | --- | --- | --- |
 | YC-TKH-01 | Đăng ký bằng email và mật khẩu; đăng nhập; đăng xuất | Có |
 | YC-TKH-02 | Sửa họ tên, số điện thoại; đổi mật khẩu (đăng xuất các thiết bị khác) | Có |
-| YC-TKH-03 | Sổ địa chỉ: thêm, sửa, xoá, chọn địa chỉ mặc định | Chưa |
+| YC-TKH-03 | Sổ địa chỉ: thêm, sửa, xoá, chọn địa chỉ mặc định | Có (07/11/2026: Cài đặt > Sổ địa chỉ, bảng `customer_addresses`, tối đa 10 địa chỉ, nhãn Nhà riêng/Văn phòng; trang thanh toán điền sẵn địa chỉ mặc định, chọn được địa chỉ khác) |
 | YC-TKH-04 | Tài khoản bị khoá không đăng nhập được | Có một phần (chặn đăng nhập và phiên; chưa có nút khoá) |
 
 ### 3.5. Giỏ hàng và đặt hàng (GH)

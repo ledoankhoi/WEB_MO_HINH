@@ -1,5 +1,6 @@
 import "server-only";
 import type { PaymentMethod } from "@/lib/catalog";
+import { vnpayConfig } from "./payments/vnpay";
 
 export type BankAccount = {
   bin: string;
@@ -20,6 +21,10 @@ export function getBankAccount(): BankAccount | null {
   return { bin, bankName, accountNumber, accountName };
 }
 
+// VNPay hiện khi có VNPAY_TMN_CODE, VNPAY_HASH_SECRET (sandbox hoặc thật, xem src/server/payments/vnpay.ts).
 export function getPaymentMethods(): PaymentMethod[] {
-  return getBankAccount() ? ["cod", "bank"] : ["cod"];
+  const methods: PaymentMethod[] = ["cod"];
+  if (getBankAccount()) methods.push("bank");
+  if (vnpayConfig()) methods.push("vnpay");
+  return methods;
 }

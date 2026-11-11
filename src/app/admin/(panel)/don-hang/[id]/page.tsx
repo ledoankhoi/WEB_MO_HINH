@@ -8,14 +8,25 @@ import { isId } from "@/components/admin/parts";
 import { OrderSummary } from "@/components/cart/CartView";
 import { OrderHistory } from "@/components/order/OrderHistory";
 import { ORDER_STATUS_LABELS, PAYMENT_METHOD_LABELS, PAYMENT_STATUS_LABELS, SHIPPING_STATUS_LABELS } from "@/lib/catalog";
-import { formatDateTime, formatVnd, maskEmail, maskPhone, maskText } from "@/lib/format";
+import { formatDate, formatDateTime, formatVnd, maskEmail, maskPhone, maskText } from "@/lib/format";
+import { ORDER_PREORDER_LABELS } from "@/lib/preorder";
 import { ORDER_ACTION_KEYS, ORDER_ACTIONS, canApply } from "@/lib/order-flow";
 import { MOVEMENT_LABELS } from "@/lib/stock";
 import { can } from "@/lib/permissions";
 import { requireStaff } from "@/server/auth/session";
+import { OrderOptions } from "@/components/cart/WorkshopLines";
 import { findOrderById, listOrderMovements } from "@/server/repo/orders";
+import { AdminSuspense } from "@/components/admin/AdminSuspense";
 
-export default async function AdminOrderPage({ params }: PageProps<"/admin/don-hang/[id]">) {
+export default function AdminOrderPage(props: PageProps<"/admin/don-hang/[id]">) {
+  return (
+    <AdminSuspense>
+      <AdminOrderPageContent {...props} />
+    </AdminSuspense>
+  );
+}
+
+async function AdminOrderPageContent({ params }: PageProps<"/admin/don-hang/[id]">) {
   const { id } = await params;
   const user = await requireStaff("orders.view", `/admin/don-hang/${id}`);
   const found = isId(id) ? await findOrderById(id) : null;
@@ -29,11 +40,14 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/don-h
   const returned = movements.filter((m) => m.type === "return_in").reduce((sum, m) => sum + m.qty, 0);
   const ordered = order.items.reduce((sum, item) => sum + item.quantity, 0);
   // Tóm tắt một câu: hàng của đơn đang ở đâu so với tồn kho.
+  const unallocated = order.items.filter((item) => item.preorder && !item.preorder.allocated).reduce((sum, item) => sum + item.quantity, 0);
   const stockNote =
     order.status === "cancelled" && shipped === 0
       ? "Đơn đã huỷ trước khi xuất kho: hàng giữ cho đơn đã được trả lại khả dụng."
       : shipped === 0
-        ? `Đang giữ ${ordered} sản phẩm cho đơn (đã trừ khỏi Khả dụng). Thực có chỉ giảm khi bấm “Bàn giao vận chuyển”.`
+        ? `Đang giữ ${ordered - unallocated} sản phẩm cho đơn (đã trừ khỏi Khả dụng). Thực có chỉ giảm khi bấm “Bàn giao vận chuyển”.${
+            unallocated > 0 ? ` ${unallocated} sản phẩm đặt trước chưa có hàng: phân bổ ở trang Đặt trước khi hàng về.` : ""
+          }`
         : `Đã xuất kho ${shipped} sản phẩm khi bàn giao vận chuyển (Thực có đã giảm).${returned > 0 ? ` Đã nhận về ${returned} vào khu cách ly.` : ""}`;
 
   // Chỉ những thao tác đúng điều kiện của đơn và đúng quyền của người xem (máy chủ vẫn kiểm tra lại).
@@ -74,6 +88,9 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/don-h
         <span className={badge}>{PAYMENT_STATUS_LABELS[order.paymentStatus]}</span>
         <span className={badge}>{SHIPPING_STATUS_LABELS[order.shippingStatus]}</span>
         <span className={badge}>{PAYMENT_METHOD_LABELS[order.paymentMethod]}</span>
+        {order.preorderStatus !== "none" && (
+          <span className={`${badge} font-semibold text-cobalt`}>{ORDER_PREORDER_LABELS[order.preorderStatus]}</span>
+        )}
         {order.trackingCode && (
           <span className={badge}>
             {order.trackingCarrier}: {order.trackingCode}
@@ -84,8 +101,8 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/don-h
       <div className="grid items-start gap-8 lg:grid-cols-[1fr_22rem]">
         <div className="space-y-6">
           <ul className="divide-y divide-line rounded-xl border border-line bg-surface">
-            {order.items.map((item) => (
-              <li key={item.variantId} className="flex justify-between gap-4 p-4 text-sm">
+            {order.items.map((item, index) => (
+              <li key={`${item.variantId}-${index}`} className="flex justify-between gap-4 p-4 text-sm">
                 <span>
                   <Link href={`/admin/san-pham/${item.productId}`} className="font-medium hover:underline">
                     {item.name}
@@ -93,6 +110,22 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/don-h
                   <span className="text-muted">
                     ({item.variantName}, {item.sku}) × {item.quantity} · {formatVnd(item.unitPrice)}
                   </span>
+                  <OrderOptions options={item.options} />
+                  {item.flashSaleId && (
+                    <span className="mt-1 block text-xs font-semibold text-brand">
+                      <Link href={`/admin/flash-sale/${item.flashSaleId}`} className="hover:underline">
+                        Giá flash sale
+                      </Link>
+                    </span>
+                  )}
+                  {item.preorder && (
+                    <span className="mt-1 block text-xs font-semibold text-cobalt">
+                      <Link href={`/admin/dat-truoc/${item.preorder.offerId}`} className="hover:underline">
+                        Đặt trước
+                      </Link>{" "}
+                      · {item.preorder.allocated ? "đã phân bổ hàng" : `chờ hàng về (dự kiến ${formatDate(item.preorder.expectedAt)})`}
+                    </span>
+                  )}
                 </span>
                 <span className="shrink-0 tabular-nums">{formatVnd(item.unitPrice * item.quantity)}</span>
               </li>
@@ -103,16 +136,41 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/don-h
         </div>
 
         <aside className="space-y-4 rounded-xl border border-line bg-surface p-5 text-sm">
-          <OrderSummary totals={{ subtotal: order.subtotal, discount: order.discount, shipping: order.shippingFee, total: order.total }} couponCode={order.couponCode} />
+          <OrderSummary totals={{ subtotal: order.subtotal, discount: order.discount, shipping: order.shippingFee, total: order.total }} couponCode={order.couponCode} bundleDiscount={order.bundleDiscount} />
+          {order.depositAmount > 0 && (
+            <p className="flex justify-between border-t border-dashed border-line pt-3">
+              <span>Tiền cọc phải trả trước</span>
+              <span className="tabular-nums">{formatVnd(order.depositAmount)}</span>
+            </p>
+          )}
           {order.payments.length > 0 && (
             <div className="space-y-1 border-t border-line pt-4">
               <p className="font-semibold">Thanh toán</p>
               {order.payments.map((payment) => (
                 <p key={payment.kind}>
-                  {payment.kind === "charge" ? "Đã thu" : "Đã hoàn"} {formatVnd(payment.amount)} · {formatDateTime(payment.createdAt)}
+                  {payment.kind === "deposit" ? "Đã nhận cọc" : payment.kind === "charge" ? "Đã thu" : "Đã hoàn"} {formatVnd(payment.amount)} · {formatDateTime(payment.createdAt)}
                   {payment.reference && <span className="text-muted"> · {payment.reference}</span>}
                 </p>
               ))}
+            </div>
+          )}
+          {order.invoice && (
+            <div className="space-y-1 border-t border-line pt-4">
+              <p className="font-semibold">Hoá đơn VAT</p>
+              <p>{order.invoice.companyName}</p>
+              <p className="text-muted">
+                MST {order.invoice.taxCode} · {order.invoice.invoiceEmail}
+              </p>
+              <p>
+                {order.invoice.status === "issued" ? `Đã xuất số ${order.invoice.invoiceNo}` : "Chờ xuất"} ·{" "}
+                <Link href={`/admin/don-hang/${order.id}/hoa-don`} className="font-medium text-brand-strong hover:underline">
+                  Bản in
+                </Link>
+                {" · "}
+                <Link href="/admin/hoa-don" className="font-medium text-brand-strong hover:underline">
+                  Danh sách hoá đơn
+                </Link>
+              </p>
             </div>
           )}
           <div className="space-y-2 border-t border-line pt-4">

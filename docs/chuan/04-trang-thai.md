@@ -41,13 +41,17 @@ stateDiagram-v2
 stateDiagram-v2
   [*] --> unpaid
   unpaid --> paid: Ghi nhận đã thu tiền
+  unpaid --> deposit_paid: Nhận cọc (đặt trước)
+  deposit_paid --> paid: Thu phần còn lại
+  deposit_paid --> refunded: Hoàn tiền
   paid --> refunded: Hoàn tiền
 ```
 
 | Trạng thái | Ý nghĩa |
 | --- | --- |
 | `unpaid` | Chưa thu tiền |
-| `paid` | Đã thu đủ. Có một dòng `payments` loại `charge` |
+| `deposit_paid` | Đơn có hàng đặt trước đã nhận tiền cọc (`orders.deposit_amount`), còn phần còn lại. Có một dòng `payments` loại `deposit` (thêm 08/11/2026, mục 5.1) |
+| `paid` | Đã thu đủ. Có một dòng `payments` loại `charge` (đã cọc thì thêm dòng `deposit`) |
 | `refunded` | Đã hoàn tiền. Có một dòng `payments` loại `refund` |
 
 Hoàn tiền một phần để dành cho bước 3.
@@ -80,10 +84,10 @@ Mỗi dòng là một thao tác. Cả dòng xảy ra trong một giao dịch: ho
 
 | # | Thao tác | Ai được làm | Điều kiện | Kết quả |
 | --- | --- | --- | --- | --- |
-| L1 | Đặt hàng | Khách (tạm thời cả khách vãng lai, xem [10](10-quan-tri-va-kho.md) mục 1) | Mọi dòng: biến thể đang bán, giá khớp, số lượng ≤ số có thể bán; `idempotency_key` chưa dùng | Tạo đơn `pending` / `unpaid` / `not_created`. Kho: `reserve`. Có mã giảm giá thì thêm `coupon_redemptions`, tăng `used_count` |
-| L2 | Ghi nhận đã thu tiền | Kế toán, quản trị viên | `payment_status = unpaid`; đơn chưa `cancelled` | `payment_status → paid`; thêm `payments` loại `charge` |
-| L3 | Xác nhận đơn | Nhân viên đơn hàng, quản trị viên | `status = pending`. Đơn chuyển khoản phải `paid` trước | `status → confirmed` |
-| L4 | Bắt đầu đóng gói | Nhân viên đơn hàng, nhân viên kho | `status = confirmed` | `status → processing` |
+| L1 | Đặt hàng | Khách (tạm thời cả khách vãng lai, xem [10](10-quan-tri-va-kho.md) mục 1) | Mọi dòng: biến thể đang bán, giá khớp, số lượng ≤ số có thể bán (dòng đặt trước: ≤ số suất còn lại của đợt đang mở, mục 5.1); `idempotency_key` chưa dùng | Tạo đơn `pending` / `unpaid` / `not_created`. Kho: `reserve` (trừ dòng đặt trước). Có mã giảm giá thì thêm `coupon_redemptions`, tăng `used_count`. Có dòng đặt trước thì `preorder_status = waiting`, ghi `deposit_amount` |
+| L2 | Ghi nhận đã thu tiền | Kế toán, quản trị viên | `payment_status` là `unpaid` hoặc `deposit_paid`; đơn chưa `cancelled` | `payment_status → paid`; thêm `payments` loại `charge` (đã cọc thì số tiền là tổng − cọc) |
+| L3 | Xác nhận đơn | Nhân viên đơn hàng, quản trị viên | `status = pending`. Đơn chuyển khoản phải `paid` trước; đơn có cọc phải `deposit_paid` hoặc `paid` trước | `status → confirmed` |
+| L4 | Bắt đầu đóng gói | Nhân viên đơn hàng, nhân viên kho | `status = confirmed`; `preorder_status` không phải `waiting` | `status → processing` |
 | L5 | Đóng gói xong | Nhân viên kho, nhân viên đơn hàng | `status = processing`; `shipping_status = not_created` | `shipping_status → ready` |
 | L6 | Bàn giao vận chuyển | Nhân viên đơn hàng, nhân viên kho | `shipping_status = ready`; đã nhập hãng và mã vận đơn; đủ hàng ở các vị trí `storage` | `shipping_status → in_transit`. Kho: `ship` từ các vị trí chọn theo Q7 của [10](10-quan-tri-va-kho.md) |
 | L7 | Giao thành công | Nhân viên đơn hàng | `shipping_status = in_transit` | `shipping_status → delivered` |
@@ -93,12 +97,23 @@ Mỗi dòng là một thao tác. Cả dòng xảy ra trong một giao dịch: ho
 | L11 | Nhận hàng hoàn | Nhân viên kho | `shipping_status = failed` | `shipping_status → returned`; `status → cancelled`. Kho: `return_in` vào vị trí cách ly |
 | L12 | Khách huỷ đơn | Chủ đơn | `status = pending` | `status → cancelled`. Kho: `release`. Trả lượt mã giảm giá |
 | L13 | Nhân viên huỷ đơn | Nhân viên đơn hàng, quản trị viên | `status` là `pending`, `confirmed` hoặc `processing`; `shipping_status` là `not_created` hoặc `ready` | `status → cancelled`. Kho: `release`. Trả lượt mã giảm giá |
-| L14 | Hoàn tiền | Kế toán, quản trị viên | `status = cancelled`; `payment_status = paid` | `payment_status → refunded`; thêm `payments` loại `refund` |
+| L14 | Hoàn tiền | Kế toán, quản trị viên | `status = cancelled`; `payment_status` là `paid` hoặc `deposit_paid` | `payment_status → refunded`; thêm `payments` loại `refund` bằng mọi khoản đã thu (cọc + thu) |
+| L15 | Ghi nhận đã nhận cọc | Kế toán, quản trị viên; VNPay (IPN) | `status = pending`; `payment_status = unpaid`; `deposit_amount > 0` | `payment_status → deposit_paid`; thêm `payments` loại `deposit` |
 
 Ghi chú:
 - **L8 chạy ngay sau L2 và L7.** Đơn COD thường đi theo thứ tự L7 rồi L2 (giao xong mới thu được tiền); đơn chuyển khoản đi L2 rồi mới tới L7.
 - **Sau L6 không huỷ trực tiếp được.** Hàng đã rời kho, nên chỉ có thể đi qua L9 rồi L11.
-- **Đơn huỷ khi đã thu tiền** (đơn chuyển khoản) nằm ở trạng thái `cancelled` / `paid` cho tới khi kế toán thực hiện L14. Trang quản trị phải liệt kê riêng các đơn này.
+- **Đơn huỷ khi đã thu tiền** (đơn chuyển khoản, đơn đã cọc) nằm ở trạng thái `cancelled` / `paid` hoặc `cancelled` / `deposit_paid` cho tới khi kế toán thực hiện L14. Trang quản trị phải liệt kê riêng các đơn này.
+- **L12, L13 với đơn đặt trước** chỉ trả lại phần đang giữ theo sổ kho: dòng đặt trước chưa phân bổ không giữ gì.
+
+### 5.1. Đặt trước (thêm 08/11/2026, `src/lib/preorder.ts`)
+
+- **Đợt đặt trước** (`preorder_offers`): một phiên bản, ngày dự kiến về, % cọc (0–100), số suất (không bắt buộc), trạng thái `open` (nhận đặt) → `closed` (ngừng nhận) ⇄ `open` → `ended` (kết thúc). Mỗi phiên bản tối đa một đợt chưa kết thúc. Khi đợt chưa kết thúc, phiên bản chỉ bán dạng đặt trước, không bán thường, để hàng về được chia cho người đã đặt trước.
+- **Dòng đặt trước** (`order_items.preorder_offer_id`) không giữ tồn lúc đặt, chỉ chiếm suất (đơn chưa huỷ). Hai khách đặt suất cuối cùng lúc: đơn sau khoá dòng đợt và đếm lại.
+- **Cọc**: mỗi dòng đặt trước cọc `đơn giá × số lượng × %`, làm tròn lên tới nghìn đồng. Khách chọn đặt cọc hoặc trả đủ. Cọc từ tổng đơn trở lên thì phải trả đủ. Trả đủ trước thì không nhận COD; COD đi với cọc (cọc chuyển khoản, phần còn lại trả khi nhận). Đơn huỷ được hoàn mọi khoản đã thu.
+- **Phân bổ** (hàng đã nhập kho bằng phiếu nhập): giữ hàng (`reserve`) cho từng đơn theo thứ tự đặt, không nhảy cóc; chỉ đơn đã cọc, đã trả hoặc COD không cọc. Đơn đủ mọi dòng đặt trước chuyển `preorder_status: waiting → ready` (ghi `order_events`), khách nhận thư.
+- **Kết thúc đợt** chỉ khi không còn đơn chờ hàng (đã phân bổ hoặc huỷ hết).
+- **Trạng thái đặt trước của đơn** (`orders.preorder_status`): `none` (không có hàng đặt trước), `waiting` (còn dòng chưa phân bổ), `ready` (đã phân bổ đủ).
 
 ## 6. Tồn kho
 

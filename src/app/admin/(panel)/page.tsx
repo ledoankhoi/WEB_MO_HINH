@@ -10,6 +10,7 @@ import { StageBadge } from "@/components/admin/OrdersTable";
 import { StageBoard } from "@/components/admin/StageBoard";
 import { ACTION_STAGES, orderStage, stageNext } from "@/lib/order-stage";
 import { pendingWork } from "@/server/repo/stock-reports";
+import { AdminSuspense } from "@/components/admin/AdminSuspense";
 
 const card = "rounded-xl border border-line bg-surface p-5";
 
@@ -23,7 +24,15 @@ function Stat({ label, value, href, alert = false }: { label: string; value: str
   );
 }
 
-export default async function AdminDashboardPage() {
+export default function AdminDashboardPage() {
+  return (
+    <AdminSuspense>
+      <AdminDashboardPageContent />
+    </AdminSuspense>
+  );
+}
+
+async function AdminDashboardPageContent() {
   const user = await requireStaff("dashboard.view");
   const seesStock = can(user.role, "inventory.view");
   const seesOrders = can(user.role, "orders.view");

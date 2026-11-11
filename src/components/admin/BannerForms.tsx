@@ -11,8 +11,8 @@ import type { Banner } from "@/server/repo/content";
 
 const INITIAL: FormState = {};
 
-// Tải ảnh lên kho media qua /admin/api/anh rồi điền đường dẫn vào ô ảnh.
-function UploadInto({ target, onDone }: { target: string; onDone: (url: string) => void }) {
+// Tải ảnh lên kho media qua /admin/api/anh rồi điền đường dẫn vào ô ảnh. Ảnh bìa tin tức cũng dùng (quyền content.edit).
+export function UploadInto({ target, onDone }: { target: string; onDone: (url: string) => void }) {
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState("");
   return (

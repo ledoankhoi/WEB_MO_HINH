@@ -5,16 +5,25 @@ import { formatDateTime, formatNumber, formatVnd } from "@/lib/format";
 import { requireStaff } from "@/server/auth/session";
 import { listCoupons } from "@/server/repo/coupons";
 import { listTaxonomy } from "@/server/repo/taxonomy";
+import { AdminSuspense } from "@/components/admin/AdminSuspense";
 
 // QT-21: mã giảm giá. `?sua=<id>` mở form sửa. Mã đã dùng không xoá được, chỉ tắt.
-export default async function CouponsPage({ searchParams }: PageProps<"/admin/ma-giam-gia">) {
+export default function CouponsPage(props: PageProps<"/admin/ma-giam-gia">) {
+  return (
+    <AdminSuspense>
+      <CouponsPageContent {...props} />
+    </AdminSuspense>
+  );
+}
+
+async function CouponsPageContent({ searchParams }: PageProps<"/admin/ma-giam-gia">) {
   await requireStaff("coupons.manage", "/admin/ma-giam-gia");
   const [coupons, categories, params] = await Promise.all([listCoupons(), listTaxonomy("categories"), searchParams]);
   const editing = coupons.find((coupon) => coupon.id === first(params.sua));
 
   return (
     <>
-      <h1 className="text-3xl font-bold tracking-tight">Mã giảm giá ({coupons.length})</h1>
+      <h1 className="text-3xl font-bold tracking-tight">Mã giảm giá</h1>
       {coupons.length === 0 ? (
         <Empty>Chưa có mã giảm giá nào.</Empty>
       ) : (

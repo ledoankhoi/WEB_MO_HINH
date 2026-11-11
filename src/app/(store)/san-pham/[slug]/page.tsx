@@ -3,7 +3,9 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProductView } from "@/components/product/ProductView";
 import { getModelFeatures } from "@/lib/model-features";
-import { getProductBySlug, getProductMedia, getProductReviews, getProductSlugs, getRelatedProducts } from "@/server/catalog";
+import { jsonLdScript, productJsonLd } from "@/lib/structured-data";
+import { site } from "@/config/site";
+import { getProductBySlug, getProductDeals, getProductMedia, getProductQuestions, getProductReviews, getProductSlugs, getRelatedProducts } from "@/server/catalog";
 
 type Props = PageProps<"/san-pham/[slug]">;
 
@@ -31,12 +33,20 @@ async function ProductDetail({ params }: Pick<Props, "params">) {
   // Bộ hợp thể: dạng ghép liệt kê các thành viên, thành viên trỏ về dạng ghép.
   const linkedSlugs = features?.members ?? (features?.combinesInto ? [features.combinesInto] : []);
   const linked = (await Promise.all(linkedSlugs.map((slug) => getProductBySlug(slug)))).filter((item) => item !== null);
-  const [related, reviews, media] = await Promise.all([
+  const [related, reviews, media, questions, deals] = await Promise.all([
     getRelatedProducts(product.category, product.id, 4),
     getProductReviews(product.id),
     getProductMedia(product.id),
+    getProductQuestions(product.id),
+    getProductDeals(product.id),
   ]);
-  return <ProductView product={product} linked={linked} related={related} reviews={reviews} media={media} />;
+  return (
+    <>
+      {/* Dữ liệu cấu trúc Product (mục 20). */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(productJsonLd(product, reviews, site.url)) }} />
+      <ProductView product={product} linked={linked} related={related} reviews={reviews} media={media} questions={questions} deals={deals} />
+    </>
+  );
 }
 
 export default function ProductPage({ params }: Props) {

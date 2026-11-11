@@ -3,42 +3,30 @@
 import { useActionState, useTransition } from "react";
 import { adminLogoutAction, changePasswordAction, logoutAction, updateProfileAction } from "@/app/actions/auth";
 import { Button } from "@/components/ui/Button";
-import { Field, SelectField } from "@/components/ui/Field";
+import { Field } from "@/components/ui/Field";
 import { Notice } from "@/components/ui/Notice";
-import { PROVINCES } from "@/lib/catalog";
 import type { CurrentUser, FormState } from "@/lib/types";
-import { Switch } from "@/components/animate/Switch";
 
 const INITIAL: FormState = {};
-const card = "space-y-4 rounded-xl border border-line bg-surface p-5 sm:p-6";
+export const card = "space-y-4 rounded-xl border border-line bg-surface p-5 sm:p-6";
 
-function Result({ state }: { state: FormState }) {
+export function Result({ state }: { state: FormState }) {
   if (!state.message) return null;
   return <Notice tone={state.ok ? "success" : "error"}>{state.message}</Notice>;
 }
 
+// Cài đặt > Hồ sơ: họ tên, số điện thoại. Email là tên đăng nhập, không đổi được.
 export function ProfileForm({ user }: { user: CurrentUser }) {
   const [state, action, pending] = useActionState(updateProfileAction, INITIAL);
-  const value = (name: "name" | "phone" | "address" | "city") => state.values?.[name] ?? user[name];
+  const value = (name: "name" | "phone") => state.values?.[name] ?? user[name];
 
   return (
     <form action={action} className={card}>
-      <h2 className="text-lg font-semibold">Thông tin cá nhân</h2>
+      <h2 className="text-lg font-semibold">Hồ sơ của tôi</h2>
       <Result state={state} />
-      <Field label="Email" name="email" value={user.email} disabled readOnly />
+      <Field label="Email" name="email" value={user.email} disabled readOnly hint="Email dùng để đăng nhập, không đổi được." />
       <Field label="Họ và tên" name="name" required autoComplete="name" defaultValue={value("name")} error={state.errors?.name} />
       <Field label="Số điện thoại" name="phone" type="tel" autoComplete="tel" defaultValue={value("phone")} error={state.errors?.phone} />
-      <Field label="Địa chỉ" name="address" autoComplete="street-address" defaultValue={value("address")} error={state.errors?.address} />
-      <SelectField label="Tỉnh / Thành phố" name="city" defaultValue={value("city")} error={state.errors?.city}>
-        <option value="">Chưa chọn</option>
-        {PROVINCES.map((province) => (
-          <option key={province}>{province}</option>
-        ))}
-      </SelectField>
-      <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-line px-4 py-3 text-sm">
-        Nhận tin khuyến mãi, hàng mới qua email
-        <Switch name="marketingConsent" defaultChecked={user.marketingConsent} />
-      </label>
       <Button type="submit" pending={pending}>
         Lưu thay đổi
       </Button>

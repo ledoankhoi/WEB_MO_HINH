@@ -9,6 +9,7 @@ import { formatDate, formatNumber, formatVnd, parseVnDate } from "@/lib/format";
 import { requireStaff } from "@/server/auth/session";
 import { MAX_RANGE_DAYS, salesReport } from "@/server/repo/sales-reports";
 import { topWishlisted } from "@/server/repo/wishlist";
+import { AdminSuspense } from "@/components/admin/AdminSuspense";
 
 const DAY = 86400 * 1000;
 const percent = (value: number) => `${(value * 100).toLocaleString("vi-VN", { maximumFractionDigits: 1 })}%`;
@@ -16,7 +17,15 @@ const percent = (value: number) => `${(value * 100).toLocaleString("vi-VN", { ma
 const isoDay = (ms: number) => new Date(ms + 7 * 3600 * 1000).toISOString().slice(0, 10);
 
 // YC-BC-01, 03: báo cáo bán hàng theo khoảng ngày, xuất CSV.
-export default async function ReportsPage({ searchParams }: PageProps<"/admin/bao-cao">) {
+export default function ReportsPage(props: PageProps<"/admin/bao-cao">) {
+  return (
+    <AdminSuspense>
+      <ReportsPageContent {...props} />
+    </AdminSuspense>
+  );
+}
+
+async function ReportsPageContent({ searchParams }: PageProps<"/admin/bao-cao">) {
   await requireStaff("reports.view", "/admin/bao-cao");
   const params = await searchParams;
   const fromInput = parseVnDate(first(params.tu));

@@ -14,10 +14,17 @@ export async function loadSlugRedirects(): Promise<Map<string, string>> {
   return new Map(result.rows.map((row) => [String(row.old_slug), String(row.slug)]));
 }
 
+// Lần tải đang chạy: nhiều yêu cầu tới cùng lúc khi bộ nhớ trống (ví dụ trình duyệt tải trước mọi thẻ sản phẩm trên
+// trang chủ) dùng chung một truy vấn thay vì mỗi yêu cầu một truy vấn.
+let loading: Promise<Map<string, string>> | null = null;
+
 export async function findSlugRedirect(slug: string, now = Date.now()): Promise<string | null> {
   if (!cache || now - cache.at > TTL) {
     try {
-      cache = { at: now, map: await loadSlugRedirects() };
+      loading ??= loadSlugRedirects().finally(() => {
+        loading = null;
+      });
+      cache = { at: now, map: await loading };
     } catch {
       // CSDL lỗi thì bỏ qua chuyển hướng, trang sản phẩm tự báo không tìm thấy.
       return cache?.map.get(slug) ?? null;

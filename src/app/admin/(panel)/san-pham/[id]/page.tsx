@@ -13,6 +13,7 @@ import { can } from "@/lib/permissions";
 import { requireStaff } from "@/server/auth/session";
 import { findProductById, listMedia, listPriceHistory } from "@/server/repo/products";
 import { productFormOptions } from "@/server/repo/taxonomy";
+import { AdminSuspense } from "@/components/admin/AdminSuspense";
 
 // YC-SP-04: màn hình sản phẩm chia tab. SEO (T21) thêm sau.
 const TABS = { "thong-tin": "Thông tin", "bien-the": "Biến thể", media: "Media", "xem-truoc": "Xem trước" } as const;
@@ -20,7 +21,15 @@ type Tab = keyof typeof TABS;
 
 const money = (value: unknown) => (typeof value === "number" ? formatVnd(value) : "—");
 
-export default async function AdminEditProductPage({ params, searchParams }: PageProps<"/admin/san-pham/[id]">) {
+export default function AdminEditProductPage(props: PageProps<"/admin/san-pham/[id]">) {
+  return (
+    <AdminSuspense>
+      <AdminEditProductPageContent {...props} />
+    </AdminSuspense>
+  );
+}
+
+async function AdminEditProductPageContent({ params, searchParams }: PageProps<"/admin/san-pham/[id]">) {
   const { id } = await params;
   const user = await requireStaff("catalog.view", `/admin/san-pham/${id}`);
   const product = isId(id) ? await findProductById(id) : null;

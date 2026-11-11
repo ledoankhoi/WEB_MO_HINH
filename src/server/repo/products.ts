@@ -2,13 +2,42 @@ import "server-only";
 import { isRobotModelKey, type ProductSpec, type RobotColors, type RobotModelKey, type SortValue } from "@/lib/catalog";
 import { foldText } from "@/lib/format";
 import { TRANSFORMABLE_MODEL_URL_PATTERN } from "@/lib/model-features";
+import { parsePreorder } from "@/lib/preorder";
+import { effectivePrice, flashState, parseFlash } from "@/lib/flash-sale";
 import type { CartProduct, Product, ProductStatus, ProductSummary, ProductVariant } from "@/lib/types";
 import { getDb, type InValue, type Row } from "../db";
 import { newId } from "../ids";
 import { auditStatement, withAudit, type AuditEntry } from "./audit";
 
+// Đợt đặt trước chưa kết thúc của một biến thể, dạng JSON (src/lib/preorder.ts, parsePreorder). `taken`: số suất đã đặt
+// (đơn chưa huỷ). Mỗi biến thể tối đa một đợt chưa kết thúc (chỉ mục idx_preorder_offers_live) nên câu con trả tối đa một dòng.
+export const preorderJson = (variantId: string) =>
+  `(SELECT json_build_object('id', po.id, 'status', po.status, 'expectedAt', po.expected_at, 'depositPercent', po.deposit_percent,
+            'maxQty', po.max_qty, 'note', po.note,
+            'taken', (SELECT COALESCE(SUM(oi.quantity), 0) FROM order_items oi JOIN orders o ON o.id = oi.order_id
+                      WHERE oi.preorder_offer_id = po.id AND o.status <> 'cancelled'))::text
+    FROM preorder_offers po WHERE po.variant_id = ${variantId} AND po.status <> 'ended')`;
+
+// Chương trình flash sale đang chạy hoặc sắp chạy (chưa hết giờ, đang bật) của một biến thể, sớm nhất trước, dạng JSON
+// (src/lib/flash-sale.ts, parseFlash). `sold`: số đã bán bằng giá sale ở đơn chưa huỷ. Mốc giờ lấy từ đồng hồ CSDL vì hàm
+// này chạy cả trong dữ liệu được cache; trình duyệt tự so giờ để hiện giá.
+export const flashJson = (variantId: string) =>
+  `(SELECT json_build_object('saleId', fs.id, 'title', fs.title, 'price', fi.sale_price, 'startsAt', fs.starts_at, 'endsAt', fs.ends_at,
+            'qtyLimit', fi.qty_limit, 'maxPerOrder', fi.max_per_order,
+            'sold', (SELECT COALESCE(SUM(oi.quantity), 0) FROM order_items oi JOIN orders o ON o.id = oi.order_id
+                     WHERE oi.flash_sale_id = fs.id AND oi.variant_id = fi.variant_id AND o.status <> 'cancelled'))::text
+    FROM flash_sale_items fi JOIN flash_sales fs ON fs.id = fi.sale_id
+    WHERE fi.variant_id = ${variantId} AND fs.is_active AND fs.ends_at > (extract(epoch FROM now()) * 1000)::bigint
+    ORDER BY fs.starts_at, fs.id LIMIT 1)`;
+
+const SUMMARY_FIELDS = ["id", "variant_id", "slug", "name", "tagline", "category", "price", "compare_at_price", "stock", "image", "is_featured", "model_url"];
+
+// Cột của thẻ sản phẩm đọc từ product_list (bí danh `alias`).
+export const summaryColumns = (alias: string) =>
+  `${SUMMARY_FIELDS.map((field) => `${alias}.${field}`).join(", ")}, ${preorderJson(`${alias}.variant_id`)} AS preorder, ${flashJson(`${alias}.variant_id`)} AS flash`;
+
 // product_list (migration 005): sản phẩm ghép biến thể mặc định, cột giá, tồn, màu là của biến thể đó.
-export const SUMMARY_COLUMNS = "id, variant_id, slug, name, tagline, category, price, compare_at_price, stock, image, is_featured, model_url";
+export const SUMMARY_COLUMNS = summaryColumns("product_list");
 
 const ORDER_BY: Record<SortValue, string> = {
   "moi-nhat": "created_at DESC, id",
@@ -51,6 +80,8 @@ function toVariant(row: Row): ProductVariant {
     isDefault: Boolean(row.is_default),
     isActive: Boolean(row.is_active),
     locked: Boolean(row.locked),
+    preorder: parsePreorder(row.preorder),
+    flash: parseFlash(row.flash),
   };
 }
 
@@ -104,6 +135,8 @@ export function toSummary(row: Row): ProductSummary {
     image: row.image === null ? null : String(row.image),
     isFeatured: Boolean(row.is_featured),
     modelUrl: row.model_url === null || row.model_url === undefined ? null : String(row.model_url),
+    preorder: parsePreorder(row.preorder),
+    flash: parseFlash(row.flash),
   };
 }
 
@@ -118,7 +151,7 @@ async function loadProduct(where: string, arg: string): Promise<Product | null> 
   const [product, variants, media] = await db.batch([
     { sql: `SELECT * FROM product_list WHERE ${where}`, args: [arg] },
     {
-      sql: `SELECT v.*, ${VARIANT_STOCK} AS stock, ${VARIANT_USED} AS locked FROM product_variants v
+      sql: `SELECT v.*, ${VARIANT_STOCK} AS stock, ${VARIANT_USED} AS locked, ${preorderJson("v.id")} AS preorder, ${flashJson("v.id")} AS flash FROM product_variants v
             WHERE v.product_id = (SELECT id FROM products WHERE ${where}) ORDER BY v.sort_order, v.created_at, v.id`,
       args: [arg],
     },
@@ -136,30 +169,40 @@ export const findProductBySlug = (slug: string) => loadProduct("slug = ?", slug)
 export const findProductById = (id: string) => loadProduct("id = ?", id);
 
 // Giá và tồn kho hiện tại của các biến thể trong giỏ. Biến thể đã tắt hoặc sản phẩm chưa xuất bản vẫn được
-// trả về với available = false để giao diện báo cho khách biết.
-export async function findCartProducts(variantIds: readonly string[]): Promise<CartProduct[]> {
+// trả về với available = false để giao diện báo cho khách biết. `price` là giá bán lúc `now` (giá flash sale nếu chương trình
+// đang chạy và còn suất), `basePrice` là giá thường; `flash` chỉ có khi đang chạy.
+export async function findCartProducts(variantIds: readonly string[], now: number = Date.now()): Promise<CartProduct[]> {
   const unique = [...new Set(variantIds)];
   if (unique.length === 0) return [];
   const db = await getDb();
   const result = await db.execute({
     sql: `SELECT v.id, v.product_id, p.slug, v.price, v.compare_at_price, COALESCE(v.image, p.image) AS image,
                  p.name || CASE WHEN v.is_default THEN '' ELSE ' (' || v.name || ')' END AS name,
-                 v.is_active AND p.status = 'published' AS available, ${VARIANT_STOCK} AS stock
-          FROM product_variants v JOIN products p ON p.id = v.product_id
+                 v.is_active AND p.status = 'published' AS available, ${VARIANT_STOCK} AS stock, c.slug AS category,
+                 ${preorderJson("v.id")} AS preorder, ${flashJson("v.id")} AS flash
+          FROM product_variants v JOIN products p ON p.id = v.product_id JOIN categories c ON c.id = p.category_id
           WHERE v.id IN (${unique.map(() => "?").join(", ")})`,
     args: unique,
   });
-  return result.rows.map((row) => ({
-    id: String(row.id),
-    productId: String(row.product_id),
-    slug: String(row.slug),
-    name: String(row.name),
-    price: Number(row.price),
-    compareAtPrice: row.compare_at_price === null ? null : Number(row.compare_at_price),
-    stock: Number(row.stock),
-    image: row.image === null ? null : String(row.image),
-    available: Boolean(row.available),
-  }));
+  return result.rows.map((row) => {
+    const flash = parseFlash(row.flash);
+    const live = flashState(flash, now) === "live" ? flash : null;
+    return {
+      id: String(row.id),
+      productId: String(row.product_id),
+      slug: String(row.slug),
+      name: String(row.name),
+      price: effectivePrice(Number(row.price), live, now),
+      basePrice: Number(row.price),
+      flash: live,
+      compareAtPrice: row.compare_at_price === null ? null : Number(row.compare_at_price),
+      stock: Number(row.stock),
+      image: row.image === null ? null : String(row.image),
+      available: Boolean(row.available),
+      category: String(row.category),
+      preorder: parsePreorder(row.preorder),
+    };
+  });
 }
 
 export type ProductQuery = {
@@ -254,6 +297,17 @@ export async function listFilterOptions(): Promise<{ brands: FilterOption[]; ser
     priceMin: Number(prices.rows[0].lo),
     priceMax: Number(prices.rows[0].hi),
   };
+}
+
+// Sản phẩm đang bán theo danh sách slug (khung truyện tranh, thẻ sưu tầm gacha). Slug không có hoặc ngừng bán thì bỏ qua.
+export async function listSummariesBySlugs(slugs: readonly string[]): Promise<ProductSummary[]> {
+  if (slugs.length === 0) return [];
+  const db = await getDb();
+  const result = await db.execute({
+    sql: `SELECT ${SUMMARY_COLUMNS} FROM product_list WHERE is_active AND slug IN (${slugs.map(() => "?").join(", ")})`,
+    args: [...slugs],
+  });
+  return result.rows.map(toSummary);
 }
 
 export async function listFeaturedProducts(limit: number): Promise<ProductSummary[]> {

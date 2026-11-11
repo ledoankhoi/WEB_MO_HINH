@@ -1,10 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { getCategory } from "@/lib/catalog";
-import { discountPercent, formatVnd } from "@/lib/format";
+import { site } from "@/config/site";
+import { discountPercent, formatDate, formatVnd } from "@/lib/format";
+import { canPreorder, orderableQty } from "@/lib/preorder";
 import { transformLabel } from "@/lib/model-features";
 import type { ProductSummary } from "@/lib/types";
 import { AddToCartButton } from "./AddToCartButton";
+import { CompareButton } from "./CompareButton";
+import { FlashPrice } from "./FlashPrice";
 import { StockAlertButton } from "./StockAlertButton";
 import { WishlistButton } from "./WishlistButton";
 
@@ -25,7 +29,9 @@ export function ProductCard({ product }: { product: ProductSummary }) {
   const href = `/san-pham/${product.slug}`;
   const sticker = transformLabel(product.modelUrl);
   const discount = discountPercent(product.price, product.compareAtPrice);
-  const soldOut = product.stock <= 0;
+  // Hàng đặt trước (src/lib/preorder.ts): bán theo suất, không theo tồn kho.
+  const preorder = product.preorder;
+  const soldOut = preorder ? !canPreorder(preorder) : product.stock <= 0;
 
   return (
     <article className="relative flex h-full flex-col border-3 border-ink bg-surface shadow-[6px_6px_0_var(--color-ink)] transition hover:-translate-y-0.5 hover:shadow-[8px_8px_0_var(--color-ink)]">
@@ -37,6 +43,11 @@ export function ProductCard({ product }: { product: ProductSummary }) {
           {sticker && (
             <span className="-rotate-4 border-2 border-ink bg-brand px-2.5 py-0.5 font-condensed text-base font-extrabold text-white uppercase">
               {sticker}
+            </span>
+          )}
+          {preorder && (
+            <span className="rotate-2 border-2 border-ink bg-ink px-2.5 py-0.5 font-condensed text-base font-extrabold text-white uppercase">
+              Đặt trước
             </span>
           )}
           {discount !== null && (
@@ -56,23 +67,40 @@ export function ProductCard({ product }: { product: ProductSummary }) {
             {product.name}
           </Link>
         </h3>
-        <div className="flex flex-wrap items-baseline gap-x-2.5">
-          <p className={`font-condensed text-[30px] leading-tight font-black italic tabular-nums ${discount !== null ? "text-brand" : ""}`}>
-            {formatVnd(product.price)}
+        <FlashPrice flash={product.flash} basePrice={product.price}>
+          <div className="flex flex-wrap items-baseline gap-x-2.5">
+            <p className={`font-condensed text-[30px] leading-tight font-black italic tabular-nums ${discount !== null ? "text-brand" : ""}`}>
+              {formatVnd(product.price)}
+            </p>
+            {discount !== null && <p className="text-sm text-muted line-through tabular-nums">{formatVnd(product.compareAtPrice!)}</p>}
+          </div>
+        </FlashPrice>
+        {preorder && (
+          <p className="text-sm font-semibold text-cobalt">
+            Dự kiến về {formatDate(preorder.expectedAt)}
+            {preorder.depositPercent > 0 && preorder.depositPercent < 100 ? ` · cọc ${preorder.depositPercent}%` : ""}
+            {preorder.left !== null && preorder.left > 0 && preorder.left <= LOW_STOCK ? ` · còn ${preorder.left} suất` : ""}
           </p>
-          {discount !== null && <p className="text-sm text-muted line-through tabular-nums">{formatVnd(product.compareAtPrice!)}</p>}
-        </div>
-        {!soldOut && product.stock <= LOW_STOCK && (
+        )}
+        {!preorder && !soldOut && product.stock <= LOW_STOCK && (
           <p className="font-condensed text-base font-bold text-brand-strong uppercase">Chỉ còn {product.stock}</p>
         )}
+        <CompareButton slug={product.slug} name={product.name} className="self-start" />
         <div className="mt-auto flex flex-col gap-2 pt-2.5">
           {soldOut ? (
             <>
-              <p className="font-condensed text-base font-extrabold text-brand-strong uppercase">Hết hàng</p>
+              <p className="font-condensed text-base font-extrabold text-brand-strong uppercase">{preorder ? "Hết suất đặt trước" : "Hết hàng"}</p>
               <StockAlertButton variantId={product.variantId} name={product.name} />
             </>
           ) : (
-            <AddToCartButton id={product.variantId} name={product.name} stock={product.stock} bar label="Thêm vào giỏ" />
+            <AddToCartButton
+              id={product.variantId}
+              name={product.name}
+              stock={orderableQty(product.stock, preorder, site.maxQtyPerItem)}
+              bar
+              label={preorder ? "Đặt trước" : "Thêm vào giỏ"}
+              preorder={!!preorder}
+            />
           )}
         </div>
       </div>

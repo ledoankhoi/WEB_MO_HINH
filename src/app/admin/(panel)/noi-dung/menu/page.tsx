@@ -3,11 +3,20 @@ import { DeleteNavButton, NavItemForm } from "@/components/admin/ContentForms";
 import { BADGE, TABLE, TABLE_WRAP, first } from "@/components/admin/parts";
 import { requireStaff } from "@/server/auth/session";
 import { listNavItems } from "@/server/repo/content";
+import { AdminSuspense } from "@/components/admin/AdminSuspense";
 
 const MENUS = { header: "Đầu trang", footer: "Chân trang (Hỗ trợ)" } as const;
 
 // YC-CMS-03. `?sua=<id>` mở form sửa.
-export default async function MenuPage({ searchParams }: PageProps<"/admin/noi-dung/menu">) {
+export default function MenuPage(props: PageProps<"/admin/noi-dung/menu">) {
+  return (
+    <AdminSuspense>
+      <MenuPageContent {...props} />
+    </AdminSuspense>
+  );
+}
+
+async function MenuPageContent({ searchParams }: PageProps<"/admin/noi-dung/menu">) {
   await requireStaff("content.edit", "/admin/noi-dung/menu");
   const [items, params] = await Promise.all([listNavItems(), searchParams]);
   const editing = items.find((item) => item.id === first(params.sua));

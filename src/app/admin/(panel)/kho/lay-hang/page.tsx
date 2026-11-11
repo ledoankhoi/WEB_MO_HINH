@@ -4,16 +4,25 @@ import { PrintButton } from "@/components/admin/PrintButton";
 import { formatDateTime } from "@/lib/format";
 import { requireStaff } from "@/server/auth/session";
 import { listPickingOrders } from "@/server/repo/orders";
+import { AdminSuspense } from "@/components/admin/AdminSuspense";
 
 // Danh sách lấy hàng (YC-KHO-16): đơn đang xử lý chưa đóng gói, vị trí gợi ý theo Q7.
-export default async function PickingPage() {
+export default function PickingPage() {
+  return (
+    <AdminSuspense>
+      <PickingPageContent />
+    </AdminSuspense>
+  );
+}
+
+async function PickingPageContent() {
   await requireStaff("orders.fulfil", "/admin/kho/lay-hang");
   const orders = await listPickingOrders();
 
   return (
     <>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-3xl font-bold tracking-tight">Lấy hàng ({orders.length} đơn)</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Lấy hàng</h1>
         {orders.length > 0 && <PrintButton />}
       </div>
       <p className="text-sm text-muted print:hidden">

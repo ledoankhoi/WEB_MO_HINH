@@ -2,22 +2,29 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { CheckoutForm } from "@/components/cart/CheckoutForm";
 import { getCurrentUser } from "@/server/auth/session";
+import { listAddresses } from "@/server/repo/addresses";
 import { getPaymentMethods } from "@/server/payment";
+import { site } from "@/config/site";
 
 export const metadata: Metadata = { title: "Đặt hàng", robots: { index: false } };
 
-// Điền sẵn thông tin của tài khoản đang đăng nhập (nếu có). Khách vãng lai vẫn đặt hàng được.
+// Điền sẵn thông tin của tài khoản đang đăng nhập (nếu có): địa chỉ mặc định trong sổ địa chỉ, chọn được địa chỉ
+// khác trong sổ. Khách vãng lai vẫn đặt hàng được.
 async function Checkout() {
   const user = await getCurrentUser();
+  const addresses = user ? await listAddresses(user.id) : [];
+  const saved = addresses.find((item) => item.isDefault) ?? null;
   return (
     <CheckoutForm
       paymentMethods={getPaymentMethods()}
+      addresses={addresses}
+      codOtp={{ from: site.codOtpFrom, verifiedEmail: user?.emailVerified ? user.email : null }}
       defaults={{
-        name: user?.name ?? "",
-        phone: user?.phone ?? "",
+        name: saved?.recipientName ?? user?.name ?? "",
+        phone: saved?.phone ?? user?.phone ?? "",
         email: user?.email ?? "",
-        address: user?.address ?? "",
-        city: user?.city ?? "",
+        address: saved?.address ?? "",
+        city: saved?.city ?? "",
       }}
     />
   );

@@ -1,19 +1,27 @@
 import Link from "next/link";
 import { BADGE, Empty, TABLE, TABLE_WRAP, first } from "@/components/admin/parts";
 import { ActiveToggle, SupplierForm } from "@/components/admin/WarehouseForms";
-import { formatNumber } from "@/lib/format";
 import { requireStaff } from "@/server/auth/session";
 import { listSuppliers } from "@/server/repo/warehouse";
+import { AdminSuspense } from "@/components/admin/AdminSuspense";
 
 // YC-KHO-02. `?sua=<id>` mở form sửa.
-export default async function SuppliersPage({ searchParams }: PageProps<"/admin/nha-cung-cap">) {
+export default function SuppliersPage(props: PageProps<"/admin/nha-cung-cap">) {
+  return (
+    <AdminSuspense>
+      <SuppliersPageContent {...props} />
+    </AdminSuspense>
+  );
+}
+
+async function SuppliersPageContent({ searchParams }: PageProps<"/admin/nha-cung-cap">) {
   await requireStaff("inventory.setup", "/admin/nha-cung-cap");
   const [suppliers, params] = await Promise.all([listSuppliers(), searchParams]);
   const editing = suppliers.find((supplier) => supplier.id === first(params.sua));
 
   return (
     <>
-      <h1 className="text-3xl font-bold tracking-tight">Nhà cung cấp ({formatNumber(suppliers.length)})</h1>
+      <h1 className="text-3xl font-bold tracking-tight">Nhà cung cấp</h1>
       {suppliers.length === 0 ? (
         <Empty>Chưa có nhà cung cấp nào.</Empty>
       ) : (

@@ -194,7 +194,7 @@ export default function RobotViewer({ label, bare = false, onReady, ...source }:
           gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
           onCreated={() => onReady?.()}
         >
-          <StudioLights />
+          <StudioLights dim={source.look?.dark ?? false} />
           <RobotSubject {...source} animate={!reducedMotion} control={control} onInfo={onInfo} />
           <OrbitControls
             ref={controls}

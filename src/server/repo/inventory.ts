@@ -136,11 +136,14 @@ export async function findInventoryDiscrepancies(): Promise<string[]> {
      LEFT JOIN stock_levels s ON s.variant_id = i.variant_id
      LEFT JOIN locations l ON l.id = s.location_id AND l.warehouse_id = i.warehouse_id
      GROUP BY i.variant_id, i.warehouse_id, i.on_hand, i.quarantined, i.reserved`,
-    // Đơn còn giữ hàng: chưa huỷ, chưa hoàn tất và chưa bàn giao vận chuyển (L6 mới xuất kho).
+    // Đơn còn giữ hàng: chưa huỷ, chưa hoàn tất và chưa bàn giao vận chuyển (L6 mới xuất kho). Dòng đặt trước chỉ giữ hàng
+    // từ lúc được phân bổ (có dòng sổ kho 'reserve').
     `SELECT i.variant_id, i.reserved, COALESCE(o.total, 0) AS open_orders
      FROM inventory i
      LEFT JOIN (SELECT oi.variant_id, SUM(oi.quantity) AS total FROM order_items oi JOIN orders ord ON ord.id = oi.order_id
                 WHERE ord.status IN ('pending', 'confirmed', 'processing') AND ord.shipping_status IN ('not_created', 'ready')
+                  AND (oi.preorder_offer_id IS NULL OR EXISTS (SELECT 1 FROM stock_movements m
+                       WHERE m.order_id = oi.order_id AND m.variant_id = oi.variant_id AND m.type = 'reserve'))
                 GROUP BY oi.variant_id) o ON o.variant_id = i.variant_id
      WHERE i.reserved <> COALESCE(o.total, 0)`,
   ]);

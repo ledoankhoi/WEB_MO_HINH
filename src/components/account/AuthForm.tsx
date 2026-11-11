@@ -49,6 +49,13 @@ export function AuthForm({ mode, next }: { mode: keyof typeof ACTIONS; next: str
           </label>
         </>
       )}
+      {mode === "login" && (
+        <p className="-mt-1 text-right text-sm">
+          <Link href="/quen-mat-khau" className="font-medium text-brand-strong hover:underline">
+            Quên mật khẩu?
+          </Link>
+        </p>
+      )}
       <Button type="submit" size="lg" full pending={pending}>
         {isLogin ? "Đăng nhập" : "Tạo tài khoản"}
       </Button>

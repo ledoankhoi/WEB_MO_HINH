@@ -8,11 +8,20 @@ import { can } from "@/lib/permissions";
 import { requireStaff } from "@/server/auth/session";
 import { STOCK_FILTERS, listStock, type StockFilter } from "@/server/repo/stock-reports";
 import { listLocations } from "@/server/repo/warehouse";
+import { AdminSuspense } from "@/components/admin/AdminSuspense";
 
 const PAGE_SIZE = 50;
 
 // YC-KHO-10, 13, 14, 15: danh sách tồn, lọc, phân trang ở máy chủ; giá vốn chỉ với cost.view (SEC-03).
-export default async function StockPage({ searchParams }: PageProps<"/admin/kho">) {
+export default function StockPage(props: PageProps<"/admin/kho">) {
+  return (
+    <AdminSuspense>
+      <StockPageContent {...props} />
+    </AdminSuspense>
+  );
+}
+
+async function StockPageContent({ searchParams }: PageProps<"/admin/kho">) {
   const user = await requireStaff("inventory.view", "/admin/kho");
   const params = await searchParams;
   const withCost = can(user.role, "cost.view");
@@ -38,7 +47,7 @@ export default async function StockPage({ searchParams }: PageProps<"/admin/kho"
   return (
     <>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-3xl font-bold tracking-tight">Tồn kho ({formatNumber(total)} SKU)</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Tồn kho</h1>
         <a href={exportHref} className="text-sm font-medium text-brand-strong hover:underline">
           Xuất CSV
         </a>

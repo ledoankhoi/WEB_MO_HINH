@@ -1,15 +1,15 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { X } from "lucide-react";
+import { SlidersHorizontal } from "lucide-react";
+import { CategoryBar } from "@/components/product/CategoryBar";
+import { OptionsColumn } from "@/components/product/OptionsColumn";
 import { ProductGrid } from "@/components/product/ProductCard";
-import { ShopFilters } from "@/components/product/ShopFilters";
-import { SortSelect } from "@/components/product/SortSelect";
 import { buttonClass } from "@/components/ui/Button";
 import { site } from "@/config/site";
 import { CATEGORIES, isCategorySlug, isSortValue } from "@/lib/catalog";
-import { formatVnd } from "@/lib/format";
-import { getFilterOptions, searchProducts } from "@/server/catalog";
+import { shopHref } from "@/lib/shop-url";
+import { getCategoryCounts, getFilterOptions, searchProducts } from "@/server/catalog";
 
 type SearchParams = PageProps<"/san-pham">["searchParams"];
 
@@ -46,7 +46,7 @@ async function Results({ searchParams }: { searchParams: SearchParams }) {
   const inStock = first(params["con-hang"]) === "1";
   const transformable = first(params["bien-hinh"]) === "1";
 
-  const options = await getFilterOptions();
+  const [options, counts] = await Promise.all([getFilterOptions(), getCategoryCounts()]);
   const brand = options.brands.some((b) => b.slug === first(params["thuong-hieu"])) ? first(params["thuong-hieu"]) : "";
   const series = options.series.some((s) => s.slug === first(params.series)) ? first(params.series) : "";
 
@@ -66,75 +66,38 @@ async function Results({ searchParams }: { searchParams: SearchParams }) {
     series,
     "sap-xep": sort === "moi-nhat" ? "" : sort,
   };
-  const href = (changes: Record<string, string>) => {
-    const next = new URLSearchParams();
-    for (const [key, value] of Object.entries({ ...current, trang: "", ...changes })) if (value) next.set(key, value);
-    const query = next.toString();
-    return query ? `/san-pham?${query}` : "/san-pham";
-  };
-
-  // Bộ lọc đang bật, bấm để bỏ từng cái.
-  const active = [
-    q && { label: `“${q}”`, href: href({ q: "" }) },
-    categoryInfo && { label: categoryInfo.name, href: href({ loai: "" }) },
-    (minPrice !== undefined || maxPrice !== undefined) && {
-      label: `${minPrice !== undefined ? formatVnd(minPrice) : "0 ₫"} – ${maxPrice !== undefined ? formatVnd(maxPrice) : "không giới hạn"}`,
-      href: href({ "gia-tu": "", "gia-den": "" }),
-    },
-    inStock && { label: "Còn hàng", href: href({ "con-hang": "" }) },
-    transformable && { label: "Có biến hình 3D", href: href({ "bien-hinh": "" }) },
-    brand && { label: options.brands.find((b) => b.slug === brand)!.name, href: href({ "thuong-hieu": "" }) },
-    series && { label: options.series.find((s) => s.slug === series)!.name, href: href({ series: "" }) },
-  ].filter((item): item is { label: string; href: string } => Boolean(item));
+  const href = (changes: Record<string, string>) => shopHref(current, changes);
+  // Hàng danh mục: các danh mục đang có hàng (giữ danh mục đang chọn dù đã hết hàng để còn bỏ chọn được).
+  const categoryTabs = CATEGORIES.filter((c) => (counts[c.slug] ?? 0) > 0 || c.slug === category).map((c) => ({
+    slug: c.slug,
+    name: c.name,
+    count: counts[c.slug] ?? 0,
+  }));
 
   return (
     <>
-      <div className="space-y-1">
-        <nav aria-label="Đường dẫn" className="text-sm text-muted">
-          <Link href="/" className="hover:text-fg">
-            Trang chủ
-          </Link>
-          {" / "}
-          <Link href="/san-pham" className="hover:text-fg">
-            Cửa hàng
-          </Link>
-          {categoryInfo && <span className="text-fg">{` / ${categoryInfo.name}`}</span>}
-        </nav>
-        <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">{categoryInfo?.name ?? (q ? `Kết quả cho “${q}”` : "Cửa hàng")}</h1>
-        <p className="text-muted">{categoryInfo?.description ?? "Toàn bộ mô hình robot sưu tầm, xem và xoay 3D trước khi mua."}</p>
-      </div>
+      {/* Không hiện tiêu đề trên trang (khối "Tùy chọn sản phẩm" đã cho biết đang xem gì); giữ thẻ h1 ẩn cho trình đọc
+          màn hình và công cụ tìm kiếm. */}
+      <h1 className="sr-only">{categoryInfo?.name ?? (q ? `Kết quả cho “${q}”` : "Cửa hàng")}</h1>
 
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-8">
-        <ShopFilters
-          key={JSON.stringify(current)}
-          values={{ q, sort: current["sap-xep"], category, minPrice: current["gia-tu"], maxPrice: current["gia-den"], inStock, transformable, brand, series }}
-          categories={CATEGORIES.map((c) => ({ slug: c.slug, name: c.name }))}
+      {/* Khối "Tùy chọn sản phẩm" hình chữ Γ: góc đỏ trên bên trái, hàng danh mục nằm ngang, cột tuỳ chọn nằm dọc;
+          lưới sản phẩm nằm trong góc còn lại. Trên điện thoại ba phần xếp chồng. */}
+      <section aria-label="Tùy chọn sản phẩm" className="lg:grid lg:grid-cols-[16rem_minmax(0,1fr)] lg:items-start">
+        <p className="flex h-14 items-center gap-2 border-3 border-ink bg-brand px-4 font-condensed text-lg font-extrabold tracking-[0.04em] text-white uppercase">
+          <SlidersHorizontal className="size-[18px]" strokeWidth={2.6} aria-hidden />
+          Tùy chọn sản phẩm
+        </p>
+        <CategoryBar current={current} categories={categoryTabs} className="h-14 border-3 border-t-0 border-ink bg-surface lg:border-t-3 lg:border-l-0" />
+        <OptionsColumn
+          current={current}
           brands={options.brands}
           series={options.series}
           priceMin={options.priceMin}
           priceMax={options.priceMax}
-          activeCount={active.length - (q ? 1 : 0)}
+          className="border-3 border-t-0 border-ink bg-surface"
         />
 
-        <div className="min-w-0 flex-1 space-y-5">
-          <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-line bg-surface py-2.5 pr-3 pl-4">
-            <p className="mr-auto text-sm text-muted" role="status">
-              <b className="text-fg">{total}</b> sản phẩm
-            </p>
-            {active.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="inline-flex items-center gap-1.5 rounded-full bg-brand/10 py-1.5 pr-2.5 pl-3 text-sm font-semibold text-brand-ink transition hover:bg-brand/20"
-                aria-label={`Bỏ lọc ${item.label}`}
-              >
-                {item.label}
-                <X className="size-3.5" aria-hidden />
-              </Link>
-            ))}
-            <SortSelect value={sort} />
-          </div>
-
+        <div className="mt-6 min-w-0 space-y-5 lg:mt-0 lg:pt-6 lg:pl-8">
           {items.length > 0 ? (
             <ProductGrid products={items} columns={3} />
           ) : (
@@ -172,7 +135,7 @@ async function Results({ searchParams }: { searchParams: SearchParams }) {
             </nav>
           )}
         </div>
-      </div>
+      </section>
     </>
   );
 }

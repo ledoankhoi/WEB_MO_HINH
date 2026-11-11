@@ -1,7 +1,9 @@
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 import { Barlow, Barlow_Condensed } from "next/font/google";
 import Link from "next/link";
 import { getAnnouncement } from "@/server/catalog";
+import { CompareBar } from "@/components/product/CompareButton";
+import { ChatWidget } from "./ChatWidget";
 import { Footer } from "./Footer";
 import { Header } from "./Header";
 
@@ -37,6 +39,10 @@ export function StoreFrame({ children }: { children: ReactNode }) {
       <Header />
       <main className="flex-1">{children}</main>
       <Footer />
+      <ChatWidget />
+      <Suspense fallback={null}>
+        <CompareBar />
+      </Suspense>
     </div>
   );
 }

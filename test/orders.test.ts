@@ -142,6 +142,7 @@ describe("tạo đơn hàng", () => {
     expect(saved.shippingFee).toBe(0);
     expect(saved.items).toEqual([
       {
+        lineId: expect.any(Number),
         productId: nova.id,
         variantId: nova.variantId,
         name: "RG ZGMF-X20A Strike Freedom Gundam",
@@ -151,6 +152,13 @@ describe("tạo đơn hàng", () => {
         image: nova.image,
         unitPrice: nova.price,
         quantity: 2,
+        // Nguyên hộp, không tuỳ biến ở Xưởng.
+        options: "",
+        optionsPrice: 0,
+        optionsConfig: "",
+        flashSaleId: null,
+        // Hàng có sẵn, không phải đặt trước.
+        preorder: null,
       },
     ]);
   });
@@ -451,5 +459,35 @@ describe("giới hạn tần suất", () => {
     // Cửa sổ 0 ms hết hạn ngay nên lần gọi sau bắt đầu đếm lại từ 1.
     await rateLimit.consumeRateLimit("test:expired", 1, 0);
     expect((await rateLimit.consumeRateLimit("test:expired", 1, 60_000)).allowed).toBe(true);
+  });
+});
+
+describe("email báo đơn hàng (nghiep-vu-ban-hang mục 3)", () => {
+  const mails = async (orderId: string) => {
+    const db = await getDb();
+    return (await db.execute({ sql: "SELECT ref, subject, text_body, to_email FROM email_outbox WHERE ref LIKE ? ORDER BY created_at", args: [`${orderId}:%`] })).rows;
+  };
+
+  it("gửi thư ở các bước khách cần biết, bỏ qua bước nội bộ (đóng gói)", async () => {
+    const { order: created } = await order("gundam-exia", 1, { customerEmail: "khach-mail@example.com" });
+    const apply = (key: Parameters<typeof orders.applyOrderAction>[1], options = {}) => orders.applyOrderAction(created.id, key, undefined, options);
+    for (const key of ["confirm", "start_packing", "packed"] as const) expect(await apply(key)).toBe(true);
+    expect(await apply("hand_over", { tracking: { carrier: "GHN", code: "GHN999" } })).toBe(true);
+    expect(await apply("delivered")).toBe(true);
+    const rows = await mails(created.id);
+    expect(rows.map((row) => String(row.ref).split(":")[1])).toEqual(["confirm", "hand_over", "delivered"]);
+    expect(rows.every((row) => row.to_email === "khach-mail@example.com")).toBe(true);
+    expect(String(rows[1].text_body)).toContain("GHN999");
+    expect(String(rows[0].text_body)).toContain(`/don-hang/${created.token}`);
+    expect(String(rows[0].text_body)).toContain("Tổng cộng");
+  });
+
+  it("thao tác không thành công thì không gửi thư; đơn không có email thì không gửi", async () => {
+    const { order: noMail } = await order("gundam-exia");
+    expect(await orders.applyOrderAction(noMail.id, "confirm")).toBe(true);
+    expect(await mails(noMail.id)).toHaveLength(0);
+    const { order: withMail } = await order("gundam-exia", 1, { customerEmail: "b@example.com" });
+    expect(await orders.applyOrderAction(withMail.id, "delivered")).toBe(false);
+    expect(await mails(withMail.id)).toHaveLength(0);
   });
 });

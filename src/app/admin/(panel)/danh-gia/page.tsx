@@ -1,14 +1,23 @@
 import Link from "next/link";
 import { ReviewButtons } from "@/components/admin/ReviewButtons";
 import { BADGE, Empty, FilterPanel, Pager, TABLE, TABLE_WRAP, first, pageNumber } from "@/components/admin/parts";
-import { formatDateTime, formatNumber } from "@/lib/format";
+import { formatDateTime } from "@/lib/format";
 import { requireStaff } from "@/server/auth/session";
 import { REVIEW_STATUSES, REVIEW_STATUS_LABELS, listReviews } from "@/server/repo/reviews";
+import { AdminSuspense } from "@/components/admin/AdminSuspense";
 
 const PAGE_SIZE = 20;
 
 // YC-KH-05, YC-QT-08: duyệt, ẩn đánh giá; lọc theo trạng thái và số sao.
-export default async function ReviewsPage({ searchParams }: PageProps<"/admin/danh-gia">) {
+export default function ReviewsPage(props: PageProps<"/admin/danh-gia">) {
+  return (
+    <AdminSuspense>
+      <ReviewsPageContent {...props} />
+    </AdminSuspense>
+  );
+}
+
+async function ReviewsPageContent({ searchParams }: PageProps<"/admin/danh-gia">) {
   await requireStaff("reviews.moderate", "/admin/danh-gia");
   const params = await searchParams;
   const status = REVIEW_STATUSES.find((value) => value === first(params["trang-thai"]));
@@ -25,7 +34,7 @@ export default async function ReviewsPage({ searchParams }: PageProps<"/admin/da
 
   return (
     <>
-      <h1 className="text-3xl font-bold tracking-tight">Đánh giá ({formatNumber(total)})</h1>
+      <h1 className="text-3xl font-bold tracking-tight">Đánh giá</h1>
       <FilterPanel
         active={[status && REVIEW_STATUS_LABELS[status], rating && `${rating} sao`].filter((label): label is string => Boolean(label))}
         clearHref="/admin/danh-gia"

@@ -7,6 +7,7 @@ const products = await import("@/server/repo/products");
 const orders = await import("@/server/repo/orders");
 const { ACTION_STAGES, ORDER_STAGE_KEYS, ORDER_STAGES, orderProgress, orderStage } = await import("@/lib/order-stage");
 const { ORDER_STATUSES, PAYMENT_METHODS, PAYMENT_STATUSES, SHIPPING_STATUSES } = await import("@/lib/catalog");
+const { ORDER_PREORDER_STATUSES } = await import("@/lib/preorder");
 
 beforeAll(async () => {
   await getDb();
@@ -42,11 +43,13 @@ describe("bước xử lý đơn hàng", () => {
     for (const status of ORDER_STATUSES)
       for (const paymentStatus of PAYMENT_STATUSES)
         for (const shippingStatus of SHIPPING_STATUSES)
-          for (const paymentMethod of PAYMENT_METHODS) {
-            const state = { status, paymentStatus, shippingStatus, paymentMethod };
-            const matches = ORDER_STAGE_KEYS.filter((key) => ORDER_STAGES[key].match(state));
-            expect(matches.length, JSON.stringify(state)).toBeLessThanOrEqual(1);
-          }
+          for (const paymentMethod of PAYMENT_METHODS)
+            for (const depositAmount of [0, 50_000])
+              for (const preorderStatus of ORDER_PREORDER_STATUSES) {
+                const state = { status, paymentStatus, shippingStatus, paymentMethod, depositAmount, preorderStatus };
+                const matches = ORDER_STAGE_KEYS.filter((key) => ORDER_STAGES[key].match(state));
+                expect(matches.length, JSON.stringify(state)).toBeLessThanOrEqual(1);
+              }
   });
 
   it("đếm, lọc và xếp ưu tiên trên CSDL khớp với nhãn ở giao diện", async () => {
@@ -86,11 +89,10 @@ describe("bước xử lý đơn hàng", () => {
   });
 
   it("thanh tiến trình", () => {
-    const base = { paymentMethod: "cod" as const, paymentStatus: "unpaid" as const };
-    expect(orderProgress({ ...base, status: "pending", shippingStatus: "not_created" })).toEqual({ done: 1, problem: null });
-    expect(orderProgress({ ...base, status: "processing", shippingStatus: "ready" })).toEqual({ done: 3, problem: null });
-    expect(orderProgress({ ...base, status: "processing", shippingStatus: "failed" })).toEqual({ done: 4, problem: 4 });
-    expect(orderProgress({ ...base, status: "cancelled", shippingStatus: "not_created" })).toEqual({ done: 1, problem: 1 });
-    expect(orderProgress({ ...base, status: "completed", shippingStatus: "delivered" })).toEqual({ done: 6, problem: null });
+    expect(orderProgress({ status: "pending", shippingStatus: "not_created" })).toEqual({ done: 1, problem: null });
+    expect(orderProgress({ status: "processing", shippingStatus: "ready" })).toEqual({ done: 3, problem: null });
+    expect(orderProgress({ status: "processing", shippingStatus: "failed" })).toEqual({ done: 4, problem: 4 });
+    expect(orderProgress({ status: "cancelled", shippingStatus: "not_created" })).toEqual({ done: 1, problem: 1 });
+    expect(orderProgress({ status: "completed", shippingStatus: "delivered" })).toEqual({ done: 6, problem: null });
   });
 });

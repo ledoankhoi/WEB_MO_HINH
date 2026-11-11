@@ -1,18 +1,27 @@
 import Link from "next/link";
 import { BADGE, TABLE, TABLE_WRAP } from "@/components/admin/parts";
 import { CreateStaffForm, StaffActions } from "@/components/admin/StaffForms";
-import { formatDate, formatNumber } from "@/lib/format";
+import { formatDate } from "@/lib/format";
 import { ROLE_LABELS } from "@/lib/permissions";
 import { requireStaff } from "@/server/auth/session";
 import { listStaff } from "@/server/repo/staff";
+import { AdminSuspense } from "@/components/admin/AdminSuspense";
 
-export default async function AdminStaffPage() {
+export default function AdminStaffPage() {
+  return (
+    <AdminSuspense>
+      <AdminStaffPageContent />
+    </AdminSuspense>
+  );
+}
+
+async function AdminStaffPageContent() {
   const user = await requireStaff("staff.manage", "/admin/nhan-vien");
   const staff = await listStaff();
 
   return (
     <>
-      <h1 className="text-3xl font-bold tracking-tight">Nhân viên ({formatNumber(staff.length)})</h1>
+      <h1 className="text-3xl font-bold tracking-tight">Nhân viên</h1>
 
       <div className={TABLE_WRAP}>
         <table className={TABLE}>

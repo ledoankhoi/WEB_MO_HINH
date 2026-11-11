@@ -48,6 +48,8 @@ const MATRIX = {
   "customers.view": ["order_staff", "support", "accountant"],
   "customers.manage": ["support"],
   "reviews.moderate": ["support"],
+  // Cộng đồng (/cong-dong): duyệt, ẩn bài đăng và bình luận, xử lý báo cáo vi phạm.
+  "community.moderate": ["support", "marketing"],
   "content.edit": ["marketing"],
   "coupons.manage": ["marketing"],
   "reports.view": ["product_manager", "warehouse_manager", "marketing", "accountant", "viewer"],

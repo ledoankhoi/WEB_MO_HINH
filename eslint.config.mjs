@@ -15,6 +15,8 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // ONNX Runtime Web chép từ node_modules (scripts/copy-ort.mjs), đã nén sẵn.
     "public/image-search/ort/**",
+    // Môi trường Python (ví dụ ml/.venv) chứa JavaScript của thư viện bên ngoài (matplotlib, torch).
+    "**/.venv/**",
   ]),
 ]);
 

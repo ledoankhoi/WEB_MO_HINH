@@ -7,11 +7,12 @@ import { ProductImage } from "@/components/product/ProductCard";
 import { showToast } from "@/components/ui/Toaster";
 import { site } from "@/config/site";
 import { cart, useCart, useCartCount } from "@/lib/cart";
-import { formatVnd } from "@/lib/format";
+import { WorkshopLines } from "@/components/cart/WorkshopLines";
+import { formatDate, formatVnd } from "@/lib/format";
 import type { ProductSummary } from "@/lib/types";
 import { OnNavigate } from "./OnNavigate";
 
-const ISSUE_TEXT = { unavailable: "Không còn bán", out_of_stock: "Đã hết hàng", over_stock: "Vượt số còn lại" } as const;
+const ISSUE_TEXT = { unavailable: "Không còn bán", out_of_stock: "Đã hết hàng", over_stock: "Vượt số còn lại", preorder_closed: "Hết suất đặt trước" } as const;
 
 const badge = (count: number) => (count > 99 ? "99+" : String(count));
 
@@ -126,7 +127,7 @@ export function CartButton({ addOns }: { addOns: ProductSummary[] }) {
 
               <ul className="max-h-72 space-y-3 overflow-y-auto">
                 {rows.map((row) => (
-                  <li key={row.id} className="flex gap-3">
+                  <li key={row.key} className="flex gap-3">
                     <span className="halftone size-16 shrink-0 border-2 border-ink">
                       <ProductImage src={row.product?.image ?? null} alt="" className="size-full p-1" />
                     </span>
@@ -141,13 +142,15 @@ export function CartButton({ addOns }: { addOns: ProductSummary[] }) {
                         )}
                         <span className="font-condensed text-lg font-black whitespace-nowrap italic tabular-nums">{formatVnd(row.lineTotal)}</span>
                       </div>
+                      {row.config && row.config.lines.length > 0 && <WorkshopLines config={row.config} compact />}
+                      {row.product?.preorder && <p className="text-xs font-semibold text-cobalt">Đặt trước · về {formatDate(row.product.preorder.expectedAt)}</p>}
                       {row.issue && <p className="text-xs font-semibold text-brand-strong">{ISSUE_TEXT[row.issue]}</p>}
                       <div className="flex items-center justify-between gap-2">
                         <div role="group" aria-label="Số lượng" className="flex items-center border-2 border-ink">
                           <button
                             type="button"
                             aria-label="Giảm số lượng"
-                            onClick={() => cart.setQuantity(row.id, row.qty - 1)}
+                            onClick={() => cart.setQuantity(row.key, row.qty - 1)}
                             className="grid size-9 place-items-center hover:bg-raised"
                           >
                             <Minus className="size-4" aria-hidden />
@@ -157,13 +160,13 @@ export function CartButton({ addOns }: { addOns: ProductSummary[] }) {
                             type="button"
                             aria-label="Tăng số lượng"
                             disabled={row.qty >= row.maxQty}
-                            onClick={() => cart.setQuantity(row.id, row.qty + 1)}
+                            onClick={() => cart.setQuantity(row.key, row.qty + 1)}
                             className="grid size-9 place-items-center hover:bg-raised disabled:opacity-40"
                           >
                             <Plus className="size-4" aria-hidden />
                           </button>
                         </div>
-                        <button type="button" onClick={() => cart.remove(row.id)} className="px-2 py-2 text-sm font-semibold text-muted underline hover:text-fg">
+                        <button type="button" onClick={() => cart.remove(row.key)} className="px-2 py-2 text-sm font-semibold text-muted underline hover:text-fg">
                           Xoá
                         </button>
                       </div>

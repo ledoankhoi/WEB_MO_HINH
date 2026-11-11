@@ -23,6 +23,8 @@ type Query = (text: string, values?: unknown[]) => Promise<{ rows: Row[]; rowCou
 export type Backend = {
   query: Query;
   transaction<T>(fn: (query: Query) => Promise<T>): Promise<T>;
+  // Mở sẵn các kết nối của pool (không bắt buộc; PGlite trong test không cần).
+  warm?: () => Promise<void>;
 };
 
 export type Db = {
@@ -41,6 +43,18 @@ const PHOTOS_SEED_KEY = "seed:product-photos-2026-11-06";
 const TAXONOMY_SEED_KEY = "seed:taxonomy-v1";
 const RETIRE_SEED_KEY = "seed:retire-models-v1";
 const CARD_IMAGE_SEED_KEY = "seed:card-image-3d-v1";
+// Link trên thanh menu đầu trang của các trang mở rộng (docs/ke-hoach/mo-rong-cua-hang.md). Mỗi link thêm đúng một lần
+// (khoá seed:nav-link:<url>), nên quản trị xoá hay ẩn ở /admin/noi-dung/menu thì không bị thêm lại.
+const NAV_LINKS = [
+  { label: "Trưng bày", url: "/trung-bay", sortOrder: 2 },
+  { label: "Gacha", url: "/gacha", sortOrder: 3 },
+  { label: "Cộng đồng", url: "/cong-dong", sortOrder: 4 },
+  { label: "Truyện tranh", url: "/truyen-tranh", sortOrder: 5 },
+  { label: "Nhiệm vụ", url: "/nhiem-vu", sortOrder: 6 },
+  { label: "Tin tức", url: "/tin-tuc", sortOrder: 7 },
+  // Hàng sắp về, đặt trước (nghiep-vu-ban-hang mục 10): ngay sau Cửa hàng.
+  { label: "Hàng sắp về", url: "/hang-sap-ve", sortOrder: 2 },
+];
 
 type DbState = { backend?: Backend; ready?: Promise<Db> };
 const globalState = globalThis as unknown as { __robostoreDb?: DbState };
@@ -59,10 +73,13 @@ function connect(): Backend {
   const caFile =
     process.env.DATABASE_CA_CERT?.trim() ||
     (/\.supabase\.(com|co)$/.test(hostname) ? path.join(process.cwd(), "certs/supabase-ca.crt") : "");
+  // Lúc `next build` có nhiều worker cùng mở pool nên mỗi worker giữ 3 kết nối để không vượt giới hạn của máy chủ
+  // CSDL. Lúc chạy thật dùng 6 (đổi qua DATABASE_POOL_MAX): lô câu đọc chạy song song (xem `batch`), mỗi kết nối
+  // một câu, nên pool nhỏ bắt các câu xếp hàng chờ nhau.
+  const max = process.env.NEXT_PHASE === "phase-production-build" ? 3 : Number(process.env.DATABASE_POOL_MAX) || 6;
   const pool = new Pool({
     connectionString,
-    // Mỗi tiến trình giữ ít kết nối để nhiều worker của `next build` không vượt giới hạn của máy chủ CSDL.
-    max: 3,
+    max,
     // Mặc định `pg` đóng kết nối rảnh sau 10 giây; mở lại kết nối TLS tới máy chủ ở xa mất gần 1 giây,
     // nên người dùng thao tác thưa sẽ luôn gặp độ trễ đó. Giữ kết nối rảnh 5 phút.
     idleTimeoutMillis: 5 * 60 * 1000,
@@ -73,6 +90,14 @@ function connect(): Backend {
 
   return {
     query: (text, values) => pool.query(text, values),
+    // Mở mọi kết nối của pool cùng lúc. Mỗi kết nối mới tới Supabase tốn ~0,6 s bắt tay TLS; mở song song lúc khởi
+    // động thì cả pool chỉ tốn bằng một kết nối, và các lô câu đọc song song về sau không phải chờ mở kết nối.
+    // Chỉ cần một kết nối mở được là đủ chạy; lỗi hết mới báo.
+    async warm() {
+      const results = await Promise.allSettled(Array.from({ length: max }, () => pool.connect()));
+      for (const result of results) if (result.status === "fulfilled") result.value.release();
+      if (results.every((result) => result.status === "rejected")) throw (results[0] as PromiseRejectedResult).reason;
+    },
     async transaction(fn) {
       const client = await pool.connect();
       try {
@@ -100,22 +125,38 @@ async function run(query: Query, statement: InStatement): Promise<ResultSet> {
   return { rows: result.rows, rowsAffected: result.rowCount ?? result.affectedRows ?? 0 };
 }
 
+// Câu chỉ đọc: bắt đầu bằng SELECT/WITH, không ghi, không khoá. Từ khoá lạ trong chuỗi (ví dụ 'product.delete')
+// chỉ làm lô chạy trong giao dịch như cũ, không sai.
+const READS = /^\s*(SELECT|WITH)\b/i;
+const NEEDS_TRANSACTION = /\b(INSERT|UPDATE|DELETE|MERGE|TRUNCATE|LOCK|FOR\s+(NO\s+KEY\s+)?UPDATE|FOR\s+(KEY\s+)?SHARE|pg_advisory\w*|set_config|nextval|setval)\b/i;
+
+export function isReadOnly(statement: InStatement): boolean {
+  const sql = typeof statement === "string" ? statement : statement.sql;
+  return READS.test(sql) && !NEEDS_TRANSACTION.test(sql);
+}
+
+function tagStatement(error: unknown, index: number): never {
+  if (error instanceof Error) (error as Error & { statementIndex?: number }).statementIndex = index;
+  throw error;
+}
+
 function wrap(backend: Backend): Db {
   return {
     execute: (statement) => run(backend.query, statement),
+    // Lô toàn câu đọc chạy song song, ngoài giao dịch. PostgreSQL mặc định READ COMMITTED: trong giao dịch mỗi câu
+    // vẫn lấy ảnh dữ liệu riêng, nên bọc giao dịch không làm kết quả nhất quán hơn, chỉ thêm hai lượt BEGIN/COMMIT
+    // và bắt các câu chạy nối tiếp. CSDL ở xa (Supabase Seoul, ~100 ms mỗi lượt đi về) nên lô 6 câu từ 800 ms còn
+    // khoảng 100 ms. Lô có ghi hoặc khoá vẫn chạy trong một giao dịch như trước.
     batch: (statements) =>
-      backend.transaction(async (query) => {
-        const results: ResultSet[] = [];
-        for (const [index, statement] of statements.entries()) {
-          try {
-            results.push(await run(query, statement));
-          } catch (error) {
-            if (error instanceof Error) (error as Error & { statementIndex?: number }).statementIndex = index;
-            throw error;
-          }
-        }
-        return results;
-      }),
+      statements.every(isReadOnly)
+        ? Promise.all(statements.map((statement, index) => run(backend.query, statement).catch((error) => tagStatement(error, index))))
+        : backend.transaction(async (query) => {
+            const results: ResultSet[] = [];
+            for (const [index, statement] of statements.entries()) {
+              results.push(await run(query, statement).catch((error) => tagStatement(error, index)));
+            }
+            return results;
+          }),
   };
 }
 
@@ -128,7 +169,29 @@ export function isConstraintError(error: unknown): error is Error & { statementI
 
 // Tạo bảng và nạp dữ liệu mẫu. Khoá tư vấn (advisory lock) bảo đảm khi nhiều tiến trình cùng khởi động
 // thì chỉ một bên thực hiện, các bên còn lại chờ rồi thấy việc đã xong.
+// Mọi khoá trong bảng `meta` mà migrateAndSeed kiểm tra. Thêm bước khởi tạo mới thì thêm khoá của nó vào đây
+// (test/db-init.test.ts so danh sách này với các khoá thật sự được ghi trên CSDL mới).
+export function initKeys(): string[] {
+  return [
+    ...MIGRATIONS.map((migration) => `migration:${migration.id}`),
+    TAXONOMY_SEED_KEY,
+    SEED_KEY,
+    PHOTOS_SEED_KEY,
+    RETIRE_SEED_KEY,
+    CARD_IMAGE_SEED_KEY,
+    ...NAV_LINKS.map((link) => `seed:nav-link:${link.url}`),
+  ];
+}
+
 async function migrateAndSeed(backend: Backend) {
+  // Đường nhanh: CSDL đã khởi tạo đủ thì chỉ đọc `meta` một lần (một lượt đi về), không mở giao dịch, không giữ khoá.
+  // Đường đầy đủ bên dưới tốn sáu lượt (~600 ms tới Supabase) ở yêu cầu đầu tiên của mỗi tiến trình, tức mỗi lần máy
+  // chủ khởi động lại hay hàm serverless khởi động lạnh. Bảng `meta` chưa có thì truy vấn lỗi và đi đường đầy đủ.
+  const existing = await backend.query("SELECT key FROM meta").catch(() => null);
+  if (existing) {
+    const have = new Set(existing.rows.map((row) => String(row.key)));
+    if (initKeys().every((key) => have.has(key))) return;
+  }
   await backend.transaction(async (query) => {
     const exec = (statement: InStatement) => run(query, statement);
     // Tiến trình bị tắt giữa chừng thì bộ đệm kết nối (Supavisor) vẫn giữ giao dịch và khoá bên dưới;
@@ -178,6 +241,16 @@ async function migrateAndSeed(backend: Backend) {
     if (!done.has(CARD_IMAGE_SEED_KEY)) {
       await restoreModelCardImages(exec);
       await mark(CARD_IMAGE_SEED_KEY);
+    }
+    for (const link of NAV_LINKS) {
+      const key = `seed:nav-link:${link.url}`;
+      if (done.has(key)) continue;
+      await exec({
+        sql: `INSERT INTO nav_items (id, menu, label, url, sort_order, is_active)
+              SELECT ?, 'header', ?, ?, ?, true WHERE NOT EXISTS (SELECT 1 FROM nav_items WHERE menu = 'header' AND url = ?)`,
+        args: [newId(), link.label, link.url, link.sortOrder, link.url],
+      });
+      await mark(key);
     }
   });
 }
@@ -335,14 +408,15 @@ async function ensureAdmin(db: Db) {
 
 async function initialize(): Promise<Db> {
   const backend = state.backend ?? connect();
+  await backend.warm?.();
   await migrateAndSeed(backend);
   const db = wrap(backend);
   await ensureAdmin(db);
-  const now = Date.now();
-  await db.batch([
-    { sql: "DELETE FROM sessions WHERE expires_at < ?", args: [now] },
-    { sql: "DELETE FROM rate_limits WHERE reset_at < ?", args: [now] },
-  ]);
+  // Dọn phiên và giới hạn tốc độ đã hết hạn trong một câu lệnh (CTE xoá hai bảng): một lượt đi về.
+  await db.execute({
+    sql: "WITH expired AS (DELETE FROM sessions WHERE expires_at < ?) DELETE FROM rate_limits WHERE reset_at < ?",
+    args: [Date.now(), Date.now()],
+  });
   return db;
 }
 

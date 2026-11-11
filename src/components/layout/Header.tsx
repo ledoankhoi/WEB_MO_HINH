@@ -5,22 +5,22 @@ import { getImageSearchStatus } from "@/server/image-search";
 import { AccountButton, AccountButtonFallback } from "./AccountButton";
 import { CartButton } from "./CartButton";
 import { Logo } from "./Logo";
-import { MegaMenu } from "./MegaMenu";
 import { MobileCategoryChips, MobileCategoryChipsFallback } from "./MobileCategoryChips";
 import { MobileMenu } from "./MobileMenu";
 import { MobileTabBar } from "./MobileTabBar";
 import { NavLinks, NavLinksFallback, type NavLink } from "./NavLinks";
 import { SearchForm } from "./SearchForm";
 import { UtilityBar } from "./UtilityBar";
-import { WishlistLink } from "./WishlistLink";
+import { AiSearchLink } from "./AiSearchLink";
 
 // Đầu trang của cửa hàng (giao diện "Hộp mô hình"): dải tiện ích, thanh chính (logo, ô tìm kiếm có gợi ý, tài khoản,
-// yêu thích, giỏ hàng xem nhanh) và thanh danh mục đen (menu mở rộng, menu đầu trang của quản trị ở
-// /admin/noi-dung/menu, YC-CMS-03). Trên điện thoại: dải danh mục vuốt ngang và thanh điều hướng dưới đáy.
+// yêu thích, giỏ hàng xem nhanh) và thanh đen (menu đầu trang của quản trị ở /admin/noi-dung/menu, YC-CMS-03).
+// Danh mục và bộ lọc nằm ở khối "Tùy chọn sản phẩm" của /san-pham. Trên điện thoại: dải danh mục vuốt ngang và
+// thanh điều hướng dưới đáy.
 export async function Header() {
   const [navigation, imageSearchStatus, settings, megaMenu, addOns] = await Promise.all([
     getNavigation(),
-    // Nút "Bằng ảnh" chỉ hiện khi đã có sản phẩm tìm được bằng ảnh (YC-AI-01).
+    // Nút AI (tìm bằng ảnh) chỉ hiện khi đã có sản phẩm tìm được bằng ảnh (YC-AI-01).
     getImageSearchStatus(IMAGE_SEARCH_MODEL.id),
     getSiteSettings(),
     getMegaMenu(),
@@ -48,14 +48,13 @@ export async function Header() {
                   <AccountButton />
                 </Suspense>
               </div>
-              <WishlistLink />
+              {imageSearch && <AiSearchLink />}
               <CartButton addOns={addOns} />
             </div>
           </div>
         </div>
-        <nav aria-label="Danh mục sản phẩm" className="hidden bg-ink lg:block">
+        <nav aria-label="Menu chính" className="hidden bg-ink lg:block">
           <div className="relative mx-auto flex max-w-7xl items-center gap-7 px-4 sm:px-6">
-            <MegaMenu categories={megaMenu} />
             <div className="flex min-w-0 flex-1 items-center gap-7 overflow-x-auto whitespace-nowrap">
               <Suspense fallback={<NavLinksFallback links={links} />}>
                 <NavLinks links={links} />

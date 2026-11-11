@@ -1,9 +1,12 @@
 import { Suspense } from "react";
+import { RecentlyViewed } from "@/components/product/RecentlyViewed";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { LogoutButton, PasswordForm, ProfileForm } from "@/components/account/AccountForms";
+import { Settings } from "lucide-react";
+import { LogoutButton } from "@/components/account/AccountForms";
 import { ReviewForm } from "@/components/account/ReviewForm";
 import { ProductGrid } from "@/components/product/ProductCard";
+import { ButtonLink } from "@/components/ui/Button";
 import { ORDER_STATUS_LABELS } from "@/lib/catalog";
 import { formatDate, formatVnd } from "@/lib/format";
 import { requireUser } from "@/server/auth/session";
@@ -21,8 +24,25 @@ async function Account() {
     <>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-3xl font-bold tracking-tight">Xin chào, {user.name}</h1>
-        <LogoutButton />
+        <div className="flex flex-wrap gap-2">
+          {/* Hồ sơ, sổ địa chỉ, mật khẩu, thiết bị, thông báo, quyền riêng tư nằm ở trang Cài đặt. */}
+          <ButtonLink href="/tai-khoan/cai-dat" variant="secondary" size="sm">
+            <Settings className="size-4" aria-hidden />
+            Cài đặt
+          </ButtonLink>
+          <LogoutButton />
+        </div>
       </div>
+
+      {!user.emailVerified && (
+        <p className="rounded-xl border border-warning/40 bg-warning/10 p-4 text-sm">
+          Email {user.email} chưa được xác thực.{" "}
+          <a href="/xac-thuc-email" className="font-semibold underline">
+            Xác thực ngay
+          </a>{" "}
+          để bảo vệ tài khoản và đặt đơn thanh toán khi nhận hàng giá trị lớn không cần nhập mã.
+        </p>
+      )}
 
       <section aria-labelledby="don-hang" className="space-y-3">
         <h2 id="don-hang" className="text-lg font-semibold">
@@ -80,10 +100,6 @@ async function Account() {
         </section>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <ProfileForm user={user} />
-        <PasswordForm />
-      </div>
     </>
   );
 }
@@ -94,6 +110,7 @@ export default function AccountPage() {
       <Suspense fallback={<p className="py-20 text-center text-sm text-muted">Đang tải tài khoản...</p>}>
         <Account />
       </Suspense>
+      <RecentlyViewed />
     </div>
   );
 }

@@ -757,4 +757,623 @@ export const MIGRATIONS: Migration[] = [
       "ALTER TABLE stock_alerts ENABLE ROW LEVEL SECURITY",
     ],
   },
+  {
+    // Cài đặt tài khoản khách (/tai-khoan/cai-dat). Sổ địa chỉ (YC-TKH-03): nhiều địa chỉ giao hàng, nhãn Nhà riêng/
+    // Văn phòng, tối đa một địa chỉ mặc định cho mỗi tài khoản. Địa chỉ đang lưu trong hồ sơ (users.address, city)
+    // được chép sang làm địa chỉ mặc định; từ nay users.address, city là bản sao của địa chỉ mặc định.
+    // Khách tự xoá tài khoản: ẩn danh hoá dòng users (giữ dòng vì đơn hàng, đánh giá tham chiếu tới), ghi deleted_at.
+    // Tên bảng là customer_addresses: CSDL Supabase dùng chung đã có bảng addresses, user_addresses và cột
+    // users.deleted_at do một nơi khác tạo (migration 019_addresses, 019_account_settings, không có trong mã này); không
+    // đọc ghi các bảng đó. deleted_at dùng lại nếu đã có.
+    id: "018_customer_addresses",
+    statements: [
+      `CREATE TABLE customer_addresses (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+        label TEXT NOT NULL DEFAULT 'home',
+        recipient_name TEXT NOT NULL,
+        phone TEXT NOT NULL,
+        address TEXT NOT NULL,
+        city TEXT NOT NULL,
+        is_default BOOLEAN NOT NULL DEFAULT false,
+        created_at BIGINT NOT NULL,
+        updated_at BIGINT NOT NULL,
+        CONSTRAINT label_valid CHECK (label IN ('home', 'office'))
+      )`,
+      "CREATE INDEX idx_customer_addresses_user ON customer_addresses (user_id, created_at)",
+      "CREATE UNIQUE INDEX idx_customer_addresses_default ON customer_addresses (user_id) WHERE is_default",
+      "ALTER TABLE customer_addresses ENABLE ROW LEVEL SECURITY",
+      `INSERT INTO customer_addresses (id, user_id, label, recipient_name, phone, address, city, is_default, created_at, updated_at)
+       SELECT substr(md5(u.id || 'dia-chi'), 1, 20), u.id, 'home', u.name, u.phone, u.address, u.city, true, u.created_at, u.created_at
+       FROM users u WHERE u.role = 'customer' AND u.address <> '' AND u.city <> ''`,
+      "ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted_at BIGINT",
+    ],
+  },
+  {
+    // Mở rộng cửa hàng (docs/ke-hoach/mo-rong-cua-hang.md). Mã "ext_..." để không trùng số với migration của nơi khác
+    // chạy trên CSDL Supabase dùng chung. Xu: sổ cộng trừ chỉ thêm dòng, số dư là tổng; khoá duy nhất (user, reason, ref)
+    // để một phần thưởng chỉ nhận một lần. Gacha chỉ quay bằng xu (không nạp tiền).
+    id: "ext_01_xu_nhiem_vu_gacha",
+    statements: [
+      `CREATE TABLE coin_ledger (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+        amount INTEGER NOT NULL,
+        reason TEXT NOT NULL,
+        ref TEXT NOT NULL DEFAULT '',
+        note TEXT NOT NULL DEFAULT '',
+        created_at BIGINT NOT NULL,
+        CONSTRAINT amount_nonzero CHECK (amount <> 0)
+      )`,
+      "CREATE UNIQUE INDEX idx_coin_ledger_once ON coin_ledger (user_id, reason, ref)",
+      "CREATE INDEX idx_coin_ledger_user ON coin_ledger (user_id, created_at)",
+      "ALTER TABLE coin_ledger ENABLE ROW LEVEL SECURITY",
+      `CREATE TABLE comic_reads (
+        user_id TEXT NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+        chapter TEXT NOT NULL,
+        read_at BIGINT NOT NULL,
+        PRIMARY KEY (user_id, chapter)
+      )`,
+      "ALTER TABLE comic_reads ENABLE ROW LEVEL SECURITY",
+      `CREATE TABLE gacha_pulls (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+        series TEXT NOT NULL,
+        card TEXT NOT NULL,
+        rarity TEXT NOT NULL,
+        duplicate BOOLEAN NOT NULL DEFAULT false,
+        coupon_code TEXT,
+        created_at BIGINT NOT NULL,
+        CONSTRAINT rarity_valid CHECK (rarity IN ('common', 'rare', 'super', 'secret'))
+      )`,
+      "CREATE INDEX idx_gacha_pulls_user ON gacha_pulls (user_id, created_at)",
+      "ALTER TABLE gacha_pulls ENABLE ROW LEVEL SECURITY",
+    ],
+  },
+  {
+    // Cộng đồng (/cong-dong): bài đăng của khách kèm tối đa 4 ảnh, chờ nhân viên duyệt mới hiện; bình luận hiện ngay,
+    // nhân viên ẩn được; thả tim; báo cáo vi phạm cho bài hoặc bình luận.
+    id: "ext_02_cong_dong",
+    statements: [
+      `CREATE TABLE community_posts (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+        topic TEXT NOT NULL DEFAULT 'chia-se',
+        body TEXT NOT NULL,
+        product_id TEXT REFERENCES products (id) ON DELETE SET NULL,
+        status TEXT NOT NULL DEFAULT 'pending',
+        moderation_note TEXT NOT NULL DEFAULT '',
+        reviewed_by TEXT REFERENCES users (id) ON DELETE SET NULL,
+        reviewed_at BIGINT,
+        created_at BIGINT NOT NULL,
+        CONSTRAINT status_valid CHECK (status IN ('pending', 'approved', 'hidden')),
+        CONSTRAINT topic_valid CHECK (topic IN ('chia-se', 'hoi-dap', 'trung-bay', 'cua-hang'))
+      )`,
+      "CREATE INDEX idx_community_posts_status ON community_posts (status, created_at)",
+      "CREATE INDEX idx_community_posts_user ON community_posts (user_id, created_at)",
+      `CREATE TABLE community_post_images (
+        id TEXT PRIMARY KEY,
+        post_id TEXT NOT NULL REFERENCES community_posts (id) ON DELETE CASCADE,
+        url TEXT NOT NULL,
+        sort_order INTEGER NOT NULL DEFAULT 0
+      )`,
+      "CREATE INDEX idx_community_post_images_post ON community_post_images (post_id, sort_order)",
+      `CREATE TABLE community_comments (
+        id TEXT PRIMARY KEY,
+        post_id TEXT NOT NULL REFERENCES community_posts (id) ON DELETE CASCADE,
+        user_id TEXT NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+        body TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'visible',
+        created_at BIGINT NOT NULL,
+        CONSTRAINT status_valid CHECK (status IN ('visible', 'hidden'))
+      )`,
+      "CREATE INDEX idx_community_comments_post ON community_comments (post_id, created_at)",
+      `CREATE TABLE community_likes (
+        post_id TEXT NOT NULL REFERENCES community_posts (id) ON DELETE CASCADE,
+        user_id TEXT NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+        created_at BIGINT NOT NULL,
+        PRIMARY KEY (post_id, user_id)
+      )`,
+      `CREATE TABLE community_reports (
+        id TEXT PRIMARY KEY,
+        post_id TEXT REFERENCES community_posts (id) ON DELETE CASCADE,
+        comment_id TEXT REFERENCES community_comments (id) ON DELETE CASCADE,
+        user_id TEXT NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+        reason TEXT NOT NULL,
+        created_at BIGINT NOT NULL,
+        resolved_at BIGINT,
+        resolved_by TEXT REFERENCES users (id) ON DELETE SET NULL,
+        CONSTRAINT target_valid CHECK ((post_id IS NULL) <> (comment_id IS NULL))
+      )`,
+      "CREATE INDEX idx_community_reports_open ON community_reports (resolved_at, created_at)",
+      "ALTER TABLE community_posts ENABLE ROW LEVEL SECURITY",
+      "ALTER TABLE community_post_images ENABLE ROW LEVEL SECURITY",
+      "ALTER TABLE community_comments ENABLE ROW LEVEL SECURITY",
+      "ALTER TABLE community_likes ENABLE ROW LEVEL SECURITY",
+      "ALTER TABLE community_reports ENABLE ROW LEVEL SECURITY",
+    ],
+  },
+  {
+    // Xưởng (src/lib/workshop.ts): dòng đơn mang cấu hình tuỳ biến. unit_price đã gồm giá tuỳ chọn; options_price là phần
+    // của tuỳ chọn trong unit_price, options là mô tả để in phiếu, options_config là chuỗi cấu hình gốc. Cột có giá trị mặc
+    // định nên không ảnh hưởng nơi khác ghi vào bảng này trên CSDL dùng chung.
+    id: "ext_03_xuong",
+    statements: [
+      "ALTER TABLE order_items ADD COLUMN IF NOT EXISTS options TEXT NOT NULL DEFAULT ''",
+      "ALTER TABLE order_items ADD COLUMN IF NOT EXISTS options_price BIGINT NOT NULL DEFAULT 0",
+      "ALTER TABLE order_items ADD COLUMN IF NOT EXISTS options_config TEXT NOT NULL DEFAULT ''",
+    ],
+  },
+  {
+    // Nghiệp vụ bán hàng (docs/ke-hoach/nghiep-vu-ban-hang.md), mục 1–2. Tiền tố "sale_" để không trùng với migration của
+    // nơi khác trên CSDL dùng chung; tên bảng đã kiểm tra chưa có trên CSDL thật (08/11/2026).
+    // email_outbox: mọi thư gửi đi (cả khi chưa cấu hình SMTP: trạng thái 'logged', xem ở /admin/hop-thu).
+    // password_resets: token đặt lại mật khẩu, chỉ lưu SHA-256, dùng một lần, có hạn.
+    id: "sale_01_email_mat_khau",
+    statements: [
+      `CREATE TABLE IF NOT EXISTS email_outbox (
+        id TEXT PRIMARY KEY,
+        to_email TEXT NOT NULL,
+        subject TEXT NOT NULL,
+        html TEXT NOT NULL,
+        text_body TEXT NOT NULL DEFAULT '',
+        kind TEXT NOT NULL,
+        ref TEXT NOT NULL DEFAULT '',
+        status TEXT NOT NULL DEFAULT 'queued',
+        attempts INTEGER NOT NULL DEFAULT 0,
+        last_error TEXT NOT NULL DEFAULT '',
+        created_at BIGINT NOT NULL,
+        sent_at BIGINT,
+        CONSTRAINT email_status_valid CHECK (status IN ('queued', 'sent', 'failed', 'logged'))
+      )`,
+      "CREATE INDEX IF NOT EXISTS idx_email_outbox_created ON email_outbox (created_at)",
+      "CREATE INDEX IF NOT EXISTS idx_email_outbox_status ON email_outbox (status, created_at)",
+      "ALTER TABLE email_outbox ENABLE ROW LEVEL SECURITY",
+      `CREATE TABLE IF NOT EXISTS password_resets (
+        token_hash TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+        expires_at BIGINT NOT NULL,
+        used_at BIGINT,
+        created_at BIGINT NOT NULL
+      )`,
+      "CREATE INDEX IF NOT EXISTS idx_password_resets_user ON password_resets (user_id, created_at)",
+      "ALTER TABLE password_resets ENABLE ROW LEVEL SECURITY",
+    ],
+  },
+  {
+    // Mục 4: khách yêu cầu trả hàng sau khi nhận (src/lib/returns.ts). Tên bảng đã kiểm tra chưa có trên CSDL thật (08/11/2026).
+    // Mỗi đơn tối đa một yêu cầu đang mở hoặc đã hoàn tiền (chỉ mục duy nhất có điều kiện), khớp với payments chỉ có một
+    // dòng hoàn tiền mỗi đơn. Hàng nhận về đi qua phiếu hàng trả gắn đơn (document_id), không ghi kho trực tiếp.
+    id: "sale_02_tra_hang",
+    statements: [
+      `CREATE TABLE IF NOT EXISTS return_requests (
+        id TEXT PRIMARY KEY,
+        code TEXT NOT NULL UNIQUE,
+        order_id TEXT NOT NULL REFERENCES orders (id),
+        status TEXT NOT NULL DEFAULT 'requested',
+        reason TEXT NOT NULL,
+        note TEXT NOT NULL DEFAULT '',
+        images TEXT NOT NULL DEFAULT '[]',
+        refund_account TEXT NOT NULL DEFAULT '',
+        refund_amount BIGINT NOT NULL,
+        staff_note TEXT NOT NULL DEFAULT '',
+        document_id TEXT REFERENCES stock_documents (id),
+        decided_by TEXT REFERENCES users (id),
+        decided_at BIGINT,
+        refunded_by TEXT REFERENCES users (id),
+        refunded_at BIGINT,
+        refund_reference TEXT NOT NULL DEFAULT '',
+        created_at BIGINT NOT NULL,
+        updated_at BIGINT NOT NULL,
+        CONSTRAINT return_status_valid CHECK (status IN ('requested', 'approved', 'rejected', 'refunded', 'cancelled')),
+        CONSTRAINT return_amount_valid CHECK (refund_amount >= 0)
+      )`,
+      `CREATE UNIQUE INDEX IF NOT EXISTS idx_return_requests_open ON return_requests (order_id)
+         WHERE status IN ('requested', 'approved', 'refunded')`,
+      "CREATE INDEX IF NOT EXISTS idx_return_requests_status ON return_requests (status, created_at)",
+      "ALTER TABLE return_requests ENABLE ROW LEVEL SECURITY",
+      `CREATE TABLE IF NOT EXISTS return_request_items (
+        request_id TEXT NOT NULL REFERENCES return_requests (id) ON DELETE CASCADE,
+        order_item_id BIGINT NOT NULL,
+        variant_id TEXT NOT NULL,
+        name TEXT NOT NULL,
+        unit_price BIGINT NOT NULL,
+        quantity INTEGER NOT NULL,
+        PRIMARY KEY (request_id, order_item_id),
+        CONSTRAINT return_item_quantity_positive CHECK (quantity > 0)
+      )`,
+      "ALTER TABLE return_request_items ENABLE ROW LEVEL SECURITY",
+    ],
+  },
+  {
+    // Gacha bản 2 (/gacha): máy quay viên nang và gói thẻ 5 lá, lượt miễn phí mỗi ngày, mảnh ghép, thưởng đủ bộ.
+    // gacha_pulls.source: machine | free | pack | craft. free_day (ngày giờ Việt Nam) chỉ có ở lượt miễn phí; chỉ mục
+    // duy nhất bảo đảm mỗi người một lượt miễn phí mỗi ngày kể cả khi bấm dồn. gacha_shards: sổ mảnh ghép như sổ xu
+    // (chỉ thêm dòng, số dư là tổng, khoá duy nhất (user, reason, ref)). gacha_rewards: thưởng đủ bộ, một lần mỗi series.
+    id: "ext_04_gacha_v2",
+    statements: [
+      "ALTER TABLE gacha_pulls ADD COLUMN IF NOT EXISTS source TEXT NOT NULL DEFAULT 'machine'",
+      "ALTER TABLE gacha_pulls ADD COLUMN IF NOT EXISTS free_day TEXT",
+      "CREATE UNIQUE INDEX IF NOT EXISTS idx_gacha_pulls_free_day ON gacha_pulls (user_id, free_day) WHERE free_day IS NOT NULL",
+      `CREATE TABLE IF NOT EXISTS gacha_shards (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+        amount INTEGER NOT NULL,
+        reason TEXT NOT NULL,
+        ref TEXT NOT NULL,
+        created_at BIGINT NOT NULL,
+        CONSTRAINT shard_amount_nonzero CHECK (amount <> 0)
+      )`,
+      "CREATE UNIQUE INDEX IF NOT EXISTS idx_gacha_shards_once ON gacha_shards (user_id, reason, ref)",
+      "ALTER TABLE gacha_shards ENABLE ROW LEVEL SECURITY",
+      `CREATE TABLE IF NOT EXISTS gacha_rewards (
+        user_id TEXT NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+        series TEXT NOT NULL,
+        coupon_code TEXT,
+        created_at BIGINT NOT NULL,
+        PRIMARY KEY (user_id, series)
+      )`,
+      "ALTER TABLE gacha_rewards ENABLE ROW LEVEL SECURITY",
+    ],
+  },
+  {
+    // Thanh toán online, chạy sandbox VNPay (docs/ke-hoach/thanh-toan-va-van-chuyen.md). Đã kiểm trên CSDL thật (08/11/2026):
+    // chưa có bảng payment_attempts, payment_callbacks; ràng buộc cũ payment_method_valid, method_valid chỉ nhận cod, bank.
+    // Mở rộng ràng buộc (dữ liệu cũ vẫn hợp lệ), thêm sẵn 'momo' để sau không phải sửa lại.
+    // payment_attempts: mỗi lần khách bấm thanh toán là một lượt, mã `ref` gửi cổng (vnp_TxnRef), duy nhất.
+    // payment_callbacks: nguyên văn mọi kết quả cổng gửi về (IPN, trả về, tra cứu), để đối soát và tra lỗi.
+    id: "sale_03_vnpay",
+    statements: [
+      "ALTER TABLE orders DROP CONSTRAINT IF EXISTS payment_method_valid",
+      "ALTER TABLE orders ADD CONSTRAINT payment_method_valid CHECK (payment_method IN ('cod', 'bank', 'vnpay', 'momo'))",
+      "ALTER TABLE payments DROP CONSTRAINT IF EXISTS method_valid",
+      "ALTER TABLE payments ADD CONSTRAINT method_valid CHECK (method IN ('cod', 'bank', 'vnpay', 'momo'))",
+      "ALTER TABLE payments ADD COLUMN IF NOT EXISTS gateway_txn TEXT NOT NULL DEFAULT ''",
+      `CREATE TABLE IF NOT EXISTS payment_attempts (
+        id TEXT PRIMARY KEY,
+        order_id TEXT NOT NULL REFERENCES orders (id),
+        gateway TEXT NOT NULL,
+        ref TEXT NOT NULL UNIQUE,
+        amount BIGINT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'pending',
+        gateway_txn TEXT NOT NULL DEFAULT '',
+        bank_code TEXT NOT NULL DEFAULT '',
+        response_code TEXT NOT NULL DEFAULT '',
+        expires_at BIGINT NOT NULL,
+        paid_at BIGINT,
+        created_at BIGINT NOT NULL,
+        updated_at BIGINT NOT NULL,
+        CONSTRAINT attempt_gateway_valid CHECK (gateway IN ('vnpay', 'momo')),
+        CONSTRAINT attempt_status_valid CHECK (status IN ('pending', 'paid', 'failed')),
+        CONSTRAINT attempt_amount_positive CHECK (amount > 0)
+      )`,
+      "CREATE INDEX IF NOT EXISTS idx_payment_attempts_order ON payment_attempts (order_id, created_at)",
+      "ALTER TABLE payment_attempts ENABLE ROW LEVEL SECURITY",
+      `CREATE TABLE IF NOT EXISTS payment_callbacks (
+        id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+        gateway TEXT NOT NULL,
+        kind TEXT NOT NULL,
+        ref TEXT NOT NULL DEFAULT '',
+        payload TEXT NOT NULL,
+        signature_ok BOOLEAN NOT NULL,
+        result TEXT NOT NULL DEFAULT '',
+        created_at BIGINT NOT NULL
+      )`,
+      "CREATE INDEX IF NOT EXISTS idx_payment_callbacks_ref ON payment_callbacks (ref, created_at)",
+      "ALTER TABLE payment_callbacks ENABLE ROW LEVEL SECURITY",
+    ],
+  },
+  {
+    // Hộp mù (/gacha, chế độ "Hộp mù"): mỗi khách một kệ 12 hộp chứa đủ 12 thẻ của series theo thứ tự ngẫu nhiên (máy
+    // chủ xếp sẵn, trình duyệt không biết). Mở hộp ghi một dòng gacha_pulls source 'box' kèm kệ và vị trí; chỉ mục duy
+    // nhất chặn mở một hộp hai lần. Mỗi khách chỉ có một kệ đang mở.
+    id: "ext_05_hop_mu",
+    statements: [
+      `CREATE TABLE IF NOT EXISTS gacha_box_cases (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+        series TEXT NOT NULL,
+        contents TEXT NOT NULL,
+        created_at BIGINT NOT NULL,
+        finished_at BIGINT
+      )`,
+      "CREATE UNIQUE INDEX IF NOT EXISTS idx_gacha_box_cases_open ON gacha_box_cases (user_id) WHERE finished_at IS NULL",
+      "ALTER TABLE gacha_box_cases ENABLE ROW LEVEL SECURITY",
+      "ALTER TABLE gacha_pulls ADD COLUMN IF NOT EXISTS box_case TEXT",
+      "ALTER TABLE gacha_pulls ADD COLUMN IF NOT EXISTS box_slot INTEGER",
+      "CREATE UNIQUE INDEX IF NOT EXISTS idx_gacha_pulls_box ON gacha_pulls (box_case, box_slot) WHERE box_case IS NOT NULL",
+    ],
+  },
+  {
+    // Tin tức (/tin-tuc): bài do nhân viên nội dung (content.edit) viết ở /admin/noi-dung/tin-tuc. Văn bản thuần như trang
+    // thông tin; ảnh bìa là đường dẫn (tải lên kho media như ảnh banner). Khách chỉ thấy bài đã xuất bản.
+    id: "ext_06_tin_tuc",
+    statements: [
+      `CREATE TABLE IF NOT EXISTS news_posts (
+        id TEXT PRIMARY KEY,
+        slug TEXT NOT NULL UNIQUE,
+        title TEXT NOT NULL,
+        summary TEXT NOT NULL DEFAULT '',
+        body TEXT NOT NULL,
+        cover_image TEXT,
+        status TEXT NOT NULL DEFAULT 'draft',
+        published_at BIGINT,
+        created_by TEXT REFERENCES users (id) ON DELETE SET NULL,
+        created_at BIGINT NOT NULL,
+        updated_at BIGINT NOT NULL,
+        CONSTRAINT news_status_valid CHECK (status IN ('draft', 'published'))
+      )`,
+      "CREATE INDEX IF NOT EXISTS idx_news_posts_published ON news_posts (status, published_at DESC)",
+      "ALTER TABLE news_posts ENABLE ROW LEVEL SECURITY",
+    ],
+  },
+  {
+    // Gacha có nhiều series (Series 2: Đội Khủng Long): mỗi khách một kệ hộp mù đang mở cho mỗi series.
+    id: "ext_07_gacha_series",
+    statements: [
+      "DROP INDEX IF EXISTS idx_gacha_box_cases_open",
+      "CREATE UNIQUE INDEX IF NOT EXISTS idx_gacha_box_cases_open_series ON gacha_box_cases (user_id, series) WHERE finished_at IS NULL",
+    ],
+  },
+  {
+    // Mục 10: hàng sắp về và đặt trước (src/lib/preorder.ts). Đã kiểm trên CSDL thật (08/11/2026): chưa có bảng, cột nào tên
+    // preorder_*, deposit_*; các ràng buộc CHECK dưới đây đang mang đúng tên này và chỉ được nới thêm giá trị mới.
+    // preorder_offers: đợt đặt trước của một phiên bản; mỗi phiên bản tối đa một đợt chưa kết thúc.
+    // order_items.preorder_offer_id: dòng đặt trước (không giữ tồn lúc đặt). Đã phân bổ = có dòng sổ kho 'reserve' của đơn
+    // và phiên bản đó. orders.preorder_status: none | waiting (còn dòng chưa phân bổ) | ready (đã phân bổ đủ).
+    // orders.deposit_amount: tiền cọc phải trả trước (0 là không cọc); payment_status 'deposit_paid' = đã nhận cọc,
+    // payments.kind 'deposit' là dòng tiền cọc.
+    id: "sale_04_dat_truoc",
+    statements: [
+      `CREATE TABLE IF NOT EXISTS preorder_offers (
+        id TEXT PRIMARY KEY,
+        variant_id TEXT NOT NULL REFERENCES product_variants (id),
+        status TEXT NOT NULL DEFAULT 'open',
+        expected_at BIGINT NOT NULL,
+        deposit_percent INTEGER NOT NULL,
+        max_qty INTEGER,
+        note TEXT NOT NULL DEFAULT '',
+        created_by TEXT REFERENCES users (id) ON DELETE SET NULL,
+        created_at BIGINT NOT NULL,
+        updated_at BIGINT NOT NULL,
+        ended_at BIGINT,
+        CONSTRAINT preorder_status_valid CHECK (status IN ('open', 'closed', 'ended')),
+        CONSTRAINT preorder_deposit_valid CHECK (deposit_percent BETWEEN 0 AND 100),
+        CONSTRAINT preorder_max_valid CHECK (max_qty IS NULL OR max_qty > 0)
+      )`,
+      "CREATE UNIQUE INDEX IF NOT EXISTS idx_preorder_offers_live ON preorder_offers (variant_id) WHERE status <> 'ended'",
+      "CREATE INDEX IF NOT EXISTS idx_preorder_offers_status ON preorder_offers (status, expected_at)",
+      "ALTER TABLE preorder_offers ENABLE ROW LEVEL SECURITY",
+      "ALTER TABLE order_items ADD COLUMN IF NOT EXISTS preorder_offer_id TEXT REFERENCES preorder_offers (id)",
+      "CREATE INDEX IF NOT EXISTS idx_order_items_preorder ON order_items (preorder_offer_id) WHERE preorder_offer_id IS NOT NULL",
+      "ALTER TABLE orders ADD COLUMN IF NOT EXISTS preorder_status TEXT NOT NULL DEFAULT 'none'",
+      "ALTER TABLE orders ADD COLUMN IF NOT EXISTS deposit_amount BIGINT NOT NULL DEFAULT 0",
+      "ALTER TABLE orders DROP CONSTRAINT IF EXISTS preorder_status_valid",
+      "ALTER TABLE orders ADD CONSTRAINT preorder_status_valid CHECK (preorder_status IN ('none', 'waiting', 'ready'))",
+      "ALTER TABLE orders DROP CONSTRAINT IF EXISTS deposit_valid",
+      "ALTER TABLE orders ADD CONSTRAINT deposit_valid CHECK (deposit_amount = 0 OR (deposit_amount > 0 AND deposit_amount < total))",
+      "ALTER TABLE orders DROP CONSTRAINT IF EXISTS payment_status_valid",
+      "ALTER TABLE orders ADD CONSTRAINT payment_status_valid CHECK (payment_status IN ('unpaid', 'deposit_paid', 'paid', 'refunded'))",
+      "CREATE INDEX IF NOT EXISTS idx_orders_preorder ON orders (preorder_status, created_at) WHERE preorder_status = 'waiting'",
+      "ALTER TABLE payments DROP CONSTRAINT IF EXISTS kind_valid",
+      "ALTER TABLE payments ADD CONSTRAINT kind_valid CHECK (kind IN ('deposit', 'charge', 'refund'))",
+      "ALTER TABLE order_events DROP CONSTRAINT IF EXISTS field_valid",
+      "ALTER TABLE order_events ADD CONSTRAINT field_valid CHECK (field IN ('status', 'payment_status', 'shipping_status', 'preorder_status'))",
+    ],
+  },
+  {
+    // Mục 8: "Đã xem gần đây" của khách đã đăng nhập (khách vãng lai lưu ở trình duyệt). Mỗi khách, mỗi sản phẩm một dòng,
+    // giữ 30 sản phẩm gần nhất (src/server/repo/recently-viewed.ts). Đã kiểm trên CSDL thật (08/11/2026): chưa có bảng này.
+    // Bảng events của nơi khác (ghi hành vi) không đọc ghi.
+    id: "sale_05_da_xem",
+    statements: [
+      `CREATE TABLE IF NOT EXISTS recently_viewed (
+        user_id TEXT NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+        product_id TEXT NOT NULL REFERENCES products (id) ON DELETE CASCADE,
+        viewed_at BIGINT NOT NULL,
+        PRIMARY KEY (user_id, product_id)
+      )`,
+      "CREATE INDEX IF NOT EXISTS idx_recently_viewed_user ON recently_viewed (user_id, viewed_at DESC)",
+      "ALTER TABLE recently_viewed ENABLE ROW LEVEL SECURITY",
+    ],
+  },
+  {
+    // Mục 9: flash sale (src/lib/flash-sale.ts). Đã kiểm trên CSDL thật (08/11/2026): chưa có bảng flash_*, cột order_items.flash_*.
+    // flash_sale_items: giá sale, tổng suất, tối đa mỗi đơn của một phiên bản trong chương trình. order_items.flash_sale_id: dòng
+    // bán bằng giá sale; số đã bán = tổng số lượng các dòng đó ở đơn chưa huỷ (huỷ đơn trả suất).
+    id: "sale_06_flash_sale",
+    statements: [
+      `CREATE TABLE IF NOT EXISTS flash_sales (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        starts_at BIGINT NOT NULL,
+        ends_at BIGINT NOT NULL,
+        is_active BOOLEAN NOT NULL DEFAULT true,
+        created_by TEXT REFERENCES users (id) ON DELETE SET NULL,
+        created_at BIGINT NOT NULL,
+        updated_at BIGINT NOT NULL,
+        CONSTRAINT flash_window_valid CHECK (ends_at > starts_at)
+      )`,
+      "CREATE INDEX IF NOT EXISTS idx_flash_sales_window ON flash_sales (ends_at, starts_at) WHERE is_active",
+      "ALTER TABLE flash_sales ENABLE ROW LEVEL SECURITY",
+      `CREATE TABLE IF NOT EXISTS flash_sale_items (
+        sale_id TEXT NOT NULL REFERENCES flash_sales (id) ON DELETE CASCADE,
+        variant_id TEXT NOT NULL REFERENCES product_variants (id),
+        sale_price BIGINT NOT NULL,
+        qty_limit INTEGER NOT NULL,
+        max_per_order INTEGER,
+        PRIMARY KEY (sale_id, variant_id),
+        CONSTRAINT flash_price_positive CHECK (sale_price > 0),
+        CONSTRAINT flash_qty_positive CHECK (qty_limit > 0),
+        CONSTRAINT flash_per_order_valid CHECK (max_per_order IS NULL OR max_per_order > 0)
+      )`,
+      "CREATE INDEX IF NOT EXISTS idx_flash_sale_items_variant ON flash_sale_items (variant_id)",
+      "ALTER TABLE flash_sale_items ENABLE ROW LEVEL SECURITY",
+      "ALTER TABLE order_items ADD COLUMN IF NOT EXISTS flash_sale_id TEXT REFERENCES flash_sales (id)",
+      "CREATE INDEX IF NOT EXISTS idx_order_items_flash ON order_items (flash_sale_id, variant_id) WHERE flash_sale_id IS NOT NULL",
+    ],
+  },
+  {
+    // Mục 11: hỏi đáp trên trang sản phẩm (src/server/repo/questions.ts). Đã kiểm trên CSDL thật (08/11/2026): chưa có bảng này.
+    // Câu hỏi, câu trả lời của khách chờ duyệt (pending); nhân viên trả lời thì câu trả lời hiện ngay và câu hỏi được duyệt.
+    // is_buyer: người trả lời đã mua sản phẩm (đơn hoàn tất) lúc trả lời.
+    id: "sale_07_hoi_dap",
+    statements: [
+      `CREATE TABLE IF NOT EXISTS product_questions (
+        id TEXT PRIMARY KEY,
+        product_id TEXT NOT NULL REFERENCES products (id) ON DELETE CASCADE,
+        user_id TEXT NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+        body TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'pending',
+        moderated_by TEXT REFERENCES users (id) ON DELETE SET NULL,
+        created_at BIGINT NOT NULL,
+        updated_at BIGINT NOT NULL,
+        CONSTRAINT question_status_valid CHECK (status IN ('pending', 'approved', 'hidden'))
+      )`,
+      "CREATE INDEX IF NOT EXISTS idx_product_questions_product ON product_questions (product_id, status, created_at)",
+      "CREATE INDEX IF NOT EXISTS idx_product_questions_status ON product_questions (status, created_at)",
+      "ALTER TABLE product_questions ENABLE ROW LEVEL SECURITY",
+      `CREATE TABLE IF NOT EXISTS product_answers (
+        id TEXT PRIMARY KEY,
+        question_id TEXT NOT NULL REFERENCES product_questions (id) ON DELETE CASCADE,
+        user_id TEXT NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+        body TEXT NOT NULL,
+        is_staff BOOLEAN NOT NULL DEFAULT false,
+        is_buyer BOOLEAN NOT NULL DEFAULT false,
+        status TEXT NOT NULL DEFAULT 'pending',
+        moderated_by TEXT REFERENCES users (id) ON DELETE SET NULL,
+        created_at BIGINT NOT NULL,
+        updated_at BIGINT NOT NULL,
+        CONSTRAINT answer_status_valid CHECK (status IN ('pending', 'approved', 'hidden'))
+      )`,
+      "CREATE INDEX IF NOT EXISTS idx_product_answers_question ON product_answers (question_id, created_at)",
+      "CREATE INDEX IF NOT EXISTS idx_product_answers_status ON product_answers (status, created_at)",
+      "ALTER TABLE product_answers ENABLE ROW LEVEL SECURITY",
+    ],
+  },
+  {
+    // Mục 12: combo giảm giá khi mua đủ bộ (src/lib/bundles.ts). Đã kiểm trên CSDL thật (08/11/2026): chưa có bảng bundle_*,
+    // cột orders.bundle_discount. orders.discount gồm cả giảm combo lẫn mã giảm giá (giữ ràng buộc total_valid); bundle_discount
+    // là phần của combo.
+    id: "sale_08_combo",
+    statements: [
+      `CREATE TABLE IF NOT EXISTS bundle_deals (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        percent INTEGER NOT NULL,
+        is_active BOOLEAN NOT NULL DEFAULT true,
+        created_by TEXT REFERENCES users (id) ON DELETE SET NULL,
+        created_at BIGINT NOT NULL,
+        updated_at BIGINT NOT NULL,
+        CONSTRAINT bundle_percent_valid CHECK (percent BETWEEN 1 AND 50)
+      )`,
+      "ALTER TABLE bundle_deals ENABLE ROW LEVEL SECURITY",
+      `CREATE TABLE IF NOT EXISTS bundle_deal_items (
+        deal_id TEXT NOT NULL REFERENCES bundle_deals (id) ON DELETE CASCADE,
+        product_id TEXT NOT NULL REFERENCES products (id) ON DELETE CASCADE,
+        PRIMARY KEY (deal_id, product_id)
+      )`,
+      "CREATE INDEX IF NOT EXISTS idx_bundle_deal_items_product ON bundle_deal_items (product_id)",
+      "ALTER TABLE bundle_deal_items ENABLE ROW LEVEL SECURITY",
+      "ALTER TABLE orders ADD COLUMN IF NOT EXISTS bundle_discount BIGINT NOT NULL DEFAULT 0",
+    ],
+  },
+  {
+    // Mục 14: đăng nhập Google, Facebook (src/server/auth/oauth.ts). Đã kiểm trên CSDL thật (08/11/2026): chưa có bảng này.
+    // Một danh tính (nhà cung cấp, mã người dùng của nhà cung cấp) gắn với một tài khoản; một tài khoản có thể liên kết nhiều.
+    id: "sale_09_oauth",
+    statements: [
+      `CREATE TABLE IF NOT EXISTS oauth_identities (
+        provider TEXT NOT NULL,
+        subject TEXT NOT NULL,
+        user_id TEXT NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+        email TEXT NOT NULL DEFAULT '',
+        created_at BIGINT NOT NULL,
+        PRIMARY KEY (provider, subject),
+        CONSTRAINT oauth_provider_valid CHECK (provider IN ('google', 'facebook'))
+      )`,
+      "CREATE UNIQUE INDEX IF NOT EXISTS idx_oauth_identities_user ON oauth_identities (user_id, provider)",
+      "ALTER TABLE oauth_identities ENABLE ROW LEVEL SECURITY",
+    ],
+  },
+  {
+    // Mục 15: mã OTP qua email (src/server/repo/otp.ts). Đã kiểm trên CSDL thật (08/11/2026): chưa có bảng otp_*, chưa có cột
+    // xác thực email trong users (nơi khác đã thêm birth_date, gender, review_name_style, deleted_at: không đụng tới).
+    // otp_codes chỉ lưu SHA-256 của mã; mỗi mã có hạn, số lần nhập sai tối đa, dùng một lần.
+    id: "sale_10_otp",
+    statements: [
+      `CREATE TABLE IF NOT EXISTS otp_codes (
+        id TEXT PRIMARY KEY,
+        purpose TEXT NOT NULL,
+        target TEXT NOT NULL,
+        code_hash TEXT NOT NULL,
+        attempts INTEGER NOT NULL DEFAULT 0,
+        expires_at BIGINT NOT NULL,
+        used_at BIGINT,
+        created_at BIGINT NOT NULL,
+        CONSTRAINT otp_purpose_valid CHECK (purpose IN ('verify_email', 'cod_order'))
+      )`,
+      "CREATE INDEX IF NOT EXISTS idx_otp_codes_target ON otp_codes (purpose, target, created_at DESC)",
+      "ALTER TABLE otp_codes ENABLE ROW LEVEL SECURITY",
+      "ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified_at BIGINT",
+    ],
+  },
+  {
+    // Mục 16: chat với cửa hàng (src/server/repo/chat.ts). Đã kiểm trên CSDL thật (08/11/2026): chưa có bảng chat_*.
+    // Khách đăng nhập: một cuộc trò chuyện theo tài khoản; khách vãng lai: theo token ngẫu nhiên trong cookie httpOnly (CSDL chỉ
+    // lưu SHA-256). customer_read_at, staff_read_at: mốc đã đọc của hai bên để đếm tin chưa đọc.
+    id: "sale_11_chat",
+    statements: [
+      `CREATE TABLE IF NOT EXISTS chat_threads (
+        id TEXT PRIMARY KEY,
+        user_id TEXT REFERENCES users (id) ON DELETE CASCADE,
+        visitor_hash TEXT UNIQUE,
+        name TEXT NOT NULL DEFAULT '',
+        status TEXT NOT NULL DEFAULT 'open',
+        last_message_at BIGINT NOT NULL,
+        last_sender TEXT NOT NULL DEFAULT 'customer',
+        customer_read_at BIGINT NOT NULL DEFAULT 0,
+        staff_read_at BIGINT NOT NULL DEFAULT 0,
+        created_at BIGINT NOT NULL,
+        CONSTRAINT chat_status_valid CHECK (status IN ('open', 'closed')),
+        CONSTRAINT chat_owner_valid CHECK ((user_id IS NULL) <> (visitor_hash IS NULL))
+      )`,
+      "CREATE UNIQUE INDEX IF NOT EXISTS idx_chat_threads_user ON chat_threads (user_id) WHERE user_id IS NOT NULL",
+      "CREATE INDEX IF NOT EXISTS idx_chat_threads_recent ON chat_threads (status, last_message_at DESC)",
+      "ALTER TABLE chat_threads ENABLE ROW LEVEL SECURITY",
+      `CREATE TABLE IF NOT EXISTS chat_messages (
+        id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+        thread_id TEXT NOT NULL REFERENCES chat_threads (id) ON DELETE CASCADE,
+        sender TEXT NOT NULL,
+        staff_id TEXT REFERENCES users (id) ON DELETE SET NULL,
+        body TEXT NOT NULL,
+        created_at BIGINT NOT NULL,
+        CONSTRAINT chat_sender_valid CHECK (sender IN ('customer', 'staff'))
+      )`,
+      "CREATE INDEX IF NOT EXISTS idx_chat_messages_thread ON chat_messages (thread_id, id)",
+      "ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY",
+    ],
+  },
+  {
+    // Mục 17: yêu cầu xuất hoá đơn VAT của đơn (src/server/repo/invoices.ts). Đã kiểm trên CSDL thật (08/11/2026): chưa có bảng.
+    // Số hoá đơn nội bộ HDyyyy-nnnnnn cấp khi kế toán xuất; chưa nối nhà cung cấp hoá đơn điện tử.
+    id: "sale_12_hoa_don",
+    statements: [
+      `CREATE TABLE IF NOT EXISTS order_invoices (
+        order_id TEXT PRIMARY KEY REFERENCES orders (id),
+        company_name TEXT NOT NULL,
+        tax_code TEXT NOT NULL,
+        company_address TEXT NOT NULL,
+        invoice_email TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'requested',
+        invoice_no TEXT UNIQUE,
+        issued_by TEXT REFERENCES users (id) ON DELETE SET NULL,
+        issued_at BIGINT,
+        created_at BIGINT NOT NULL,
+        CONSTRAINT invoice_status_valid CHECK (status IN ('requested', 'issued'))
+      )`,
+      "CREATE INDEX IF NOT EXISTS idx_order_invoices_status ON order_invoices (status, created_at)",
+      "ALTER TABLE order_invoices ENABLE ROW LEVEL SECURITY",
+    ],
+  },
 ];

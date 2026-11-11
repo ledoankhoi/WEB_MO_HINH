@@ -4,16 +4,25 @@ import { ActiveToggle, LocationForm } from "@/components/admin/WarehouseForms";
 import { formatNumber } from "@/lib/format";
 import { requireStaff } from "@/server/auth/session";
 import { listLocations } from "@/server/repo/warehouse";
+import { AdminSuspense } from "@/components/admin/AdminSuspense";
 
 // YC-KHO-01: vị trí của kho KHO-01. `?sua=<id>` mở form sửa.
-export default async function LocationsPage({ searchParams }: PageProps<"/admin/kho/vi-tri">) {
+export default function LocationsPage(props: PageProps<"/admin/kho/vi-tri">) {
+  return (
+    <AdminSuspense>
+      <LocationsPageContent {...props} />
+    </AdminSuspense>
+  );
+}
+
+async function LocationsPageContent({ searchParams }: PageProps<"/admin/kho/vi-tri">) {
   await requireStaff("inventory.setup", "/admin/kho/vi-tri");
   const [locations, params] = await Promise.all([listLocations(), searchParams]);
   const editing = locations.find((location) => location.id === first(params.sua));
 
   return (
     <>
-      <h1 className="text-3xl font-bold tracking-tight">Vị trí kho ({formatNumber(locations.length)})</h1>
+      <h1 className="text-3xl font-bold tracking-tight">Vị trí kho</h1>
       {locations.length === 0 ? (
         <Empty>Chưa có vị trí nào.</Empty>
       ) : (

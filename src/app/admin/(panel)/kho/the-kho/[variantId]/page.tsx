@@ -7,9 +7,18 @@ import { can } from "@/lib/permissions";
 import { MOVEMENT_LABELS } from "@/lib/stock";
 import { requireStaff } from "@/server/auth/session";
 import { listStock, stockCard } from "@/server/repo/stock-reports";
+import { AdminSuspense } from "@/components/admin/AdminSuspense";
 
 // Thẻ kho (YC-KHO-11): mọi dòng sổ kho của một biến thể, bấm được tới phiếu hoặc đơn liên quan.
-export default async function StockCardPage({ params }: PageProps<"/admin/kho/the-kho/[variantId]">) {
+export default function StockCardPage(props: PageProps<"/admin/kho/the-kho/[variantId]">) {
+  return (
+    <AdminSuspense>
+      <StockCardPageContent {...props} />
+    </AdminSuspense>
+  );
+}
+
+async function StockCardPageContent({ params }: PageProps<"/admin/kho/the-kho/[variantId]">) {
   const { variantId } = await params;
   const user = await requireStaff("inventory.view", `/admin/kho/the-kho/${variantId}`);
   if (!isId(variantId)) notFound();

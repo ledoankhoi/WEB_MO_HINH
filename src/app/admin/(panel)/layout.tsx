@@ -1,40 +1,45 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { LogoutButton } from "@/components/account/AccountForms";
+import { AdminAlertsProvider, NotificationBell } from "@/components/admin/AdminAlerts";
 import { AdminNav } from "@/components/admin/AdminNav";
 import { LogoMark } from "@/components/layout/Logo";
 import { site } from "@/config/site";
-import { ROLE_LABELS, can } from "@/lib/permissions";
-import { orderPulse } from "@/server/repo/orders";
+import { ROLE_LABELS } from "@/lib/permissions";
+import { adminAlerts } from "@/server/repo/admin-alerts";
 import { requireStaff } from "@/server/auth/session";
 
 // Kiểm tra quyền trước khi vẽ khung để người ngoài không thấy gì của khu quản trị. Layout không chạy lại
 // khi chuyển trang trong khu này, nên mỗi trang vẫn tự gọi requireStaff().
 async function Shell({ children }: { children: React.ReactNode }) {
   const user = await requireStaff("dashboard.view");
-  const pulse = can(user.role, "orders.view") ? await orderPulse() : null;
+  const alerts = await adminAlerts(user.role);
 
   return (
     <div className="flex flex-1 flex-col lg:flex-row">
-      <aside className="flex flex-col gap-3 border-b border-line bg-surface p-4 lg:sticky lg:top-0 lg:h-dvh lg:w-60 lg:shrink-0 lg:gap-6 lg:border-r lg:border-b-0">
-        <Link href="/admin" className="flex items-center gap-2.5">
-          <LogoMark />
-          <span className="text-base font-bold tracking-[0.18em]">{site.name}</span>
-          <span className="rounded-full bg-raised px-2 py-0.5 text-xs font-medium text-muted">Quản trị</span>
-        </Link>
+      <aside className="relative z-30 flex flex-col gap-3 border-b border-line bg-surface p-4 lg:sticky lg:top-0 lg:h-dvh lg:w-60 lg:shrink-0 lg:gap-6 lg:border-r lg:border-b-0">
+        <AdminAlertsProvider initial={alerts}>
+          <Link href="/admin" className="flex items-center gap-2.5">
+            <LogoMark />
+            <span className="text-base font-bold tracking-[0.18em]">{site.name}</span>
+            <span className="rounded-full bg-raised px-2 py-0.5 text-xs font-medium text-muted">Quản trị</span>
+          </Link>
 
-        <AdminNav role={user.role} pulse={pulse} />
+          {/* Thông báo việc đang chờ (src/lib/admin-alerts.ts), chỉ các loại vai trò này có quyền xử lý. */}
+          <NotificationBell />
+          <AdminNav role={user.role} />
 
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm lg:mt-auto lg:flex-col lg:items-stretch lg:border-t lg:border-line lg:pt-4">
-          <p className="min-w-0 flex-1 truncate">
-            <span className="font-medium">{user.name}</span> <span className="text-muted">{ROLE_LABELS[user.role]}</span>
-          </p>
-          {/* Cửa hàng ở tên miền khác (src/proxy.ts) nên dùng thẻ a thường. */}
-          <a href={site.url} className="font-medium text-brand-strong hover:underline">
-            Xem cửa hàng
-          </a>
-          <LogoutButton admin />
-        </div>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm lg:mt-auto lg:flex-col lg:items-stretch lg:border-t lg:border-line lg:pt-4">
+            <p className="min-w-0 flex-1 truncate">
+              <span className="font-medium">{user.name}</span> <span className="text-muted">{ROLE_LABELS[user.role]}</span>
+            </p>
+            {/* Cửa hàng ở tên miền khác (src/proxy.ts) nên dùng thẻ a thường. */}
+            <a href={site.url} className="font-medium text-brand-strong hover:underline">
+              Xem cửa hàng
+            </a>
+            <LogoutButton admin />
+          </div>
+        </AdminAlertsProvider>
       </aside>
 
       <main className="min-w-0 flex-1">

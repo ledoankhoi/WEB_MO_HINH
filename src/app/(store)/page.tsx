@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, Camera, QrCode, RotateCcw, ShieldCheck, Truck } from "lucide-react";
 import { HeroBanner, StripBanners } from "@/components/content/Banners";
 import { ComboHero } from "@/components/home/ComboHero";
+import { FlashSaleSection } from "@/components/home/FlashSaleSection";
 import { ShelfTabs, type ShelfTab } from "@/components/home/ShelfTabs";
 import { ProductGrid, ProductImage } from "@/components/product/ProductCard";
 import { ButtonLink } from "@/components/ui/Button";
@@ -12,6 +13,7 @@ import { MODEL_FEATURES } from "@/lib/model-features";
 import { getActiveBanners, getFeaturedProducts, getMegaMenu, getProductBySlug, getSiteSettings, searchProducts } from "@/server/catalog";
 import { getImageSearchStatus } from "@/server/image-search";
 import { getBankAccount } from "@/server/payment";
+import { SectionHeading } from "@/components/store/StoreKit";
 
 // Bộ hợp thể đầu tiên đang bán (theo thứ tự trong MODEL_FEATURES) cho khối mở đầu trang chủ.
 async function findCombiner() {
@@ -27,17 +29,6 @@ async function findCombiner() {
 
 // Màu dải tên của ô danh mục, lần lượt xanh coban, đỏ, đen.
 const TILE_COLORS = ["bg-cobalt", "bg-brand", "bg-ink"];
-
-function SectionHeading({ id, children, bar }: { id: string; children: string; bar: string }) {
-  return (
-    <div className="flex flex-col gap-2.5">
-      <h2 id={id} className="font-condensed text-[clamp(2.5rem,5vw,3.5rem)] leading-none font-black uppercase italic">
-        {children}
-      </h2>
-      <span aria-hidden className={`h-2.5 w-28 ${bar}`} />
-    </div>
-  );
-}
 
 export default async function Home() {
   const shelf = (filter: Partial<Parameters<typeof searchProducts>[0]>) =>
@@ -94,6 +85,8 @@ export default async function Home() {
       )}
 
       <StripBanners banners={stripBanners} />
+
+      <FlashSaleSection />
 
       {categories.length > 0 && (
         <section aria-labelledby="danh-muc">

@@ -8,6 +8,8 @@ import type {
   RobotModelKey,
 } from "./catalog";
 import type { Role } from "./permissions";
+import type { FlashOffer } from "./flash-sale";
+import type { OrderPreorderStatus, PreorderOffer } from "./preorder";
 
 // Phiên bản bán được (docs/chuan/03 mục 3): có SKU, giá, tồn và màu mô hình 3D riêng.
 export type ProductVariant = {
@@ -26,6 +28,10 @@ export type ProductVariant = {
   isActive: boolean;
   // Đã có sổ kho hoặc đơn hàng: SKU không đổi được nữa (YC-SP-03).
   locked: boolean;
+  // Đợt đặt trước chưa kết thúc (src/lib/preorder.ts): phiên bản chỉ bán dạng đặt trước.
+  preorder: PreorderOffer | null;
+  // Flash sale đang chạy hoặc sắp chạy (src/lib/flash-sale.ts); trình duyệt tự so giờ để hiện giá sale.
+  flash: FlashOffer | null;
 };
 
 export type ProductStatus = "draft" | "published" | "archived";
@@ -72,12 +78,24 @@ export type Product = {
 export type ProductSummary = Pick<
   Product,
   "id" | "variantId" | "slug" | "name" | "tagline" | "category" | "price" | "compareAtPrice" | "stock" | "image" | "isFeatured" | "modelUrl"
->;
+> & {
+  // Đợt đặt trước của biến thể mặc định (nhãn "Đặt trước" trên thẻ).
+  preorder: PreorderOffer | null;
+  // Flash sale đang chạy hoặc sắp chạy của biến thể mặc định.
+  flash: FlashOffer | null;
+};
 
 // Dữ liệu mới nhất của một dòng trong giỏ hàng (giá, tồn kho) do máy chủ trả về. `id` là mã biến thể.
 export type CartProduct = Pick<Product, "id" | "slug" | "name" | "price" | "compareAtPrice" | "stock" | "image"> & {
   productId: string;
   available: boolean;
+  // Slug danh mục: quyết định tuỳ chọn Xưởng nào áp dụng (src/lib/workshop.ts).
+  category: string;
+  // Đang trong đợt đặt trước: dòng giỏ là hàng đặt trước, giới hạn theo suất còn lại thay vì tồn kho.
+  preorder: PreorderOffer | null;
+  // `price` là giá bán lúc máy chủ trả lời (giá flash sale nếu đang chạy), `basePrice` là giá thường; `flash` chỉ có khi đang chạy.
+  basePrice: number;
+  flash: FlashOffer | null;
 };
 
 export type CurrentUser = {
@@ -89,9 +107,13 @@ export type CurrentUser = {
   city: string;
   role: Role;
   marketingConsent: boolean;
+  // Đã xác thực email bằng mã OTP (hoặc đăng nhập Google), nghiep-vu-ban-hang mục 15.
+  emailVerified: boolean;
 };
 
 export type OrderItem = {
+  // id dòng trong order_items (dùng khi khách chọn dòng để trả hàng).
+  lineId: number;
   productId: string;
   variantId: string;
   name: string;
@@ -99,8 +121,18 @@ export type OrderItem = {
   sku: string;
   slug: string;
   image: string | null;
+  // Đã gồm giá tuỳ chọn Xưởng (optionsPrice).
   unitPrice: number;
   quantity: number;
+  // Tuỳ biến ở Xưởng: mô tả để in phiếu, phần giá của tuỳ chọn trong unitPrice; rỗng, 0 nếu nguyên hộp.
+  options: string;
+  optionsPrice: number;
+  // Chuỗi cấu hình Xưởng gốc (cfg, src/lib/workshop.ts) để "Mua lại" đúng tuỳ biến cũ; rỗng nếu nguyên hộp.
+  optionsConfig: string;
+  // Mã chương trình flash sale nếu dòng được bán bằng giá sale.
+  flashSaleId: string | null;
+  // Dòng đặt trước: ngày dự kiến về lúc đặt và đã được phân bổ hàng chưa; null nếu là hàng có sẵn.
+  preorder: { offerId: string; expectedAt: number; allocated: boolean } | null;
 };
 
 export type Order = {
@@ -125,16 +157,31 @@ export type Order = {
   couponCode: string | null;
   shippingFee: number;
   total: number;
+  // Đặt trước (src/lib/preorder.ts): tiền cọc phải trả trước (0: không cọc), trạng thái hàng đặt trước của đơn.
+  depositAmount: number;
+  preorderStatus: OrderPreorderStatus;
+  // Phần giảm của combo trong `discount` (phần còn lại là mã giảm giá).
+  bundleDiscount: number;
   createdAt: number;
   updatedAt: number;
   items: OrderItem[];
   events: OrderEvent[];
   payments: OrderPayment[];
+  // Yêu cầu hoá đơn VAT (nghiep-vu-ban-hang mục 17), null nếu khách không yêu cầu.
+  invoice: {
+    companyName: string;
+    taxCode: string;
+    companyAddress: string;
+    invoiceEmail: string;
+    status: "requested" | "issued";
+    invoiceNo: string | null;
+    issuedAt: number | null;
+  } | null;
 };
 
 // Một lần đổi trạng thái (bảng order_events).
 export type OrderEvent = {
-  field: "status" | "payment_status" | "shipping_status";
+  field: "status" | "payment_status" | "shipping_status" | "preorder_status";
   from: string;
   to: string;
   note: string;
@@ -142,9 +189,10 @@ export type OrderEvent = {
   createdAt: number;
 };
 
-export type OrderPayment = { kind: "charge" | "refund"; amount: number; reference: string; createdAt: number };
+// deposit: tiền cọc đặt trước; charge: tiền thu (phần còn lại nếu đã cọc); refund: tiền hoàn.
+export type OrderPayment = { kind: "deposit" | "charge" | "refund"; amount: number; reference: string; createdAt: number };
 
-export type OrderSummary = Omit<Order, "items" | "events" | "payments"> & { itemCount: number };
+export type OrderSummary = Omit<Order, "items" | "events" | "payments" | "invoice"> & { itemCount: number };
 
 // Kết quả trả về cho form dùng useActionState.
 export type FormState = {

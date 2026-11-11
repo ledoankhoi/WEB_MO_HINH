@@ -1,9 +1,7 @@
 // Bước xử lý của đơn, gộp từ ba trạng thái độc lập (status, payment_status, shipping_status) thành một nhãn
 // duy nhất để nhân viên nhìn là biết đơn đang ở đâu và cần làm gì tiếp. Một bảng dùng cho cả giao diện
 // (`orderStage`) và truy vấn (`sql`), nên hai bên không lệch nhau. Các bước loại trừ lẫn nhau.
-import type { OrderStatus, PaymentMethod, PaymentStatus, ShippingStatus } from "./catalog";
-
-type OrderState = { status: OrderStatus; paymentStatus: PaymentStatus; shippingStatus: ShippingStatus; paymentMethod: PaymentMethod };
+import { confirmableSql, isConfirmable, type OrderState } from "./order-flow";
 
 // urgent: cửa hàng phải làm ngay; danger: có sự cố; wait: chờ người khác (khách, hãng vận chuyển); done, muted: đã xong.
 export type StageTone = "urgent" | "danger" | "wait" | "done" | "muted";
@@ -24,15 +22,15 @@ export const ORDER_STAGES = {
     label: "Đơn mới, chờ xác nhận",
     tone: "urgent",
     next: "Xác nhận đơn",
-    sql: "o.status = 'pending' AND (o.payment_method = 'cod' OR o.payment_status = 'paid')",
-    match: (o) => o.status === "pending" && (o.paymentMethod === "cod" || o.paymentStatus === "paid"),
+    sql: `o.status = 'pending' AND ${confirmableSql("o.")}`,
+    match: (o) => o.status === "pending" && isConfirmable(o),
   },
   "cho-dong-goi": {
     label: "Đã xác nhận, chờ đóng gói",
     tone: "urgent",
     next: "Bắt đầu đóng gói",
-    sql: "o.status = 'confirmed'",
-    match: (o) => o.status === "confirmed",
+    sql: "o.status = 'confirmed' AND o.preorder_status <> 'waiting'",
+    match: (o) => o.status === "confirmed" && o.preorderStatus !== "waiting",
   },
   "dang-dong-goi": {
     label: "Đang đóng gói",
@@ -59,22 +57,31 @@ export const ORDER_STAGES = {
     label: "Đã giao, chờ thu tiền",
     tone: "urgent",
     next: "Ghi nhận đã thu tiền",
-    sql: "o.status = 'processing' AND o.shipping_status = 'delivered' AND o.payment_status = 'unpaid'",
-    match: (o) => o.status === "processing" && o.shippingStatus === "delivered" && o.paymentStatus === "unpaid",
+    sql: "o.status = 'processing' AND o.shipping_status = 'delivered' AND o.payment_status IN ('unpaid', 'deposit_paid')",
+    match: (o) => o.status === "processing" && o.shippingStatus === "delivered" && (o.paymentStatus === "unpaid" || o.paymentStatus === "deposit_paid"),
   },
   "cho-hoan-tien": {
     label: "Đã huỷ, chờ hoàn tiền",
     tone: "danger",
     next: "Ghi nhận đã hoàn tiền",
-    sql: "o.status = 'cancelled' AND o.payment_status = 'paid'",
-    match: (o) => o.status === "cancelled" && o.paymentStatus === "paid",
+    sql: "o.status = 'cancelled' AND o.payment_status IN ('paid', 'deposit_paid')",
+    match: (o) => o.status === "cancelled" && (o.paymentStatus === "paid" || o.paymentStatus === "deposit_paid"),
   },
   "cho-chuyen-khoan": {
-    label: "Chờ khách chuyển khoản",
+    label: "Chờ khách thanh toán",
     tone: "wait",
-    next: "Ghi nhận đã thu tiền khi nhận được",
-    sql: "o.status = 'pending' AND o.payment_method = 'bank' AND o.payment_status <> 'paid'",
-    match: (o) => o.status === "pending" && o.paymentMethod === "bank" && o.paymentStatus !== "paid",
+    // Chuyển khoản, tiền cọc đặt trước: kế toán ghi nhận khi thấy tiền; VNPay: tự ghi nhận khi cổng báo (IPN).
+    next: "Ghi nhận tiền (cọc hoặc đủ) khi nhận được",
+    sql: `o.status = 'pending' AND NOT ${confirmableSql("o.")}`,
+    match: (o) => o.status === "pending" && !isConfirmable(o),
+  },
+  "cho-hang-ve": {
+    label: "Chờ hàng đặt trước về",
+    tone: "wait",
+    // Nhập kho như thường rồi phân bổ ở /admin/dat-truoc: đơn có đủ hàng mới chuyển sang chờ đóng gói.
+    next: "Phân bổ hàng khi hàng về",
+    sql: "o.status = 'confirmed' AND o.preorder_status = 'waiting'",
+    match: (o) => o.status === "confirmed" && o.preorderStatus === "waiting",
   },
   "dang-giao": {
     label: "Đang giao",
@@ -92,8 +99,8 @@ export const ORDER_STAGES = {
   "da-huy": {
     label: "Đã huỷ",
     tone: "muted",
-    sql: "o.status = 'cancelled' AND o.payment_status <> 'paid'",
-    match: (o) => o.status === "cancelled" && o.paymentStatus !== "paid",
+    sql: "o.status = 'cancelled' AND o.payment_status NOT IN ('paid', 'deposit_paid')",
+    match: (o) => o.status === "cancelled" && o.paymentStatus !== "paid" && o.paymentStatus !== "deposit_paid",
   },
 } as const satisfies Record<string, Stage>;
 
@@ -128,7 +135,7 @@ export const STAGE_TONE_CLASS: Record<StageTone, string> = {
 export const ORDER_STEPS = ["Đặt hàng", "Xác nhận", "Đóng gói", "Bàn giao vận chuyển", "Đã giao", "Hoàn tất"] as const;
 
 // Số mốc đã xong (0–6) và mốc đang có sự cố (nếu có).
-export function orderProgress(order: OrderState): { done: number; problem: number | null } {
+export function orderProgress(order: Pick<OrderState, "status" | "shippingStatus">): { done: number; problem: number | null } {
   if (order.status === "completed") return { done: 6, problem: null };
   const shipping = order.shippingStatus;
   const done =

@@ -3,13 +3,21 @@ import { ProductGrid, ProductImage } from "@/components/product/ProductCard";
 import { MobileBuyBar } from "@/components/product/MobileBuyBar";
 import { ProductGallery } from "@/components/product/ProductGallery";
 import { ProductTabs } from "@/components/product/ProductTabs";
+import { FlashPrice } from "@/components/product/FlashPrice";
+import { ComboDeals } from "@/components/product/ComboDeals";
+import { CompareButton } from "@/components/product/CompareButton";
+import { ProductQuestions } from "@/components/product/ProductQuestions";
 import { PurchasePanel } from "@/components/product/PurchasePanel";
+import { RecentlyViewed } from "@/components/product/RecentlyViewed";
 import { WishlistButton } from "@/components/product/WishlistButton";
+import { WorkshopTeaser } from "@/components/product/WorkshopTeaser";
+import { hasWorkshop } from "@/lib/workshop";
 import { PRODUCT_PHOTOS } from "@/data/product-photos";
 import { site } from "@/config/site";
 import { getCategory } from "@/lib/catalog";
 import { getModelFeatures, modelKey } from "@/lib/model-features";
 import { formatDate, formatVnd } from "@/lib/format";
+import { canPreorder, orderableQty } from "@/lib/preorder";
 import type { Product, ProductSummary } from "@/lib/types";
 import modelCredits from "@/data/model-credits.json";
 
@@ -24,6 +32,8 @@ export function ProductView({
   related = [],
   reviews,
   media = [],
+  questions,
+  deals = [],
   preview = false,
 }: {
   product: Product;
@@ -33,6 +43,10 @@ export function ProductView({
   reviews?: { average: number; count: number; items: { id: string; userName: string; rating: number; comment: string; createdAt: number }[] };
   // Ảnh phụ trong thư viện ảnh (không gồm mô hình 3D).
   media?: { url: string; alt: string }[];
+  // Hỏi đáp đã duyệt (nghiep-vu-ban-hang mục 11); bản xem trước của quản trị không truyền.
+  questions?: { count: number; items: { id: string; userName: string; body: string; createdAt: number; answers: { id: string; userName: string; body: string; isStaff: boolean; isBuyer: boolean; createdAt: number }[] }[] };
+  // Combo có sản phẩm này (nghiep-vu-ban-hang mục 12).
+  deals?: { id: string; name: string; percent: number; members: ProductSummary[] }[];
   preview?: boolean;
 }) {
   const category = getCategory(product.category);
@@ -42,7 +56,15 @@ export function ProductView({
   const seededPhotos = PRODUCT_PHOTOS[product.slug];
   const photoSet = seededPhotos && product.images.some((image) => seededPhotos.urls.includes(image.url)) ? seededPhotos : null;
   const boxItems = product.boxContents.split("\n").map((line) => line.trim()).filter(Boolean);
-  const status = product.stock <= 0 ? "Hết hàng" : product.stock <= 3 ? `Sắp hết hàng (còn ${product.stock})` : "Còn hàng";
+  const activeVariants = product.variants.filter((v) => v.isActive);
+  const defaultVariant = activeVariants.find((v) => v.isDefault) ?? activeVariants[0];
+  // Biến thể mặc định đang đặt trước: nhãn tình trạng là ngày dự kiến về thay cho tồn kho.
+  const preorder = defaultVariant?.preorder ?? null;
+  const orderable = defaultVariant ? orderableQty(defaultVariant.stock, preorder, site.maxQtyPerItem) : 0;
+  const status = preorder
+    ? canPreorder(preorder) ? `Đặt trước · về ${formatDate(preorder.expectedAt)}` : "Hết suất đặt trước"
+    : product.stock <= 0 ? "Hết hàng" : product.stock <= 3 ? `Sắp hết hàng (còn ${product.stock})` : "Còn hàng";
+  const statusTone = preorder ? (canPreorder(preorder) ? "text-cobalt" : "text-danger") : product.stock > 0 ? "text-success" : "text-danger";
 
   const specs =
     product.specs.length > 0 ? (
@@ -123,10 +145,10 @@ export function ProductView({
     ...(specs ? [{ value: "thong-so", label: `Thông số (${product.specs.length})`, content: specs }] : []),
     ...(linkedList ? [{ value: "hop-the", label: features?.members ? `Hợp thể (${linked.length})` : "Hợp thể thành", content: linkedList }] : []),
     ...(reviewList ? [{ value: "danh-gia", label: `Đánh giá (${reviews!.count})`, content: reviewList }] : []),
+    ...(questions && !preview
+      ? [{ value: "hoi-dap", label: `Hỏi đáp (${questions.count})`, content: <ProductQuestions productId={product.id} questions={questions.items} /> }]
+      : []),
   ];
-
-  const activeVariants = product.variants.filter((v) => v.isActive);
-  const defaultVariant = activeVariants.find((v) => v.isDefault) ?? activeVariants[0];
 
   return (
     <div className="space-y-10 pb-24 lg:pb-0">
@@ -184,7 +206,12 @@ export function ProductView({
         <aside aria-label="Mua hàng" className="space-y-5 rounded-3xl border border-line bg-surface p-6 lg:sticky lg:top-24 lg:w-[26rem] lg:shrink-0 sm:p-7">
           <div className="flex items-start justify-between gap-3">
             {category && <p className="pt-2 text-xs font-bold tracking-wider text-brand-strong uppercase">{category.name}</p>}
-            {!preview && <WishlistButton productId={product.id} name={product.name} className="ml-auto shrink-0" />}
+            {!preview && (
+              <div className="ml-auto flex shrink-0 items-center gap-3">
+                <CompareButton slug={product.slug} name={product.name} />
+                <WishlistButton productId={product.id} name={product.name} className="shrink-0" />
+              </div>
+            )}
           </div>
           <div className="space-y-2">
             <h1 className="text-2xl leading-tight font-extrabold tracking-tight sm:text-3xl">{product.name}</h1>
@@ -195,13 +222,15 @@ export function ProductView({
               </a>
             )}
           </div>
-          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <p className="text-3xl font-extrabold tabular-nums">{formatVnd(product.price)}</p>
-            {product.compareAtPrice !== null && product.compareAtPrice > product.price && (
-              <p className="text-muted line-through tabular-nums">{formatVnd(product.compareAtPrice)}</p>
-            )}
-            <p className={`text-sm font-semibold ${product.stock > 0 ? "text-success" : "text-danger"}`}>{status}</p>
-          </div>
+          <FlashPrice flash={defaultVariant?.flash ?? null} basePrice={product.price} size="detail">
+            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+              <p className="text-3xl font-extrabold tabular-nums">{formatVnd(product.price)}</p>
+              {product.compareAtPrice !== null && product.compareAtPrice > product.price && (
+                <p className="text-muted line-through tabular-nums">{formatVnd(product.compareAtPrice)}</p>
+              )}
+            </div>
+          </FlashPrice>
+          <p className={`text-sm font-semibold ${statusTone}`}>{status}</p>
           {preview ? (
             <p className="rounded-lg border border-dashed border-line p-3 text-sm text-muted">Bản xem trước: nút mua hàng không hoạt động.</p>
           ) : (
@@ -225,6 +254,13 @@ export function ProductView({
             </div>
           )}
 
+          {!preview && hasWorkshop(product.category) && (
+            <a href={`/san-pham/${product.slug}/xuong`} className="flex items-center justify-between gap-2 border-t border-line pt-4 text-sm font-semibold hover:text-brand">
+              <span>Sơn lại, thêm đế, đèn LED, decal ở Xưởng</span>
+              <span className="font-condensed text-base font-extrabold text-brand uppercase">Mở Xưởng →</span>
+            </a>
+          )}
+
           <ul className="grid grid-cols-3 gap-2 border-t border-line pt-4 text-center text-xs text-muted">
             <li>Miễn phí ship từ {formatVnd(site.shipping.freeFrom)}</li>
             <li>Đổi trả {site.policy.returnDays} ngày</li>
@@ -232,6 +268,8 @@ export function ProductView({
           </ul>
         </aside>
       </div>
+
+      {!preview && hasWorkshop(product.category) && defaultVariant && <WorkshopTeaser slug={product.slug} category={product.category} image={product.image} />}
 
       <section aria-label="Mô tả, thông số và đánh giá" className="rounded-3xl border border-line bg-surface p-5 sm:p-7">
         <ProductTabs tabs={tabs} id="danh-gia" />
@@ -246,8 +284,12 @@ export function ProductView({
         </section>
       )}
 
+      {!preview && <ComboDeals deals={deals} currentId={product.id} />}
+
+      {!preview && <RecentlyViewed current={product.slug} />}
+
       {!preview && defaultVariant && (
-        <MobileBuyBar productId={product.id} variantId={defaultVariant.id} name={product.name} price={defaultVariant.price} stock={defaultVariant.stock} />
+        <MobileBuyBar productId={product.id} variantId={defaultVariant.id} name={product.name} price={defaultVariant.price} stock={orderable} preorder={!!preorder} />
       )}
     </div>
   );

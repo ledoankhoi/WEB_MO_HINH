@@ -1,4 +1,5 @@
 import { ORDER_STATUS_LABELS, PAYMENT_STATUS_LABELS, SHIPPING_STATUS_LABELS } from "@/lib/catalog";
+import { ORDER_PREORDER_LABELS } from "@/lib/preorder";
 import { formatDateTime } from "@/lib/format";
 import type { Order, OrderEvent } from "@/lib/types";
 
@@ -6,6 +7,7 @@ const FIELDS: Record<OrderEvent["field"], { label: string; values: Record<string
   status: { label: "Đơn hàng", values: ORDER_STATUS_LABELS },
   payment_status: { label: "Thanh toán", values: PAYMENT_STATUS_LABELS },
   shipping_status: { label: "Vận chuyển", values: SHIPPING_STATUS_LABELS },
+  preorder_status: { label: "Đặt trước", values: ORDER_PREORDER_LABELS },
 };
 
 // Lịch sử đổi trạng thái (order_events). Trang quản trị hiện thêm người thao tác và mã luật.

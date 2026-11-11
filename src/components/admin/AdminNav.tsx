@@ -2,10 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BellRing, Boxes, Image as ImageIcon, Menu, NotebookText, Settings, ClipboardList, FileText, Scale, ShieldAlert, Star, TicketPercent, FolderTree, MapPin, Truck, LayoutDashboard, ChartColumn, Library, Package, ReceiptText, ScanSearch, ScrollText, Tag, Undo2, UserCog, Users } from "lucide-react";
+import { BellRing, Boxes, CalendarClock, FileSpreadsheet, MessagesSquare as ChatIcon, Layers, MessageCircleQuestion, Zap, Mail, Image as ImageIcon, MessagesSquare, Menu, Newspaper, NotebookText, Settings, ClipboardList, FileText, Scale, ShieldAlert, Star, TicketPercent, FolderTree, MapPin, Truck, LayoutDashboard, ChartColumn, Library, Package, PackageOpen, ReceiptText, ScanSearch, ScrollText, Tag, Undo2, UserCog, Users } from "lucide-react";
 import { can, type Permission, type Role } from "@/lib/permissions";
-import type { OrderPulse } from "@/lib/types";
-import { useOrderAlerts } from "./OrderAlerts";
+import { CountBadge, navBadge, useAdminAlerts } from "./AdminAlerts";
 
 // Nhóm theo menu ở mục 5 của docs/chuan/10. Mỗi mục chỉ hiện với vai trò có quyền mở trang đó; quyền
 // vẫn được kiểm tra lại ở máy chủ.
@@ -20,7 +19,10 @@ const GROUPS: { label?: string; links: { href: string; label: string; icon: type
     label: "Bán hàng",
     links: [
       { href: "/admin/don-hang", label: "Đơn hàng", icon: ReceiptText, permission: "orders.view" },
+      { href: "/admin/don-hang/tra-hang", label: "Trả hàng", icon: PackageOpen, permission: "orders.view" },
       { href: "/admin/don-hang/cho-hoan-tien", label: "Chờ hoàn tiền", icon: Undo2, permission: "payments.manage" },
+      { href: "/admin/dat-truoc", label: "Đặt trước", icon: CalendarClock, permission: "catalog.view" },
+      { href: "/admin/hoa-don", label: "Hoá đơn VAT", icon: FileSpreadsheet, permission: "payments.manage" },
     ],
   },
   {
@@ -50,8 +52,11 @@ const GROUPS: { label?: string; links: { href: string; label: string; icon: type
     links: [
       { href: "/admin/noi-dung/banner", label: "Banner", icon: ImageIcon, permission: "content.edit" },
       { href: "/admin/ma-giam-gia", label: "Mã giảm giá", icon: TicketPercent, permission: "coupons.manage" },
+      { href: "/admin/flash-sale", label: "Flash sale", icon: Zap, permission: "coupons.manage" },
+      { href: "/admin/combo", label: "Combo", icon: Layers, permission: "coupons.manage" },
       { href: "/admin/noi-dung/menu", label: "Menu", icon: Menu, permission: "content.edit" },
       { href: "/admin/noi-dung/trang", label: "Trang thông tin", icon: NotebookText, permission: "content.edit" },
+      { href: "/admin/noi-dung/tin-tuc", label: "Tin tức", icon: Newspaper, permission: "content.edit" },
       { href: "/admin/noi-dung/cai-dat", label: "Cài đặt hiển thị", icon: Settings, permission: "content.edit" },
     ],
   },
@@ -62,6 +67,10 @@ const GROUPS: { label?: string; links: { href: string; label: string; icon: type
       { href: "/admin/khach-hang", label: "Khách hàng", icon: Users, permission: "customers.view", alsoViewer: true },
       { href: "/admin/khach-hang/cho-hang", label: "Khách chờ hàng", icon: BellRing, permission: "customers.view" },
       { href: "/admin/danh-gia", label: "Đánh giá", icon: Star, permission: "reviews.moderate" },
+      { href: "/admin/hoi-dap", label: "Hỏi đáp", icon: MessageCircleQuestion, permission: "reviews.moderate" },
+      { href: "/admin/chat", label: "Chat với khách", icon: ChatIcon, permission: "customers.manage" },
+      { href: "/admin/cong-dong", label: "Cộng đồng", icon: MessagesSquare, permission: "community.moderate" },
+      { href: "/admin/hop-thu", label: "Hộp thư đi", icon: Mail, permission: "customers.view" },
     ],
   },
   {
@@ -73,9 +82,9 @@ const GROUPS: { label?: string; links: { href: string; label: string; icon: type
   },
 ];
 
-export function AdminNav({ role, pulse }: { role: Role; pulse: OrderPulse | null }) {
+export function AdminNav({ role }: { role: Role }) {
   const pathname = usePathname();
-  const needsAction = useOrderAlerts(pulse);
+  const alerts = useAdminAlerts();
   const groups = GROUPS.map((group) => ({ ...group, links: group.links.filter((link) => can(role, link.permission) || (link.alsoViewer && role === "viewer")) })).filter(
     (group) => group.links.length > 0,
   );
@@ -86,7 +95,7 @@ export function AdminNav({ role, pulse }: { role: Role; pulse: OrderPulse | null
     .sort((a, b) => b.length - a.length)[0];
 
   return (
-    <nav aria-label="Trình đơn quản trị" className="-mx-4 flex gap-1 overflow-x-auto px-4 lg:mx-0 lg:flex-col lg:gap-4 lg:overflow-visible lg:px-0">
+    <nav aria-label="Trình đơn quản trị" className="-mx-4 flex gap-1 overflow-x-auto px-4 lg:mx-0 lg:min-h-0 lg:flex-1 lg:flex-col lg:gap-4 lg:overflow-x-hidden lg:overflow-y-auto lg:px-0">
       {groups.map((group) => (
         <div key={group.label ?? ""} className="flex gap-1 lg:flex-col">
           {group.label && (
@@ -94,6 +103,7 @@ export function AdminNav({ role, pulse }: { role: Role; pulse: OrderPulse | null
           )}
           {group.links.map(({ href, label, icon: Icon }) => {
             const active = href === current;
+            const badge = navBadge(alerts, href);
             return (
               <Link
                 key={href}
@@ -105,15 +115,7 @@ export function AdminNav({ role, pulse }: { role: Role; pulse: OrderPulse | null
               >
                 <Icon className="size-4 shrink-0" aria-hidden />
                 {label}
-                {href === "/admin/don-hang" && needsAction > 0 && (
-                  <span
-                    className="ml-auto grid h-5 min-w-5 place-items-center rounded-full bg-danger px-1.5 text-xs font-bold text-white tabular-nums"
-                    aria-label={`${needsAction} đơn cần xử lý`}
-                    title={`${needsAction} đơn cần xử lý`}
-                  >
-                    {needsAction > 99 ? "99+" : needsAction}
-                  </span>
-                )}
+                {badge && <CountBadge {...badge} />}
               </Link>
             );
           })}

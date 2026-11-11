@@ -9,10 +9,19 @@ import { requireStaff } from "@/server/auth/session";
 import { listVariantOptions } from "@/server/repo/products";
 import { findDocument, locationsInOpenStocktakes } from "@/server/repo/stock-documents";
 import { listLocations, listSuppliers } from "@/server/repo/warehouse";
+import { AdminSuspense } from "@/components/admin/AdminSuspense";
 
 const VN_DATE = (ms: number) => new Date(ms + 7 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
-export default async function DocumentPage({ params }: PageProps<"/admin/kho/phieu/[id]">) {
+export default function DocumentPage(props: PageProps<"/admin/kho/phieu/[id]">) {
+  return (
+    <AdminSuspense>
+      <DocumentPageContent {...props} />
+    </AdminSuspense>
+  );
+}
+
+async function DocumentPageContent({ params }: PageProps<"/admin/kho/phieu/[id]">) {
   const { id } = await params;
   const user = await requireStaff("inventory.view", `/admin/kho/phieu/${id}`);
   const document = isId(id) ? await findDocument(id) : null;

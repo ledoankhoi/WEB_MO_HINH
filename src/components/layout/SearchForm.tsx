@@ -19,7 +19,7 @@ const memo = new Map<string, SearchSuggestions>();
 
 // Ô tìm kiếm ở đầu trang. Gửi đi là điều hướng tới /san-pham?q=... ngay trong trình duyệt. Khi gõ từ 2 ký tự, hiện
 // gợi ý (cụm từ và sản phẩm, lấy từ /api/goi-y); mũi tên lên xuống chọn, Enter mở, Esc đóng.
-// `imageSearch`: có nút "Bằng ảnh" mở trang tìm bằng ảnh (/tim-bang-anh).
+// `imageSearch`: bảng gợi ý có dòng "Không nhớ tên? Tìm bằng ảnh" (/tim-bang-anh). Nút AI riêng ở đầu trang: AiSearchLink.
 export function SearchForm({ className = "", id = "site-search", imageSearch = false }: { className?: string; id?: string; imageSearch?: boolean }) {
   const router = useRouter();
   const listId = useId();
@@ -123,16 +123,6 @@ export function SearchForm({ className = "", id = "site-search", imageSearch = f
           }}
           className="min-w-0 flex-1 bg-transparent px-2 text-base font-medium text-fg placeholder:text-muted focus:outline-none"
         />
-        {imageSearch && (
-          <Link
-            href="/tim-bang-anh"
-            aria-label="Tìm bằng ảnh"
-            className="flex items-center gap-1.5 border-l-3 border-ink px-3 font-condensed text-[17px] font-extrabold whitespace-nowrap uppercase transition hover:bg-raised"
-          >
-            <Camera className="size-5" strokeWidth={2.4} aria-hidden />
-            <span className="hidden md:inline">Bằng ảnh</span>
-          </Link>
-        )}
         <button
           type="submit"
           className="border-l-3 border-ink bg-brand px-4 font-condensed text-xl font-black text-white uppercase italic transition hover:brightness-110 sm:px-5"

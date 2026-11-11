@@ -6,9 +6,18 @@ import { can } from "@/lib/permissions";
 import { requireStaff } from "@/server/auth/session";
 import { findInventoryDiscrepancies } from "@/server/repo/inventory";
 import { pendingWork, stockValueByCategory } from "@/server/repo/stock-reports";
+import { AdminSuspense } from "@/components/admin/AdminSuspense";
 
 // YC-KHO-18 (đối soát sổ kho với số dư), YC-KHO-12 (việc chờ xử lý), YC-KHO-15 (giá trị tồn).
-export default async function ReconcilePage() {
+export default function ReconcilePage() {
+  return (
+    <AdminSuspense>
+      <ReconcilePageContent />
+    </AdminSuspense>
+  );
+}
+
+async function ReconcilePageContent() {
   const user = await requireStaff("inventory.view", "/admin/kho/doi-soat");
   const withCost = can(user.role, "cost.view");
   const [issues, work, values] = await Promise.all([findInventoryDiscrepancies(), pendingWork(), withCost ? stockValueByCategory() : Promise.resolve([])]);

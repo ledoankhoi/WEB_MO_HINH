@@ -13,10 +13,18 @@ import {
   listFilterOptions,
   listMedia,
   listRelatedProducts,
+  listSummariesBySlugs,
   queryProducts,
   type MenuFacet,
 } from "./repo/products";
+import { findPublishedNews, listPublishedNews, type NewsPost, type NewsSummary } from "./repo/news";
+import { listComingProducts, type ComingProduct } from "./repo/preorders";
+import { listPublicQuestions } from "./repo/questions";
+import { listDealsForProducts } from "./repo/bundles";
+import { listTaxonomy } from "./repo/taxonomy";
+import { listStorefrontSales, type StorefrontSale } from "./repo/flash-sales";
 import { listApprovedReviews } from "./repo/reviews";
+import { getShowcaseStats, listRanking, type RankedProduct, type RankingSlug, type ShowcaseStats } from "./repo/showcase";
 
 // Mọi dữ liệu danh mục hiển thị cho khách đều gắn thẻ này. Khi sản phẩm hoặc tồn kho thay đổi,
 // Server Action gọi updateTag(PRODUCTS_TAG) để trang được dựng lại.
@@ -35,6 +43,31 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
   }
   cacheLife("hours");
   return product;
+}
+
+// Tên thương hiệu, series theo mã (bảng so sánh sản phẩm, mục 19); sửa ở quản trị xong gọi updateTag(PRODUCTS_TAG).
+export async function getTaxonomyNames(): Promise<Record<string, string>> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(PRODUCTS_TAG);
+  const [brands, series] = await Promise.all([listTaxonomy("brands"), listTaxonomy("series")]);
+  return Object.fromEntries([...brands, ...series].map((item) => [item.id, item.name]));
+}
+
+// Combo đang bật có sản phẩm này (nghiep-vu-ban-hang mục 12); lưu combo xong gọi updateTag(PRODUCTS_TAG).
+export async function getProductDeals(productId: string) {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(PRODUCTS_TAG);
+  return listDealsForProducts([productId]);
+}
+
+// Hỏi đáp đã duyệt của một sản phẩm (nghiep-vu-ban-hang mục 11); duyệt, ẩn, trả lời xong gọi updateTag(PRODUCTS_TAG).
+export async function getProductQuestions(productId: string) {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(PRODUCTS_TAG);
+  return listPublicQuestions(productId);
 }
 
 // Đánh giá đã duyệt của một sản phẩm; duyệt, ẩn xong gọi updateTag(PRODUCTS_TAG).
@@ -121,6 +154,24 @@ export async function getMegaMenu(): Promise<MegaMenuCategory[]> {
   });
 }
 
+// Trang "Hàng sắp về" (/hang-sap-ve): phiên bản đang trong đợt đặt trước, về sớm trước. Mở, sửa đợt và mỗi đơn đặt
+// (số suất còn lại) đều gọi updateTag(PRODUCTS_TAG).
+export async function getComingProducts(): Promise<ComingProduct[]> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(PRODUCTS_TAG);
+  return listComingProducts();
+}
+
+// Khối flash sale ở trang chủ: chương trình đang chạy hoặc sắp chạy. Lưu, bật, tắt chương trình và mỗi đơn (suất còn lại)
+// đều gọi updateTag(PRODUCTS_TAG); trình duyệt tự ẩn chương trình đã hết giờ.
+export async function getFlashSales(): Promise<StorefrontSale[]> {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag(PRODUCTS_TAG);
+  return listStorefrontSales();
+}
+
 // Phụ kiện còn hàng, rẻ trước: gợi ý "thường mua kèm" trong giỏ hàng xem nhanh.
 export async function getAddOnProducts(): Promise<ProductSummary[]> {
   "use cache";
@@ -164,6 +215,30 @@ export async function getProductSlugs(): Promise<{ slug: string; updatedAt: numb
   cacheLife("hours");
   cacheTag(PRODUCTS_TAG);
   return listActiveSlugs();
+}
+
+// Sản phẩm theo slug, trả về dạng tra cứu (truyện tranh, gacha).
+export async function getProductsBySlugs(slugs: string[]): Promise<Record<string, ProductSummary>> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(PRODUCTS_TAG);
+  return Object.fromEntries((await listSummariesBySlugs(slugs)).map((product) => [product.slug, product]));
+}
+
+// Trưng bày (/trung-bay). Số bán, lượt thích, đánh giá đổi theo đơn hàng và hoạt động của khách nên chỉ giữ tối đa vài
+// giờ; sửa sản phẩm thì làm mới ngay qua PRODUCTS_TAG.
+export async function getRanking(slug: RankingSlug, limit: number): Promise<RankedProduct[]> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(PRODUCTS_TAG);
+  return listRanking(slug, limit);
+}
+
+export async function getShowcase(): Promise<ShowcaseStats> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(PRODUCTS_TAG);
+  return getShowcaseStats();
 }
 
 export async function getCategoryCounts(): Promise<Record<string, number>> {
@@ -210,4 +285,19 @@ export async function getPublishedPage(slug: string): Promise<InfoPage | null> {
   cacheLife("hours");
   cacheTag(CONTENT_TAG);
   return findPublishedPage(slug);
+}
+
+// Tin tức (/tin-tuc). Ghi bài ở quản trị thì gọi updateTag(CONTENT_TAG).
+export async function getPublishedNews(): Promise<NewsSummary[]> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(CONTENT_TAG);
+  return listPublishedNews();
+}
+
+export async function getNewsPost(slug: string): Promise<NewsPost | null> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(CONTENT_TAG);
+  return findPublishedNews(slug);
 }

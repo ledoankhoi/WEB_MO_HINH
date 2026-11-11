@@ -1,7 +1,7 @@
 import "server-only";
 import type { ProductSummary } from "@/lib/types";
 import { getDb } from "../db";
-import { SUMMARY_COLUMNS, toSummary } from "./products";
+import { summaryColumns, toSummary } from "./products";
 
 // Yêu thích (YC-DG-03). Chỉ sản phẩm đang bán mới thêm được; thêm lặp không tạo dòng trùng.
 export async function addToWishlist(userId: string, productId: string): Promise<boolean> {
@@ -31,7 +31,7 @@ export async function listWishlistIds(userId: string): Promise<string[]> {
 export async function listWishlistProducts(userId: string): Promise<ProductSummary[]> {
   const db = await getDb();
   const result = await db.execute({
-    sql: `SELECT ${SUMMARY_COLUMNS.split(", ").map((c) => `p.${c}`).join(", ")} FROM wishlist_items w JOIN product_list p ON p.id = w.product_id
+    sql: `SELECT ${summaryColumns("p")} FROM wishlist_items w JOIN product_list p ON p.id = w.product_id
           WHERE w.user_id = ? AND p.is_active ORDER BY w.created_at DESC LIMIT 100`,
     args: [userId],
   });

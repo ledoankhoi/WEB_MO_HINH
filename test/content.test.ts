@@ -82,12 +82,23 @@ describe("menu, thanh thông báo, liên hệ (T15)", () => {
     expect(items.filter((i) => i.menu === "header").map((i) => i.url)).toEqual([
       "/",
       "/san-pham",
+      // Trang mở rộng thêm ngày 07/11/2026 (NAV_LINKS trong src/server/db/index.ts) xen giữa các mục cũ theo thứ tự,
+      // cùng thứ tự thì theo tên. "Hàng sắp về" thêm ngày 08/11/2026 (đặt trước).
+      "/hang-sap-ve",
       "/san-pham?loai=transformers",
+      "/trung-bay",
+      "/gacha",
       "/san-pham?loai=super-sentai",
+      "/cong-dong",
       "/san-pham?loai=model-kits",
       "/san-pham?sap-xep=moi-nhat",
+      "/truyen-tranh",
+      "/nhiem-vu",
+      "/tin-tuc",
     ]);
-    for (const ok of ["/san-pham/bruticus", "/gio-hang", "/san-pham?loai=figure"]) expect(await content.internalLinkExists(ok)).toBe(true);
+    for (const ok of ["/san-pham/bruticus", "/gio-hang", "/san-pham?loai=figure", "/trung-bay", "/trung-bay?bang=yeu-thich"]) {
+      expect(await content.internalLinkExists(ok)).toBe(true);
+    }
     for (const bad of ["/khong-co", "/san-pham/khong-co", "/gio-hang?x=1", "/admin"]) expect(await content.internalLinkExists(bad)).toBe(false);
 
     expect((await actions.saveNavItemAction({}, formOf({ menu: "header", label: "Trang lỗi", url: "/khong-co" }))).errors?.url).toMatch(/Không có trang/);

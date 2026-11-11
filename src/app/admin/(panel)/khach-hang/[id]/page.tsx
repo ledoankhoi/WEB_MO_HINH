@@ -9,9 +9,18 @@ import { listOrders } from "@/server/repo/orders";
 import { REVIEW_STATUS_LABELS, listReviews } from "@/server/repo/reviews";
 import { listWishlistProducts } from "@/server/repo/wishlist";
 import { listCustomerAddresses, listCustomers } from "@/server/repo/users";
+import { AdminSuspense } from "@/components/admin/AdminSuspense";
 
 // YC-KH-02, 03: hồ sơ khách. Vai trò viewer thấy thông tin cá nhân đã che (SEC-02).
-export default async function AdminCustomerPage({ params }: PageProps<"/admin/khach-hang/[id]">) {
+export default function AdminCustomerPage(props: PageProps<"/admin/khach-hang/[id]">) {
+  return (
+    <AdminSuspense>
+      <AdminCustomerPageContent {...props} />
+    </AdminSuspense>
+  );
+}
+
+async function AdminCustomerPageContent({ params }: PageProps<"/admin/khach-hang/[id]">) {
   const { id } = await params;
   const { user, masked } = await requireCustomerAccess(`/admin/khach-hang/${id}`);
   const found = isId(id) ? (await listCustomers({ id, pageSize: 1 })).items[0] : undefined;

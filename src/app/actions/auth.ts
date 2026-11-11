@@ -1,7 +1,6 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { isProvince } from "@/lib/catalog";
 import { isStaffRole } from "@/lib/permissions";
 import type { FormState } from "@/lib/types";
 import { isEmail, normalizePhone, readText, safeRedirectPath } from "@/lib/validation";
@@ -23,7 +22,14 @@ import {
   updateUserPassword,
   updateUserProfile,
 } from "@/server/repo/users";
-import { getClientIp } from "@/server/request";
+import { getBaseUrl, getClientIp } from "@/server/request";
+import { site } from "@/config/site";
+import { sendMail } from "@/server/email/mailer";
+import { passwordChangedMail, passwordResetMail } from "@/server/email/templates";
+import { newToken, sha256 } from "@/server/ids";
+import { sendOtpMail } from "@/server/email/otp-mails";
+import { issueOtp } from "@/server/repo/otp";
+import { RESET_TTL_MINUTES, consumeReset, createReset, findResetAccount, findValidReset } from "@/server/repo/password-resets";
 
 const MINUTE = 60 * 1000;
 const PASSWORD_RULE = `Mật khẩu cần từ ${PASSWORD_MIN_LENGTH} đến ${PASSWORD_MAX_LENGTH} ký tự.`;
@@ -71,7 +77,10 @@ export async function registerAction(_prev: FormState, form: FormData): Promise<
   }
 
   await startSession(userId);
-  redirect(next);
+  // Xác thực email bằng mã OTP (nghiep-vu-ban-hang mục 15): gửi mã ngay rồi mở trang nhập mã.
+  const issued = await issueOtp("verify_email", email);
+  if (issued.ok) await sendOtpMail(email, issued.code, "verify_email");
+  redirect(`/xac-thuc-email?next=${encodeURIComponent(next)}`);
 }
 
 // Hai cửa đăng nhập tách biệt: cửa hàng chỉ nhận tài khoản khách, khu quản trị chỉ nhận nhân viên; cả hai
@@ -146,31 +155,29 @@ export async function adminLogoutAction(): Promise<void> {
   await endSession(true);
 }
 
+// Hồ sơ (Cài đặt > Hồ sơ): họ tên, số điện thoại. Địa chỉ ở sổ địa chỉ, đồng ý nhận tin ở mục Thông báo
+// (src/app/actions/account.ts).
 export async function updateProfileAction(_prev: FormState, form: FormData): Promise<FormState> {
   const user = await getCurrentUser();
-  if (!user) redirect("/dang-nhap?next=/tai-khoan");
+  if (!user) redirect("/dang-nhap?next=/tai-khoan/cai-dat");
 
   const name = readText(form, "name");
   const phoneInput = readText(form, "phone");
-  const address = readText(form, "address");
-  const city = readText(form, "city");
-  const values = { name, phone: phoneInput, address, city };
+  const values = { name, phone: phoneInput };
 
   const errors: Record<string, string> = {};
   if (name.length < 2 || name.length > 80) errors.name = "Họ tên cần từ 2 đến 80 ký tự.";
   const phone = phoneInput ? normalizePhone(phoneInput) : "";
   if (phone === null) errors.phone = "Số điện thoại không hợp lệ.";
-  if (address.length > 200) errors.address = "Địa chỉ tối đa 200 ký tự.";
-  if (city && !isProvince(city)) errors.city = "Vui lòng chọn tỉnh, thành phố trong danh sách.";
   if (Object.keys(errors).length > 0) return { errors, values };
 
-  await updateUserProfile(user.id, { name, phone: phone ?? "", address, city, marketingConsent: form.get("marketingConsent") === "on" });
-  return { ok: true, message: "Đã lưu thông tin tài khoản.", values };
+  await updateUserProfile(user.id, { name, phone: phone ?? "" });
+  return { ok: true, message: "Đã lưu hồ sơ.", values };
 }
 
 export async function changePasswordAction(_prev: FormState, form: FormData): Promise<FormState> {
   const user = await getCurrentUser();
-  if (!user) redirect("/dang-nhap?next=/tai-khoan");
+  if (!user) redirect("/dang-nhap?next=/tai-khoan/cai-dat?muc=bao-mat");
 
   const current = readPassword(form, "current");
   const password = readPassword(form, "password");
@@ -191,4 +198,58 @@ export async function changePasswordAction(_prev: FormState, form: FormData): Pr
 
   await updateUserPassword(user.id, await hashPassword(password), await getSessionId());
   return { ok: true, message: "Đã đổi mật khẩu. Các thiết bị khác đã được đăng xuất." };
+}
+
+// Quên mật khẩu (docs/ke-hoach/nghiep-vu-ban-hang.md, mục 2) ----------------------------------------------------
+
+const RESET_SENT = "Nếu email này có tài khoản, chúng tôi đã gửi liên kết đặt lại mật khẩu. Hãy kiểm tra hộp thư (cả mục Thư rác).";
+
+// Luôn trả cùng một thông báo, dù email có tài khoản hay không, để không lộ email nào đã đăng ký.
+export async function requestPasswordResetAction(_prev: FormState, form: FormData): Promise<FormState> {
+  const email = readText(form, "email").toLowerCase();
+  if (!isEmail(email)) return { errors: { email: "Email không hợp lệ." }, values: { email } };
+
+  const ip = await getClientIp();
+  const byIp = await consumeRateLimit(`reset-ip:${ip}`, 5, 15 * MINUTE);
+  if (!byIp.allowed) return { message: TOO_MANY(byIp.retryAfterSeconds), values: { email } };
+  const byEmail = await consumeRateLimit(`reset-email:${email}`, 3, 60 * MINUTE);
+  if (!byEmail.allowed) return { ok: true, message: RESET_SENT, values: { email } };
+
+  const account = await findResetAccount(email);
+  if (account) {
+    const token = newToken();
+    await createReset(account.id, sha256(token));
+    const url = `${await getBaseUrl(site.url)}/dat-lai-mat-khau?token=${encodeURIComponent(token)}`;
+    const mail = passwordResetMail(account.name, url, RESET_TTL_MINUTES);
+    await sendMail({ to: account.email, kind: "password_reset", ref: account.id, ...mail });
+  } else {
+    await getDummyHash(); // thời gian phản hồi gần giống khi có tài khoản
+  }
+  return { ok: true, message: RESET_SENT, values: { email } };
+}
+
+export async function resetPasswordAction(_prev: FormState, form: FormData): Promise<FormState> {
+  const token = readText(form, "token");
+  const password = readPassword(form, "password");
+  const confirm = readPassword(form, "confirm");
+  if (!token || token.length > 128) return { message: "Liên kết không hợp lệ hoặc đã hết hạn." };
+
+  const errors: Record<string, string> = {};
+  if (!isValidPassword(password)) errors.password = PASSWORD_RULE;
+  else if (password !== confirm) errors.confirm = "Mật khẩu nhập lại không khớp.";
+  if (Object.keys(errors).length > 0) return { errors };
+
+  const limit = await consumeRateLimit(`reset-use:${await getClientIp()}`, 10, 15 * MINUTE);
+  if (!limit.allowed) return { message: TOO_MANY(limit.retryAfterSeconds) };
+
+  const hash = sha256(token);
+  const reset = await findValidReset(hash);
+  if (!reset) return { message: "Liên kết không hợp lệ, đã dùng hoặc đã hết hạn. Hãy yêu cầu liên kết mới." };
+  if (!(await consumeReset(hash, reset.userId, await hashPassword(password)))) {
+    return { message: "Liên kết không hợp lệ, đã dùng hoặc đã hết hạn. Hãy yêu cầu liên kết mới." };
+  }
+  await resetRateLimit(`password:${reset.userId}`);
+  const mail = passwordChangedMail(reset.name, `${await getBaseUrl(site.url)}/dang-nhap`);
+  await sendMail({ to: reset.email, kind: "password_changed", ref: reset.userId, ...mail });
+  redirect("/dang-nhap?da-dat-lai=1");
 }

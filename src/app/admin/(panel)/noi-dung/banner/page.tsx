@@ -5,18 +5,27 @@ import { HeroBanner, StripBanners } from "@/components/content/Banners";
 import { formatDateTime } from "@/lib/format";
 import { requireStaff } from "@/server/auth/session";
 import { listBanners } from "@/server/repo/content";
+import { AdminSuspense } from "@/components/admin/AdminSuspense";
 
 const PLACEMENTS = { home_hero: "Khung lớn", home_strip: "Dải nhỏ" } as const;
 
 // YC-CMS-01, 07: banner trang chủ, xem trước bằng chính component của cửa hàng (Q20). `?sua=<id>` mở form sửa.
-export default async function BannersPage({ searchParams }: PageProps<"/admin/noi-dung/banner">) {
+export default function BannersPage(props: PageProps<"/admin/noi-dung/banner">) {
+  return (
+    <AdminSuspense>
+      <BannersPageContent {...props} />
+    </AdminSuspense>
+  );
+}
+
+async function BannersPageContent({ searchParams }: PageProps<"/admin/noi-dung/banner">) {
   await requireStaff("content.edit", "/admin/noi-dung/banner");
   const [banners, params] = await Promise.all([listBanners(), searchParams]);
   const editing = banners.find((banner) => banner.id === first(params.sua));
 
   return (
     <>
-      <h1 className="text-3xl font-bold tracking-tight">Banner ({banners.length})</h1>
+      <h1 className="text-3xl font-bold tracking-tight">Banner</h1>
       {banners.length === 0 ? (
         <Empty>Chưa có banner nào. Trang chủ đang hiện phần giới thiệu mặc định.</Empty>
       ) : (

@@ -3,10 +3,19 @@ import { site } from "@/config/site";
 import { toVnDateTimeInput } from "@/lib/format";
 import { requireStaff } from "@/server/auth/session";
 import { getSettings } from "@/server/repo/content";
+import { AdminSuspense } from "@/components/admin/AdminSuspense";
 
 // YC-CMS-05, 06. Liên hệ và chính sách chưa lưu thì điền sẵn giá trị mẫu trong src/config/site.ts; cửa hàng chỉ
 // hiện liên hệ sau khi đã lưu ở đây.
-export default async function SettingsPage() {
+export default function SettingsPage() {
+  return (
+    <AdminSuspense>
+      <SettingsPageContent />
+    </AdminSuspense>
+  );
+}
+
+async function SettingsPageContent() {
   await requireStaff("content.edit", "/admin/noi-dung/cai-dat");
   const { contact, announcement, policy } = await getSettings();
   const contactValue = contact ?? site.contact;
