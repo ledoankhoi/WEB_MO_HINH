@@ -18,7 +18,8 @@ Tài liệu này ghi lại mọi việc đã làm, theo thứ tự thời gian: 
 | B3 | Làm sạch, kiểm định nhãn | **Phần máy xong** (11/11): còn 53.523 ảnh sau lọc tự động, 4.168 ảnh nghi ngờ chờ duyệt. **Đang chờ chủ dự án chấm tay** hai trang (500 ảnh kiểm định, duyệt từng lớp); sau đó mới có độ chính xác nhãn và báo cáo B03 | B03a-lam-sach-tu-dong (phần máy) |
 | B4 | Chia tập, lớp không biết, tập âm | **Xong trên bản dữ liệu tạm** (11/11): 49.355 ảnh; train 29.513 / val 6.325 / test 6.310 (195 lớp); 35 lớp không biết (7.207 ảnh); tập âm 2.898 ảnh; rò rỉ cùng lớp bằng 0. Chạy lại khi có kết quả chấm tay của B3 | B04-chia-tap, B04b-tap-am |
 | B5 | Mô hình nền (đặc trưng đóng băng) | **Xong trên bản dữ liệu tạm** (12/11): mốc tốt nhất là CLIP ViT-L/14 + linear probe, top-1 trên test 65,6% [64,5; 66,8], top-5 84,6%, macro-F1 63,5%; zero-shot tốt nhất 23,4%, k-NN tốt nhất 49,0% | B05-mo-hinh-nen |
-| B6 – B9 | Huấn luyện, thí nghiệm phụ, đánh giá, xuất mô hình | Chưa làm | — |
+| B6 | Huấn luyện chính | **Đã sẵn sàng, chưa chạy** (12/11): script, notebook Colab, chạy thử 3 kiến trúc trên máy đạt; chờ chủ dự án chạy trên Colab | — |
+| B7 – B9 | Thí nghiệm phụ, đánh giá, xuất mô hình | Chưa làm | — |
 | B10 – B14 | Đưa lên web, thử nghiệm thực địa | Chưa làm | — |
 
 ## 2. Nhật ký theo thời gian
@@ -117,6 +118,10 @@ Tài liệu này ghi lại mọi việc đã làm, theo thứ tự thời gian: 
 | 11/11 ~22:15 | B5 | `b05_mo_hinh_nen.py`: zero-shot, linear probe (chọn C bằng 5-fold CV theo nhóm), k-NN (k = 1, 5, 10) trên 5 bộ đặc trưng; bootstrap 1.000 lần; McNemar + Holm | Linear probe tốt nhất trên mọi bộ đặc trưng: CLIP ViT-L/14 65,6%, DINOv2 ViT-B/14 63,9%, DINOv2 ViT-S/14 60,8%, CLIP ViT-B/16 60,2%, CLIP ViT-B/32 55,8% (top-1 trên test). Zero-shot 16,0–23,4%; k-NN 40,8–49,5% | C được chọn: 10 (bốn mạng), 100 (DINOv2 ViT-B/14, sau khi lưới tự mở rộng tới 1.000) |
 | 11/11 ~22:30 | B5 | Nghi bản hồi quy logistic dừng sớm (chỉ 1 giây, khớp scikit-learn 98,3% chứ không phải gần 100%) | Chạy lại ở độ chính xác fp64 tới hội tụ với C = 1, 10, 100: hàm mục tiêu của bản fp32 chỉ cao hơn dưới 0,002%, top-1 trên val lệch tối đa 0,05 điểm | **Nghi ngờ sai, bản fp32 đã hội tụ**; số liệu giữ nguyên. Phép kiểm này mất hơn 2 giờ vì fp64 trên GPU laptop rất chậm (C = 100: 6.163 giây) |
 | 12/11 ~01:10 | Báo cáo | Báo cáo B05 (8 mục, 9 bảng, 2 hình, giải thích bằng lời thường), Excel thêm trang B05, đưa lên Drive | — | **Điểm dừng chờ duyệt của kế hoạch (sau B5)** |
+| 12/11 ~01:40 | Git, Drive | Chủ dự án yêu cầu commit, push toàn bộ và đưa ảnh lên Drive | Commit `dae3ab3` (phần nhận dạng robot), `b38c213` (phần cửa hàng), đẩy lên GitHub. Drive `robotica-ml/`: `images-raw.zip` 3,19 GB (66.619 ảnh), `images-negatives.zip` 0,17 GB (2.940 ảnh) | Đã quét bí mật trước khi commit; ảnh không vào git |
+| 12/11 ~02:00 | B6 | Viết `robotrec/train.py` (lấy mẫu cân bằng lớp, hai pha, cosine, AMP, cắt gradient, dừng sớm, checkpoint mỗi epoch, chạy tiếp) theo kiểu viết test trước: 6 test, gồm phép thử "ngắt sau 2 epoch rồi chạy tiếp" cho trọng số y hệt chạy liền | 40/40 test đạt | — |
+| 12/11 ~02:20 | B6 | Đo tốc độ trên máy: đọc ảnh + tăng cường ~800 ảnh/giây (8 tiến trình); một bước huấn luyện micro-batch 32: ConvNeXt-Tiny 158, EfficientNetV2-S 137, ViT-B/16 85 ảnh/giây | Ước tính trên máy: 4–7 phút mỗi epoch, 15–22 giờ cho 9 lần chạy | GPU là nút thắt, không phải đọc ảnh. Lần đo đầu bị treo vì script đọc từ stdin không chạy được tiến trình con trên Windows |
+| 12/11 ~02:40 | B6 | Chạy thử 3 kiến trúc (1.536 ảnh train, 512 ảnh val, 2 epoch); viết `b06_bao_cao.py`, notebook `B06_huan_luyen.ipynb` | Bộ nhớ GPU đỉnh 2,4 / 2,8 / 3,6 GB (micro-batch 32). Lần chạy thử ViT bị ngắt giữa chừng và chạy tiếp được từ checkpoint. GFLOPs/ảnh: ConvNeXt-Tiny 8,9, EfficientNetV2-S 5,7, ViT-B/16 33,7 | Đổi `best.pt` sang lưu fp32 vì bản fp16 làm kết quả đánh giá lại lệch (EfficientNetV2-S top-1 2,34% thành 2,54% ở lần chạy thử). ViT không tất định tuyệt đối (phép attention của PyTorch), đã ghi ở B00 |
 
 ## 3. Sự cố và cách xử lý
 
@@ -156,6 +161,8 @@ Tài liệu này ghi lại mọi việc đã làm, theo thứ tự thời gian: 
 | 11/11 | *Claude tự quyết, chủ dự án có thể đổi:* B4 dùng bản dữ liệu tạm (bỏ hết ảnh nghi ngờ); lớp dưới 100 ảnh vào nhóm không biết; nhóm ảnh thêm điều kiện cô-sin ≥ 0,95; tiêu chí rò rỉ tính theo cặp cùng lớp; tập âm lấy gấp đôi để có phần âm-train |
 | 11/11 | Làm tiếp B5 |
 | 11/11 | *Claude tự quyết, khác kế hoạch (lý do ở B05 mục 4):* hồi quy logistic chạy bằng PyTorch trên GPU thay cho scikit-learn; cross-validation chia theo nhóm ảnh gần trùng; lưới C tự mở rộng khi giá trị tốt nhất nằm ở mép trên |
+| 12/11 | Commit, push toàn bộ; đưa ảnh lên Drive để huấn luyện trên Colab |
+| 12/11 | *Claude tự quyết, khác kế hoạch:* GFLOPs đếm bằng `torch.utils.flop_counter` thay `fvcore`; GPU dưới 10 GB thì cộng dồn gradient 2 micro-batch 32 ảnh; notebook Colab chỉ cài `timm` (ghim 1.0.31) |
 | 11/11 | *Chưa quyết, chờ chủ dự án:* tên của 4 lớp Sentai lệch với trang wiki; lớp King-Ohger ZERO còn 93 ảnh; có tách tranh vẽ của người hâm mộ không; cột `license` |
 
 ## 5. Giải đáp các câu hỏi trong quá trình làm

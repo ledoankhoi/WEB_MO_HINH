@@ -1,0 +1,399 @@
+{
+  "step": "B06-chay-thu",
+  "title": "Huấn luyện chính: tinh chỉnh ba kiến trúc (thí nghiệm E2) — chạy thử",
+  "environment": {
+    "time_utc": "2026-11-11T19:57:55+00:00",
+    "python": "3.11.9",
+    "os": "Windows 11 (build 10.0.26300, AMD64)",
+    "cpu": "12th Gen Intel(R) Core(TM) i7-12800H",
+    "cpu_count": 20,
+    "ram_gb": 31.7,
+    "colab": false,
+    "gpu": {
+      "torch_cuda": true,
+      "devices": [
+        {
+          "name": "NVIDIA RTX A2000 Laptop GPU",
+          "memory_gb": 4.0,
+          "capability": "8.6"
+        }
+      ],
+      "torch_cuda_version": "12.8",
+      "cudnn": 91900,
+      "nvidia_smi": [
+        "NVIDIA RTX A2000 Laptop GPU, 4096 MiB, 596.52"
+      ]
+    },
+    "packages": {
+      "numpy": "2.4.6",
+      "pandas": "3.1.1",
+      "scipy": "1.17.1",
+      "scikit-learn": "1.9.1",
+      "matplotlib": "3.11.2",
+      "torch": "2.11.0+cu128",
+      "torchvision": "0.26.0+cu128",
+      "timm": "1.0.31",
+      "open_clip_torch": "4.2.1",
+      "Pillow": "13.0.0",
+      "ImageHash": "4.3.2",
+      "mwparserfromhell": "0.7.2",
+      "rapidfuzz": "3.14.6",
+      "requests": "2.34.2",
+      "ddgs": "9.16.1"
+    },
+    "git": {
+      "commit": "b38c21312c9d92f69dcc2c42a4ad9f4856233797",
+      "short": "b38c213",
+      "dirty": true
+    },
+    "data_root_env": null
+  },
+  "dataset_version": "dff6fdbb77c03329f102e15fa326bb9a1780c4432e0de7e5e40eb51eb535cf69",
+  "smoke": true,
+  "runs": [
+    {
+      "arch": "convnext_tiny",
+      "seed": 42,
+      "status": "xong",
+      "best": {
+        "epoch": 2,
+        "val_top1": 0.083984375,
+        "val_top5": 0.197265625,
+        "val_macro_f1": 0.0554770442065524,
+        "val_loss": 4.750861167907715
+      },
+      "epochs": 2
+    },
+    {
+      "arch": "convnext_tiny",
+      "seed": 43,
+      "status": "chưa chạy"
+    },
+    {
+      "arch": "convnext_tiny",
+      "seed": 44,
+      "status": "chưa chạy"
+    },
+    {
+      "arch": "efficientnetv2_s",
+      "seed": 42,
+      "status": "xong",
+      "best": {
+        "epoch": 1,
+        "val_top1": 0.0234375,
+        "val_top5": 0.087890625,
+        "val_macro_f1": 0.019678006599158037,
+        "val_loss": 5.249272346496582
+      },
+      "epochs": 2
+    },
+    {
+      "arch": "efficientnetv2_s",
+      "seed": 43,
+      "status": "chưa chạy"
+    },
+    {
+      "arch": "efficientnetv2_s",
+      "seed": 44,
+      "status": "chưa chạy"
+    },
+    {
+      "arch": "vit_b16_clip",
+      "seed": 42,
+      "status": "xong",
+      "best": {
+        "epoch": 2,
+        "val_top1": 0.060546875,
+        "val_top5": 0.22265625,
+        "val_macro_f1": 0.04144096457602866,
+        "val_loss": 4.613658428192139
+      },
+      "epochs": 2
+    },
+    {
+      "arch": "vit_b16_clip",
+      "seed": 43,
+      "status": "chưa chạy"
+    },
+    {
+      "arch": "vit_b16_clip",
+      "seed": 44,
+      "status": "chưa chạy"
+    }
+  ],
+  "by_arch": {
+    "convnext_tiny": {
+      "top1": [
+        0.083984375
+      ],
+      "top5": [
+        0.197265625
+      ],
+      "macro_f1": [
+        0.0554770442065524
+      ],
+      "seeds": [
+        42
+      ],
+      "params": 27970083,
+      "gflops": 8.909826048,
+      "layers": 59
+    },
+    "efficientnetv2_s": {
+      "top1": [
+        0.025390625
+      ],
+      "top5": [
+        0.08984375
+      ],
+      "macro_f1": [
+        0.02074183638639208
+      ],
+      "seeds": [
+        42
+      ],
+      "params": 20427283,
+      "gflops": 5.697730944,
+      "layers": 171
+    },
+    "vit_b16_clip": {
+      "top1": [
+        0.060546875
+      ],
+      "top5": [
+        0.22265625
+      ],
+      "macro_f1": [
+        0.04148204245969609
+      ],
+      "seeds": [
+        42
+      ],
+      "params": 85949379,
+      "gflops": 33.695764992,
+      "layers": 50
+    }
+  },
+  "choice": "convnext_tiny",
+  "tables": {
+    "Bảng 1. Các lần chạy": {
+      "columns": [
+        "Kiến trúc",
+        "Hạt giống",
+        "Trạng thái",
+        "Số epoch đã chạy",
+        "Epoch tốt nhất",
+        "macro-F1 val tốt nhất (%)",
+        "Giờ GPU",
+        "Dừng sớm"
+      ],
+      "rows": [
+        [
+          "ConvNeXt-Tiny",
+          42,
+          "xong",
+          2,
+          2,
+          "5,55",
+          "0,02",
+          "không"
+        ],
+        [
+          "ConvNeXt-Tiny",
+          43,
+          "chưa chạy",
+          "—",
+          "—",
+          "—",
+          "—",
+          "—"
+        ],
+        [
+          "ConvNeXt-Tiny",
+          44,
+          "chưa chạy",
+          "—",
+          "—",
+          "—",
+          "—",
+          "—"
+        ],
+        [
+          "EfficientNetV2-S",
+          42,
+          "xong",
+          2,
+          1,
+          "1,97",
+          "0,02",
+          "không"
+        ],
+        [
+          "EfficientNetV2-S",
+          43,
+          "chưa chạy",
+          "—",
+          "—",
+          "—",
+          "—",
+          "—"
+        ],
+        [
+          "EfficientNetV2-S",
+          44,
+          "chưa chạy",
+          "—",
+          "—",
+          "—",
+          "—",
+          "—"
+        ],
+        [
+          "ViT-B/16 (CLIP)",
+          42,
+          "xong",
+          2,
+          2,
+          "4,14",
+          "0,03",
+          "không"
+        ],
+        [
+          "ViT-B/16 (CLIP)",
+          43,
+          "chưa chạy",
+          "—",
+          "—",
+          "—",
+          "—",
+          "—"
+        ],
+        [
+          "ViT-B/16 (CLIP)",
+          44,
+          "chưa chạy",
+          "—",
+          "—",
+          "—",
+          "—",
+          "—"
+        ]
+      ]
+    },
+    "Bảng 2. So sánh kiến trúc trên val": {
+      "columns": [
+        "Kiến trúc",
+        "Số lần chạy xong",
+        "top-1 val (%)",
+        "top-5 val (%)",
+        "macro-F1 val (%)",
+        "Tham số (triệu)",
+        "GFLOPs / ảnh",
+        "Số tầng có trọng số",
+        "Epoch tốt nhất (TB)"
+      ],
+      "rows": [
+        [
+          "ConvNeXt-Tiny",
+          1,
+          "8,40 (1 lần chạy)",
+          "19,73 (1 lần chạy)",
+          "5,55 (1 lần chạy)",
+          "28,0",
+          "8,91",
+          59,
+          "2,0"
+        ],
+        [
+          "EfficientNetV2-S",
+          1,
+          "2,54 (1 lần chạy)",
+          "8,98 (1 lần chạy)",
+          "2,07 (1 lần chạy)",
+          "20,4",
+          "5,70",
+          171,
+          "1,0"
+        ],
+        [
+          "ViT-B/16 (CLIP)",
+          1,
+          "6,05 (1 lần chạy)",
+          "22,27 (1 lần chạy)",
+          "4,15 (1 lần chạy)",
+          "85,9",
+          "33,70",
+          50,
+          "2,0"
+        ]
+      ]
+    },
+    "Bảng 3. Từng lần chạy": {
+      "columns": [
+        "Kiến trúc",
+        "Hạt giống",
+        "top-1 val (%)",
+        "top-5 val (%)",
+        "macro-F1 val (%)",
+        "Epoch tốt nhất"
+      ],
+      "rows": [
+        [
+          "ConvNeXt-Tiny",
+          42,
+          "8,40",
+          "19,73",
+          "5,55",
+          2
+        ],
+        [
+          "EfficientNetV2-S",
+          42,
+          "2,54",
+          "8,98",
+          "2,07",
+          1
+        ],
+        [
+          "ViT-B/16 (CLIP)",
+          42,
+          "6,05",
+          "22,27",
+          "4,15",
+          2
+        ]
+      ]
+    },
+    "Bảng 4. So sánh có kiểm định trên val": {
+      "columns": [
+        "So sánh trên val (A so với B)",
+        "Hiệu top-1, điểm % [KTC 95%]",
+        "A đúng, B sai",
+        "A sai, B đúng",
+        "p (McNemar)",
+        "p sau Holm"
+      ],
+      "rows": [
+        [
+          "ConvNeXt-Tiny so với ViT-B/16 (CLIP), hạt giống 42",
+          "2,3 [-0,2; 5,1]",
+          32,
+          20,
+          "0,127",
+          "0,127"
+        ]
+      ]
+    }
+  },
+  "reproduce": {
+    "commands": [
+      "ml/.venv/Scripts/python ml/scripts/b06_huan_luyen.py --all --smoke",
+      "ml/.venv/Scripts/python ml/scripts/b06_bao_cao.py --smoke"
+    ],
+    "config": "ml/configs/b06_huan_luyen.yaml",
+    "config_hash": "4ef894b1f549",
+    "seed": null,
+    "dataset_version": "b04_splits.csv sha256 dff6fdbb77c0"
+  },
+  "duration_s": 3.1
+}
