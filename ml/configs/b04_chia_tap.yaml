@@ -1,0 +1,24 @@
+# B4. Chia tập, lớp "không biết" (docs/nhan-dang-robot/00-ke-hoach.md mục 8, B4).
+
+seed: 42
+
+# Bản dữ liệu đưa vào chia. "tam" (tạm): ảnh B3 phần máy giữ lại, bỏ mọi ảnh bị đánh dấu nghi ngờ (điểm liên quan < 0,5 hoặc
+# ngoại lai), vì chủ dự án chưa chấm tay. Khi có kết quả duyệt tay (B03) thì chạy lại với danh sách loại chính thức.
+dataset: tam
+min_images_per_class: 100   # lớp ít ảnh hơn mức này không đủ để huấn luyện: đưa vào nhóm lớp "không biết"
+
+# Lớp "không biết" (near-OOD): 15% số lớp, phân tầng theo franchise, không lấy robot cửa hàng đang bán.
+unknown_fraction: 0.15
+
+# Lớp đã biết: 70 / 15 / 15 bằng StratifiedGroupKFold với 20 phần (3 phần test, 3 phần val, 14 phần train).
+folds: 20
+test_folds: 3
+val_folds: 3
+
+# Nhóm (ảnh cùng nhóm luôn nằm chung một tập), chỉ nối ảnh CÙNG LỚP:
+group_cosine: 0.95          # cô-sin CLIP ≥ 0,95
+group_phash: 10             # hoặc pHash lệch ≤ 10 bit
+group_same_page: true       # hoặc cùng trang web nguồn (chỉ ảnh tìm kiếm; ảnh wiki của một lớp đều chung một trang nên không gộp)
+
+# Kiểm tra rò rỉ: cô-sin CLIP lớn nhất của mỗi ảnh val/test với ảnh train.
+leak_threshold: 0.95

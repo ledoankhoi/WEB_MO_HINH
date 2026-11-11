@@ -1,0 +1,143 @@
+# B2. Thu thập ảnh (docs/nhan-dang-robot/00-ke-hoach.md mục 8, B2).
+
+target_ok: 450            # dừng tải một lớp khi đã có chừng này ảnh tải được (kế hoạch: 400 ảnh thô, tối đa 600)
+max_attempts: 700         # số URL thử tối đa mỗi lớp
+max_side: 512             # thu ảnh về cạnh dài 512 px (Pillow, LANCZOS), lưu JPEG chất lượng 90
+jpeg_quality: 90
+max_bytes: 20000000       # bỏ file lớn hơn 20 MB
+workers: 12               # số luồng tải song song
+per_host_interval: 1.0    # giây tối thiểu giữa hai yêu cầu tới cùng một máy chủ
+# Ngoại lệ: CDN ảnh của fandom chịu tải lớn nên cho 4 yêu cầu/giây.
+host_intervals:
+  static.wikia.nocookie.net: 0.25
+# Không gửi yêu cầu nào tới các host này. TFWiki: robots.txt không cho tải thư mục ảnh, và ngày 07/11/2026 máy chủ báo
+# tạm chặn vì lưu lượng lớn (sau B1 và lần chạy thử B2a). Ảnh wiki của Transformers lấy từ Teletraan I (fandom).
+blocked_hosts: [tfwiki.net]
+timeout: [8, 15]          # (kết nối, đọc) giây
+retries: 2                # thử lại khi lỗi mạng hoặc HTTP 5xx/429 (backoff mũ); hết thời gian thì không thử lại
+respect_robots_txt: true
+active_classes: 4         # số lớp tải đồng thời (luồng tải không phải chờ lớp chậm nhất)
+
+# Wiki lấy ảnh theo franchise: Transformers dùng Teletraan I (transformers.fandom.com) thay cho TFWiki; tên trang của
+# B1 (theo TFWiki) được giải theo chuyển hướng của Teletraan I, ví dụ "Optimus Prime (G1)" → "Optimus Prime (Primax)".
+image_wikis:
+  transformers: {api: "https://transformers.fandom.com/api.php", page_url: "https://transformers.fandom.com/wiki/", label: "Teletraan I (fandom)"}
+
+sources:
+  wiki:
+    max_per_class: 250
+    extensions: [jpg, jpeg, png, webp, gif]
+    subpages: {}
+  ddg:
+    max_per_class: 400
+    pages: 4              # 4 trang kết quả, mỗi trang khoảng 35 ảnh
+    delay: 3.5            # giây giữa hai lần gọi (1,5 và 2 giây bị giới hạn tốc độ liên tục, mỗi lần phạt chờ 10–80 giây)
+    safesearch: moderate
+  bing:
+    enabled: false        # loại: trả kết quả không khớp truy vấn (xem báo cáo B02)
+
+# Mẫu truy vấn DuckDuckGo theo franchise. {name}: tên robot; {kw}: từ khoá dòng; {alias}: tên khác (nếu có).
+queries:
+  transformers:
+    - "{name} transformers {kw}"
+    - "{name} transformers {kw} toy"
+    - "{name} transformers {kw} figure"
+    - "{name} transformers {kw} {medium}"
+    - "{name} transformers {kw} robot mode"
+    - "{name} transformers {kw} review"
+  gundam:
+    - "{name}"
+    - "{name} gunpla"
+    - "{name} model kit"
+    - "{name} anime"
+    - "{name} mobile suit"
+    - "{name} figure"
+  sentai:
+    - "{name}"
+    - "{name} {kw}"
+    - "{name} toy"
+    - "DX {name}"
+    - "{name} robot"
+    - "{alias}"
+    - "{alias} super sentai"
+    - "DX {alias}"
+
+# Từ khoá dòng (kw) và loại hình (medium) cho Transformers theo nhóm.
+tf_keywords:
+  g1: {kw: "G1", medium: "cartoon"}
+  movie: {kw: "movie", medium: "film"}
+  aligned: {kw: "Prime", medium: "animated series"}
+  bw: {kw: "Beast Wars", medium: "cartoon"}
+  animated: {kw: "Animated", medium: "cartoon"}
+  cyberverse: {kw: "Cyberverse", medium: "cartoon"}
+  earthspark: {kw: "EarthSpark", medium: "cartoon"}
+  one: {kw: "One", medium: "movie"}
+
+# Chạy thử trên vài lớp trước khi chạy đủ (--pilot)
+pilot:
+  - transformers-optimus-prime-g1
+  - transformers-groove-g1
+  - gundam-rx-78-2-gundam
+  - gundam-eb-06-graze
+  - sentai-wild-force-megazord
+  - sentai-goggle-robo
+
+# Thu bổ sung ngày 11/11/2026 (nhật ký, mục ngày 11/11): 5 lớp dưới 200 ảnh thô và hai lớp cùng tên "Thunder Megazord"
+# (4 trong 5 truy vấn của hai lớp giống hệt nhau nên khoảng 80% ảnh nằm ở cả hai lớp). Truy vấn riêng được gửi trước
+# truy vấn theo mẫu; giới hạn URL tìm ảnh của các lớp này tăng thêm extra_url_cap.
+extra_url_cap: 400
+extra_queries:
+  gundam-edm-ga-01-gundam-lfrith-ur:
+    - "Gundam Lfrith Ur"
+    - "HG Gundam Lfrith Ur"
+    - "Gundam Lfrith Ur gunpla"
+    - "Gundam Lfrith Ur Witch from Mercury"
+    - "Lfrith Ur model kit review"
+  gundam-xgf-01-gundam-lfrith-pre-production-model:
+    - "Gundam Lfrith Pre-Production Model"
+    - "Lfrith Pre-Production Model gunpla"
+    - "Gundam Lfrith Pre-Production Witch from Mercury Prologue"
+    - "XGF-01 Lfrith Pre-Production"
+  gundam-jdg-00x-devil-gundam:
+    - "Devil Gundam"
+    - "Devil Gundam G Gundam"
+    - "Devil Gundam figure"
+    - "Devil Gundam model kit"
+    - "Dark Gundam G Gundam"
+  gundam-edm-ga-02-gundam-lfrith-thorn:
+    - "Gundam Lfrith Thorn"
+    - "HG Gundam Lfrith Thorn"
+    - "Gundam Lfrith Thorn gunpla"
+    - "Gundam Lfrith Thorn Witch from Mercury"
+    - "Lfrith Thorn model kit review"
+  transformers-streetwise-g1:
+    - "Streetwise Protectobot"
+    - "Streetwise Protectobot G1 toy"
+    - "Protectobot Streetwise robot mode"
+    - "Streetwise Transformers Combiner Wars"
+    - "Streetwise Transformers Legacy"
+  sentai-thunder-megazord-mighty-morphin:
+    - "Mighty Morphin Thunder Megazord"
+    - "Mighty Morphin Power Rangers Thunder Megazord toy"
+    - "Legacy Thunder Megazord Mighty Morphin"
+    - "Red Dragon Thunderzord Megazord"
+    - "Dairen'oh Dairanger"
+    - "DX Dairenoh"
+  sentai-thunder-megazord-ninja-storm:
+    - "Ninja Storm Thunder Megazord"
+    - "Power Rangers Ninja Storm Thunder Megazord toy"
+    - "Gouraijin Hurricaneger"
+    - "DX Gouraijin"
+    - "Ikazuchi Gattai Gouraijin"
+    - "Thunder Megazord Crimson Navy Ninja Storm"
+target_ok_by_class:
+  sentai-thunder-megazord-mighty-morphin: 650
+  sentai-thunder-megazord-ninja-storm: 650
+max_attempts_by_class:
+  gundam-edm-ga-01-gundam-lfrith-ur: 1400
+  gundam-xgf-01-gundam-lfrith-pre-production-model: 1400
+  gundam-jdg-00x-devil-gundam: 1400
+  gundam-edm-ga-02-gundam-lfrith-thorn: 1400
+  transformers-streetwise-g1: 1400
+  sentai-thunder-megazord-mighty-morphin: 1500
+  sentai-thunder-megazord-ninja-storm: 1500

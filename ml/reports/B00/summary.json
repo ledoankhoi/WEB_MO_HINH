@@ -1,0 +1,1090 @@
+{
+  "step": "B00",
+  "title": "Môi trường và khung báo cáo",
+  "environment": {
+    "time_utc": "2026-11-07T08:50:11+00:00",
+    "python": "3.11.9",
+    "os": "Windows 11 (build 10.0.26200, AMD64)",
+    "cpu": "12th Gen Intel(R) Core(TM) i7-12800H",
+    "cpu_count": 20,
+    "ram_gb": 31.7,
+    "colab": false,
+    "gpu": {
+      "torch_cuda": true,
+      "devices": [
+        {
+          "name": "NVIDIA RTX A2000 Laptop GPU",
+          "memory_gb": 4.0,
+          "capability": "8.6"
+        }
+      ],
+      "torch_cuda_version": "12.8",
+      "cudnn": 91900,
+      "nvidia_smi": [
+        "NVIDIA RTX A2000 Laptop GPU, 4096 MiB, 596.52"
+      ]
+    },
+    "packages": {
+      "numpy": "2.4.6",
+      "pandas": "3.1.1",
+      "scipy": "1.17.1",
+      "matplotlib": "3.11.2",
+      "torch": "2.11.0+cu128",
+      "torchvision": "0.26.0+cu128",
+      "Pillow": "13.0.0",
+      "mwparserfromhell": "0.7.2",
+      "rapidfuzz": "3.14.6",
+      "requests": "2.34.2"
+    },
+    "git": {
+      "commit": "c56347e213be91c0f2232924dc478302a25a5eb3",
+      "short": "c56347e",
+      "dirty": true
+    },
+    "data_root_env": null
+  },
+  "determinism": {
+    "same_losses": true,
+    "max_param_diff": 0.0,
+    "final_loss": 2.253939390182495
+  },
+  "checks": [
+    {
+      "Kiểm tra": "Python ≥ 3.11",
+      "Kết quả": "3.11.9",
+      "Đạt": true
+    },
+    {
+      "Kiểm tra": "Thư viện bắt buộc của B0",
+      "Kết quả": "đủ",
+      "Đạt": true
+    },
+    {
+      "Kiểm tra": "Thư mục dữ liệu ghi được, còn ≥ 20 GB",
+      "Kết quả": "còn 849 GB",
+      "Đạt": true
+    },
+    {
+      "Kiểm tra": "numpy cho cùng dãy số với cùng hạt giống",
+      "Kết quả": "giống nhau",
+      "Đạt": true
+    },
+    {
+      "Kiểm tra": "Khoảng Wilson của 95/100 = [0,8882; 0,9785]",
+      "Kết quả": "0.9500 [0.8882; 0.9785]",
+      "Đạt": true
+    },
+    {
+      "Kiểm tra": "PyTorch dùng được GPU (CUDA)",
+      "Kết quả": "có",
+      "Đạt": true
+    },
+    {
+      "Kiểm tra": "Huấn luyện trên GPU tất định (2 lần chạy)",
+      "Kết quả": "loss giống nhau: có; lệch tham số lớn nhất 0.00e+00",
+      "Đạt": true
+    }
+  ],
+  "matmul_tflops": [
+    {
+      "Thiết bị": "GPU",
+      "Kiểu số": "fp32",
+      "n": 4096,
+      "TFLOPS": 3.06
+    },
+    {
+      "Thiết bị": "GPU",
+      "Kiểu số": "fp16",
+      "n": 4096,
+      "TFLOPS": 20.07
+    },
+    {
+      "Thiết bị": "CPU",
+      "Kiểu số": "fp32",
+      "n": 2048,
+      "TFLOPS": 0.53
+    }
+  ],
+  "train_throughput": [
+    {
+      "Kiến trúc": "ConvNeXt-Tiny",
+      "Chế độ": "nhanh",
+      "Bố cục bộ nhớ": "channels_last",
+      "Kiểu số": "fp16 (AMP)",
+      "Số lần lặp": 3,
+      "Tham số (triệu)": 28.0,
+      "Batch": 32,
+      "Ảnh/giây (TB ± ĐLC)": "157.1 ± 1.2",
+      "Ảnh/giây": 157.1,
+      "Thấp nhất – cao nhất": "156.3 – 158.4",
+      "Bộ nhớ GPU đỉnh (GB)": 2.29,
+      "Tràn VRAM": false,
+      "Nhiệt độ GPU (°C)": "70–74",
+      "Ước lượng 30 epoch × 30k ảnh (giờ)": 1.6
+    },
+    {
+      "Kiến trúc": "ConvNeXt-Tiny",
+      "Chế độ": "nhanh",
+      "Bố cục bộ nhớ": "mặc định",
+      "Kiểu số": "fp16 (AMP)",
+      "Số lần lặp": 3,
+      "Tham số (triệu)": 28.0,
+      "Batch": 32,
+      "Ảnh/giây (TB ± ĐLC)": "158.3 ± 4.7",
+      "Ảnh/giây": 158.3,
+      "Thấp nhất – cao nhất": "154.5 – 163.6",
+      "Bộ nhớ GPU đỉnh (GB)": 2.29,
+      "Tràn VRAM": false,
+      "Nhiệt độ GPU (°C)": "60–72",
+      "Ước lượng 30 epoch × 30k ảnh (giờ)": 1.6
+    },
+    {
+      "Kiến trúc": "ConvNeXt-Tiny",
+      "Chế độ": "tất định",
+      "Bố cục bộ nhớ": "channels_last",
+      "Kiểu số": "fp16 (AMP)",
+      "Số lần lặp": 3,
+      "Tham số (triệu)": 28.0,
+      "Batch": 32,
+      "Ảnh/giây (TB ± ĐLC)": "144.0 ± 1.9",
+      "Ảnh/giây": 144.0,
+      "Thấp nhất – cao nhất": "142.3 – 146.1",
+      "Bộ nhớ GPU đỉnh (GB)": 2.29,
+      "Tràn VRAM": false,
+      "Nhiệt độ GPU (°C)": "65–75",
+      "Ước lượng 30 epoch × 30k ảnh (giờ)": 1.7
+    },
+    {
+      "Kiến trúc": "ConvNeXt-Tiny",
+      "Chế độ": "tất định",
+      "Bố cục bộ nhớ": "mặc định",
+      "Kiểu số": "fp16 (AMP)",
+      "Số lần lặp": 3,
+      "Tham số (triệu)": 28.0,
+      "Batch": 32,
+      "Ảnh/giây (TB ± ĐLC)": "140.2 ± 1.5",
+      "Ảnh/giây": 140.2,
+      "Thấp nhất – cao nhất": "138.9 – 141.8",
+      "Bộ nhớ GPU đỉnh (GB)": 2.29,
+      "Tràn VRAM": false,
+      "Nhiệt độ GPU (°C)": "73–74",
+      "Ước lượng 30 epoch × 30k ảnh (giờ)": 1.8
+    },
+    {
+      "Kiến trúc": "ConvNeXt-Tiny",
+      "Chế độ": "nhanh",
+      "Bố cục bộ nhớ": "mặc định",
+      "Kiểu số": "fp32",
+      "Số lần lặp": 1,
+      "Tham số (triệu)": 28.0,
+      "Batch": 32,
+      "Ảnh/giây (TB ± ĐLC)": "13.3 ± 0.0",
+      "Ảnh/giây": 13.3,
+      "Thấp nhất – cao nhất": "13.3 – 13.3",
+      "Bộ nhớ GPU đỉnh (GB)": 3.68,
+      "Tràn VRAM": false,
+      "Nhiệt độ GPU (°C)": "75–75",
+      "Ước lượng 30 epoch × 30k ảnh (giờ)": 18.8
+    },
+    {
+      "Kiến trúc": "EfficientNetV2-S",
+      "Chế độ": "nhanh",
+      "Bố cục bộ nhớ": "channels_last",
+      "Kiểu số": "fp16 (AMP)",
+      "Số lần lặp": 3,
+      "Tham số (triệu)": 20.4,
+      "Batch": 32,
+      "Ảnh/giây (TB ± ĐLC)": "22.8 ± 0.1",
+      "Ảnh/giây": 22.8,
+      "Thấp nhất – cao nhất": "22.7 – 22.9",
+      "Bộ nhớ GPU đỉnh (GB)": 2.69,
+      "Tràn VRAM": false,
+      "Nhiệt độ GPU (°C)": "68–73",
+      "Ước lượng 30 epoch × 30k ảnh (giờ)": 11.0
+    },
+    {
+      "Kiến trúc": "EfficientNetV2-S",
+      "Chế độ": "nhanh",
+      "Bố cục bộ nhớ": "mặc định",
+      "Kiểu số": "fp16 (AMP)",
+      "Số lần lặp": 3,
+      "Tham số (triệu)": 20.4,
+      "Batch": 32,
+      "Ảnh/giây (TB ± ĐLC)": "143.8 ± 4.9",
+      "Ảnh/giây": 143.8,
+      "Thấp nhất – cao nhất": "138.9 – 148.7",
+      "Bộ nhớ GPU đỉnh (GB)": 2.69,
+      "Tràn VRAM": false,
+      "Nhiệt độ GPU (°C)": "70–75",
+      "Ước lượng 30 epoch × 30k ảnh (giờ)": 1.7
+    },
+    {
+      "Kiến trúc": "EfficientNetV2-S",
+      "Chế độ": "tất định",
+      "Bố cục bộ nhớ": "channels_last",
+      "Kiểu số": "fp16 (AMP)",
+      "Số lần lặp": 2,
+      "Tham số (triệu)": 20.4,
+      "Batch": 32,
+      "Ảnh/giây (TB ± ĐLC)": "21.0 ± 2.0",
+      "Ảnh/giây": 21.0,
+      "Thấp nhất – cao nhất": "19.6 – 22.4",
+      "Bộ nhớ GPU đỉnh (GB)": 2.67,
+      "Tràn VRAM": false,
+      "Nhiệt độ GPU (°C)": "66–75",
+      "Ước lượng 30 epoch × 30k ảnh (giờ)": 11.9
+    },
+    {
+      "Kiến trúc": "EfficientNetV2-S",
+      "Chế độ": "tất định",
+      "Bố cục bộ nhớ": "mặc định",
+      "Kiểu số": "fp16 (AMP)",
+      "Số lần lặp": 3,
+      "Tham số (triệu)": 20.4,
+      "Batch": 32,
+      "Ảnh/giây (TB ± ĐLC)": "132.2 ± 0.6",
+      "Ảnh/giây": 132.2,
+      "Thấp nhất – cao nhất": "131.6 – 132.7",
+      "Bộ nhớ GPU đỉnh (GB)": 2.67,
+      "Tràn VRAM": false,
+      "Nhiệt độ GPU (°C)": "73–74",
+      "Ước lượng 30 epoch × 30k ảnh (giờ)": 1.9
+    },
+    {
+      "Kiến trúc": "EfficientNetV2-S",
+      "Chế độ": "nhanh",
+      "Bố cục bộ nhớ": "mặc định",
+      "Kiểu số": "fp32",
+      "Số lần lặp": 1,
+      "Tham số (triệu)": 20.4,
+      "Batch": 32,
+      "Ảnh/giây (TB ± ĐLC)": "11.4 ± 0.0",
+      "Ảnh/giây": 11.4,
+      "Thấp nhất – cao nhất": "11.4 – 11.4",
+      "Bộ nhớ GPU đỉnh (GB)": 4.91,
+      "Tràn VRAM": true,
+      "Nhiệt độ GPU (°C)": "71–71",
+      "Ước lượng 30 epoch × 30k ảnh (giờ)": null
+    },
+    {
+      "Kiến trúc": "ViT-B/16",
+      "Chế độ": "nhanh",
+      "Bố cục bộ nhớ": "channels_last",
+      "Kiểu số": "fp16 (AMP)",
+      "Số lần lặp": 3,
+      "Tham số (triệu)": 86.0,
+      "Batch": 32,
+      "Ảnh/giây (TB ± ĐLC)": "72.5 ± 7.2",
+      "Ảnh/giây": 72.5,
+      "Thấp nhất – cao nhất": "64.2 – 77.3",
+      "Bộ nhớ GPU đỉnh (GB)": 3.37,
+      "Tràn VRAM": false,
+      "Nhiệt độ GPU (°C)": "73–75",
+      "Ước lượng 30 epoch × 30k ảnh (giờ)": 3.4
+    },
+    {
+      "Kiến trúc": "ViT-B/16",
+      "Chế độ": "nhanh",
+      "Bố cục bộ nhớ": "mặc định",
+      "Kiểu số": "fp16 (AMP)",
+      "Số lần lặp": 3,
+      "Tham số (triệu)": 86.0,
+      "Batch": 32,
+      "Ảnh/giây (TB ± ĐLC)": "72.8 ± 10.0",
+      "Ảnh/giây": 72.8,
+      "Thấp nhất – cao nhất": "61.7 – 81.1",
+      "Bộ nhớ GPU đỉnh (GB)": 3.37,
+      "Tràn VRAM": false,
+      "Nhiệt độ GPU (°C)": "52–75",
+      "Ước lượng 30 epoch × 30k ảnh (giờ)": 3.4
+    },
+    {
+      "Kiến trúc": "ViT-B/16",
+      "Chế độ": "tất định",
+      "Bố cục bộ nhớ": "channels_last",
+      "Kiểu số": "fp16 (AMP)",
+      "Số lần lặp": 3,
+      "Tham số (triệu)": 86.0,
+      "Batch": 32,
+      "Ảnh/giây (TB ± ĐLC)": "72.2 ± 2.4",
+      "Ảnh/giây": 72.2,
+      "Thấp nhất – cao nhất": "69.8 – 74.5",
+      "Bộ nhớ GPU đỉnh (GB)": 3.37,
+      "Tràn VRAM": false,
+      "Nhiệt độ GPU (°C)": "56–70",
+      "Ước lượng 30 epoch × 30k ảnh (giờ)": 3.5
+    },
+    {
+      "Kiến trúc": "ViT-B/16",
+      "Chế độ": "tất định",
+      "Bố cục bộ nhớ": "mặc định",
+      "Kiểu số": "fp16 (AMP)",
+      "Số lần lặp": 3,
+      "Tham số (triệu)": 86.0,
+      "Batch": 32,
+      "Ảnh/giây (TB ± ĐLC)": "68.4 ± 1.7",
+      "Ảnh/giây": 68.4,
+      "Thấp nhất – cao nhất": "66.5 – 69.6",
+      "Bộ nhớ GPU đỉnh (GB)": 3.37,
+      "Tràn VRAM": false,
+      "Nhiệt độ GPU (°C)": "72–73",
+      "Ước lượng 30 epoch × 30k ảnh (giờ)": 3.7
+    },
+    {
+      "Kiến trúc": "ViT-B/16",
+      "Chế độ": "nhanh",
+      "Bố cục bộ nhớ": "mặc định",
+      "Kiểu số": "fp32",
+      "Số lần lặp": 1,
+      "Tham số (triệu)": 86.0,
+      "Batch": 32,
+      "Ảnh/giây (TB ± ĐLC)": "4.7 ± 0.0",
+      "Ảnh/giây": 4.7,
+      "Thấp nhất – cao nhất": "4.7 – 4.7",
+      "Bộ nhớ GPU đỉnh (GB)": 4.86,
+      "Tràn VRAM": true,
+      "Nhiệt độ GPU (°C)": "69–69",
+      "Ước lượng 30 epoch × 30k ảnh (giờ)": null
+    }
+  ],
+  "train_throughput_runs": [
+    {
+      "key": [
+        "ConvNeXt-Tiny",
+        "tất định",
+        "channels_last",
+        "fp16 (AMP)"
+      ],
+      "runs": [
+        {
+          "batch": 32,
+          "images_per_s": 146.08148291201772,
+          "step_ms": 219.0558266667722,
+          "step_ms_std": 2.3848053326224825,
+          "peak_memory_gb": 2.2893781661987305,
+          "params_m": 27.973928,
+          "error": null,
+          "temp_c": 65,
+          "sm_clock_mhz": 810,
+          "power_w": 28.23
+        },
+        {
+          "batch": 32,
+          "images_per_s": 143.6071139136448,
+          "step_ms": 222.8301866663969,
+          "step_ms_std": 5.646476089637148,
+          "peak_memory_gb": 2.2893781661987305,
+          "params_m": 27.973928,
+          "error": null,
+          "temp_c": 74,
+          "sm_clock_mhz": 1245,
+          "power_w": 34.71
+        },
+        {
+          "batch": 32,
+          "images_per_s": 142.29574801629843,
+          "step_ms": 224.88373999998052,
+          "step_ms_std": 7.915890066442484,
+          "peak_memory_gb": 2.2893781661987305,
+          "params_m": 27.973928,
+          "error": null,
+          "temp_c": 75,
+          "sm_clock_mhz": 1170,
+          "power_w": 34.39
+        }
+      ]
+    },
+    {
+      "key": [
+        "EfficientNetV2-S",
+        "nhanh",
+        "mặc định",
+        "fp16 (AMP)"
+      ],
+      "runs": [
+        {
+          "batch": 32,
+          "images_per_s": 148.73136791016654,
+          "step_ms": 215.15300000016094,
+          "step_ms_std": 3.0327724270858227,
+          "peak_memory_gb": 2.6878833770751953,
+          "params_m": 20.433688,
+          "error": null,
+          "temp_c": 70,
+          "sm_clock_mhz": 1657,
+          "power_w": 39.56
+        },
+        {
+          "batch": 32,
+          "images_per_s": 143.58679024258677,
+          "step_ms": 222.8617266667546,
+          "step_ms_std": 4.28653837325076,
+          "peak_memory_gb": 2.6735668182373047,
+          "params_m": 20.433688,
+          "error": null,
+          "temp_c": 72,
+          "sm_clock_mhz": 1425,
+          "power_w": 32.57
+        },
+        {
+          "batch": 32,
+          "images_per_s": 138.94577785756317,
+          "step_ms": 230.30566666663313,
+          "step_ms_std": 10.655573199727378,
+          "peak_memory_gb": 2.6735668182373047,
+          "params_m": 20.433688,
+          "error": null,
+          "temp_c": 75,
+          "sm_clock_mhz": 1147,
+          "power_w": 32.61
+        }
+      ]
+    },
+    {
+      "key": [
+        "ConvNeXt-Tiny",
+        "nhanh",
+        "channels_last",
+        "fp16 (AMP)"
+      ],
+      "runs": [
+        {
+          "batch": 32,
+          "images_per_s": 158.44164717921555,
+          "step_ms": 201.96709999994104,
+          "step_ms_std": 2.060794521740907,
+          "peak_memory_gb": 2.289607048034668,
+          "params_m": 27.973928,
+          "error": null,
+          "temp_c": 70,
+          "sm_clock_mhz": 1395,
+          "power_w": 38.56
+        },
+        {
+          "batch": 32,
+          "images_per_s": 156.69359282848993,
+          "step_ms": 204.2202199998428,
+          "step_ms_std": 4.531768179198407,
+          "peak_memory_gb": 2.2893781661987305,
+          "params_m": 27.973928,
+          "error": null,
+          "temp_c": 71,
+          "sm_clock_mhz": 1350,
+          "power_w": 29.18
+        },
+        {
+          "batch": 32,
+          "images_per_s": 156.2517547804822,
+          "step_ms": 204.79769999995673,
+          "step_ms_std": 4.717525318399516,
+          "peak_memory_gb": 2.2893781661987305,
+          "params_m": 27.973928,
+          "error": null,
+          "temp_c": 74,
+          "sm_clock_mhz": 1305,
+          "power_w": 34.76
+        }
+      ]
+    },
+    {
+      "key": [
+        "ViT-B/16",
+        "tất định",
+        "mặc định",
+        "fp16 (AMP)"
+      ],
+      "runs": [
+        {
+          "batch": 32,
+          "images_per_s": 69.11872047423988,
+          "step_ms": 462.9715333333782,
+          "step_ms_std": 2.760178494979921,
+          "peak_memory_gb": 3.369823455810547,
+          "params_m": 85.952456,
+          "error": null,
+          "temp_c": 72,
+          "sm_clock_mhz": 1245,
+          "power_w": 39.49
+        },
+        {
+          "batch": 32,
+          "images_per_s": 66.51667341578639,
+          "step_ms": 481.0823866667609,
+          "step_ms_std": 9.795019692877434,
+          "peak_memory_gb": 3.3696556091308594,
+          "params_m": 85.952456,
+          "error": null,
+          "temp_c": 73,
+          "sm_clock_mhz": 1312,
+          "power_w": 34.92
+        },
+        {
+          "batch": 32,
+          "images_per_s": 69.59809391702784,
+          "step_ms": 459.7827066664953,
+          "step_ms_std": 1.9049926988130692,
+          "peak_memory_gb": 3.3696556091308594,
+          "params_m": 85.952456,
+          "error": null,
+          "temp_c": 73,
+          "sm_clock_mhz": 1312,
+          "power_w": 37.78
+        }
+      ]
+    },
+    {
+      "key": [
+        "ViT-B/16",
+        "nhanh",
+        "channels_last",
+        "fp16 (AMP)"
+      ],
+      "runs": [
+        {
+          "batch": 32,
+          "images_per_s": 76.05170356051691,
+          "step_ms": 420.76638000010763,
+          "step_ms_std": 7.340390996020859,
+          "peak_memory_gb": 3.369335174560547,
+          "params_m": 85.952456,
+          "error": null,
+          "temp_c": 73,
+          "sm_clock_mhz": 1297,
+          "power_w": 39.53
+        },
+        {
+          "batch": 32,
+          "images_per_s": 64.21897987134402,
+          "step_ms": 498.2950533332769,
+          "step_ms_std": 43.86620862040279,
+          "peak_memory_gb": 3.369457244873047,
+          "params_m": 85.952456,
+          "error": null,
+          "temp_c": 75,
+          "sm_clock_mhz": 1177,
+          "power_w": 33.8
+        },
+        {
+          "batch": 32,
+          "images_per_s": 77.34591364620962,
+          "step_ms": 413.72579999988375,
+          "step_ms_std": 2.2133873756406572,
+          "peak_memory_gb": 3.369457244873047,
+          "params_m": 85.952456,
+          "error": null,
+          "temp_c": 73,
+          "sm_clock_mhz": 1290,
+          "power_w": 38.5
+        }
+      ]
+    },
+    {
+      "key": [
+        "EfficientNetV2-S",
+        "tất định",
+        "mặc định",
+        "fp16 (AMP)"
+      ],
+      "runs": [
+        {
+          "batch": 32,
+          "images_per_s": 132.6658765675977,
+          "step_ms": 241.20746666679526,
+          "step_ms_std": 6.730160549772036,
+          "peak_memory_gb": 2.672056198120117,
+          "params_m": 20.433688,
+          "error": null,
+          "temp_c": 73,
+          "sm_clock_mhz": 1245,
+          "power_w": 39.27
+        },
+        {
+          "batch": 32,
+          "images_per_s": 131.55059980089615,
+          "step_ms": 243.2524066665792,
+          "step_ms_std": 6.769487588919298,
+          "peak_memory_gb": 2.672056198120117,
+          "params_m": 20.433688,
+          "error": null,
+          "temp_c": 74,
+          "sm_clock_mhz": 1132,
+          "power_w": 35.08
+        },
+        {
+          "batch": 32,
+          "images_per_s": 132.4415491986129,
+          "step_ms": 241.61601999997703,
+          "step_ms_std": 4.901536112184804,
+          "peak_memory_gb": 2.672056198120117,
+          "params_m": 20.433688,
+          "error": null,
+          "temp_c": 73,
+          "sm_clock_mhz": 1207,
+          "power_w": 34.77
+        }
+      ]
+    },
+    {
+      "key": [
+        "EfficientNetV2-S",
+        "nhanh",
+        "channels_last",
+        "fp16 (AMP)"
+      ],
+      "runs": [
+        {
+          "batch": 32,
+          "images_per_s": 22.683221310040878,
+          "step_ms": 1410.7343733332527,
+          "step_ms_std": 6.5575362641232084,
+          "peak_memory_gb": 2.688610076904297,
+          "params_m": 20.433688,
+          "error": null,
+          "temp_c": 73,
+          "sm_clock_mhz": 1072,
+          "power_w": 32.07
+        },
+        {
+          "batch": 32,
+          "images_per_s": 22.915410963810093,
+          "step_ms": 1396.4401533333632,
+          "step_ms_std": 4.503666403616354,
+          "peak_memory_gb": 2.6736907958984375,
+          "params_m": 20.433688,
+          "error": null,
+          "temp_c": 68,
+          "sm_clock_mhz": 1522,
+          "power_w": 36.83
+        },
+        {
+          "batch": 32,
+          "images_per_s": 22.84106090122895,
+          "step_ms": 1400.9857133334056,
+          "step_ms_std": 6.375786817064109,
+          "peak_memory_gb": 2.6736907958984375,
+          "params_m": 20.433688,
+          "error": null,
+          "temp_c": 71,
+          "sm_clock_mhz": 1702,
+          "power_w": 38.94
+        }
+      ]
+    },
+    {
+      "key": [
+        "ConvNeXt-Tiny",
+        "tất định",
+        "mặc định",
+        "fp16 (AMP)"
+      ],
+      "runs": [
+        {
+          "batch": 32,
+          "images_per_s": 138.9022807408149,
+          "step_ms": 230.37778666651624,
+          "step_ms_std": 8.221698197002102,
+          "peak_memory_gb": 2.2887372970581055,
+          "params_m": 27.973928,
+          "error": null,
+          "temp_c": 74,
+          "sm_clock_mhz": 712,
+          "power_w": 25.49
+        },
+        {
+          "batch": 32,
+          "images_per_s": 139.87140456173637,
+          "step_ms": 228.78157333349617,
+          "step_ms_std": 7.358498634586688,
+          "peak_memory_gb": 2.2887372970581055,
+          "params_m": 27.973928,
+          "error": null,
+          "temp_c": 73,
+          "sm_clock_mhz": 705,
+          "power_w": 25.12
+        },
+        {
+          "batch": 32,
+          "images_per_s": 141.776351350124,
+          "step_ms": 225.70760000004765,
+          "step_ms_std": 4.912578684330676,
+          "peak_memory_gb": 2.2887372970581055,
+          "params_m": 27.973928,
+          "error": null,
+          "temp_c": 73,
+          "sm_clock_mhz": 1267,
+          "power_w": 38.55
+        }
+      ]
+    },
+    {
+      "key": [
+        "ViT-B/16",
+        "nhanh",
+        "mặc định",
+        "fp16 (AMP)"
+      ],
+      "runs": [
+        {
+          "batch": 32,
+          "images_per_s": 61.67503853918647,
+          "step_ms": 518.8484800000273,
+          "step_ms_std": 41.85078597999554,
+          "peak_memory_gb": 3.366069793701172,
+          "params_m": 85.952456,
+          "error": null,
+          "temp_c": 75,
+          "sm_clock_mhz": 1042,
+          "power_w": 30.14
+        },
+        {
+          "batch": 32,
+          "images_per_s": 81.12973973884151,
+          "step_ms": 394.4299599999795,
+          "step_ms_std": 8.732732969828506,
+          "peak_memory_gb": 3.3696556091308594,
+          "params_m": 85.952456,
+          "error": null,
+          "temp_c": 52,
+          "sm_clock_mhz": 1650,
+          "power_w": 39.3
+        },
+        {
+          "batch": 32,
+          "images_per_s": 75.51043757967236,
+          "step_ms": 423.7824733333885,
+          "step_ms_std": 5.19324790540926,
+          "peak_memory_gb": 3.3696556091308594,
+          "params_m": 85.952456,
+          "error": null,
+          "temp_c": 72,
+          "sm_clock_mhz": 1582,
+          "power_w": 37.24
+        }
+      ]
+    },
+    {
+      "key": [
+        "EfficientNetV2-S",
+        "tất định",
+        "channels_last",
+        "fp16 (AMP)"
+      ],
+      "runs": [
+        {
+          "batch": 32,
+          "images_per_s": 0.11598093799604181,
+          "step_ms": 275907.40817333356,
+          "step_ms_std": 1062232.6476826665,
+          "peak_memory_gb": 2.6736907958984375,
+          "params_m": 20.433688,
+          "error": null,
+          "temp_c": 75,
+          "sm_clock_mhz": 1095,
+          "power_w": 32.73
+        },
+        {
+          "batch": 32,
+          "images_per_s": 22.40436180063908,
+          "step_ms": 1428.2933066670619,
+          "step_ms_std": 13.045025798383824,
+          "peak_memory_gb": 2.6736907958984375,
+          "params_m": 20.433688,
+          "error": null,
+          "temp_c": 66,
+          "sm_clock_mhz": 1432,
+          "power_w": 34.7
+        },
+        {
+          "batch": 32,
+          "images_per_s": 19.601856083417193,
+          "step_ms": 1632.4984666667056,
+          "step_ms_std": 164.9024072594248,
+          "peak_memory_gb": 2.6736907958984375,
+          "params_m": 20.433688,
+          "error": null,
+          "temp_c": 75,
+          "sm_clock_mhz": 997,
+          "power_w": 30.33
+        }
+      ]
+    },
+    {
+      "key": [
+        "ViT-B/16",
+        "tất định",
+        "channels_last",
+        "fp16 (AMP)"
+      ],
+      "runs": [
+        {
+          "batch": 32,
+          "images_per_s": 74.4778289588554,
+          "step_ms": 429.65806666676747,
+          "step_ms_std": 4.865996713011019,
+          "peak_memory_gb": 3.369457244873047,
+          "params_m": 85.952456,
+          "error": null,
+          "temp_c": 56,
+          "sm_clock_mhz": 1710,
+          "power_w": 38.67
+        },
+        {
+          "batch": 32,
+          "images_per_s": 72.32908685745126,
+          "step_ms": 442.4222866668667,
+          "step_ms_std": 8.498058654466957,
+          "peak_memory_gb": 3.369457244873047,
+          "params_m": 85.952456,
+          "error": null,
+          "temp_c": 61,
+          "sm_clock_mhz": 1387,
+          "power_w": 34.73
+        },
+        {
+          "batch": 32,
+          "images_per_s": 69.75697932749017,
+          "step_ms": 458.73545999990404,
+          "step_ms_std": 7.80302282732356,
+          "peak_memory_gb": 3.369457244873047,
+          "params_m": 85.952456,
+          "error": null,
+          "temp_c": 70,
+          "sm_clock_mhz": 1665,
+          "power_w": 39.02
+        }
+      ]
+    },
+    {
+      "key": [
+        "ConvNeXt-Tiny",
+        "nhanh",
+        "mặc định",
+        "fp16 (AMP)"
+      ],
+      "runs": [
+        {
+          "batch": 32,
+          "images_per_s": 163.5748687799145,
+          "step_ms": 195.6290733331116,
+          "step_ms_std": 0.7196351016489083,
+          "peak_memory_gb": 2.289942741394043,
+          "params_m": 27.973928,
+          "error": null,
+          "temp_c": 60,
+          "sm_clock_mhz": 1702,
+          "power_w": 38.96
+        },
+        {
+          "batch": 32,
+          "images_per_s": 156.78380496476674,
+          "step_ms": 204.10271333312267,
+          "step_ms_std": 4.481436265376435,
+          "peak_memory_gb": 2.288874626159668,
+          "params_m": 27.973928,
+          "error": null,
+          "temp_c": 64,
+          "sm_clock_mhz": 1545,
+          "power_w": 39.37
+        },
+        {
+          "batch": 32,
+          "images_per_s": 154.49511751972256,
+          "step_ms": 207.12628666672876,
+          "step_ms_std": 4.397438809195445,
+          "peak_memory_gb": 2.2887372970581055,
+          "params_m": 27.973928,
+          "error": null,
+          "temp_c": 72,
+          "sm_clock_mhz": 1192,
+          "power_w": 35.85
+        }
+      ]
+    },
+    {
+      "key": [
+        "ConvNeXt-Tiny",
+        "nhanh",
+        "mặc định",
+        "fp32"
+      ],
+      "runs": [
+        {
+          "batch": 32,
+          "images_per_s": 13.290542107176341,
+          "step_ms": 2407.7272199996514,
+          "step_ms_std": 85.65906254374974,
+          "peak_memory_gb": 3.681065082550049,
+          "params_m": 27.973928,
+          "error": null,
+          "temp_c": 75,
+          "sm_clock_mhz": 1072,
+          "power_w": 31.83
+        }
+      ]
+    },
+    {
+      "key": [
+        "EfficientNetV2-S",
+        "nhanh",
+        "mặc định",
+        "fp32"
+      ],
+      "runs": [
+        {
+          "batch": 32,
+          "images_per_s": 11.415910938712502,
+          "step_ms": 2803.105260000302,
+          "step_ms_std": 6.583691426698204,
+          "peak_memory_gb": 4.914792537689209,
+          "params_m": 20.433688,
+          "error": null,
+          "temp_c": 71,
+          "sm_clock_mhz": 847,
+          "power_w": 21.15
+        }
+      ]
+    },
+    {
+      "key": [
+        "ViT-B/16",
+        "nhanh",
+        "mặc định",
+        "fp32"
+      ],
+      "runs": [
+        {
+          "batch": 32,
+          "images_per_s": 4.694302585391745,
+          "step_ms": 6816.774039999291,
+          "step_ms_std": 15.882003094564945,
+          "peak_memory_gb": 4.862895965576172,
+          "params_m": 85.952456,
+          "error": null,
+          "temp_c": 69,
+          "sm_clock_mhz": 1702,
+          "power_w": 20.22
+        }
+      ]
+    }
+  ],
+  "interrupted_runs": [
+    {
+      "Kiến trúc": "EfficientNetV2-S",
+      "Chế độ": "tất định",
+      "Bố cục bộ nhớ": "channels_last",
+      "Kiểu số": "fp16 (AMP)",
+      "Thời gian một bước (ms)": "275907 ± 1062233",
+      "Ảnh/giây": 0.12
+    }
+  ],
+  "standby_periods": [
+    {
+      "enter": "2026-11-07 14:33:16",
+      "exit": "2026-11-07 15:41:50",
+      "minutes": 68.6
+    }
+  ],
+  "warnings": [
+    "Memory Efficient attention defaults to a non-deterministic algorithm. To explicitly enable determinism call torch.use_deterministic_algorithms(True, warn_only=False)."
+  ],
+  "network": [
+    {
+      "Nguồn": "TFWiki (MediaWiki API)",
+      "Dùng ở": "B1, B2",
+      "Mã HTTP": 200,
+      "Thời gian (ms)": 991,
+      "Truy cập được": true
+    },
+    {
+      "Nguồn": "Gundam Wiki (fandom)",
+      "Dùng ở": "B1, B2",
+      "Mã HTTP": 200,
+      "Thời gian (ms)": 683,
+      "Truy cập được": true
+    },
+    {
+      "Nguồn": "RangerWiki: Power Rangers và Super Sentai (fandom)",
+      "Dùng ở": "B1, B2",
+      "Mã HTTP": 200,
+      "Thời gian (ms)": 689,
+      "Truy cập được": true
+    },
+    {
+      "Nguồn": "DuckDuckGo",
+      "Dùng ở": "B2",
+      "Mã HTTP": 200,
+      "Thời gian (ms)": 975,
+      "Truy cập được": true
+    },
+    {
+      "Nguồn": "Bing",
+      "Dùng ở": "B2",
+      "Mã HTTP": 200,
+      "Thời gian (ms)": 572,
+      "Truy cập được": true
+    },
+    {
+      "Nguồn": "Flickr API",
+      "Dùng ở": "B2",
+      "Mã HTTP": 200,
+      "Thời gian (ms)": 1249,
+      "Truy cập được": true
+    },
+    {
+      "Nguồn": "Hugging Face (trọng số CLIP, DINOv2)",
+      "Dùng ở": "B3, B5, B6",
+      "Mã HTTP": 200,
+      "Thời gian (ms)": 603,
+      "Truy cập được": true
+    },
+    {
+      "Nguồn": "PyTorch download",
+      "Dùng ở": "B0, B6",
+      "Mã HTTP": 200,
+      "Thời gian (ms)": 383,
+      "Truy cập được": true
+    }
+  ],
+  "best_train_config": [
+    {
+      "Kiến trúc": "ConvNeXt-Tiny",
+      "Cấu hình nhanh nhất": "nhanh, mặc định, fp16 (AMP)",
+      "Ảnh/giây": 158.3,
+      "Tất định / nhanh (fp16, mặc định)": 0.89,
+      "channels_last / mặc định (nhanh, fp16)": 0.99,
+      "fp32 / fp16 (nhanh, mặc định)": 0.08,
+      "Ước lượng 30 epoch × 30k ảnh (giờ)": 1.6
+    },
+    {
+      "Kiến trúc": "EfficientNetV2-S",
+      "Cấu hình nhanh nhất": "nhanh, mặc định, fp16 (AMP)",
+      "Ảnh/giây": 143.8,
+      "Tất định / nhanh (fp16, mặc định)": 0.92,
+      "channels_last / mặc định (nhanh, fp16)": 0.16,
+      "fp32 / fp16 (nhanh, mặc định)": null,
+      "Ước lượng 30 epoch × 30k ảnh (giờ)": 1.7
+    },
+    {
+      "Kiến trúc": "ViT-B/16",
+      "Cấu hình nhanh nhất": "nhanh, mặc định, fp16 (AMP)",
+      "Ảnh/giây": 72.8,
+      "Tất định / nhanh (fp16, mặc định)": 0.94,
+      "channels_last / mặc định (nhanh, fp16)": 1.0,
+      "fp32 / fp16 (nhanh, mặc định)": null,
+      "Ước lượng 30 epoch × 30k ảnh (giờ)": 3.4
+    }
+  ],
+  "reproduce": {
+    "commands": [
+      "python -m venv ml/.venv",
+      "ml/.venv/Scripts/python -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128",
+      "ml/.venv/Scripts/python -m pip install -r ml/requirements.in",
+      "ml/.venv/Scripts/python ml/scripts/b00_moi_truong.py"
+    ],
+    "config": "ml/configs/base.yaml",
+    "config_hash": "71afb6321f53",
+    "seed": 42,
+    "dataset_version": null
+  },
+  "duration_s": 10.2
+}

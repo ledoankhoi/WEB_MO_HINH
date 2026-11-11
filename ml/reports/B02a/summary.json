@@ -1,0 +1,104 @@
+{
+  "step": "B02a",
+  "title": "Thu thập ảnh: chạy thử",
+  "environment": {
+    "time_utc": "2026-11-07T13:59:29+00:00",
+    "python": "3.11.9",
+    "os": "Windows 11 (build 10.0.26200, AMD64)",
+    "cpu": "12th Gen Intel(R) Core(TM) i7-12800H",
+    "cpu_count": 20,
+    "ram_gb": 31.7,
+    "colab": false,
+    "gpu": {
+      "torch_cuda": true,
+      "devices": [
+        {
+          "name": "NVIDIA RTX A2000 Laptop GPU",
+          "memory_gb": 4.0,
+          "capability": "8.6"
+        }
+      ],
+      "torch_cuda_version": "12.8",
+      "cudnn": 91900,
+      "nvidia_smi": [
+        "NVIDIA RTX A2000 Laptop GPU, 4096 MiB, 596.52"
+      ]
+    },
+    "packages": {
+      "numpy": "2.4.6",
+      "pandas": "3.1.1",
+      "scipy": "1.17.1",
+      "matplotlib": "3.11.2",
+      "torch": "2.11.0+cu128",
+      "torchvision": "0.26.0+cu128",
+      "Pillow": "13.0.0",
+      "mwparserfromhell": "0.7.2",
+      "rapidfuzz": "3.14.6",
+      "requests": "2.34.2",
+      "ddgs": "9.16.1"
+    },
+    "git": {
+      "commit": "c56347e213be91c0f2232924dc478302a25a5eb3",
+      "short": "c56347e",
+      "dirty": true
+    },
+    "data_root_env": null
+  },
+  "summary": {
+    "Số lớp": 6,
+    "Ảnh tải được": 2125,
+    "Ảnh mỗi lớp: nhỏ nhất": 273,
+    "Ảnh mỗi lớp: trung vị": 334.0,
+    "Ảnh mỗi lớp: trung bình ± độ lệch chuẩn": "354.2 ± 76.3",
+    "Ảnh mỗi lớp: lớn nhất": 460,
+    "Lớp dưới 200 ảnh": 0,
+    "Lượt thử": 2949,
+    "Thời gian chạy lần này (phút)": 6.8,
+    "Dung lượng ảnh (MB)": 95.6
+  },
+  "by_source": [
+    {
+      "Nguồn": "Wiki",
+      "URL đã thử": 731,
+      "Tải được": 442,
+      "Tỉ lệ tải được": "60.5%",
+      "HTTP 4xx (bị từ chối, không còn)": 0,
+      "HTTP 5xx / 429 (máy chủ lỗi, quá tải)": 0,
+      "hết thời gian": 0,
+      "lỗi mạng": 0,
+      "không phải ảnh": 0,
+      "không đọc được ảnh": 0,
+      "quá 20 MB": 0,
+      "cạnh ngắn < 32 px": 3,
+      "robots.txt không cho phép": 286,
+      "host trong danh sách không truy cập": 0
+    },
+    {
+      "Nguồn": "DuckDuckGo",
+      "URL đã thử": 2218,
+      "Tải được": 1683,
+      "Tỉ lệ tải được": "75.9%",
+      "HTTP 4xx (bị từ chối, không còn)": 206,
+      "HTTP 5xx / 429 (máy chủ lỗi, quá tải)": 0,
+      "hết thời gian": 11,
+      "lỗi mạng": 15,
+      "không phải ảnh": 8,
+      "không đọc được ảnh": 0,
+      "quá 20 MB": 0,
+      "cạnh ngắn < 32 px": 0,
+      "robots.txt không cho phép": 295,
+      "host trong danh sách không truy cập": 0
+    }
+  ],
+  "low_classes": [],
+  "reproduce": {
+    "commands": [
+      "ml/.venv/Scripts/python ml/scripts/b02_thu_anh.py --pilot"
+    ],
+    "config": "ml/configs/b02_thu_anh.yaml",
+    "config_hash": "f21369a2d11f",
+    "seed": 42,
+    "dataset_version": "robots.json sha256 b066decc724a"
+  },
+  "duration_s": 1.0
+}

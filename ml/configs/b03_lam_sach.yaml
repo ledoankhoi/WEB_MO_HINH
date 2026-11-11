@@ -1,0 +1,56 @@
+# B3. Làm sạch và kiểm định chất lượng nhãn (docs/nhan-dang-robot/00-ke-hoach.md mục 8, B3).
+
+min_side: 128            # bỏ ảnh có cạnh ngắn (kích thước gốc) dưới 128 px
+max_aspect: 3.0          # bỏ ảnh có tỉ lệ khung (cạnh dài / cạnh ngắn) trên 3
+# Gần trùng. Kế hoạch ghi "pHash lệch ≤ 6 bit HOẶC cô-sin CLIP ≥ 0,95". Lần chạy đủ đầu tiên (11/11/2026) cho thấy luật đó nối
+# nhầm: một cụm 2.701 ảnh của 134 lớp (tranh hồ sơ Gundam cùng phong cách), 5.392 ảnh bị loại vì "gần trùng giữa các lớp".
+# Luật đã sửa (báo cáo B03a, mục 4): cặp gần trùng khi cô-sin ≥ clip_near_duplicate, hoặc pHash lệch ≤ phash_max_distance VÀ
+# cô-sin ≥ phash_min_cosine. Mọi cặp có cô-sin ≥ clip_pair_floor vẫn được ghi vào pairs.csv để phân tích.
+phash_max_distance: 6
+phash_min_cosine: 0.90
+clip_near_duplicate: 0.98
+clip_pair_floor: 0.95
+clip_model: ViT-L-14
+clip_pretrained: openai
+batch_size: 64
+loader_workers: 6
+outlier_trim: 0.10       # tâm lớp: bỏ 10% ảnh xa nhất rồi lấy trung bình lại
+outlier_k: 1.5           # ngoại lai khi khoảng cách > Q3 + 1,5 · IQR (Tukey)
+relevance_default: 0.5   # ngưỡng t_rel tạm thời; ngưỡng chính thức chọn trên mẫu kiểm định có nhãn tay
+
+# Zero-shot CLIP: xác suất "liên quan" = tổng xác suất softmax của nhóm dương.
+relevance_prompts:
+  positive:
+    - "a photo of a robot"
+    - "a photo of a toy robot"
+    - "an action figure of a robot"
+    - "a plastic model kit of a robot"
+    - "a screenshot of a giant robot from an anime"
+    - "a 3D render of a robot"
+    - "a drawing of a robot"
+    - "a toy robot in its box"
+  negative:
+    - "a photo of a person"
+    - "a close-up photo of a human face"
+    - "a text document"
+    - "a screenshot of a website"
+    - "a logo"
+    - "a photo of a landscape"
+    - "a photo of a real car on the street"
+    - "a photo of an animal"
+    - "a comic book page with many panels"
+    - "an empty toy box packaging"
+
+# Gán miền ảnh (zero-shot, lấy câu có xác suất cao nhất).
+domains:
+  "ảnh chụp đồ chơi / mô hình": "a photo of a toy or plastic model figure"
+  "ảnh chụp màn hình hoạt hình / anime": "a screenshot from an animated cartoon or anime"
+  "ảnh CGI / phim": "a CGI render or a still from a live-action movie"
+  "tranh vẽ": "a drawing or illustration"
+  "hộp sản phẩm": "a photo of a toy box packaging"
+
+# Mẫu cho người kiểm định
+audit_pre_size: 500       # mẫu trước lọc liên quan / ngoại lai: chọn t_rel, đo precision/recall của bộ lọc
+audit_final_size: 1000    # mẫu sau làm sạch: độ chính xác nhãn cuối
+audit_domain_size: 200    # trong mẫu cuối, gán thêm miền để đo độ chính xác gán miền
+seed: 2026

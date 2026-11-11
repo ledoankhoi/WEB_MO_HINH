@@ -1,0 +1,87 @@
+# B1. Danh mục robot (docs/nhan-dang-robot/00-ke-hoach.md mục 8, B1).
+#
+# Mỗi nhóm (group) là một dòng: lấy ứng viên từ các category, lọc theo cấu trúc trang, xếp hạng theo độ phổ biến
+# (số trang liên kết đến), lấy robot cửa hàng bán trước rồi lấy thêm theo hạng cho đủ hạn mức (quota).
+#
+# Độ phổ biến tốn nhiều yêu cầu nên tính hai tầng:
+#   tầng 1: độ dài trang (byte) cho mọi ứng viên, rẻ (50 trang một yêu cầu);
+#   tầng 2: đọc wikitext rồi đếm liên kết đến chỉ cho prefilter_factor × quota trang dài nhất đã qua bộ lọc cấu trúc.
+
+min_interval: 0.4          # giây tối thiểu giữa hai yêu cầu tới cùng một wiki
+prefilter_factor: 4
+backlink_cap_pages: 4      # tối đa 4 × 500 = 2000 liên kết đến; trang vượt trần ghi là "≥ 2000"
+store_map: store_robot_map.yaml
+description_chars: 600
+
+wikis:
+  tf:
+    label: TFWiki
+    api: https://tfwiki.net/mediawiki/api.php
+    page_url: https://tfwiki.net/wiki/
+  gundam:
+    label: The Gundam Wiki (fandom)
+    api: https://gundam.fandom.com/api.php
+    page_url: https://gundam.fandom.com/wiki/
+  ranger:
+    label: RangerWiki (fandom)
+    api: https://powerrangers.fandom.com/api.php
+    page_url: https://powerrangers.fandom.com/wiki/
+
+franchises:
+  - key: transformers
+    label: Transformers
+    wiki: tf
+    # Trang nhân vật của TFWiki mở đầu bằng thẻ phe {{factions|...}}; trang nhóm, vật, địa danh thì không.
+    require: factions
+    groups:
+      - {key: g1, label: "Generation 1", quota: 60, suffixes: ["G1", "POTP"],
+         categories: {Autobot: ["Generation 1 cartoon Autobots"], Decepticon: ["Generation 1 cartoon Decepticons"]}}
+      - {key: movie, label: "Phim live-action (2007–2023)", quota: 18, suffixes: ["Movie"],
+         categories: {Autobot: ["Movie Autobots"], Decepticon: ["Movie Decepticons"]}}
+      - {key: aligned, label: "Aligned (Transformers: Prime, War for Cybertron)", quota: 8, suffixes: ["WFC", "Prime"],
+         categories: {Autobot: ["Prime Autobots"], Decepticon: ["Prime Decepticons"]}}
+      - {key: bw, label: "Beast Wars", quota: 10, suffixes: ["BW"],
+         categories: {Maximal: ["Beast Wars Maximals"], Predacon: ["Beast Wars Predacons"]}}
+      - {key: animated, label: "Transformers: Animated", quota: 4, suffixes: ["Animated"],
+         categories: {Autobot: ["Animated Autobots"], Decepticon: ["Animated Decepticons"]}}
+      - {key: cyberverse, label: "Transformers: Cyberverse", quota: 2, suffixes: ["Cyberverse"],
+         categories: {Autobot: ["Cyberverse Autobots"], Decepticon: ["Cyberverse Decepticons"]}}
+      - {key: earthspark, label: "Transformers: EarthSpark", quota: 3, suffixes: ["ES"],
+         categories: {Autobot: ["EarthSpark Autobots"], Decepticon: ["EarthSpark Decepticons"]}}
+      - {key: one, label: "Transformers One (2024)", quota: 5, suffixes: ["One"],
+         categories: {Autobot: ["One Autobots", "Transformers One Autobots"], Decepticon: ["One Decepticons"]}}
+
+  - key: gundam
+    label: Gundam
+    wiki: gundam
+    # Chỉ lấy robot hình người: trường type của infobox là Suit (mobile suit); bỏ mobile armor, tàu, xe, máy bay.
+    # G Gundam gọi robot là Mobile Fighter (type = Fighter), Gundam Wing có Mobile Doll (type = Doll): nhận thêm ở đúng nhóm đó,
+    # vì ở kỷ nguyên khác type = Fighter là máy bay (ví dụ Core Fighter).
+    infobox: ["Infobox/Mobile Weapon"]
+    types: [Suit]
+    # Biến thể gần giống nhau (cùng số hiệu gốc và cùng tên chính, ví dụ MS-06F Zaku II, MS-06J Zaku II Ground Type) chỉ giữ một lớp.
+    merge_variants: true
+    groups:
+      - {key: uc, label: "Universal Century", quota: 32, categories: {"": ["Universal Century Mobile Weapons"]}}
+      - {key: ac, label: "After Colony (Gundam Wing)", quota: 8, types: [Suit, Doll], categories: {"": ["After Colony Mobile Weapons"]}}
+      - {key: ce, label: "Cosmic Era (Gundam SEED)", quota: 10, categories: {"": ["Cosmic Era Mobile Weapons"]}}
+      - {key: ad, label: "Anno Domini (Gundam 00)", quota: 7, categories: {"": ["Anno Domini Mobile Weapons"]}}
+      - {key: pd, label: "Post Disaster (Iron-Blooded Orphans)", quota: 6, categories: {"": ["Post Disaster Mobile Weapons"]}}
+      - {key: as, label: "Ad Stella (The Witch from Mercury)", quota: 4, categories: {"": ["Ad Stella Mobile Weapons"]}}
+      - {key: fc, label: "Future Century (G Gundam)", quota: 3, types: [Suit, Fighter], categories: {"": ["Future Century Mobile Weapons"]}}
+
+  - key: sentai
+    label: "Super Sentai / Power Rangers"
+    wiki: ranger
+    # Robot khổng lồ: Megazord của Power Rangers và Giant Robo của Super Sentai. Hai trang của cùng một robot
+    # (bản Power Rangers dùng lại cảnh quay Super Sentai) được gộp thành một lớp theo tên file ảnh infobox.
+    infobox: ["MegazordInfo", "SentaiMegazordInfo"]
+    groups:
+      - {key: sentai, label: "Super Sentai / Power Rangers", quota: 50,
+         categories: {"Power Rangers": ["Megazord"], "Super Sentai": ["Giant Robo"]}}
+
+# Trang bị loại bằng tay sau khi xem kết quả lần chạy đầu (07/11/2026), kèm lý do (ghi vào báo cáo).
+exclude:
+  "Predacon (BW)": "trang về phe Predacon của Beast Wars, không phải một robot"
+  "Scraplet": "sinh vật ký sinh dạng bầy, không phải một robot"
+  "Vector Prime": "nhân vật của Transformers: Cybertron, trang chung nhiều dòng, không mang thiết kế Animated"

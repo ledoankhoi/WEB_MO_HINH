@@ -1,0 +1,331 @@
+{
+  "step": "B04b",
+  "title": "Tập âm: ảnh không phải robot",
+  "environment": {
+    "time_utc": "2026-11-11T14:41:25+00:00",
+    "python": "3.11.9",
+    "os": "Windows 11 (build 10.0.26300, AMD64)",
+    "cpu": "12th Gen Intel(R) Core(TM) i7-12800H",
+    "cpu_count": 20,
+    "ram_gb": 31.7,
+    "colab": false,
+    "gpu": {
+      "torch_cuda": true,
+      "devices": [
+        {
+          "name": "NVIDIA RTX A2000 Laptop GPU",
+          "memory_gb": 4.0,
+          "capability": "8.6"
+        }
+      ],
+      "torch_cuda_version": "12.8",
+      "cudnn": 91900,
+      "nvidia_smi": [
+        "NVIDIA RTX A2000 Laptop GPU, 4096 MiB, 596.52"
+      ]
+    },
+    "packages": {
+      "numpy": "2.4.6",
+      "pandas": "3.1.1",
+      "scipy": "1.17.1",
+      "scikit-learn": "1.9.1",
+      "matplotlib": "3.11.2",
+      "torch": "2.11.0+cu128",
+      "torchvision": "0.26.0+cu128",
+      "timm": "1.0.31",
+      "open_clip_torch": "4.2.1",
+      "Pillow": "13.0.0",
+      "ImageHash": "4.3.2",
+      "mwparserfromhell": "0.7.2",
+      "rapidfuzz": "3.14.6",
+      "requests": "2.34.2",
+      "ddgs": "9.16.1"
+    },
+    "git": {
+      "commit": "c56347e213be91c0f2232924dc478302a25a5eb3",
+      "short": "c56347e",
+      "dirty": true
+    },
+    "data_root_env": null
+  },
+  "dataset_version": "488bd3a0c8320fefdc428ffa3837c600e3ad48bdeba4be614d2a6b4358bac0c2",
+  "sizes": {
+    "train": 1451,
+    "val": 723,
+    "test": 724
+  },
+  "attempts": {},
+  "tables": {
+    "Bảng 1. Kích thước tập âm": {
+      "columns": [
+        "Nhóm",
+        "Số ảnh",
+        "âm-train",
+        "âm-val",
+        "âm-test",
+        "Trung vị p_robot",
+        "Ảnh có p_robot ≥ 0,5"
+      ],
+      "rows": [
+        [
+          "COCO val2017",
+          2000,
+          1000,
+          500,
+          500,
+          "0,084",
+          "6,0%"
+        ],
+        [
+          "Đồ chơi, mô hình, xe",
+          898,
+          451,
+          223,
+          224,
+          "0,422",
+          "43,7%"
+        ],
+        [
+          "Tổng",
+          2898,
+          1451,
+          723,
+          724,
+          "0,117",
+          "17,7%"
+        ]
+      ]
+    },
+    "Bảng 2. Làm sạch tập âm": {
+      "columns": [
+        "Bước",
+        "Số ảnh"
+      ],
+      "rows": [
+        [
+          "Ảnh tải được",
+          2941
+        ],
+        [
+          "Bỏ: trùng trong tập âm",
+          1
+        ],
+        [
+          "Bỏ: cạnh ngắn < 128 px",
+          7
+        ],
+        [
+          "Vượt hạn mức mỗi nhóm hoặc không đọc được",
+          35
+        ],
+        [
+          "Còn lại",
+          2898
+        ]
+      ]
+    },
+    "Bảng 3. Theo truy vấn": {
+      "columns": [
+        "Truy vấn",
+        "Số ảnh",
+        "âm-train",
+        "âm-val",
+        "âm-test",
+        "Trung vị p_robot",
+        "Ảnh có p_robot ≥ 0,5"
+      ],
+      "rows": [
+        [
+          "diecast toy car",
+          70,
+          34,
+          18,
+          18,
+          "0,093",
+          "8,6%"
+        ],
+        [
+          "lego city set",
+          70,
+          36,
+          17,
+          17,
+          "0,278",
+          "22,9%"
+        ],
+        [
+          "teddy bear plush toy",
+          70,
+          35,
+          17,
+          18,
+          "0,338",
+          "30,0%"
+        ],
+        [
+          "fashion doll toy",
+          31,
+          14,
+          10,
+          7,
+          "0,698",
+          "67,7%"
+        ],
+        [
+          "superhero action figure",
+          32,
+          16,
+          7,
+          9,
+          "0,932",
+          "93,8%"
+        ],
+        [
+          "dinosaur toy figure",
+          70,
+          37,
+          16,
+          17,
+          "0,418",
+          "45,7%"
+        ],
+        [
+          "anime girl scale figure",
+          25,
+          12,
+          7,
+          6,
+          "0,259",
+          "36,0%"
+        ],
+        [
+          "rc monster truck toy",
+          70,
+          39,
+          15,
+          16,
+          "0,955",
+          "90,0%"
+        ],
+        [
+          "wooden toy train set",
+          60,
+          30,
+          12,
+          18,
+          "0,135",
+          "10,0%"
+        ],
+        [
+          "sports car photo",
+          70,
+          34,
+          20,
+          16,
+          "0,025",
+          "1,4%"
+        ],
+        [
+          "excavator construction machine",
+          64,
+          33,
+          16,
+          15,
+          "0,641",
+          "62,5%"
+        ],
+        [
+          "motorcycle photo",
+          21,
+          11,
+          5,
+          5,
+          "0,317",
+          "9,5%"
+        ],
+        [
+          "fighter jet aircraft",
+          52,
+          25,
+          15,
+          12,
+          "0,516",
+          "51,9%"
+        ],
+        [
+          "medieval knight armor",
+          70,
+          35,
+          16,
+          19,
+          "0,643",
+          "71,4%"
+        ],
+        [
+          "stormtrooper helmet replica",
+          54,
+          25,
+          17,
+          12,
+          "0,362",
+          "44,4%"
+        ],
+        [
+          "scale model tank kit",
+          69,
+          35,
+          15,
+          19,
+          "0,740",
+          "63,8%"
+        ]
+      ]
+    },
+    "Bảng 4. Giấy phép của ảnh COCO": {
+      "columns": [
+        "Giấy phép (COCO)",
+        "Số ảnh"
+      ],
+      "rows": [
+        [
+          "Attribution-NonCommercial-ShareAlike License",
+          580
+        ],
+        [
+          "Attribution-NonCommercial-NoDerivs License",
+          566
+        ],
+        [
+          "Attribution License",
+          351
+        ],
+        [
+          "Attribution-NonCommercial License",
+          250
+        ],
+        [
+          "Attribution-ShareAlike License",
+          159
+        ],
+        [
+          "Attribution-NoDerivs License",
+          92
+        ],
+        [
+          "No known copyright restrictions",
+          2
+        ]
+      ]
+    }
+  },
+  "reproduce": {
+    "commands": [
+      "ml/.venv/Scripts/python ml/scripts/b04b_tap_am.py"
+    ],
+    "config": "ml/configs/b04b_tap_am.yaml",
+    "config_hash": "72ebf4865cbf",
+    "seed": 42,
+    "dataset_version": "b04b_negatives.csv sha256 488bd3a0c832"
+  },
+  "duration_s": 2.3
+}

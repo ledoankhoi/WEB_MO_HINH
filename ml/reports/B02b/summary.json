@@ -1,0 +1,355 @@
+{
+  "step": "B02b",
+  "title": "Trùng lặp và nhãn mâu thuẫn trong ảnh thô",
+  "environment": {
+    "time_utc": "2026-11-11T06:43:18+00:00",
+    "python": "3.11.9",
+    "os": "Windows 11 (build 10.0.26300, AMD64)",
+    "cpu": "12th Gen Intel(R) Core(TM) i7-12800H",
+    "cpu_count": 20,
+    "ram_gb": 31.7,
+    "colab": false,
+    "gpu": {
+      "torch_cuda": true,
+      "devices": [
+        {
+          "name": "NVIDIA RTX A2000 Laptop GPU",
+          "memory_gb": 4.0,
+          "capability": "8.6"
+        }
+      ],
+      "torch_cuda_version": "12.8",
+      "cudnn": 91900,
+      "nvidia_smi": [
+        "NVIDIA RTX A2000 Laptop GPU, 4096 MiB, 596.52"
+      ]
+    },
+    "packages": {
+      "numpy": "2.4.6",
+      "pandas": "3.1.1",
+      "scipy": "1.17.1",
+      "matplotlib": "3.11.2",
+      "torch": "2.11.0+cu128",
+      "torchvision": "0.26.0+cu128",
+      "timm": "1.0.31",
+      "open_clip_torch": "4.2.1",
+      "Pillow": "13.0.0",
+      "ImageHash": "4.3.2",
+      "mwparserfromhell": "0.7.2",
+      "rapidfuzz": "3.14.6",
+      "requests": "2.34.2",
+      "ddgs": "9.16.1"
+    },
+    "git": {
+      "commit": "c56347e213be91c0f2232924dc478302a25a5eb3",
+      "short": "c56347e",
+      "dirty": true
+    },
+    "data_root_env": null
+  },
+  "total": 75792,
+  "unique": 66462,
+  "extra": 9330,
+  "within_class_extra": 753,
+  "conflict_groups": 4131,
+  "conflict_rows": 12822,
+  "tables": {
+    "Bảng 1. Trùng lặp trên toàn bộ ảnh thô": {
+      "columns": [
+        "Chỉ số",
+        "Số",
+        "Tỉ lệ trên tổng ảnh"
+      ],
+      "rows": [
+        [
+          "Tổng số ảnh tải về",
+          75792,
+          "100%"
+        ],
+        [
+          "Ảnh khác nhau thật sự (số mã sha1)",
+          66462,
+          "87,7%"
+        ],
+        [
+          "Bản trùng hệt (bản thừa)",
+          9330,
+          "12,3%"
+        ],
+        [
+          "— trong đó: thừa ngay trong cùng một lớp",
+          753,
+          "1,0%"
+        ],
+        [
+          "Nhóm ảnh nằm ở ≥ 2 lớp (nhãn mâu thuẫn)",
+          4131,
+          "—"
+        ],
+        [
+          "Dòng ảnh thuộc các nhóm nhãn mâu thuẫn",
+          12822,
+          "16,9%"
+        ],
+        [
+          "Nhóm ảnh nằm ở hai franchise khác nhau",
+          21,
+          "—"
+        ]
+      ]
+    },
+    "Bảng 2. Theo nguồn": {
+      "columns": [
+        "Nguồn",
+        "Ảnh",
+        "Bản thừa",
+        "Tỉ lệ thừa",
+        "Ảnh nhãn mâu thuẫn",
+        "Tỉ lệ mâu thuẫn"
+      ],
+      "rows": [
+        [
+          "Wiki người hâm mộ",
+          9856,
+          859,
+          "8,7%",
+          1121,
+          "11,4%"
+        ],
+        [
+          "Tìm ảnh (ddgs: DuckDuckGo + Bing)",
+          65936,
+          8332,
+          "12,6%",
+          11701,
+          "17,7%"
+        ]
+      ]
+    },
+    "Bảng 3. Theo franchise": {
+      "columns": [
+        "Franchise",
+        "Ảnh",
+        "Bản thừa",
+        "Tỉ lệ thừa",
+        "Ảnh nhãn mâu thuẫn",
+        "Tỉ lệ mâu thuẫn"
+      ],
+      "rows": [
+        [
+          "Transformers",
+          32038,
+          5303,
+          "16,6%",
+          7058,
+          "22,0%"
+        ],
+        [
+          "Gundam",
+          26358,
+          1080,
+          "4,1%",
+          1455,
+          "5,5%"
+        ],
+        [
+          "Super Sentai / Power Rangers",
+          17396,
+          2925,
+          "16,8%",
+          4309,
+          "24,8%"
+        ]
+      ]
+    },
+    "Bảng 4. Một ảnh nằm ở bao nhiêu lớp": {
+      "columns": [
+        "Một ảnh nằm ở",
+        "Số nhóm"
+      ],
+      "rows": [
+        [
+          "2 lớp",
+          2740
+        ],
+        [
+          "3 lớp",
+          632
+        ],
+        [
+          "4–5 lớp",
+          403
+        ],
+        [
+          "6–10 lớp",
+          255
+        ],
+        [
+          "11–20 lớp",
+          81
+        ],
+        [
+          "trên 20 lớp",
+          20
+        ]
+      ]
+    },
+    "Bảng 5. 12 ảnh nằm ở nhiều lớp nhất": {
+      "columns": [
+        "Số lớp",
+        "Nguồn",
+        "Tiêu đề",
+        "Kích thước gốc",
+        "Tên miền"
+      ],
+      "rows": [
+        [
+          48,
+          "Wiki người hâm mộ",
+          "File:Site-logo.png",
+          "250×65",
+          "transformers.fandom.com"
+        ],
+        [
+          44,
+          "Wiki người hâm mộ",
+          "File:Tvicon.png",
+          "512×512",
+          "powerrangers.fandom.com"
+        ],
+        [
+          41,
+          "Tìm ảnh",
+          "10 Transformers the G1 Cartoon Completely Wasted",
+          "1400×700",
+          "www.cbr.com"
+        ],
+        [
+          40,
+          "Tìm ảnh",
+          "Transformers Retro G1 Autobot Brawn (Robot mode to Off-Road ",
+          "1280×720",
+          "www.youtube.com"
+        ],
+        [
+          39,
+          "Tìm ảnh",
+          "Aurora - Toyworld (2013) - Transformers Toy DB",
+          "300×122",
+          "www.transformers-universe.com"
+        ],
+        [
+          39,
+          "Tìm ảnh",
+          "TRANSFORMERS G1 FIGURE PART LOT AS SHOWN AS IS AS FOUND | eB",
+          "1200×1420",
+          "www.ebay.com"
+        ],
+        [
+          38,
+          "Wiki người hâm mộ",
+          "File:Power nav icon.png",
+          "33×61",
+          "powerrangers.fandom.com"
+        ],
+        [
+          36,
+          "Tìm ảnh",
+          "TRANSFORMERS G1 FIGURE PART LOT AS SHOWN AS IS AS FOUND | eB",
+          "1200×1600",
+          "www.ebay.com"
+        ],
+        [
+          36,
+          "Tìm ảnh",
+          "TRANSFORMERS G1 FIGURE PART LOT AS SHOWN AS IS AS FOUND | eB",
+          "1160×1584",
+          "www.ebay.com"
+        ],
+        [
+          34,
+          "Wiki người hâm mộ",
+          "File:Icon-crosswiki.png",
+          "228×213",
+          "powerrangers.fandom.com"
+        ],
+        [
+          32,
+          "Wiki người hâm mộ",
+          "File:Rad-sm.gif",
+          "93×85",
+          "transformers.fandom.com"
+        ],
+        [
+          31,
+          "Tìm ảnh",
+          "TRANSFORMERS G1 FIGURE PART LOT AS SHOWN AS IS AS FOUND | eB",
+          "470×500",
+          "www.ebay.com"
+        ]
+      ]
+    },
+    "Bảng 6. Các ví dụ trong hình": {
+      "columns": [
+        "Ví dụ",
+        "Số lần xuất hiện",
+        "Số lớp",
+        "Một số lớp chứa ảnh"
+      ],
+      "rows": [
+        [
+          "Ảnh báo lỗi của máy chủ (\"THIS IMAGE WAS NOT FOUND\")",
+          31,
+          11,
+          "transformers-grimlock-g1, transformers-hound-g1, transformers-jazz-g1, transformers-megatron-bw …"
+        ],
+        [
+          "Logo của wiki",
+          48,
+          48,
+          "transformers-alpha-trion, transformers-arcee-g1, transformers-astrotrain-g1, transformers-blades-g1 …"
+        ],
+        [
+          "Biểu tượng TV của wiki",
+          44,
+          44,
+          "sentai-astro-megazord, sentai-battleship-crocodaioh, sentai-bull-rider-megazord, sentai-cosmic-dragon-zord …"
+        ],
+        [
+          "Bộ Menasor: robot hợp thể và thành viên Motormaster",
+          2,
+          2,
+          "transformers-menasor-g1, transformers-motormaster-g1"
+        ],
+        [
+          "Ảnh nhóm nhân vật Transformers Animated",
+          2,
+          2,
+          "transformers-bumblebee-animated, transformers-optimus-prime-animated"
+        ],
+        [
+          "Ảnh không liên quan (móc khoá Etsy) cho \"Defensor\", \"Hot Spot\"",
+          2,
+          2,
+          "transformers-defensor-g1, transformers-hot-spot-g1"
+        ],
+        [
+          "Trùng tên: hai robot \"Thunder Megazord\"",
+          2,
+          2,
+          "sentai-thunder-megazord-mighty-morphin, sentai-thunder-megazord-ninja-storm"
+        ]
+      ]
+    }
+  },
+  "reproduce": {
+    "commands": [
+      "ml/.venv/Scripts/python ml/scripts/b02b_trung_lap.py"
+    ],
+    "config": null,
+    "config_hash": null,
+    "seed": null,
+    "dataset_version": "b02_manifest.csv.gz sha256 72f2ed4c146f"
+  },
+  "duration_s": 0.5
+}

@@ -1,0 +1,35 @@
+[
+ {
+  "c": 1,
+  "fp32_objective": 95183.2008,
+  "fp64_objective": 95183.1121,
+  "fp32_val": 55.21,
+  "fp64_val": 55.19,
+  "fp32_evals": 98,
+  "fp64_evals": 508,
+  "fp32_seconds": 1.4,
+  "fp64_seconds": 103.5
+ },
+ {
+  "c": 10,
+  "fp32_objective": 47047.3339,
+  "fp64_objective": 47047.0015,
+  "fp32_val": 65.45,
+  "fp64_val": 65.47,
+  "fp32_evals": 198,
+  "fp64_evals": 3526,
+  "fp32_seconds": 2.8,
+  "fp64_seconds": 719.7
+ },
+ {
+  "c": 100,
+  "fp32_objective": 18427.1608,
+  "fp64_objective": 18426.964,
+  "fp32_val": 63.92,
+  "fp64_val": 63.87,
+  "fp32_evals": 454,
+  "fp64_evals": 5823,
+  "fp32_seconds": 6.4,
+  "fp64_seconds": 6163.3
+ }
+]

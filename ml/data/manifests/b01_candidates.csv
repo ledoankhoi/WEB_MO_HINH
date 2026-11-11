@@ -1,0 +1,1451 @@
+franchise,group,title,faction,page_bytes,passed,reason,backlinks,capped,partner,selected_by,rank
+transformers,g1,Arcee (G1),Autobot,95591,True,,651,False,,store,
+transformers,g1,Blades (G1),Autobot,66314,True,,272,False,,store,
+transformers,g1,Blast Off (G1),Decepticon,95163,True,,396,False,,store,
+transformers,g1,Bonecrusher (G1),Decepticon,80746,True,,293,False,,store,
+transformers,g1,Brawl (G1),Decepticon,95529,True,,387,False,,store,
+transformers,g1,Breakdown (G1),Decepticon,84945,True,,342,False,,store,
+transformers,g1,Bruticus (G1),Decepticon,75004,True,,544,False,,store,
+transformers,g1,Bumblebee (G1),Autobot,210395,True,,1112,False,,store,
+transformers,g1,Cliffjumper (G1),Autobot,127043,True,,776,False,,store,
+transformers,g1,Dead End (G1),Decepticon,79819,True,,311,False,,store,
+transformers,g1,Defensor (G1),Autobot,43874,True,,323,False,,store,
+transformers,g1,Devastator (G1),Decepticon,77443,True,,806,False,,store,
+transformers,g1,Drag Strip (G1),Decepticon,79310,True,,269,False,,store,
+transformers,g1,First Aid (G1),Autobot,90717,True,,386,False,,store,
+transformers,g1,Galvatron (G1),Decepticon,115766,True,,850,False,,store,
+transformers,g1,Grimlock (G1),Autobot,106243,True,,822,False,,store,
+transformers,g1,Groove (G1),Autobot,59771,True,,235,False,,store,
+transformers,g1,Hook (G1),Decepticon,75601,True,,312,False,,store,
+transformers,g1,Hot Spot (G1),Autobot,67444,True,,312,False,,store,
+transformers,g1,Hound (G1),Autobot,148106,True,,829,False,,store,
+transformers,g1,Ironhide (G1),Autobot,85566,True,,489,False,,store,
+transformers,g1,Jazz (G1),Autobot,102214,True,,599,False,,store,
+transformers,g1,Jetfire (G1),Autobot,104809,True,,721,False,,store,
+transformers,g1,Long Haul (G1),Decepticon,75200,True,,275,False,,store,
+transformers,g1,Megatron (G1),Decepticon,293097,True,,2000,True,,store,
+transformers,g1,Menasor (G1),Decepticon,88598,True,,482,False,,store,
+transformers,g1,Mixmaster (G1),Decepticon,71207,True,,247,False,,store,
+transformers,g1,Motormaster (G1),Decepticon,97888,True,,348,False,,store,
+transformers,g1,Onslaught (G1),Decepticon,119889,True,,487,False,,store,
+transformers,g1,Optimus Prime (G1),Autobot,353399,True,,1996,True,,store,
+transformers,g1,Hot Rod (G1),Autobot,146163,True,,854,False,,store,
+transformers,g1,Scavenger (G1),Decepticon,85523,True,,290,False,,store,
+transformers,g1,Scrapper (G1),Decepticon,76170,True,,332,False,,store,
+transformers,g1,Shockwave (G1),Decepticon,117680,True,,1011,False,,store,
+transformers,g1,Skywarp (G1),Decepticon,100639,True,,552,False,,store,
+transformers,g1,Slag (G1),Autobot,80910,True,,433,False,,store,
+transformers,g1,Sludge (G1),Autobot,94168,True,,401,False,,store,
+transformers,g1,Snarl (G1),Autobot,101391,True,,401,False,,store,
+transformers,g1,Soundwave (G1),Decepticon,159533,True,,1006,False,,store,
+transformers,g1,Star Saber (G1),Autobot,104905,True,,587,False,,store,
+transformers,g1,Starscream (G1),Decepticon,256791,True,,1376,False,,store,
+transformers,g1,Streetwise (G1),Autobot,65555,True,,279,False,,store,
+transformers,g1,Swindle (G1),Decepticon,130363,True,,650,False,,store,
+transformers,g1,Swoop (G1),Autobot,78896,True,,427,False,,store,
+transformers,g1,Thundercracker (G1),Decepticon,91818,True,,464,False,,store,
+transformers,g1,Ultra Magnus (G1),Autobot,112952,True,,772,False,,store,
+transformers,g1,Volcanicus (POTP),,22813,False,không có thẻ phe {{factions}} (không phải trang nhân vật),101,False,,store,
+transformers,g1,Vortex (G1),Decepticon,98774,True,,342,False,,store,
+transformers,g1,Wheeljack (G1),Autobot,103757,True,,800,False,,store,
+transformers,g1,Wildrider (G1),Decepticon,65580,True,,242,False,,store,
+transformers,g1,Fortress Maximus (G1),Autobot,154797,True,,1084,False,,popularity,2
+transformers,g1,Scorponok (G1),Decepticon,153618,True,,1330,False,,popularity,1
+transformers,g1,Alpha Trion,Autobot,135874,True,,1059,False,,popularity,3
+transformers,g1,Mirage (G1),Autobot,126398,True,,764,False,,popularity,6
+transformers,g1,Silverbolt (G1),Autobot,121640,True,,454,False,,,30
+transformers,g1,Skids (G1),Autobot,116068,True,,653,False,,popularity,10
+transformers,g1,Metroplex (G1),Autobot,112917,True,,1029,False,,popularity,4
+transformers,g1,Astrotrain (G1),Decepticon,111715,True,,711,False,,popularity,7
+transformers,g1,Rumble (G1),Decepticon,109908,True,,710,False,,popularity,8
+transformers,g1,Trypticon (G1),Decepticon,108032,True,,927,False,,popularity,5
+transformers,g1,Wheelie (G1),Autobot,104049,True,,560,False,,,16
+transformers,g1,Springer (G1),Autobot,103926,True,,592,False,,,14
+transformers,g1,Bombshell (G1),Decepticon,103296,True,,553,False,,,18
+transformers,g1,Cosmos (G1),Autobot,101788,True,,497,False,,,25
+transformers,g1,Elita One (G1),Autobot,101169,True,,533,False,,,21
+transformers,g1,Chromedome (G1),Autobot,100200,True,,451,False,,,31
+transformers,g1,Trailbreaker (G1),Autobot,98196,True,,557,False,,,17
+transformers,g1,Blurr (G1),Autobot,97672,True,,664,False,,popularity,9
+transformers,g1,Blitzwing (G1),Decepticon,97651,True,,640,False,,,11
+transformers,g1,Brawn (G1),Autobot,97069,True,,534,False,,,20
+transformers,g1,Bluestreak (G1),Autobot,94320,True,,505,False,,,24
+transformers,g1,Superion (G1),Autobot,93024,True,,535,False,,,19
+transformers,g1,Mindwipe (G1),Decepticon,89164,True,,421,False,,,38
+transformers,g1,Beachcomber (G1),Autobot,86386,True,,451,False,,,32
+transformers,g1,Windcharger (G1),Autobot,86030,True,,407,False,,,40
+transformers,g1,Shrapnel (G1),Decepticon,85724,True,,392,False,,,45
+transformers,g1,Dirge (G1),Decepticon,85620,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,g1,Frenzy (G1),Decepticon,85491,True,,518,False,,,22
+transformers,g1,Sixshot (G1),Decepticon,85352,True,,639,False,,,12
+transformers,g1,Powerglide (G1),Autobot,85157,True,,385,False,,,47
+transformers,g1,Air Raid (G1),Autobot,84619,True,,318,False,,,56
+transformers,g1,Hardhead (G1),Autobot,82759,True,,432,False,,,35
+transformers,g1,Omega Supreme (G1),Autobot,82732,True,,614,False,,,13
+transformers,g1,Fireflight (G1),Autobot,82289,True,,243,False,,,72
+transformers,g1,Slingshot (G1),Autobot,81423,True,,298,False,,,60
+transformers,g1,Huffer (G1),Autobot,81341,True,,402,False,,,42
+transformers,g1,Kickback (G1),Decepticon,80384,True,,361,False,,,51
+transformers,g1,Brainstorm (G1),Autobot,79758,True,,441,False,,,34
+transformers,g1,Thrust (G1),Decepticon,79550,True,,423,False,,,37
+transformers,g1,Gears (G1),Autobot,77872,True,,384,False,,,48
+transformers,g1,Red Alert (G1),Autobot,76736,True,,460,False,,,29
+transformers,g1,Wreck-Gar (G1),Autobot,76594,True,,462,False,,,28
+transformers,g1,Reflector (G1),Decepticon,76049,True,,373,False,,,49
+transformers,g1,Highbrow (G1),Autobot,75539,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,g1,Ramjet (G1),Decepticon,75425,True,,463,False,,,27
+transformers,g1,Tracks (G1),Autobot,73979,True,,447,False,,,33
+transformers,g1,Swerve (G1),Autobot,73425,True,,343,False,,,54
+transformers,g1,Sky Lynx (G1),Autobot,73238,True,,586,False,,,15
+transformers,g1,Octane,Decepticon,72989,True,,400,False,,,43
+transformers,g1,Weirdwolf (G1),Decepticon,72625,True,,316,False,,,58
+transformers,g1,Tailgate (G1),Autobot,71912,True,,357,False,,,53
+transformers,g1,Chromia (G1),Autobot,68923,True,,419,False,,,39
+transformers,g1,Broadside (G1),Autobot,68098,True,,334,False,,,55
+transformers,g1,Warpath (G1),Autobot,67830,True,,363,False,,,50
+transformers,g1,Smokescreen (G1),Autobot,66120,True,,358,False,,,52
+transformers,g1,Inferno (G1),Autobot,64200,True,,394,False,,,44
+transformers,g1,Grapple (G1),Autobot,62902,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,g1,Ratbat (G1),Decepticon,62851,True,,516,False,,,23
+transformers,g1,Sandstorm (G1),Autobot,62768,True,,318,False,,,57
+transformers,g1,Hoist (G1),Autobot,60931,True,,406,False,,,41
+transformers,g1,Sentinel Prime (G1),Autobot,58974,True,,485,False,,,26
+transformers,g1,Razorclaw (G1),Decepticon,58473,True,,283,False,,,62
+transformers,g1,Acid Storm (G1),Decepticon,58321,True,,248,False,,,69
+transformers,g1,Predaking (G1),Decepticon,55449,True,,431,False,,,36
+transformers,g1,Skullcruncher (G1),Decepticon,53660,True,,274,False,,,65
+transformers,g1,Seaspray (G1),Autobot,53225,True,,264,False,,,67
+transformers,g1,Hun-Gurrr (G1),Decepticon,52147,True,,232,False,,,75
+transformers,g1,Buzzsaw (G1),Decepticon,51723,True,,301,False,,,59
+transformers,g1,Sunstorm (G1),Decepticon,51181,True,,274,False,,,66
+transformers,g1,Misfire (G1),Decepticon,49721,True,,220,False,,,77
+transformers,g1,Apeface,Decepticon,48607,True,,241,False,,,73
+transformers,g1,Runamuck (G1),Decepticon,48552,True,,275,False,,,64
+transformers,g1,Punch (G1),Autobot,47917,True,,292,False,,,61
+transformers,g1,Scattershot (G1),Autobot,47079,True,,198,False,,,81
+transformers,g1,Teletraan I,Autobot,46038,True,,388,False,,,46
+transformers,g1,Strafe (G1),Autobot,45646,True,,178,False,,,92
+transformers,g1,Headstrong (G1),Decepticon,44913,True,,172,False,,,93
+transformers,g1,Roller (G1),Autobot,44847,True,,179,False,,,90
+transformers,g1,Rampage (G1),Decepticon,43833,True,,154,False,,,99
+transformers,g1,Tantrum (G1),Decepticon,43784,True,,163,False,,,94
+transformers,g1,Divebomb (G1),Decepticon,43570,True,,193,False,,,85
+transformers,g1,Combat Deck (G1),Autobot,42942,True,,105,False,,,124
+transformers,g1,Eject (G1),Autobot,41559,True,,258,False,,,68
+transformers,g1,Runabout (G1),Decepticon,41219,True,,246,False,,,70
+transformers,g1,Pointblank,Autobot,40799,True,,157,False,,,97
+transformers,g1,Computron (G1),Autobot,40431,True,,279,False,,,63
+transformers,g1,Cutthroat (G1),Decepticon,39632,True,,138,False,,,108
+transformers,g1,Sinnertwin (G1),Decepticon,39375,True,,155,False,,,98
+transformers,g1,Afterburner (G1),Autobot,39122,True,,130,False,,,112
+transformers,g1,Blot (G1),Decepticon,39060,True,,160,False,,,96
+transformers,g1,Steeljaw (G1),Autobot,38824,True,,205,False,,,79
+transformers,g1,Pipes (G1),Autobot,38249,True,,203,False,,,80
+transformers,g1,Sureshot (G1),Autobot,37685,True,,180,False,,,89
+transformers,g1,Rippersnapper (G1),Decepticon,37558,True,,143,False,,,105
+transformers,g1,Nosecone (G1),Autobot,37126,True,,137,False,,,109
+transformers,g1,Abominus (G1),Decepticon,36553,True,,232,False,,,76
+transformers,g1,Crosshairs (G1),Autobot,35048,True,,186,False,,,88
+transformers,g1,Rewind (G1),Autobot,34828,True,,212,False,,,78
+transformers,g1,Triggerhappy (G1),Decepticon,34813,True,,193,False,,,86
+transformers,g1,Ramhorn (G1),Autobot,34216,True,,191,False,,,87
+transformers,g1,Slugslinger (G1),Decepticon,34161,True,,195,False,,,83
+transformers,g1,Snapdragon (G1),Decepticon,33739,True,,153,False,,,100
+transformers,g1,Outback (G1),Autobot,33458,True,,197,False,,,82
+transformers,g1,Zarak (G1),Decepticon,32380,True,,238,False,,,74
+transformers,g1,Moonracer (G1),Autobot,29965,True,,162,False,,,95
+transformers,g1,Nightbird (G1),Decepticon,29206,True,,244,False,,,71
+transformers,g1,Cerebros (G1),Autobot,27868,True,,153,False,,,101
+transformers,g1,Firestar (G1),Autobot,26853,True,,143,False,,,106
+transformers,g1,Dion (G1),Autobot,25036,True,,131,False,,,111
+transformers,g1,Firebolt (G1),Autobot,24650,True,,123,False,,,114
+transformers,g1,Fracas,Decepticon,23981,True,,96,False,,,129
+transformers,g1,Full-Tilt (G1),Decepticon,23816,True,,107,False,,,122
+transformers,g1,Devcon (G1),Autobot,23411,True,,148,False,,,102
+transformers,g1,Cloudburst,Autobot,22816,True,,145,False,,,104
+transformers,g1,Stylor,Autobot,22784,True,,105,False,,,125
+transformers,g1,Caliburst (G1),Decepticon,22723,True,,115,False,,,118
+transformers,g1,Fastlane,Autobot,22694,True,,110,False,,,120
+transformers,g1,Arcana,Autobot,22620,True,,93,False,,,131
+transformers,g1,Guardian robot,Autobot,22580,True,,179,False,,,91
+transformers,g1,Hauler,Autobot,22571,True,,89,False,,,133
+transformers,g1,Greenlight,Autobot,22508,True,,103,False,,,128
+transformers,g1,Blowpipe (G1),Decepticon,22064,True,,127,False,,,113
+transformers,g1,Pinpointer (G1),Autobot,21451,True,,106,False,,,123
+transformers,g1,Peacemaker,Autobot,21071,True,,118,False,,,116
+transformers,g1,Aimless,Decepticon,20830,True,,105,False,,,126
+transformers,g1,Ion Storm,Decepticon,20439,True,,84,False,,,136
+transformers,g1,Nova Storm (G1),Decepticon,20389,True,,86,False,,,134
+transformers,g1,Rollbar (G1),Autobot,20272,True,,94,False,,,130
+transformers,g1,Cloudraker (G1),Autobot,20213,True,,104,False,,,127
+transformers,g1,Cog (G1),Autobot,20134,True,,84,False,,,137
+transformers,g1,Duros,Autobot,19721,True,,63,False,,,150
+transformers,g1,Overkill (G1),Decepticon,19530,True,,133,False,,,110
+transformers,g1,Spoilsport,Autobot,19481,True,,93,False,,,132
+transformers,g1,Nightstick (G1),Decepticon,19457,True,,116,False,,,117
+transformers,g1,Searchlight (G1),Autobot,19453,True,,70,False,,,145
+transformers,g1,Wideload (G1),Autobot,19197,True,,73,False,,,141
+transformers,g1,Scamper,Autobot,19098,True,,74,False,,,140
+transformers,g1,Chase (G1),Autobot,19031,True,,71,False,,,144
+transformers,g1,Hotlink (G1),Decepticon,18026,True,,85,False,,,135
+transformers,g1,Zeta Prime (G1),Autobot,17908,True,,195,False,,,84
+transformers,g1,Six-Gun,Autobot,17702,True,,69,False,,,146
+transformers,g1,Wingspan,Decepticon,17687,True,,110,False,,,121
+transformers,g1,Doctor Arkeville,Decepticon,17493,True,,147,False,,,103
+transformers,g1,Pounce,Decepticon,16409,True,,113,False,,,119
+transformers,g1,Nacelle (G1),Decepticon,15653,True,,65,False,,,149
+transformers,g1,Lancer,Autobot,15508,True,,73,False,,,142
+transformers,g1,Monzo,Decepticon,15478,True,,57,False,,,153
+transformers,g1,Vorath,Decepticon,15123,True,,67,False,,,147
+transformers,g1,Gort,Autobot,14961,True,,80,False,,,139
+transformers,g1,Insecticon clone,Decepticon,14878,True,,122,False,,,115
+transformers,g1,Freeway (G1),Autobot,14383,True,,58,False,,,152
+transformers,g1,Air Warrior,Decepticon,14060,True,,141,False,,,107
+transformers,g1,Bitstream (G1),Decepticon,12675,True,,59,False,,,151
+transformers,g1,Paradron Medic,Autobot,12539,True,,40,False,,,161
+transformers,g1,Recoil (G1),Autobot,12326,True,,66,False,,,148
+transformers,g1,Grax,Decepticon,11729,True,,54,False,,,154
+transformers,g1,Slammer,Autobot,10980,True,,47,False,,,157
+transformers,g1,Slugfest (G1),Decepticon,10766,True,,73,False,,,143
+transformers,g1,Krunk,Decepticon,10640,True,,43,False,,,160
+transformers,g1,Spasma,Decepticon,9410,True,,36,False,,,163
+transformers,g1,Cyclonus's Armada (G1),Decepticon,8807,True,,32,False,,,164
+transformers,g1,Playback (G1),Autobot,7141,True,,31,False,,,165
+transformers,g1,Halonix Maximus,Autobot,6729,True,,50,False,,,156
+transformers,g1,Sentinel (G1),Decepticon,6567,True,,29,False,,,167
+transformers,g1,Trannis,Decepticon,6305,True,,51,False,,,155
+transformers,g1,Beta (G1),Autobot,6199,True,,83,False,,,138
+transformers,g1,Zaptrap,Decepticon,6007,True,,37,False,,,162
+transformers,g1,Autobot X (G1),Autobot,5688,True,,47,False,,,158
+transformers,g1,Primon,Autobot,5505,True,,46,False,,,159
+transformers,g1,Optimus Prime clone,Decepticon,5090,True,,30,False,,,166
+transformers,g1,Dropkick (G1),Decepticon,4143,True,,20,False,,,173
+transformers,g1,Teletraan II,Autobot,4069,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,g1,Deceptitran,Decepticon,3861,True,,21,False,,,172
+transformers,g1,Warrior,Decepticon,3642,True,,11,False,,,177
+transformers,g1,Guardian Prime,Autobot,3369,True,,28,False,,,168
+transformers,g1,Gyronian Sentry,Autobot,3295,True,,25,False,,,169
+transformers,g1,Shothole,Decepticon,3225,True,,23,False,,,171
+transformers,g1,Blast (G1),Decepticon,3168,True,,10,False,,,179
+transformers,g1,Autoscout,Decepticon,2989,True,,16,False,,,175
+transformers,g1,Salvo (G1),Decepticon,2856,True,,25,False,,,170
+transformers,g1,Starscream clone (G1),Decepticon,2726,True,,15,False,,,176
+transformers,g1,Renegade Decepticon,Decepticon,2590,True,,19,False,,,174
+transformers,g1,Scrambling neon Decepticon,Decepticon,2328,True,,6,False,,,182
+transformers,g1,Head Guard,Decepticon,2171,True,,6,False,,,183
+transformers,g1,Watchdog (G1),Decepticon,2137,True,,9,False,,,180
+transformers,g1,Robodoctor,Autobot,1920,True,,11,False,,,178
+transformers,g1,Ancient Autobots,Autobot,1916,True,,8,False,,,181
+transformers,g1,ASD-324-ddd-3e3c1 model Decepticon,Decepticon,1831,True,,4,False,,,184
+transformers,g1,Robot Conversion Troop,Decepticon,1809,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,g1,Hood Transformer,Autobot,1566,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,g1,Devron (G1),Decepticon,1359,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,g1,Floron,Decepticon,1320,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,g1,Ghoulon,Decepticon,1286,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,g1,Cannibaron,Decepticon,1276,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,g1,Gladiaron,Decepticon,1224,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,g1,Murdron,Decepticon,1196,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,g1,Bloodron,Decepticon,1153,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,g1,Pole vault Transformer,Autobot,1134,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,g1,Dery,Decepticon,1071,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,g1,Rapiron,Decepticon,745,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,g1,Pinoy,Decepticon,710,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,g1,Prophetic dead Decepticon,Decepticon,671,True,,2,False,,,185
+transformers,movie,Bumblebee (Movie),Autobot,169326,True,,1064,False,,store,
+transformers,movie,Megatron (Movie),Decepticon,111696,True,,966,False,,store,
+transformers,movie,Optimus Prime (Movie),Autobot,169444,True,,1199,False,,store,
+transformers,movie,Starscream (Movie),Decepticon,103871,True,,587,False,,store,
+transformers,movie,Ironhide (Movie),Autobot,93308,True,,546,False,,popularity,1
+transformers,movie,Arcee (Movie),Autobot,86653,True,,304,False,,popularity,6
+transformers,movie,Ratchet (Movie),Autobot,77460,True,,470,False,,popularity,2
+transformers,movie,Jazz (Movie),Autobot,70906,True,,321,False,,popularity,5
+transformers,movie,Barricade (Movie),Decepticon,68224,True,,323,False,,popularity,3
+transformers,movie,Blackout (Movie),Decepticon,67840,True,,280,False,,popularity,9
+transformers,movie,Shockwave (Movie),Decepticon,66478,True,,302,False,,popularity,7
+transformers,movie,Brawl (Movie),Decepticon,65939,True,,246,False,,popularity,10
+transformers,movie,Jetfire (Movie),Autobot,58107,True,,299,False,,popularity,8
+transformers,movie,Hound (Movie),Autobot,47160,True,,187,False,,popularity,12
+transformers,movie,Sideswipe (Movie),Autobot,44634,True,,323,False,,popularity,4
+transformers,movie,Scorponok (Movie),Decepticon,43198,True,,175,False,,popularity,13
+transformers,movie,Bonecrusher (Movie),Decepticon,42128,True,,172,False,,popularity,14
+transformers,movie,Frenzy (Movie),Decepticon,39526,True,,212,False,,popularity,11
+transformers,movie,Elita-One (Movie),Autobot,33397,True,,136,False,,,18
+transformers,movie,Wheeljack (Movie),Autobot,27900,True,,172,False,,,15
+transformers,movie,Mirage (Movie),Autobot,25683,True,,99,False,,,21
+transformers,movie,Dino,Autobot,25414,True,,150,False,,,17
+transformers,movie,Dropkick (Movie),Autobot,24710,True,,156,False,,,16
+transformers,movie,Cliffjumper (Movie),Autobot,24622,True,,100,False,,,20
+transformers,movie,Longarm (Movie),Autobot,18359,True,,81,False,,,24
+transformers,movie,Payload (Movie),Decepticon,15560,True,,89,False,,,23
+transformers,movie,Wreckage (Movie),Decepticon,15412,True,,74,False,,,26
+transformers,movie,Armorhide (Movie),Autobot,13477,True,,56,False,,,29
+transformers,movie,Swindle (Movie),Autobot,13163,True,,91,False,,,22
+transformers,movie,Dreadwing (Movie),Autobot,13051,True,,102,False,,,19
+transformers,movie,Air Raid (Movie),Autobot,12779,True,,54,False,,,30
+transformers,movie,Stockade (Movie),Decepticon,12373,True,,76,False,,,25
+transformers,movie,Smokescreen (Movie),Autobot,12204,True,,48,False,,,33
+transformers,movie,Crankcase (Movie),Decepticon,11899,True,,41,False,,,39
+transformers,movie,Fracture (Movie),Decepticon,11621,True,,64,False,,,28
+transformers,movie,Strongarm (Movie),Autobot,11132,True,,50,False,,,31
+transformers,movie,Crosshairs (Movie),Autobot,10570,True,,44,False,,,35
+transformers,movie,Evac (Movie),Autobot,9947,True,,43,False,,,36
+transformers,movie,Class Beta drone unit,Autobot,9905,True,,24,False,,,58
+transformers,movie,Landmine (Movie),Autobot,9626,True,,49,False,,,32
+transformers,movie,Divebomb (Movie),Decepticon,9597,True,,43,False,,,37
+transformers,movie,Salvage (Movie),Autobot,9498,True,,67,False,,,27
+transformers,movie,Wingblade,Autobot,9406,True,,23,False,,,59
+transformers,movie,Class Alpha drone unit,Autobot,8771,True,,25,False,,,56
+transformers,movie,Incinerator (Movie),Decepticon,8684,True,,46,False,,,34
+transformers,movie,Clocker (Movie),Autobot,8057,True,,26,False,,,54
+transformers,movie,Warpath (Movie),Autobot,7489,True,,35,False,,,44
+transformers,movie,Grindcore (Movie),Autobot,7447,True,,39,False,,,42
+transformers,movie,Skyblast (Movie),Autobot,7316,True,,40,False,,,41
+transformers,movie,Signal Flare (Movie),Autobot,7302,True,,32,False,,,47
+transformers,movie,Storm Surge (Movie),Decepticon,7170,True,,30,False,,,49
+transformers,movie,Camshaft (Movie),Autobot,7157,True,,39,False,,,43
+transformers,movie,Prowl (Movie),Autobot,6884,True,,34,False,,,45
+transformers,movie,Vortex (Movie),Decepticon,6789,True,,29,False,,,51
+transformers,movie,Insecticon (Movie),Decepticon,6720,True,,34,False,,,46
+transformers,movie,Hardtop (Movie),Decepticon,6717,True,,31,False,,,48
+transformers,movie,Jetstorm (Movie),Decepticon,6550,True,,22,False,,,61
+transformers,movie,Overcast (Movie),Decepticon,6463,True,,29,False,,,52
+transformers,movie,Dispensor,Decepticon,6331,True,,42,False,,,38
+transformers,movie,Hoist (Movie),Autobot,6146,True,,18,False,,,69
+transformers,movie,Swerve (Movie),Autobot,6105,True,,30,False,,,50
+transformers,movie,Breakaway (Movie),Autobot,5953,True,,23,False,,,60
+transformers,movie,Moustache Man,Decepticon,5742,True,,21,False,,,62
+transformers,movie,Inferno (Movie),Autobot,5694,True,,18,False,,,70
+transformers,movie,Mixmaster (Movie),Autobot,5501,True,,12,False,,,78
+transformers,movie,Jolt (Movie),Decepticon,5412,True,,41,False,,,40
+transformers,movie,Trailbreaker (Movie),Autobot,5354,True,,12,False,,,79
+transformers,movie,Mudflap (Movie),Decepticon,5327,True,,21,False,,,63
+transformers,movie,Agoracer,Autobot,4796,True,,3,False,,,96
+transformers,movie,Agoraptor,Decepticon,4672,True,,4,False,,,93
+transformers,movie,Scrapper (Movie),Autobot,4383,True,,14,False,,,75
+transformers,movie,Big Daddy (Movie),Autobot,4260,True,,15,False,,,73
+transformers,movie,Power Up VT6,Decepticon,4179,True,,15,False,,,74
+transformers,movie,Gunbarrel (Movie),Decepticon,4067,True,,26,False,,,55
+transformers,movie,Backtrack (Movie),Autobot,3912,True,,21,False,,,64
+transformers,movie,Reverb (Movie),Decepticon,3901,True,,27,False,,,53
+transformers,movie,Ultra Magnus (Movie),Autobot,3889,True,,9,False,,,86
+transformers,movie,Longview (Movie),Autobot,3741,True,,20,False,,,65
+transformers,movie,Circuit (Movie),Autobot,3731,True,,17,False,,,72
+transformers,movie,Cosmos (Movie),Autobot,3692,True,,10,False,,,84
+transformers,movie,Meantime (Movie),Decepticon,3655,True,,25,False,,,57
+transformers,movie,Zoom Out 25X,Decepticon,3513,True,,14,False,,,76
+transformers,movie,Speed Dial 800,Autobot,3436,True,,19,False,,,67
+transformers,movie,Mainframe (Movie),Decepticon,3165,True,,20,False,,,66
+transformers,movie,Spy Shot 6,Autobot,3048,True,,19,False,,,68
+transformers,movie,Skydive (Movie),Autobot,2953,True,,12,False,,,80
+transformers,movie,Booster X10,Decepticon,2935,True,,18,False,,,71
+transformers,movie,Twitcher F451,Decepticon,2930,True,,10,False,,,85
+transformers,movie,Midnighter XR-4,Decepticon,2917,True,,11,False,,,82
+transformers,movie,Grendene Transformers watch,Autobot,2815,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,movie,Hacker X-3,Autobot,2748,True,,7,False,,,90
+transformers,movie,Night Beat 7,Autobot,2710,True,,11,False,,,83
+transformers,movie,High Score 100,Autobot,2666,True,,14,False,,,77
+transformers,movie,Skids (Movie),Autobot,2576,True,,4,False,,,94
+transformers,movie,Farsight T-20 (Movie),Autobot,2135,True,,9,False,,,87
+transformers,movie,Photon T-34,Decepticon,2023,True,,12,False,,,81
+transformers,movie,Highline 1070,Autobot,1922,True,,9,False,,,88
+transformers,movie,Wire Tap V20,Decepticon,1880,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,movie,Maelstrom,Decepticon,1527,True,,3,False,,,97
+transformers,movie,Sphinx,Autobot,1511,True,,7,False,,,91
+transformers,movie,Ridge,Autobot,1457,True,,8,False,,,89
+transformers,movie,Vortex Drone,Decepticon,1426,True,,6,False,,,92
+transformers,movie,Avalanche,Autobot,1407,True,,4,False,,,95
+transformers,movie,Equinox,Autobot,1398,True,,3,False,,,98
+transformers,aligned,Arcee (WFC),Autobot,79722,True,,446,False,,store,
+transformers,aligned,Soundwave (WFC),Decepticon,67398,False,không có thẻ phe {{factions}} (không phải trang nhân vật),340,False,,store,
+transformers,aligned,Optimus Prime (WFC),Autobot,149771,True,,1071,False,,popularity,1
+transformers,aligned,Bumblebee (WFC),Autobot,133395,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Megatron (WFC),Decepticon,107779,True,,676,False,,popularity,2
+transformers,aligned,Ratchet (WFC),Autobot,103909,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Bulkhead (Prime),Autobot,86918,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Starscream (WFC),Decepticon,71264,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Vehicon (Prime),Decepticon,58885,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Shockwave (WFC),Decepticon,56695,True,,349,False,,popularity,3
+transformers,aligned,Knock Out (Prime),Autobot,54419,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Ultra Magnus (WFC),Autobot,49083,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Breakdown (WFC),Decepticon,45813,True,,267,False,,popularity,5
+transformers,aligned,Wheeljack (Prime),Autobot,42451,True,,269,False,,popularity,4
+transformers,aligned,Hot Shot (Prime),Autobot,40163,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Cliffjumper (WFC),Autobot,39112,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Ironhide (WFC),Autobot,34653,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Jazz (WFC),Autobot,32258,True,,187,False,,,7
+transformers,aligned,Smokescreen (Prime),Autobot,31232,True,,201,False,,popularity,6
+transformers,aligned,Airachnid (Prime),Decepticon,30532,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Dreadwing (Prime),Decepticon,25495,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Laserbeak (WFC),Decepticon,22406,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,R.A.,Autobot,21689,True,,66,False,,,16
+transformers,aligned,Prowl (WFC),Autobot,21620,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Skywarp (WFC),Decepticon,20640,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Sideswipe (WFC),Autobot,19977,True,,107,False,,,11
+transformers,aligned,Swoop (WFC),Autobot,19949,True,,76,False,,,13
+transformers,aligned,Thundercracker (WFC),Decepticon,19842,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Skyquake (Prime),Decepticon,19800,True,,136,False,,,8
+transformers,aligned,Barricade (WFC),Decepticon,19043,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Jetfire (WFC),Autobot,18598,True,,63,False,,,18
+transformers,aligned,Rumble (WFC),Decepticon,18022,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,O.P.,Autobot,17664,True,,69,False,,,15
+transformers,aligned,Sentinel Zeta Prime,Autobot,17617,True,,122,False,,,9
+transformers,aligned,B.B. (Prime),Autobot,17576,True,,62,False,,,19
+transformers,aligned,Silas,Decepticon,16828,True,,116,False,,,10
+transformers,aligned,Omega Supreme (WFC),Autobot,16809,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Frenzy (WFC),Decepticon,16304,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Terrorcon (Prime),Decepticon,16114,True,,84,False,,,12
+transformers,aligned,Ratbat (WFC),Decepticon,12477,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Perceptor (Prime),Autobot,12214,True,,65,False,,,17
+transformers,aligned,Arc,Autobot,11317,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Gora,Decepticon,10858,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Air Raid (WFC),Autobot,10643,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Zori (Prime),Decepticon,10344,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Kup (WFC),Autobot,9959,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Silverbolt (WFC),Autobot,9925,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Hardshell,Decepticon,9399,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,B.H.,Autobot,9202,True,,39,False,,,20
+transformers,aligned,Slipstream (WFC),Decepticon,8671,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Guru,Decepticon,8613,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Nemesis Prime (Prime),Decepticon,8270,True,,70,False,,,14
+transformers,aligned,Makeshift (Prime),Decepticon,8162,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Zamu,Decepticon,7656,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Gura,Decepticon,7607,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Rodimus (WFC),Autobot,7354,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Noji,Decepticon,6881,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,C.L. (Prime),Autobot,6878,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Baro (Prime),Decepticon,6868,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Impactor (Prime),Autobot,6451,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Bluestreak (Prime),Autobot,6363,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Gabu (Prime),Decepticon,6131,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Igu,Decepticon,6130,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Dead End (WFC),Decepticon,5993,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Hades,Decepticon,5922,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Ida,Decepticon,5907,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Baru (Prime),Decepticon,5836,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Wuji,Autobot,5755,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Warpath (WFC),Autobot,5747,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Bombshock (Prime),Decepticon,5629,True,,19,False,,,27
+transformers,aligned,Ravage (WFC),Decepticon,5570,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Optimus Prime Blaster,Autobot,5505,True,,21,False,,,26
+transformers,aligned,Roadbuster (Prime),Autobot,5490,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Dai,Decepticon,5451,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Springer (WFC),Autobot,5305,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Ser-Ket (Prime),Decepticon,5064,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Tailgate (Prime),Autobot,5040,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Lugnut (WFC),Decepticon,4987,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Firestar (Prime),Autobot,4945,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Sharpshot,Decepticon,4798,True,,33,False,,,21
+transformers,aligned,Decepticon Miner,Decepticon,4698,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Jida,Decepticon,4344,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,S.S.,Autobot,4247,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Bludgeon (Prime),Decepticon,4245,True,,18,False,,,28
+transformers,aligned,Ransack (Prime),Decepticon,4082,True,,28,False,,,22
+transformers,aligned,Sise,Autobot,3978,True,,25,False,,,25
+transformers,aligned,Swerve (Prime),Autobot,3937,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Sou,Autobot,3895,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Airwave (Prime),Autobot,3816,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Chromia (Prime),Autobot,3764,True,,12,False,,,31
+transformers,aligned,Axer (Prime),Decepticon,3751,True,,16,False,,,30
+transformers,aligned,Pral,Autobot,3735,True,,26,False,,,23
+transformers,aligned,Bumblebee Sword,Autobot,3658,True,,11,False,,,33
+transformers,aligned,Mirage (Prime),Autobot,3617,True,,10,False,,,34
+transformers,aligned,Divebomb (Prime),Autobot,3613,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Tantrum (Prime),Decepticon,3605,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Wildrider (Prime),Decepticon,3600,True,,18,False,,,29
+transformers,aligned,Flamewar (Prime),Decepticon,3556,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Jaze (Prime),Autobot,3529,True,,26,False,,,24
+transformers,aligned,Blackout (WFC),Decepticon,3459,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Bogu,Decepticon,3443,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,aligned,Bulkhead Knuckle,Autobot,3433,True,,12,False,,,32
+transformers,bw,Megatron (BW),Predacon,67020,True,,762,False,,store,
+transformers,bw,Optimus Primal (BW),Maximal,70994,True,,626,False,,store,
+transformers,bw,Waspinator (BW),Predacon,80776,True,,538,False,,store,
+transformers,bw,Lio Convoy (BW),Maximal,155405,True,,788,False,,popularity,1
+transformers,bw,Blackarachnia (BW),Maximal,142326,True,,709,False,,popularity,2
+transformers,bw,Rattrap (BW),Maximal,120662,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,bw,Cheetor (BW),Maximal,119401,True,,579,False,,popularity,3
+transformers,bw,Tarantulas (BW),Predacon,113452,True,,564,False,,popularity,4
+transformers,bw,Tigatron (BW),Maximal,81827,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,bw,Dinobot (BW),Maximal,81519,True,,415,False,,popularity,6
+transformers,bw,Airazor (BW),Maximal,77660,True,,363,False,,popularity,7
+transformers,bw,Rhinox (BW),Maximal,76273,True,,467,False,,popularity,5
+transformers,bw,Terrorsaur (BW),Predacon,74103,True,,315,False,,,9
+transformers,bw,Scorponok (BW),Predacon,68325,True,,294,False,,,12
+transformers,bw,Tasmania Kid (BW),Maximal,55206,True,,192,False,,,16
+transformers,bw,Inferno (BW),Predacon,54955,True,,313,False,,,10
+transformers,bw,Rampage (BW),Maximal,46055,True,,260,False,,,13
+transformers,bw,Big Convoy (BW),Maximal,46030,True,,300,False,,,11
+transformers,bw,Magmatron (BW),Predacon,45444,True,,331,False,,,8
+transformers,bw,Scuba (BW),Maximal,44444,True,,171,False,,,19
+transformers,bw,Starscream (BW),Predacon,41774,True,,202,False,,,15
+transformers,bw,Predacon (BW),Predacon,38310,False,"loại tay: trang về phe Predacon của Beast Wars, không phải một robot",,False,,,
+transformers,bw,BB (BW),Predacon,34677,True,,191,False,,,17
+transformers,bw,Moon (BW),Maximal,33097,True,,171,False,,,20
+transformers,bw,Depth Charge (BW),Maximal,32009,True,,244,False,,,14
+transformers,bw,Thrust (BW),Predacon,31089,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,bw,Dirge (BW),Predacon,30813,True,,169,False,,,21
+transformers,bw,Gimlet,Maximal,25504,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,bw,Quickstrike (BW),Predacon,25317,True,,159,False,,,23
+transformers,bw,Halfshell,Predacon,23683,True,,138,False,,,26
+transformers,bw,Colada (BW),Maximal,23523,True,,163,False,,,22
+transformers,bw,Buzz Saw (BW),Predacon,22807,True,,86,False,,,35
+transformers,bw,Razorbeast,Maximal,22641,True,,159,False,,,24
+transformers,bw,Heinrad (BW),Maximal,22251,True,,122,False,,,30
+transformers,bw,Shokaract,Predacon,22096,True,,191,False,,,18
+transformers,bw,Guiledart (BW),Predacon,21029,True,,131,False,,,28
+transformers,bw,Break (BW),Maximal,20287,True,,136,False,,,27
+transformers,bw,Ramulus,Maximal,20244,True,,84,False,,,38
+transformers,bw,Transmutate (BW),Maximal,19874,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,bw,Tigerhawk,Maximal,19217,True,,139,False,,,25
+transformers,bw,Santon,Maximal,19114,True,,85,False,,,37
+transformers,bw,Packrat,Maximal,18672,True,,121,False,,,32
+transformers,bw,Cicadacon,Predacon,18466,True,,86,False,,,36
+transformers,bw,Fractyl,Predacon,18280,True,,130,False,,,29
+transformers,bw,Bump (BW),Maximal,18247,True,,63,False,,,43
+transformers,bw,Saberback (BW),Predacon,18152,True,,122,False,,,31
+transformers,bw,Cybershark,Maximal,17589,True,,77,False,,,41
+transformers,bw,Dinobot II,Predacon,17507,True,,119,False,,,33
+transformers,bw,Spittor (BW),Maximal,17458,True,,93,False,,,34
+transformers,bw,Motorarm (BW),Maximal,16984,True,,56,False,,,44
+transformers,bw,Ram Horn,Predacon,16790,True,,78,False,,,40
+transformers,bw,Sea Clamp,Predacon,16452,True,,71,False,,,42
+transformers,bw,Snapper,Maximal,16026,True,,80,False,,,39
+transformers,animated,Vector Prime,Autobot,111979,False,"loại tay: nhân vật của Transformers: Cybertron, trang chung nhiều dòng, không mang thiết kế Animated",,False,,,
+transformers,animated,Optimus Prime (Animated),Autobot,89258,True,,476,False,,popularity,1
+transformers,animated,Prowl (Animated),Autobot,77308,True,,354,False,,,6
+transformers,animated,Bulkhead (Animated),Autobot,74491,True,,403,False,,popularity,4
+transformers,animated,Ratchet (Animated),Autobot,72363,True,,365,False,,,5
+transformers,animated,Megatron (Animated),Decepticon,66837,True,,438,False,,popularity,2
+transformers,animated,Bumblebee (Animated),Autobot,65771,True,,424,False,,popularity,3
+transformers,animated,Sari Sumdac (Animated),Autobot,64425,True,,325,False,,,7
+transformers,animated,Starscream (Animated),Decepticon,44902,True,,312,False,,,8
+transformers,animated,Lugnut (Animated),Decepticon,38623,True,,249,False,,,10
+transformers,animated,Sentinel Prime (Animated),Autobot,37068,True,,291,False,,,9
+transformers,animated,Blitzwing (Animated),Decepticon,33954,True,,226,False,,,12
+transformers,animated,Shockwave (Animated),Autobot,29211,True,,190,False,,,16
+transformers,animated,Lockdown (Animated),Autobot,28728,True,,239,False,,,11
+transformers,animated,Blackarachnia (Animated),Autobot,26480,True,,204,False,,,13
+transformers,animated,Ultra Magnus (Animated),Autobot,24026,True,,196,False,,,14
+transformers,animated,Soundwave (Animated),Decepticon,22319,True,,151,False,,,18
+transformers,animated,Omega Supreme (Animated),Autobot,20767,True,,195,False,,,15
+transformers,animated,Grimlock (Animated),Autobot,20191,True,,128,False,,,20
+transformers,animated,Wasp,Autobot,18537,True,,155,False,,,17
+transformers,animated,Jazz (Animated),Autobot,18223,True,,137,False,,,19
+transformers,animated,Jetfire (Animated),Autobot,17917,True,,104,False,,,24
+transformers,animated,Scrapper (Animated),Autobot,17692,True,,87,False,,,27
+transformers,animated,Wreck-Gar (Animated),Autobot,17621,True,,98,False,,,26
+transformers,animated,Swindle (Animated),Decepticon,17124,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,animated,Jetstorm (Animated),Autobot,16951,True,,109,False,,,22
+transformers,animated,Mixmaster (Animated),Autobot,16057,True,,76,False,,,31
+transformers,animated,Arcee (Animated),Autobot,15813,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,animated,Diagnostic Drone,Autobot,15149,True,,106,False,,,23
+transformers,animated,Rodimus Prime (Animated),Autobot,13494,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,animated,Snarl (Animated),Autobot,13291,True,,76,False,,,32
+transformers,animated,Oil Slick (Animated),Decepticon,13228,True,,103,False,,,25
+transformers,animated,Blurr (Animated),Autobot,12792,True,,121,False,,,21
+transformers,animated,Starscream clone (Animated),Decepticon,11185,True,,86,False,,,29
+transformers,animated,Swoop (Animated),Autobot,10821,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,animated,The Motor Master,Decepticon,10527,True,,57,False,,,37
+transformers,animated,Sideswipe (Animated),Autobot,9533,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,animated,Blackout (Animated),Decepticon,8940,True,,84,False,,,30
+transformers,animated,Autotrooper (Animated),Autobot,8936,True,,68,False,,,34
+transformers,animated,Ironhide (Animated),Autobot,8532,True,,87,False,,,28
+transformers,animated,Safeguard (Animated),Autobot,8185,True,,51,False,,,39
+transformers,animated,Zero,Decepticon,7933,True,,47,False,,,41
+transformers,animated,Cliffjumper (Animated),Autobot,7806,True,,64,False,,,36
+transformers,animated,Cheetor (Animated),Autobot,7728,True,,72,False,,,33
+transformers,animated,Stretch,Decepticon,7439,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,animated,Drag Strip (Animated),Decepticon,6920,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,animated,Strika (Animated),Decepticon,6840,True,,66,False,,,35
+transformers,animated,Perceptor (Animated),Autobot,6731,True,,51,False,,,40
+transformers,animated,Red Alert (Animated),Autobot,6552,True,,54,False,,,38
+transformers,animated,Afterburn,Autobot,6364,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,cyberverse,Bumblebee (Cyberverse),Autobot,73676,True,,265,False,,popularity,1
+transformers,cyberverse,Optimus Prime (Cyberverse),Autobot,68237,True,,248,False,,popularity,2
+transformers,cyberverse,Windblade (Cyberverse),Autobot,49744,True,,220,False,,,3
+transformers,cyberverse,Megatron (Cyberverse),Decepticon,45101,True,,199,False,,,4
+transformers,cyberverse,Grimlock (Cyberverse),Autobot,43645,True,,184,False,,,5
+transformers,cyberverse,Hot Rod (Cyberverse),Autobot,38853,True,,146,False,,,7
+transformers,cyberverse,Soundwave (Cyberverse),Decepticon,31732,True,,132,False,,,9
+transformers,cyberverse,Scraplet,Decepticon,31391,False,"loại tay: sinh vật ký sinh dạng bầy, không phải một robot",,False,,,
+transformers,cyberverse,Shadow Striker (Cyberverse),Decepticon,30734,True,,114,False,,,10
+transformers,cyberverse,Shockwave (Cyberverse),Decepticon,27951,True,,153,False,,,6
+transformers,cyberverse,Wheeljack (Cyberverse),Autobot,23875,True,,134,False,,,8
+transformers,cyberverse,Cheetor (Cyberverse),Autobot,18550,True,,96,False,,,11
+transformers,cyberverse,Clobber (Cyberverse),Autobot,17778,True,,71,False,,,17
+transformers,cyberverse,Arcee (Cyberverse),Autobot,17421,True,,90,False,,,14
+transformers,cyberverse,Ratchet (Cyberverse),Autobot,16367,True,,75,False,,,15
+transformers,cyberverse,Sky-Byte (Cyberverse),Decepticon,15815,True,,92,False,,,13
+transformers,cyberverse,Jetfire (Cyberverse),Autobot,15340,True,,74,False,,,16
+transformers,cyberverse,Chromia (Cyberverse),Autobot,15029,True,,94,False,,,12
+transformers,cyberverse,Rack'n'Ruin (Cyberverse),Autobot,15012,True,,68,False,,,19
+transformers,cyberverse,Prowl (Cyberverse),Autobot,14020,True,,60,False,,,21
+transformers,cyberverse,Lockdown (Cyberverse),Decepticon,13217,True,,48,False,,,26
+transformers,cyberverse,Dead End (Cyberverse),Decepticon,12956,True,,52,False,,,25
+transformers,cyberverse,Swoop (Cyberverse),Autobot,11933,True,,27,False,,,37
+transformers,cyberverse,Perceptor (Cyberverse),Autobot,11611,True,,59,False,,,23
+transformers,cyberverse,Whirl (Cyberverse),Autobot,10914,True,,54,False,,,24
+transformers,cyberverse,Wildwheel (Cyberverse),Autobot,9523,True,,39,False,,,30
+transformers,cyberverse,Thunderhowl (Cyberverse),Autobot,9151,True,,40,False,,,29
+transformers,cyberverse,Sludge (Cyberverse),Autobot,9087,True,,14,False,,,44
+transformers,cyberverse,Drift (Cyberverse),Autobot,9014,True,,43,False,,,28
+transformers,cyberverse,Slug (Cyberverse),Autobot,8522,True,,23,False,,,40
+transformers,cyberverse,Volcanicus (Cyberverse),Autobot,8150,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,cyberverse,Iaconus,Autobot,8143,True,,60,False,,,22
+transformers,cyberverse,Alpha Strike,Decepticon,7718,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,cyberverse,Decepticon supersoldier,Decepticon,7164,True,,69,False,,,18
+transformers,cyberverse,Megatron X (Cyberverse),Decepticon,6970,True,,62,False,,,20
+transformers,cyberverse,Blurr (Cyberverse),Autobot,6566,True,,34,False,,,32
+transformers,cyberverse,Snarl (Cyberverse),Autobot,6426,True,,16,False,,,43
+transformers,cyberverse,Astrotrain (Cyberverse),Decepticon,6417,True,,46,False,,,27
+transformers,cyberverse,Bludgeon (Cyberverse),Decepticon,6055,True,,33,False,,,33
+transformers,cyberverse,Tarn (Cyberverse),Decepticon,5866,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,cyberverse,Repugnus (Cyberverse),Autobot,5724,True,,33,False,,,34
+transformers,cyberverse,Kup (Cyberverse),Autobot,5524,True,,32,False,,,35
+transformers,cyberverse,Meteorfire (Cyberverse),Autobot,5347,True,,25,False,,,38
+transformers,cyberverse,Laserbeak (Cyberverse),Decepticon,4761,True,,28,False,,,36
+transformers,cyberverse,Soundblaster (Cyberverse),Decepticon,4458,True,,38,False,,,31
+transformers,cyberverse,Gnaw (Cyberverse),Decepticon,4411,True,,21,False,,,41
+transformers,cyberverse,Jazz (Cyberverse),Autobot,4319,True,,14,False,,,45
+transformers,cyberverse,Hammerbyte,Autobot,4172,True,,25,False,,,39
+transformers,cyberverse,Skullcruncher (Cyberverse),Decepticon,3872,True,,20,False,,,42
+transformers,cyberverse,Shrapnel (Cyberverse),Decepticon,3661,True,,13,False,,,46
+transformers,earthspark,Optimus Prime (ES),Autobot,40879,True,,191,False,,popularity,1
+transformers,earthspark,Twitch,Autobot,33068,True,,160,False,,popularity,3
+transformers,earthspark,Thrash (ES),Autobot,28349,True,,145,False,,,4
+transformers,earthspark,Nightshade (ES),Autobot,27763,True,,128,False,,,7
+transformers,earthspark,Bumblebee (ES),Autobot,27329,True,,162,False,,popularity,2
+transformers,earthspark,Hashtag (ES),Autobot,26458,True,,133,False,,,6
+transformers,earthspark,Megatron (ES),Decepticon,22503,True,,138,False,,,5
+transformers,earthspark,Jawbreaker (ES),Autobot,20259,True,,106,False,,,8
+transformers,earthspark,Starscream (ES),Decepticon,16218,True,,72,False,,,15
+transformers,earthspark,Soundwave (ES),Decepticon,14551,True,,89,False,,,9
+transformers,earthspark,Shockwave (ES),Decepticon,12907,True,,78,False,,,13
+transformers,earthspark,Skywarp (ES),Decepticon,12905,True,,83,False,,,11
+transformers,earthspark,Wheeljack (ES),Autobot,12506,True,,72,False,,,16
+transformers,earthspark,Nova Storm (ES),Decepticon,12017,True,,82,False,,,12
+transformers,earthspark,Elita-1 (ES),Autobot,11074,True,,87,False,,,10
+transformers,earthspark,Spitfire (ES),Decepticon,10234,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,earthspark,Breakdown (ES),Decepticon,9909,True,,52,False,,,21
+transformers,earthspark,Prowl (ES),Autobot,9822,True,,72,False,,,17
+transformers,earthspark,Swindle (ES),Decepticon,9024,True,,73,False,,,14
+transformers,earthspark,Grimlock (ES),Autobot,8597,True,,64,False,,,18
+transformers,earthspark,Hardtop (ES),Decepticon,8540,True,,55,False,,,19
+transformers,earthspark,Aftermath (ES),Decepticon,8517,True,,51,False,,,22
+transformers,earthspark,Laserbeak (ES),Decepticon,7841,True,,40,False,,,24
+transformers,earthspark,Cosmos (ES),Autobot,7115,True,,53,False,,,20
+transformers,earthspark,Frenzy (ES),Decepticon,6589,True,,38,False,,,26
+transformers,earthspark,Skullcruncher (ES),Decepticon,6452,True,,39,False,,,25
+transformers,earthspark,Arcee (ES),Autobot,6166,True,,48,False,,,23
+transformers,earthspark,Ravage (ES),Decepticon,5627,True,,32,False,,,28
+transformers,earthspark,Tarantulas (ES),Decepticon,4742,True,,38,False,,,27
+transformers,earthspark,Thundercracker (ES),Decepticon,4159,True,,10,False,,,32
+transformers,earthspark,Bombshell (ES),Decepticon,3261,True,,17,False,,,30
+transformers,earthspark,Shrapnel (ES),Decepticon,3258,True,,15,False,,,31
+transformers,earthspark,Jazz (ES),Autobot,3178,True,,10,False,,,33
+transformers,earthspark,Brawl (ES),Decepticon,1566,True,,7,False,,,40
+transformers,earthspark,Bluestreak (ES),Autobot,1434,True,,9,False,,,35
+transformers,earthspark,Ratchet (ES),Autobot,1368,True,,9,False,,,36
+transformers,earthspark,Cliffjumper (ES),Autobot,1345,True,,9,False,,,37
+transformers,earthspark,Ironhide (ES),Autobot,1315,True,,9,False,,,38
+transformers,earthspark,Gears (ES),Autobot,1290,True,,9,False,,,39
+transformers,earthspark,Mirage (ES),Autobot,1017,True,,10,False,,,34
+transformers,earthspark,Seaspray (ES),Autobot,858,True,,3,False,,,41
+transformers,earthspark,Hot Rod (ES),Autobot,796,True,,25,False,,,29
+transformers,earthspark,Octopunch (ES),Decepticon,732,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,earthspark,Scorponok (ES),Decepticon,675,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,one,Bumblebee (One),Autobot,21923,True,,101,False,,store,
+transformers,one,Optimus Prime (One),Autobot,42875,True,,157,False,,popularity,1
+transformers,one,Megatron (One),Decepticon,28447,True,,142,False,,popularity,2
+transformers,one,Elita-1 (One),Autobot,16805,True,,104,False,,popularity,3
+transformers,one,Starscream (One),Decepticon,10788,True,,65,False,,popularity,4
+transformers,one,Soundwave (One),Decepticon,8461,True,,38,False,,,5
+transformers,one,Shockwave (One),Decepticon,7723,True,,36,False,,,6
+transformers,one,Ironhide (One),Autobot,5262,True,,14,False,,,9
+transformers,one,Thundercracker (One),Decepticon,3968,True,,18,False,,,8
+transformers,one,Wheeljack (One),Autobot,3880,True,,11,False,,,12
+transformers,one,Skywarp (One),Decepticon,3217,True,,12,False,,,10
+transformers,one,Mirage (One),Autobot,3161,True,,9,False,,,13
+transformers,one,Jazz (One),Autobot,2726,True,,26,False,,,7
+transformers,one,Arcee (One),Autobot,2709,True,,12,False,,,11
+transformers,one,Hound (One),Autobot,2621,True,,4,False,,,20
+transformers,one,Bluestreak (One),Autobot,2536,True,,2,False,,,28
+transformers,one,Slipstream (One),Decepticon,2349,True,,6,False,,,15
+transformers,one,Redwing (One),Decepticon,1952,True,,5,False,,,17
+transformers,one,Not Chromia,Autobot,1879,True,,6,False,,,16
+transformers,one,Whirlwing,Decepticon,1756,True,,4,False,,,21
+transformers,one,Prowl (One),Autobot,1729,True,,4,False,,,22
+transformers,one,Ratchet (One),Autobot,1306,True,,2,False,,,29
+transformers,one,Red Alert (One),Autobot,1054,True,,2,False,,,30
+transformers,one,Moonracer (One),Autobot,1036,True,,5,False,,,18
+transformers,one,Dirge (One),Decepticon,1026,True,,3,False,,,24
+transformers,one,Brawn (One),Autobot,1018,True,,4,False,,,23
+transformers,one,Sideswipe (One),Autobot,988,True,,9,False,,,14
+transformers,one,Sunstreaker (One),Autobot,967,True,,3,False,,,25
+transformers,one,Windcharger (One),Autobot,933,False,không có thẻ phe {{factions}} (không phải trang nhân vật),,False,,,
+transformers,one,Firestar (One),Autobot,909,True,,5,False,,,19
+transformers,one,Huffer (One),Autobot,808,True,,2,False,,,31
+transformers,one,Smokescreen (One),Autobot,498,True,,2,False,,,32
+transformers,one,Ramjet (One),Decepticon,330,True,,3,False,,,26
+transformers,one,Thrust (One),Decepticon,330,True,,3,False,,,27
+gundam,uc,MS-06S Char's Zaku II,,14087,True,,123,False,,store,
+gundam,uc,MSM-04 Acguy,,12715,True,,418,False,,store,
+gundam,uc,MSZ-006 Zeta Gundam,,61405,True,,514,False,,store,
+gundam,uc,RX-78-2 Gundam,,61250,True,,855,False,,store,
+gundam,uc,MSN-04 Sazabi,,29735,True,,213,False,,store,
+gundam,uc,RX-0 Unicorn Gundam,,48505,True,,328,False,,store,
+gundam,uc,RX-0 Unicorn Gundam 03 Phenex,,21010,True,,129,False,,store,
+gundam,uc,MS-06F Zaku II,,28430,True,,880,False,,store,
+gundam,uc,RX-93 ν Gundam,,40375,True,,366,False,,popularity,18
+gundam,uc,RX-178 Gundam Mk-II,,36306,True,,582,False,,popularity,4
+gundam,uc,RX-78NT-1 Gundam NT-1,,35630,True,,163,False,,,58
+gundam,uc,RX-93-ν2 Hi-ν Gundam,,32928,True,,118,False,,,76
+gundam,uc,RX-77-2 Guncannon,,31401,True,,497,False,,popularity,10
+gundam,uc,MS-09 Dom,,31139,True,,738,False,,popularity,1
+gundam,uc,F91 Gundam F91,,30516,True,,238,False,,,36
+gundam,uc,MSZ-010 ΖΖ Gundam,,30161,True,,297,False,,popularity,21
+gundam,uc,MS-14A Gelgoog,,29259,True,,659,False,,popularity,3
+gundam,uc,MS-07B-3 Gouf Custom,,29079,True,biến thể của MS-07B Gouf,263,False,,,
+gundam,uc,RGM-79 GM,,29076,True,,737,False,,popularity,2
+gundam,uc,RX-79［G］ Gundam Ground Type,,29009,True,,187,False,,,49
+gundam,uc,F90 Gundam F90,,27589,True,,138,False,,,70
+gundam,uc,RGM-79SP GM Sniper II,,27493,True,biến thể của RGM-79 GM,189,False,,,
+gundam,uc,"RX-78GP02A Gundam ""Physalis""",,27046,True,,197,False,,,45
+gundam,uc,RGM-79C GM Type C,,26668,True,biến thể của RGM-79 GM,377,False,,,
+gundam,uc,Zanzibar-class,,26373,False,type = Ship (không phải robot hình người),,False,,,
+gundam,uc,"RX-78GP03 Gundam ""Dendrobium""",,25723,False,type = Weapon (không phải robot hình người),,False,,,
+gundam,uc,MSN-001A1 Delta Plus,,24563,True,,215,False,,,41
+gundam,uc,MS-06S Zaku II Commander Type,,24269,True,biến thể của MS-06S Char's Zaku II,403,False,,,
+gundam,uc,MSN-00100 Hyaku Shiki,,23916,True,,437,False,,popularity,14
+gundam,uc,MS-05B Zaku I,,23819,True,,489,False,,popularity,12
+gundam,uc,"RX-78GP01-Fb Gundam ""Zephyranthes"" Full Burnern",,23583,True,,158,False,,,60
+gundam,uc,MS-07B Gouf,,22805,True,,406,False,,popularity,15
+gundam,uc,RX-0 Full Armor Unicorn Gundam,,22738,True,,172,False,,,57
+gundam,uc,RX-124 Gundam TR-6 ［Woundwort］,,22208,True,,121,False,,,73
+gundam,uc,MS-06J Zaku II Ground Type,,21548,True,biến thể của MS-06S Char's Zaku II,374,False,,,
+gundam,uc,"RX-78GP01 Gundam ""Zephyranthes""",,21200,True,,141,False,,,68
+gundam,uc,RMS-179 GM II,,20632,True,,506,False,,popularity,7
+gundam,uc,RGZ-91 Re-GZ,,20490,True,,265,False,,,29
+gundam,uc,MS-09R Rick Dom,,20384,True,biến thể của MS-09 Dom,512,False,,,
+gundam,uc,F89 Gundam F89,,20363,True,,50,False,,,109
+gundam,uc,RX-0 Unicorn Gundam 02 Banshee,,20354,True,biến thể của RX-0 Unicorn Gundam,234,False,,,
+gundam,uc,FA-78-1 Full Armor Gundam,,20211,True,,206,False,,,43
+gundam,uc,RGM-79［G］ GM Ground Type,,20199,True,biến thể của RGM-79 GM,179,False,,,
+gundam,uc,XM-X1 Crossbone Gundam X-1,,19893,True,,100,False,,,85
+gundam,uc,MA-08 Big Zam,,19735,False,type = Armor (không phải robot hình người),,False,,,
+gundam,uc,NZ-999 II Neo Zeong,,19686,False,type = Armor (không phải robot hình người),,False,,,
+gundam,uc,"RX-78GP03S Gundam ""Stamen""",,19666,True,,185,False,,,53
+gundam,uc,RMS-106 Hizack,,19527,True,,492,False,,popularity,11
+gundam,uc,RGZ-95 ReZEL,,19522,True,,185,False,,,54
+gundam,uc,RGM-79G GM Command,,19515,True,biến thể của RGM-79 GM,173,False,,,
+gundam,uc,SCV-70 White Base,,19498,False,type = Ship (không phải robot hình người),,False,,,
+gundam,uc,Magellan-class,,19449,False,type = Ship (không phải robot hình người),,False,,,
+gundam,uc,RX-80PR Pale Rider,,19249,True,,63,False,,,107
+gundam,uc,RGM-79Q GM Quel,,19015,True,biến thể của RGM-79 GM,362,False,,,
+gundam,uc,MS-06F Zaku II F Type,,18958,True,biến thể của MS-06S Char's Zaku II,55,False,,,
+gundam,uc,AMS-129 Geara Zulu,,18933,True,,175,False,,,56
+gundam,uc,AMS-119 Geara Doga,,18897,True,,352,False,,popularity,19
+gundam,uc,MSN-06S Sinanju,,18737,True,,214,False,,,42
+gundam,uc,EMS-10 Zudah,,18375,True,,118,False,,,77
+gundam,uc,AMX-004 Qubeley Mk-II,,18094,True,,194,False,,,46
+gundam,uc,MS-07H-8 Gouf Flight Type,,18073,True,biến thể của MS-07B Gouf,172,False,,,
+gundam,uc,MS-06F-2 Zaku II F2 Type,,17927,True,biến thể của MS-06S Char's Zaku II,315,False,,,
+gundam,uc,RX-79［G］Ez-8 Gundam Ez8,,17925,True,,199,False,,,44
+gundam,uc,RX-78-3 G-3 Gundam,,17674,True,,249,False,,,34
+gundam,uc,RGM-79SC GM Sniper Custom,,17622,True,biến thể của RGM-79 GM,290,False,,,
+gundam,uc,MSN-02 Zeong,,17568,True,,390,False,,popularity,16
+gundam,uc,AMX-107 Bawoo,,17497,True,,275,False,,popularity,22
+gundam,uc,SCVA-76 Nahel Argama,,17386,False,type = Ship (không phải robot hình người),,False,,,
+gundam,uc,RMS-099 Rick Dias,,17322,True,,485,False,,popularity,13
+gundam,uc,RX-94 Mass Production Type ν Gundam,,17317,True,,47,False,,,112
+gundam,uc,MS-14JG Gelgoog Jäger,,17055,True,biến thể của MS-14A Gelgoog,129,False,,,
+gundam,uc,LM314V21 Victory 2 Gundam,,16909,True,,155,False,,,62
+gundam,uc,NRX-044 Asshimar,,16801,False,type = Armor (không phải robot hình người),,False,,,
+gundam,uc,XM-01 Den'an-Zon,,16786,True,,117,False,,,78
+gundam,uc,Ra Cailum,,16768,False,type = Ship (không phải robot hình người),,False,,,
+gundam,uc,F80 Gunraid,,16596,True,,22,False,,,120
+gundam,uc,MS-14S Gelgoog Commander Type,,16582,True,biến thể của MS-14A Gelgoog,309,False,,,
+gundam,uc,MS-18E Kämpfer,,16572,True,,188,False,,,47
+gundam,uc,Musai-class,,16512,False,type = Ship (không phải robot hình người),,False,,,
+gundam,uc,AMX-004 Qubeley,,16439,True,,255,False,,,32
+gundam,uc,RGM-89 Jegan,,16421,True,,275,False,,popularity,23
+gundam,uc,LM312V04 Victory Gundam,,16311,True,,188,False,,,48
+gundam,uc,RGM-89D Jegan D Type,,16256,True,biến thể của RGM-89 Jegan,186,False,,,
+gundam,uc,MRX-009 Psycho Gundam,,16234,False,type = Armor (không phải robot hình người),,False,,,
+gundam,uc,Argama-class,,16127,False,type = Ship (không phải robot hình người),,False,,,
+gundam,uc,MSC-07 Albion,,16102,False,type = Ship (không phải robot hình người),,False,,,
+gundam,uc,MSN-03 Jagd Doga,,16040,True,,262,False,,,30
+gundam,uc,MSK-008 Dijeh,,15970,True,,186,False,,,52
+gundam,uc,MSA-003 Nemo,,15968,True,,537,False,,popularity,5
+gundam,uc,MS-06FZ Zaku II FZ,,15909,True,biến thể của MS-06S Char's Zaku II,350,False,,,
+gundam,uc,RX-0 Full Armor Unicorn Gundam Plan B,,15868,True,,34,False,,,117
+gundam,uc,RX-78-02 Gundam,,15674,True,biến thể của RX-78-2 Gundam,94,False,,,
+gundam,uc,AMX-014 Döven Wolf,,15658,True,,230,False,,,37
+gundam,uc,XM-X3 Crossbone Gundam X-3,,15648,True,,97,False,,,87
+gundam,uc,RGC-83 GM Cannon II,,15513,True,,227,False,,,39
+gundam,uc,RMS-108 Marasai,,15398,True,,531,False,,popularity,6
+gundam,uc,RX-79BD-1 Blue Destiny Unit 1,,15384,True,,85,False,,,95
+gundam,uc,MS-14F Gelgoog Marine,,15369,True,biến thể của MS-14A Gelgoog,300,False,,,
+gundam,uc,RX-124 Gundam TR-6 ［Haze'n-thley II］,,15344,True,,90,False,,,91
+gundam,uc,XM-X2 Crossbone Gundam X-2,,15293,True,,87,False,,,93
+gundam,uc,MSZ-006A1 Zeta Plus A1,,15194,True,biến thể của MSZ-006 Zeta Gundam,203,False,,,
+gundam,uc,RGM-79GS GM Command Space Type,,15175,True,biến thể của RGM-79 GM,141,False,,,
+gundam,uc,RX-78-1 Prototype Gundam,,15157,True,,119,False,,,74
+gundam,uc,MRX-010 Psycho Gundam Mk-II,,15156,False,type = Armor (không phải robot hình người),,False,,,
+gundam,uc,F90N Gundam F90 Next Type,,15130,True,,49,False,,,110
+gundam,uc,MS-06R-1A Zaku II High Mobility Type,,15107,True,biến thể của MS-06S Char's Zaku II,276,False,,,
+gundam,uc,MSA-0011［Ext］ Ex-S Gundam,,15009,True,,93,False,,,89
+gundam,uc,RMS-117 Galbaldy β,,15008,True,,253,False,,,33
+gundam,uc,PMX-003 The-O,,14979,True,,272,False,,,25
+gundam,uc,RX-78-6 Gundam Unit 6,,14916,True,,74,False,,,99
+gundam,uc,MS-06R-2 Zaku II High Mobility Type,,14878,True,biến thể của MS-06S Char's Zaku II,133,False,,,
+gundam,uc,RTX-440 Ground Assault Type Guntank,,14854,True,,46,False,,,114
+gundam,uc,ORX-005 Gaplant,,14830,False,type = Armor (không phải robot hình người),,False,,,
+gundam,uc,Gigantis,,14712,False,type = Weapon (không phải robot hình người),,False,,,
+gundam,uc,AMS-129 Geara Zulu (Guards Type),,14628,True,,155,False,,,63
+gundam,uc,MS-14B Gelgoog High Mobility Type,,14603,True,biến thể của MS-14A Gelgoog,221,False,,,
+gundam,uc,RGM-79N GM Custom,,14476,True,biến thể của RGM-79 GM,246,False,,,
+gundam,uc,Salamis Kai-class,,14431,False,type = Ship (không phải robot hình người),,False,,,
+gundam,uc,AMX-009 Dreissen,,14402,True,,271,False,,,26
+gundam,uc,MSN-06S-2 Sinanju Stein,,14397,True,,53,False,,,108
+gundam,uc,RX-0［N］ Unicorn Gundam 02 Banshee Norn,,14314,True,biến thể của RX-0 Unicorn Gundam,179,False,,,
+gundam,uc,NZ-999 Neo Zeong,,14269,False,type = Armor (không phải robot hình người),,False,,,
+gundam,uc,AMS-119S Geara Doga Kai (Lehr Doga),,14193,True,biến thể của AMS-119 Geara Doga,11,False,,,
+gundam,uc,XM-X0 Crossbone Gundam X-0,,14109,True,,65,False,,,104
+gundam,uc,RX-124 Gundam TR-6 ［Inle］,,14050,False,type = Armor (không phải robot hình người),,False,,,
+gundam,uc,MS-06Rb-a Zaku II Unidentified Type (Solari),,13977,True,biến thể của MS-06S Char's Zaku II,45,False,,,
+gundam,uc,RX-105 Ξ Gundam,,13835,True,,70,False,,,102
+gundam,uc,RB-79 Ball,,13745,False,type = Pod (không phải robot hình người),,False,,,
+gundam,uc,RMS-119 EWAC Zack,,13739,True,,242,False,,,35
+gundam,uc,YMT-05 Hildolfr,,13738,False,type = Weapon (không phải robot hình người),,False,,,
+gundam,uc,MS-14Fs Gelgoog Marine Commander Type,,13711,True,biến thể của MS-14A Gelgoog,95,False,,,
+gundam,uc,MS-09RS Rick Dom,,13617,True,biến thể của MS-09 Dom,44,False,,,
+gundam,uc,YMS-15 Gyan,,13591,True,,337,False,,popularity,20
+gundam,uc,RX-121 Gundam TR-1 ［Hazel］,,13573,True,,119,False,,,75
+gundam,uc,YMS-09D Dom Tropical Test Type,,13557,True,,90,False,,,92
+gundam,uc,MS-07H Gouf Flight Test Type,,13494,True,biến thể của MS-07B Gouf,171,False,,,
+gundam,uc,MSA-0011 S Gundam,,13435,True,,103,False,,,84
+gundam,uc,RGC-80 GM Cannon,,13399,True,,274,False,,popularity,24
+gundam,uc,XM-05 Berga Giros,,13354,True,,82,False,,,97
+gundam,uc,RX-104FF Penelope,,13337,True,,65,False,,,105
+gundam,uc,RX-139 Hambrabi,,13317,True,,187,False,,,50
+gundam,uc,RX-77D Guncannon Mass Production Type,,13224,True,biến thể của RX-77-2 Guncannon,81,False,,,
+gundam,uc,RCX-76-02 Guncannon First Type (Iron Cavalry Squadron),,13204,True,,100,False,,,86
+gundam,uc,MS-14J ReGelgu,,13141,True,,268,False,,,27
+gundam,uc,RX-121-1 Gundam TR-1 ［Hazel Custom］,,13083,True,,106,False,,,82
+gundam,uc,RX-121-2P Gundam TR-1 ［Hazel Owsla］,,13048,True,,111,False,,,79
+gundam,uc,Salamis-class,,13023,False,type = Ship (không phải robot hình người),,False,,,
+gundam,uc,NZ-333 α Azieru,,12979,False,type = Armor (không phải robot hình người),,False,,,
+gundam,uc,Clop-class,,12931,False,type = Ship (không phải robot hình người),,False,,,
+gundam,uc,NZ-666 Kshatriya,,12925,True,,187,False,,,51
+gundam,uc,MAX-03 Adzam,,12896,False,type = Armor (không phải robot hình người),,False,,,
+gundam,uc,MAN-08 Elmeth,,12880,False,type = Armor (không phải robot hình người),,False,,,
+gundam,uc,NZ-000 Queen Mansa,,12776,True,,151,False,,,65
+gundam,uc,MS-09R-2 Rick Dom II,,12764,True,biến thể của MS-09 Dom,254,False,,,
+gundam,uc,FD-03 Gustav Karl,,12754,True,,32,False,,,118
+gundam,uc,RGM-89De Jegan (ECOAS Type),,12610,True,biến thể của RGM-89 Jegan,146,False,,,
+gundam,uc,AMX-011S Zaku III Custom,,12576,True,,134,False,,,71
+gundam,uc,ARX-014 Silver Bullet,,12557,True,,145,False,,,67
+gundam,uc,D-50C Loto,,12545,True,,150,False,,,66
+gundam,uc,MSZ-010S Enhanced ZZ Gundam,,12538,True,,161,False,,,59
+gundam,uc,FF-X7-Bst Core Booster,,12512,False,type = Vehicle (không phải robot hình người),,False,,,
+gundam,uc,Alexandria-class,,12507,False,type = Ship (không phải robot hình người),,False,,,
+gundam,uc,Salamis Kai-class (0083 Refit),,12416,False,type = Ship (không phải robot hình người),,False,,,
+gundam,uc,RX-105 Ξ Gundam (HF),,12317,True,,15,False,,,123
+gundam,uc,ORX-013 Gundam Mk-V,,12286,True,,94,False,,,88
+gundam,uc,HLV,,12215,False,type = Vehicle (không phải robot hình người),,False,,,
+gundam,uc,MSN-06S Sinanju Stein,,12156,True,,47,False,,,113
+gundam,uc,RMS-154 Barzam,,12149,True,,266,False,,,28
+gundam,uc,AMX-011 Zaku III,,12117,True,,229,False,,,38
+gundam,uc,Garuda-class,,12088,False,type = Ship (không phải robot hình người),,False,,,
+gundam,uc,F90V Gundam F90 VSBR Type,,12075,True,,83,False,,,96
+gundam,uc,MSM-08 Zogok,,11966,True,,260,False,,,31
+gundam,uc,MSM-07 Z'Gok,,11963,True,,500,False,,popularity,8
+gundam,uc,XM-X2ex Crossbone Gundam X-2 Kai,,11952,True,,69,False,,,103
+gundam,uc,RX-79BD-2 Blue Destiny Unit 2,,11903,True,,44,False,,,116
+gundam,uc,Magellan-class (Origin),,11881,False,type = Ship (không phải robot hình người),,False,,,
+gundam,uc,RGM-79S GM Spartan,,11818,True,biến thể của RGM-79 GM,20,False,,,
+gundam,uc,RMS-141 Xeku Eins,,11817,True,,104,False,,,83
+gundam,uc,RGM-109 Heavygun,,11808,True,,153,False,,,64
+gundam,uc,RGM-86R GM III,,11795,True,,375,False,,popularity,17
+gundam,uc,FA-93HWS ν Gundam Heavy Weapons System Type,,11763,True,,46,False,,,115
+gundam,uc,RX-124 Gundam TR-6 ［Haze'n-thley II-Rah］,,11758,True,,92,False,,,90
+gundam,uc,RGM-89S Stark Jegan,,11724,True,,176,False,,,55
+gundam,uc,ZM-S08G Zolo,,11711,True,,111,False,,,80
+gundam,uc,AMA-X7 Shamblo,,11695,False,type = Armor (không phải robot hình người),,False,,,
+gundam,uc,"RX-78-4 Gundam Unit 4 ""G04""",,11665,True,,76,False,,,98
+gundam,uc,RGZ-95C ReZEL Commander Type,,11651,True,,141,False,,,69
+gundam,uc,MS-04 Bugu,,11618,True,,109,False,,,81
+gundam,uc,Ra Cailum-class,,11590,False,không có infobox Infobox/Mobile Weapon,,False,,,
+gundam,uc,Magella Attack,,11582,False,type = Vehicle (không phải robot hình người),,False,,,
+gundam,uc,MSN-001X Gundam Delta Kai,,11579,True,,64,False,,,106
+gundam,uc,FF-X7 Core Fighter,,11578,False,type = Vehicle (không phải robot hình người),,False,,,
+gundam,uc,XM-X1 Crossbone Gundam X-1 Kai,,11515,True,,74,False,,,100
+gundam,uc,Irish-class,,11475,False,type = Ship (không phải robot hình người),,False,,,
+gundam,uc,G3-Saviour,,11281,True,,20,False,,,121
+gundam,uc,"RX-78-5 Gundam Unit 5 ""G05""",,11281,True,,74,False,,,101
+gundam,uc,MSZ-006C1 Zeta Plus C1,,11278,True,biến thể của MSZ-006 Zeta Gundam,88,False,,,
+gundam,uc,Pegasus-class,,11272,False,type = Ship (không phải robot hình người),,False,,,
+gundam,uc,RX-78GP02A Gundam GP02A (Type-MLRS),,11248,True,,23,False,,,119
+gundam,uc,MS-11 Act Zaku,,11216,True,,158,False,,,61
+gundam,uc,MS-09G Dwadge,,11184,True,,223,False,,,40
+gundam,uc,OMS-06RF RF Zaku (Early Type),,11182,True,,17,False,,,122
+gundam,uc,FA-010S Full Armor ZZ Gundam,,11159,True,,128,False,,,72
+gundam,uc,Chivvay-class,,11087,False,type = Ship (không phải robot hình người),,False,,,
+gundam,uc,MSZ-006-3 Zeta Gundam III,,11053,True,biến thể của MSZ-006 Zeta Gundam,106,False,,,
+gundam,uc,MSN-04II Nightingale,,11052,True,,86,False,,,94
+gundam,uc,RX-75 Guntank,,11052,True,,500,False,,popularity,9
+gundam,uc,RX-78XX Gundam Pixy,,11035,True,,48,False,,,111
+gundam,ac,XXXG-01W Wing Gundam,,31376,True,,190,False,,store,
+gundam,ac,OZ-06MS Leo,,27024,True,,165,False,,popularity,2
+gundam,ac,XXXG-00W0 Wing Gundam Zero EW,,23545,True,biến thể của XXXG-00W0 Wing Gundam Zero,154,False,,,
+gundam,ac,XXXG-01W Wing Gundam EW,,21277,True,biến thể của XXXG-01W Wing Gundam,18,False,,,
+gundam,ac,XXXG-00W0 Wing Gundam Zero,,20720,True,,200,False,,popularity,1
+gundam,ac,OZ-13MS Gundam Epyon,,18283,True,,148,False,,popularity,5
+gundam,ac,OZ-00MS Tallgeese,,17356,True,,127,False,,,10
+gundam,ac,XXXG-01D2 Gundam Deathscythe Hell EW,,17186,True,,21,False,,,33
+gundam,ac,XXXG-01SR Gundam Sandrock,,13896,True,,134,False,,popularity,6
+gundam,ac,XXXG-01SR Gundam Sandrock EW,,13870,True,biến thể của XXXG-01SR Gundam Sandrock,13,False,,,
+gundam,ac,XXXG-01S2 Altron Gundam EW,,13670,True,,25,False,,,32
+gundam,ac,OZ-12SMS Taurus,,13636,True,,128,False,,,9
+gundam,ac,XXXG-01SR2 Gundam Sandrock Custom EW,,13435,True,biến thể của XXXG-01SR Gundam Sandrock,25,False,,,
+gundam,ac,XXXG-01S Shenlong Gundam,,13227,True,,152,False,,popularity,3
+gundam,ac,XXXG-01H Gundam Heavyarms,,12399,True,,133,False,,popularity,7
+gundam,ac,XXXG-01D2 Gundam Deathscythe Hell,,12143,True,,117,False,,,11
+gundam,ac,XXXG-01D Gundam Deathscythe,,11847,True,,133,False,,,8
+gundam,ac,XXXG-01H2 Gundam Heavyarms Custom EW,,11847,True,biến thể của XXXG-01H Gundam Heavyarms,18,False,,,
+gundam,ac,XXXG-01S2 Altron Gundam,,11412,True,,110,False,,,14
+gundam,ac,OZ-00MS2B Tallgeese III,,11271,True,,61,False,,,22
+gundam,ac,MMS-01 Serpent,,10770,True,,46,False,,,27
+gundam,ac,Bulge,,10320,False,type = Ship (không phải robot hình người),,False,,,
+gundam,ac,XXXG-01H Gundam Heavyarms EW,,10277,True,biến thể của XXXG-01H Gundam Heavyarms,11,False,,,
+gundam,ac,XXXG-01H2 Gundam Heavyarms Custom,,9773,True,biến thể của XXXG-01H Gundam Heavyarms,98,False,,,
+gundam,ac,OZ-07AMS Aries,,9727,True,,114,False,,,12
+gundam,ac,OZ-00MS2 Tallgeese II,,9611,True,,94,False,,,17
+gundam,ac,Libra,,9608,False,type = Ship (không phải robot hình người),,False,,,
+gundam,ac,XXXG-01SR2 Gundam Sandrock Custom,,9533,True,biến thể của XXXG-01SR Gundam Sandrock,96,False,,,
+gundam,ac,XXXG-01S Shenlong Gundam EW,,8611,True,biến thể của XXXG-01S Shenlong Gundam,10,False,,,
+gundam,ac,WF-02MD Virgo II,,8576,True,,149,False,,popularity,4
+gundam,ac,OZ-19MASX Gundam Griepe,,8429,True,,45,False,,,28
+gundam,ac,OZX-GU01A Gundam Geminass 01,,8081,True,,52,False,,,26
+gundam,ac,XXXG-01D Gundam Deathscythe EW,,7726,True,,9,False,,,35
+gundam,ac,OZ-15AGX Hydra Gundam,,7638,True,,45,False,,,29
+gundam,ac,OZ-13MSX2 Mercurius,,7580,True,,103,False,,,15
+gundam,ac,WMS-03 Maganac,,7532,True,,66,False,,,19
+gundam,ac,OZ-10VMSX Gundam Aesculapius,,7423,True,,79,False,,,18
+gundam,ac,OZ-13MSX1 Vayeate,,7232,True,,114,False,,,13
+gundam,ac,OZX-GU01LOB Gundam L.O. Booster,,6280,True,,36,False,,,31
+gundam,ac,XXXG-00YSW Wing Gundam Snow White Prelude,,6204,True,biến thể của XXXG-00W0 Wing Gundam Zero,4,False,,,
+gundam,ac,OZ-02MD Virgo,,6187,True,,97,False,,,16
+gundam,ac,Supersonic Transporter,,5989,False,type = Vehicle (không phải robot hình người),,False,,,
+gundam,ac,OZX-GU02A Gundam Geminass 02,,5978,True,,40,False,,,30
+gundam,ac,OZ-07MS Tragos,,5683,True,,66,False,,,20
+gundam,ac,OZ-16MSX-D Scorpio,,5629,True,,19,False,,,34
+gundam,ac,OZ-00MS Tallgeese Flugel,,5389,True,,57,False,,,23
+gundam,ac,OZ-14MS Gundam Aquarius,,5132,True,,56,False,,,25
+gundam,ac,WMS-03 Maganac Rasid Kurama Custom,,4899,True,,62,False,,,21
+gundam,ac,Atmosphere Entry Transport,,4835,False,type = Ship (không phải robot hình người),,False,,,
+gundam,ac,WMS-03 Maganac Auda Custom,,4482,True,,57,False,,,24
+gundam,ac,XXXG-00W0S Wing Gundam Seraphim,,4277,True,biến thể của XXXG-00W0 Wing Gundam Zero,15,False,,,
+gundam,ce,ZGMF-X20A Strike Freedom Gundam,,36949,True,,316,False,,store,
+gundam,ce,Cosmic Era Mobile Weapons,,61955,False,không có infobox Infobox/Mobile Weapon,,False,,,
+gundam,ce,ZGMF-X10A Freedom Gundam,,34549,True,,499,False,,popularity,2
+gundam,ce,ZGMF-X42S Destiny Gundam,,33327,True,,278,False,,,19
+gundam,ce,ZGMF-X19A ∞ Justice Gundam,,30002,True,,240,False,,,27
+gundam,ce,Archangel-class,,29593,False,type = Ship (không phải robot hình người),,False,,,
+gundam,ce,GAT-X102 Duel Gundam,,27576,True,,334,False,,popularity,7
+gundam,ce,GAT-X105 Strike Gundam,,27164,True,,475,False,,popularity,3
+gundam,ce,ORB-01 Akatsuki Gundam,,26649,True,,261,False,,,23
+gundam,ce,GFAS-X1 Destroy Gundam,,25695,True,,278,False,,,20
+gundam,ce,MBF-P02 Gundam Astray Red Frame,,25650,True,,329,False,,popularity,8
+gundam,ce,GAT-X103 Buster Gundam,,22417,True,,312,False,,popularity,9
+gundam,ce,ZGMF-X09A Justice Gundam,,22283,True,,285,False,,,16
+gundam,ce,ZGMF-X13A Providence Gundam,,21296,True,,221,False,,,32
+gundam,ce,ZGMF-X88S Gaia Gundam,,21125,True,,285,False,,,17
+gundam,ce,ZGMF-1017 GINN,,20799,True,,552,False,,popularity,1
+gundam,ce,GAT-X303 Aegis Gundam,,20059,True,,285,False,,,18
+gundam,ce,ZGMF-X666S Legend Gundam,,19627,True,,222,False,,,30
+gundam,ce,GAT-X207 Blitz Gundam,,18867,True,,299,False,,,13
+gundam,ce,ZGMF-2000 GOUF Ignited,,18762,True,,271,False,,,21
+gundam,ce,ZGMF-X31S Abyss Gundam,,17934,True,,240,False,,,28
+gundam,ce,ZGMF-X24S Chaos Gundam,,17913,True,,262,False,,,22
+gundam,ce,GAT-X105E Strike Noir Gundam,,17416,True,biến thể của GAT-X105 Strike Gundam,135,False,,,
+gundam,ce,ZGMF-X56S Impulse Gundam,,17328,True,,296,False,,,14
+gundam,ce,MBF-M1 M1 Astray,,17114,True,,390,False,,popularity,4
+gundam,ce,YMF-X000A Dreadnought Gundam,,16872,True,,161,False,,,36
+gundam,ce,GAT-X252 Forbidden Gundam,,16241,True,,240,False,,,29
+gundam,ce,GAT-X131 Calamity Gundam,,16094,True,,246,False,,,25
+gundam,ce,STTS-909 Rising Freedom Gundam,,16003,True,,91,False,,,40
+gundam,ce,GAT-X370 Raider Gundam,,15814,True,,249,False,,,24
+gundam,ce,MBF-P03secondL Gundam Astray Blue Frame Second L,,15705,True,,212,False,,,33
+gundam,ce,ZGMF-X23S Saviour Gundam,,15660,True,,203,False,,,34
+gundam,ce,MBF-P03 Gundam Astray Blue Frame,,15646,True,,148,False,,,37
+gundam,ce,Izumo-class,,15397,False,type = Ship (không phải robot hình người),,False,,,
+gundam,ce,GAT-01 Strike Dagger,,14802,True,,307,False,,,11
+gundam,ce,ZGMF-1000 ZAKU Warrior,,14738,True,,310,False,,,10
+gundam,ce,MBF-02 Strike Rouge,,14719,True,,301,False,,,12
+gundam,ce,MVF-M11C Murasame,,14711,True,,244,False,,,26
+gundam,ce,METEOR,,14608,False,type = Weapon (không phải robot hình người),,False,,,
+gundam,ce,ZGMF-600 GuAIZ,,14294,True,,361,False,,popularity,5
+gundam,ce,ZGMF-X191M2 ∞ Justice Gundam Type II,,14049,True,,83,False,,,42
+gundam,ce,LHM-BB03S Millennium,,14048,False,type = Ship (không phải robot hình người),,False,,,
+gundam,ce,Agamemnon-class,,13841,False,type = Ship (không phải robot hình người),,False,,,
+gundam,ce,GSX-401FW Stargazer Gundam,,13830,True,,85,False,,,41
+gundam,ce,LHM-BB01 Minerva,,13804,False,type = Ship (không phải robot hình người),,False,,,
+gundam,ce,ZGMF-X12A Testament Gundam,,13426,True,,116,False,,,39
+gundam,ce,GAT-04 Windam,,13260,True,,222,False,,,31
+gundam,ce,GAT-01A1 Dagger,,12618,True,,294,False,,,15
+gundam,ce,GAT-X133 Sword Calamity Gundam,,12588,True,,180,False,,,35
+gundam,ce,ZGMF-515 CGUE,,12428,True,,355,False,,popularity,6
+gundam,ce,MBF-P01-ReAMATU Gundam Astray Gold Frame Amatsu,,12317,True,,139,False,,,38
+gundam,ad,GN-001 Gundam Exia,,30274,True,,272,False,,store,
+gundam,ad,GNT-0000 00 Qan［T］,,46935,True,,160,False,,,14
+gundam,ad,GN-0000+GNR-010 00 Raiser,,43786,True,biến thể của GN-0000 00 Gundam,159,False,,,
+gundam,ad,GNX-803T GN-XIV,,42205,True,,98,False,,,28
+gundam,ad,GNX-603T GN-X,,35891,True,,205,False,,popularity,5
+gundam,ad,GNX-903VW Brave Commander Test Type,,33977,True,,63,False,,,37
+gundam,ad,GN-010 Gundam Zabanya,,33495,True,,103,False,,,26
+gundam,ad,GNX-903VS Brave Standard Test Type,,32822,True,,71,False,,,34
+gundam,ad,GN-002 Gundam Dynames,,32123,True,,231,False,,popularity,2
+gundam,ad,GNMA-Y0002V Gadelaza,,31908,False,type = Armor (không phải robot hình người),,False,,,
+gundam,ad,GN-003 Gundam Kyrios,,31698,True,,232,False,,popularity,1
+gundam,ad,GN-011 Gundam Harute,,30460,True,,75,False,,,32
+gundam,ad,GN-XXX Gundam Rasiel,,30036,True,,66,False,,,35
+gundam,ad,GNY-002F Gundam Sadalsuud Type F,,29747,True,,65,False,,,36
+gundam,ad,GN-0000 00 Gundam,,29589,True,,229,False,,popularity,3
+gundam,ad,GN-008 Seravee Gundam,,29141,True,,157,False,,,15
+gundam,ad,GN-005 Gundam Virtue,,27860,True,,178,False,,,11
+gundam,ad,GN-006 Cherudim Gundam,,27320,True,,153,False,,,16
+gundam,ad,GNR-101A GN Archer,,26913,True,,132,False,,,21
+gundam,ad,GNY-001 Gundam Astraea,,26527,True,,88,False,,,29
+gundam,ad,CB-002 Raphael Gundam,,25959,True,,79,False,,,31
+gundam,ad,GN-007 Arios Gundam,,25817,True,,146,False,,,17
+gundam,ad,GNR-010 0 Raiser,,25663,False,type = Vehicle (không phải robot hình người),,False,,,
+gundam,ad,GNW-001 Gundam Throne Eins,,24813,True,,145,False,,,18
+gundam,ad,GNW-003 Gundam Throne Drei,,24170,True,,180,False,,,10
+gundam,ad,GNX-609T GN-XIII,,24012,True,,178,False,,,12
+gundam,ad,GNX-704T Ahead,,23744,True,,128,False,,,23
+gundam,ad,GNZ-003 Gadessa,,23743,True,,140,False,,,20
+gundam,ad,GN-0000RE+GNR-010 00 Raiser GN Condenser Type,,23235,True,biến thể của GN-0000 00 Gundam,66,False,,,
+gundam,ad,GNMA-0001V Regnant,,22814,False,type = Armor (không phải robot hình người),,False,,,
+gundam,ad,GN-000 0 Gundam,,22733,True,,221,False,,popularity,4
+gundam,ad,SVMS-01 Union Flag,,22687,True,,191,False,,,7
+gundam,ad,GNZ-001 GRM Gundam,,22644,True,,56,False,,,38
+gundam,ad,GN-004 Gundam Nadleeh,,22573,True,,188,False,,,9
+gundam,ad,GN-XXX+GNR-000 Sefer Rasiel,,22371,True,,51,False,,,41
+gundam,ad,GNY-001F Gundam Astraea Type F,,22322,True,,72,False,,,33
+gundam,ad,GNMA-XCVII Alvatore,,22181,False,type = Armor (không phải robot hình người),,False,,,
+gundam,ad,GNY-004 Gundam Plutone,,21297,True,,99,False,,,27
+gundam,ad,CB-001.5 1.5 Gundam,,20815,True,,82,False,,,30
+gundam,ad,GNW-20000 Arche Gundam,,20646,True,,172,False,,,13
+gundam,ad,GNY-003F Gundam Abulhool Type F,,20638,True,,52,False,,,40
+gundam,ad,CBS-74 Ptolemaios 2,,20271,False,type = Ship (không phải robot hình người),,False,,,
+gundam,ad,GNR-000 GN Sefer,,19804,False,type = Weapon (không phải robot hình người),,False,,,
+gundam,ad,GNW-002 Gundam Throne Zwei,,19493,True,,142,False,,,19
+gundam,ad,GNZ-005 Garazzo,,19463,True,,130,False,,,22
+gundam,ad,MSJ-06YIII-B Tieren Kyitwo,,19433,True,,55,False,,,39
+gundam,ad,AEU-09 AEU Enact,,19285,True,,194,False,,popularity,6
+gundam,ad,GNX-Y901TW Susanowo,,19156,True,,104,False,,,25
+gundam,ad,SVMS-01E Graham's Union Flag Custom,,18977,True,,108,False,,,24
+gundam,ad,GNMA-Y0001 Empruss,,18974,False,type = Armor (không phải robot hình người),,False,,,
+gundam,ad,MSJ-06II-A Tieren Ground Type,,18922,True,,189,False,,,8
+gundam,pd,ASW-G-08 Gundam Barbatos,,23859,True,,137,False,,popularity,1
+gundam,pd,ASW-G-01 Gundam Bael,,18286,True,,90,False,,popularity,3
+gundam,pd,ASW-G-08 Gundam Barbatos Lupus Rex,,18239,True,biến thể của ASW-G-08 Gundam Barbatos,90,False,,,
+gundam,pd,ASW-G-64 Gundam Flauros (Ryusei-Go),,18062,True,,72,False,,,16
+gundam,pd,ASW-G-08 Gundam Barbatos Lupus,,17899,True,biến thể của ASW-G-08 Gundam Barbatos,97,False,,,
+gundam,pd,EB-06 Graze,,16885,True,,122,False,,popularity,2
+gundam,pd,ASW-G-XX Gundam Vidar,,16468,True,,78,False,,,10
+gundam,pd,ASW-G-11 Gundam Gusion Rebake,,16403,True,,63,False,,,21
+gundam,pd,ASW-G-11 Gundam Gusion Rebake Full City,,15539,True,,81,False,,,7
+gundam,pd,Gundam Hajiroboshi,,13971,True,,44,False,,,31
+gundam,pd,EB-05s Schwalbe Graze,,13959,True,,83,False,,popularity,5
+gundam,pd,ASW-G-66 Gundam Kimaris Vidar,,13769,True,,78,False,,,11
+gundam,pd,ASW-G-11 Gundam Gusion,,13738,True,,55,False,,,29
+gundam,pd,ASW-G-66 Gundam Kimaris,,13734,True,,61,False,,,24
+gundam,pd,ASW-G-71 Gundam Dantalion,,12659,True,,31,False,,,36
+gundam,pd,ASW-G-66 Gundam Kimaris Trooper,,12558,True,,62,False,,,22
+gundam,pd,Hashmal,,12512,False,type = Armor (không phải robot hình người),,False,,,
+gundam,pd,EB-AX2 Graze Ein,,12450,True,,57,False,,,27
+gundam,pd,EB-08jjc Reginlaze Julia,,11729,True,,65,False,,,20
+gundam,pd,ASW-G-35 Gundam Marchosias,,10918,True,,44,False,,,32
+gundam,pd,UGY-R41 Man Rodi,,10354,True,,56,False,,,28
+gundam,pd,STH-16 Shiden,,9834,True,,71,False,,,18
+gundam,pd,ASW-G-29 Gundam Astaroth,,9734,True,,33,False,,,35
+gundam,pd,V08-1228 Grimgerde,,9592,True,,54,False,,,30
+gundam,pd,ASW-G-32 Gundam Asmoday,,9551,True,,38,False,,,34
+gundam,pd,V08Re-0526 Helmwige Reincar,,9185,True,,61,False,,,25
+gundam,pd,ASW-G-29 Gundam Astaroth Rinascimento,,9106,True,,25,False,,,39
+gundam,pd,EB-06j Graze Ground Type,,8986,True,biến thể của EB-06 Graze,76,False,,,
+gundam,pd,UGY-R41 Landman Rodi,,8924,True,,67,False,,,19
+gundam,pd,EB-08 Reginlaze,,8370,True,,79,False,,,8
+gundam,pd,EB-04 Geirail,,8363,True,,60,False,,,26
+gundam,pd,EB-06rs Graze Ritter Commander Type,,8248,True,biến thể của EB-06 Graze,94,False,,,
+gundam,pd,EB-06r Graze Ritter,,8172,True,biến thể của EB-06 Graze,75,False,,,
+gundam,pd,STH-20 Hekija,,8058,True,,62,False,,,23
+gundam,pd,STH-05R Rouei,,7767,True,,76,False,,,12
+gundam,pd,IPP-66305 Hugo,,7766,True,,76,False,,,13
+gundam,pd,STH-14s Hyakuri,,7715,True,,79,False,,,9
+gundam,pd,UGY-R45 Garm Rodi,,7677,True,,73,False,,,15
+gundam,pd,ASW-G-61 Gundam Zagan,,7589,True,,39,False,,,33
+gundam,pd,STH-05 Hyakuren,,7273,True,,83,False,,popularity,6
+gundam,pd,ASW-G-29 Gundam Astaroth Origin,,7032,True,,25,False,,,40
+gundam,pd,ASW-G-56 Gundam Gremory,,6991,True,,26,False,,,37
+gundam,pd,EB-06s Graze Commander Type,,6900,True,biến thể của EB-06 Graze,92,False,,,
+gundam,pd,Harael,,6819,False,type = Armor (không phải robot hình người),,False,,,
+gundam,pd,EB-04jc4 Geirail Scharfrichter,,6729,True,,72,False,,,17
+gundam,pd,UGY-R38 Spinner Rodi,,6706,True,,89,False,,popularity,4
+gundam,pd,ASW-G-47 Gundam Vual,,6695,True,,26,False,,,38
+gundam,pd,AEB-06L Hloekk Graze,,6660,True,,76,False,,,14
+gundam,pd,TK-53 CGS Mobile Worker,,6650,False,không có infobox Infobox/Mobile Weapon,,False,,,
+gundam,pd,V03-0907 Oltlinde,,6338,True,,20,False,,,41
+gundam,as,XVX-016 Gundam Aerial,,20597,True,,72,False,,popularity,1
+gundam,as,XVX-016RN Gundam Aerial Rebuild,,16376,True,biến thể của XVX-016 Gundam Aerial,55,False,,,
+gundam,as,MD-0064 Darilbalde,,15146,True,,30,False,,,6
+gundam,as,XGF-02 Gundam Lfrith,,12230,True,,28,False,,,7
+gundam,as,X-EX01 Gundam Calibarn,,11782,True,,31,False,,,5
+gundam,as,MDX-0003 Gundam Schwarzette,,10275,True,,22,False,,,10
+gundam,as,XGF-01 Gundam Lfrith Pre-Production Model,,9085,True,,36,False,,popularity,2
+gundam,as,CEK-043LBK Beguir-Beu Torche,,8628,True,,7,False,,,28
+gundam,as,XGF-E3 Gundnode,,7885,True,,14,False,,,20
+gundam,as,AVP-03 Gundam Lfrith Anavata,,7877,True,,8,False,,,26
+gundam,as,EDM-GA-01 Gundam Lfrith Ur,,7355,True,,34,False,,popularity,4
+gundam,as,XGF-01［Ⅱ3］ Gundam Lfrith Jiu,,7118,True,biến thể của XGF-01 Gundam Lfrith Pre-Production Model,7,False,,,
+gundam,as,CFK-029 Michaelis,,7030,True,,19,False,,,15
+gundam,as,EDM-GB Gundvölva,,6627,True,,18,False,,,16
+gundam,as,MSJ-121 Demi Trainer,,6538,True,,20,False,,,13
+gundam,as,EDM-GA-02 Gundam Lfrith Thorn,,6380,True,,35,False,,popularity,3
+gundam,as,MD-0021 Desultor,,5674,True,,13,False,,,23
+gundam,as,MD-0032G Guel's Dilanza,,5535,True,,18,False,,,17
+gundam,as,MSJ-OP122 Demi Garrison,,5495,True,,14,False,,,21
+gundam,as,MD-0031L Lauda's Dilanza,,5175,True,,12,False,,,24
+gundam,as,MSJ-R122 Demi Barding,,5165,True,,8,False,,,27
+gundam,as,MD-0031 Dilanza,,4964,True,,22,False,,,11
+gundam,as,UOR-108 Cargore,,4855,True,,4,False,,,33
+gundam,as,CCP-068 Heingra,,4820,True,,16,False,,,18
+gundam,as,MSJ-105CC Chuchu's Demi Trainer,,4735,True,,22,False,,,12
+gundam,as,CEK-077 Beguir-Pente,,4650,True,,23,False,,,9
+gundam,as,CEK-040 Beguir-Beu,,4529,True,,24,False,,,8
+gundam,as,CFP-013 Heindree Sturm,,4216,True,,20,False,,,14
+gundam,as,MD-0031UL Dilanza Sol,,4161,True,,16,False,,,19
+gundam,as,RVR-01 Gundam Naion,,4110,True,,3,False,,,37
+gundam,as,HU-45p Prodoros,,3875,True,,11,False,,,25
+gundam,as,FMS-v-3 Hosler II,,2770,True,,5,False,,,32
+gundam,as,CFP-010 Heindree,,2696,True,,14,False,,,22
+gundam,as,BTz-48 Clibarri,,2512,True,,4,False,,,34
+gundam,as,F06-12 Azrawan,,2390,True,,3,False,,,38
+gundam,as,Tickbalang,,2314,False,type = Vehicle (không phải robot hình người),,False,,,
+gundam,as,TKG-333 Capell-Geo,,2201,True,,6,False,,,29
+gundam,as,BTz-50hv Clibarri Dawon,,2140,True,,6,False,,,30
+gundam,as,AX-B120 Hipelis,,1899,True,,4,False,,,35
+gundam,as,MV-7 Zvalvi,,1776,True,,3,False,,,39
+gundam,as,TKG-328 Kapell-Kuu,,1742,True,,6,False,,,31
+gundam,as,Ulysses (Ad Stella),,1665,False,type = Ship (không phải robot hình người),,False,,,
+gundam,as,GM-02R Racowy,,1519,True,,3,False,,,40
+gundam,as,Begavent,,1443,False,type = Ship (không phải robot hình người),,False,,,
+gundam,as,UM-HT-426 Jinete,,1339,True,,4,False,,,36
+gundam,as,HZR-09K Huzar,,1112,True,,2,False,,,41
+gundam,as,Jeturk Heavy Machinery Battleship,,1055,False,type = Ship (không phải robot hình người),,False,,,
+gundam,as,Grassley Defense Systems Battleship,,1009,False,type = Ship (không phải robot hình người),,False,,,
+gundam,fc,GF13-017NJII God Gundam,,32928,True,,275,False,,popularity,1
+gundam,fc,JDG-00X Devil Gundam,,23559,True,,262,False,,popularity,2
+gundam,fc,GF13-011NC Dragon Gundam,,22396,True,,151,False,,,6
+gundam,fc,GF13-006NA Gundam Maxter,,20370,True,,137,False,,,7
+gundam,fc,GF13-050NSW Nobel Gundam,,19367,True,,135,False,,,8
+gundam,fc,GF13-001NHII Master Gundam,,18867,True,,173,False,,,5
+gundam,fc,GF13-017NJ Shining Gundam,,17867,True,,214,False,,popularity,3
+gundam,fc,GF13-013NR Bolt Gundam,,17703,True,,124,False,,,11
+gundam,fc,GF13-009NF Gundam Rose,,17441,True,,123,False,,,12
+gundam,fc,GF13-021NG Gundam Spiegel,,14274,True,,130,False,,,10
+gundam,fc,GF13-003NEL John Bull Gundam,,7947,True,,105,False,,,23
+gundam,fc,Walter Gundam,,7512,True,,107,False,,,18
+gundam,fc,JMF1336R Rising Gundam,,7019,True,,190,False,,,4
+gundam,fc,GF13-055NI Neros Gundam,,7012,True,,112,False,,,15
+gundam,fc,GF13-037NCA Lumber Gundam,,6732,True,,103,False,,,26
+gundam,fc,Grand Gundam,,6728,True,,106,False,,,20
+gundam,fc,GF13-044NNP Mandor Gundam,,6723,True,,109,False,,,17
+gundam,fc,Grand Master Gundam,,6436,True,,103,False,,,27
+gundam,fc,Gundam Heaven's Sword,,6348,True,,106,False,,,21
+gundam,fc,Fuunsaiki,,6219,True,,122,False,,,13
+gundam,fc,JDG-009X Death Army,,5790,True,,131,False,,,9
+gundam,fc,GF13-026ND Mermaid Gundam,,5734,True,,116,False,,,14
+gundam,fc,GF13-001NH Kowloon Gundam,,5730,True,,112,False,,,16
+gundam,fc,GF7-013NJ Yamato Gundam,,5478,True,,19,False,,,45
+gundam,fc,Ultimate Gundam,,5349,True,,99,False,,,32
+gundam,fc,GF4-001NE Pharaoh Gundam IV,,4867,True,,100,False,,,30
+gundam,fc,GF13-039NP Jester Gundam,,4840,True,,104,False,,,25
+gundam,fc,GF13-066NO Nether Gundam,,4656,True,,106,False,,,22
+gundam,fc,Shuffle Joker,,4471,True,,95,False,,,39
+gundam,fc,JDG-010 Devil Gundam Junior,,4341,True,,53,False,,,44
+gundam,fc,GF13-002NGR Zeus Gundam,,4134,True,,107,False,,,19
+gundam,fc,GF13-049NM Tequila Gundam,,3898,True,,100,False,,,31
+gundam,fc,GF13-017∞ Gundam God Master,,3871,True,biến thể của GF13-017NJII God Gundam,11,False,,,
+gundam,fc,GF13-045NSP Matador Gundam,,3780,True,,99,False,,,33
+gundam,fc,JMA27T Fantoma,,3718,False,type = Armor (không phải robot hình người),,False,,,
+gundam,fc,JMF1337SD Shading Gundam,,3711,True,,8,False,,,48
+gundam,fc,Shuffle Heart,,3676,True,,94,False,,,41
+gundam,fc,Mirage Gundam,,3537,True,,95,False,,,40
+gundam,fc,GF13-009NFII Gundam Versailles,,3138,True,,12,False,,,47
+gundam,fc,GF13-052NT Minaret Gundam,,3060,True,,97,False,,,35
+gundam,fc,GF13-050NSWII Super Nobel Gundam,,3049,True,,90,False,,,43
+gundam,fc,GF13-047NMA Skull Gundam,,3037,True,,101,False,,,28
+gundam,fc,GF13-020NK Gundam Zebra,,3020,True,,105,False,,,24
+gundam,fc,GF13-006NAII Gundam Max Revolver,,2987,True,,13,False,,,46
+gundam,fc,GF13-041NSI Ashura Gundam,,2975,True,,96,False,,,36
+gundam,fc,GF13-083NCB Arachno Gundam,,2883,True,,98,False,,,34
+gundam,fc,NEL-75C Butler Bensouman,,2877,True,,96,False,,,37
+gundam,fc,Death Master,,2875,True,,92,False,,,42
+gundam,fc,29H-A-MS Murphy,,2867,True,,96,False,,,38
+gundam,fc,Death Beast,,2715,True,,101,False,,,29
+sentai,sentai,Ninja Gattai Muteki Shogun,Super Sentai,21025,True,,1827,False,,,
+sentai,sentai,Wild Force Megazord,Power Rangers,15725,True,,165,False,Hyakuju Gattai GaoKing,store,
+sentai,sentai,Kyutama Gattai KyurenOh,Super Sentai,52500,True,,1531,False,,popularity,37
+sentai,sentai,Zenryoku Zenkai Cannon,Super Sentai,52200,True,,877,False,,,79
+sentai,sentai,TegaSword,Super Sentai,47282,True,,1435,False,,popularity,41
+sentai,sentai,Shinka Gattai Daizyuzin,Super Sentai,47183,True,,1831,True,,,
+sentai,sentai,Shuriken Gattai Shurikenjin,Super Sentai,45923,True,,1448,False,,,
+sentai,sentai,Ohsama Gattai King-Ohger,Super Sentai,39277,True,,1756,True,,popularity,25
+sentai,sentai,Dino Megazord,Power Rangers,36633,True,,1968,True,Shinka Gattai Daizyuzin,popularity,1
+sentai,sentai,Ressha Gattai ToQ-Oh,Super Sentai,34889,True,,1832,True,,popularity,23
+sentai,sentai,GozyuDrill,Super Sentai,33580,True,,450,False,,,117
+sentai,sentai,Battle Fever Robo,Super Sentai,33410,True,,192,False,,,155
+sentai,sentai,Thunder Megazord (Mighty Morphin),Power Rangers,33229,True,,1545,True,,popularity,35
+sentai,sentai,GoGo Gattai DaiBouken,Super Sentai,31034,True,,1131,False,,,
+sentai,sentai,Racer Zord,Power Rangers,30881,False,không có infobox MegazordInfo / SentaiMegazordInfo,,False,,,
+sentai,sentai,Hyakuju Gattai GaoKing,Super Sentai,30768,True,,267,False,,,
+sentai,sentai,Ninja Steel Megazord,Power Rangers,30095,True,,1752,True,Shuriken Gattai Shurikenjin,popularity,4
+sentai,sentai,Doubutsu Gattai ZyuohWild,Super Sentai,29491,True,,1175,False,,,50
+sentai,sentai,Doubutsu Gattai ZyuohKing,Super Sentai,28395,True,,1075,False,,,57
+sentai,sentai,Hyakuju Gattai GaoHunter,Super Sentai,28275,True,,180,False,,,157
+sentai,sentai,X Trains,Super Sentai,27469,True,,1688,True,,popularity,28
+sentai,sentai,Seiju Gattai GingaiOh,Super Sentai,27247,True,,971,False,,,
+sentai,sentai,Ninpu Gattai Senpujin,Super Sentai,25693,True,,825,False,,,
+sentai,sentai,Zenkai Gattai ZenkaiOh,Super Sentai,25040,True,,1748,True,,popularity,26
+sentai,sentai,Kamitsuki Gattai Kyoryuzin,Super Sentai,24868,True,,452,False,,,
+sentai,sentai,Kaizoku Gattai GokaiOh,Super Sentai,24781,True,,1456,True,,,
+sentai,sentai,Kyutama Gattai RyuteiOh,Super Sentai,24637,True,,1375,False,,,
+sentai,sentai,Bakuage Gattai Boonboomger Robo,Super Sentai,24259,True,,1113,False,,,52
+sentai,sentai,Cosmic Fury Zords,Power Rangers,23556,True,,1005,False,,,66
+sentai,sentai,Hyakuju Gattai GaoMuscle,Super Sentai,23546,True,,161,False,,,
+sentai,sentai,LT-06,Super Sentai,22861,True,,1167,False,,,51
+sentai,sentai,Mashin Gattai Kiramaizin,Super Sentai,22689,True,,784,False,,,85
+sentai,sentai,Sky OtomoNin Lion Ha-Ojo,Super Sentai,22400,True,,653,False,,,
+sentai,sentai,Samurai Gattai ShinkenOh,Super Sentai,22392,True,,1101,False,,,
+sentai,sentai,Bakuryu Gattai AbarenOh,Super Sentai,22030,True,,206,False,,,
+sentai,sentai,Zyudenryu Pteragordon,Super Sentai,21957,True,,406,False,,,121
+sentai,sentai,Doubutsu Gattai Tousai Zyuoh,Super Sentai,21402,True,,1400,False,,popularity,42
+sentai,sentai,GoGo Gattai DaiTanken,Super Sentai,21227,True,,1062,False,,,60
+sentai,sentai,TimeJets,Super Sentai,21043,True,,1069,False,,,58
+sentai,sentai,Ressha Gattai Diesel-Oh,Super Sentai,20489,True,,572,False,,,105
+sentai,sentai,Tensou Gattai Gosei Great,Super Sentai,20452,True,,1404,False,,,
+sentai,sentai,Shogun Megazord,Power Rangers,20165,True,,1972,True,Ninja Gattai Muteki Shogun,store,
+sentai,sentai,Astro Megaship,Power Rangers,19702,False,không có infobox MegazordInfo / SentaiMegazordInfo,,False,,,
+sentai,sentai,Tokumei Gattai Go-Buster Oh,Super Sentai,19401,True,,214,False,,,
+sentai,sentai,Omikoshi Phoenix,Super Sentai,19260,True,,809,False,,,84
+sentai,sentai,Battleship CrocoDaiOh,Super Sentai,19159,True,,1764,True,,popularity,24
+sentai,sentai,Majin Gattai Magiking,Super Sentai,18942,True,,1083,False,,,56
+sentai,sentai,Galaxy Megazord,Power Rangers,18849,True,,1342,False,Seiju Gattai GingaiOh,popularity,12
+sentai,sentai,Gekiso Gattai RV Robo,Super Sentai,18759,True,,1066,False,,,
+sentai,sentai,Zyudenryu Plezuon,Super Sentai,18669,True,,380,False,,,
+sentai,sentai,Alpha 1,Power Rangers,18332,False,không có infobox MegazordInfo / SentaiMegazordInfo,,False,,,
+sentai,sentai,Ptera Zord,Power Rangers,18101,True,,349,False,,,129
+sentai,sentai,Tatakiage Gattai Boonboom Killer Robo,Super Sentai,18080,True,,160,False,,,160
+sentai,sentai,Choriki Gattai Ohranger Robo,Super Sentai,17658,True,,1191,False,,,
+sentai,sentai,Tenku Gattai Jet Icarus,Super Sentai,17654,True,,1098,False,,,54
+sentai,sentai,Zyudenryu Bragigas,Super Sentai,17378,True,,382,False,,,124
+sentai,sentai,Gekiatsu Shuriken Gattai Gekiatsu Dai-Oh,Super Sentai,17204,True,,1134,False,,,
+sentai,sentai,Ninja Megazord,Power Rangers,17122,True,,1976,True,Goshin Gattai Kakure Daishogun,popularity,2
+sentai,sentai,Kinkyu Gattai Victory Robo,Super Sentai,17099,True,,1120,False,,,
+sentai,sentai,Mashin Gattai King Express,Super Sentai,17086,True,,818,False,,,83
+sentai,sentai,Denji Gattai GalaxyMega,Super Sentai,16994,True,,580,False,,,
+sentai,sentai,Fiverobo,Super Sentai,16916,True,,658,False,,,94
+sentai,sentai,Tenkujin,Super Sentai,16910,False,không có infobox MegazordInfo / SentaiMegazordInfo,,False,,,
+sentai,sentai,Goshin Gattai Kakure Daishogun,Super Sentai,16728,True,,1677,False,,,
+sentai,sentai,Engine Gattai Engine-O,Super Sentai,16656,True,,625,False,,,
+sentai,sentai,Bison Change BisonKing,Super Sentai,16639,True,,659,False,,,
+sentai,sentai,Tokuso Gattai DekarangerRobo,Super Sentai,16616,True,,321,False,,,
+sentai,sentai,BuildRessha,Super Sentai,16343,True,,534,False,,,107
+sentai,sentai,Jungle Pride Megazord,Power Rangers,16322,True,,737,False,Juken Gattai GekiTouja,popularity,43
+sentai,sentai,Denshi Gattai Bio Robo,Super Sentai,16277,True,,410,False,,,120
+sentai,sentai,Kaitou Gattai LupinKaiser,Super Sentai,16257,True,,1037,False,,,62
+sentai,sentai,GoodeBurn,Super Sentai,16046,False,không có infobox MegazordInfo / SentaiMegazordInfo,,False,,,
+sentai,sentai,DriveMax Megazord,Power Rangers,16021,True,,1155,False,GoGo Gattai DaiBouken,popularity,14
+sentai,sentai,Kousoku Gattai Great Five,Super Sentai,15954,True,,952,False,,,73
+sentai,sentai,Moraimars,Super Sentai,15909,True,,163,False,,,159
+sentai,sentai,Keisatsu Gattai PatKaiser,Super Sentai,15899,True,,1034,False,,,63
+sentai,sentai,Ikazuchi Gattai Gouraijin,Super Sentai,15872,True,,770,False,,,
+sentai,sentai,Bull Rider Megazord,Power Rangers,15826,True,,816,False,Bison Change BisonKing,popularity,38
+sentai,sentai,DekaBase,Super Sentai,15793,True,,250,False,,,149
+sentai,sentai,Samurai Gattai DaiTenku,Super Sentai,15779,True,,674,False,,,92
+sentai,sentai,Engine Machalcon,Super Sentai,15769,True,,429,False,,,119
+sentai,sentai,Goren Gattai Turbo Robo,Super Sentai,15749,True,,941,False,,,74
+sentai,sentai,Denzi Fighter,Super Sentai,15652,True,,366,False,,,128
+sentai,sentai,Cho Kagaku Robo Dyna Robo,Super Sentai,15478,True,,621,False,,,97
+sentai,sentai,Storm Megazord,Power Rangers,15472,True,,707,False,Ninpu Gattai Senpujin,popularity,36
+sentai,sentai,Animus,Power Rangers,15446,False,không có infobox MegazordInfo / SentaiMegazordInfo,,False,,,
+sentai,sentai,Tensou Gattai Gosei Ground,Super Sentai,15434,True,,293,False,,,
+sentai,sentai,Ginga Gattai Mega Voyager,Super Sentai,15350,True,,1153,False,,,
+sentai,sentai,Hissho Gattai VRV Robo,Super Sentai,15230,True,,1034,False,,,
+sentai,sentai,Kishiryu Pterardon,Super Sentai,15199,True,,1075,False,,,
+sentai,sentai,DualDrive Megazord,Power Rangers,15049,True,,1594,False,,popularity,32
+sentai,sentai,Juken Gattai GekiTouja,Super Sentai,15024,True,,657,False,,,
+sentai,sentai,Ryusei Gattai Victory Mars,Super Sentai,14932,True,,1040,False,,,
+sentai,sentai,Omegazords,Power Rangers,14885,True,,1088,True,,,55
+sentai,sentai,Samurai Megazord,Power Rangers,14632,True,,1203,False,Samurai Gattai ShinkenOh,popularity,13
+sentai,sentai,Turbo Megazord,Power Rangers,14512,True,,1960,True,Gekiso Gattai RV Robo,popularity,7
+sentai,sentai,Kishiryu CosmoRaptor,Super Sentai,14377,True,,726,False,,,
+sentai,sentai,GoGo Voyager,Super Sentai,14356,True,,1012,False,,,
+sentai,sentai,Samurai Battlewing,Power Rangers,14355,False,không có infobox MegazordInfo / SentaiMegazordInfo,,False,,,
+sentai,sentai,Choju Gattai LiveRobo,Super Sentai,14351,True,,638,False,,,95
+sentai,sentai,Byunbyum Mach,Super Sentai,14222,True,,317,False,,,134
+sentai,sentai,Renketsu Gattai Grand Liner,Super Sentai,13784,True,,1050,False,,,
+sentai,sentai,Titan Megazord,Power Rangers,13725,True,,1438,False,,popularity,40
+sentai,sentai,Tokuso Gattai DekaWingRobo,Super Sentai,13577,True,,289,False,,,
+sentai,sentai,Juken God SaiDain,Super Sentai,13420,True,,617,False,,,99
+sentai,sentai,Flash King,Super Sentai,13416,True,,500,False,,,110
+sentai,sentai,Thundersaurus Megazord,Power Rangers,13389,True,,907,False,Bakuryu Gattai AbarenOh,,53
+sentai,sentai,Mashin Drijan,Super Sentai,13386,True,,219,False,,,153
+sentai,sentai,Dengeki Gattai Change Robo,Super Sentai,13368,True,,564,False,,,106
+sentai,sentai,Legendary Megazord,Power Rangers,13303,True,,1808,True,Kaizoku Gattai GokaiOh,popularity,3
+sentai,sentai,Beast-X Megazord,Power Rangers,13280,True,,243,False,Tokumei Gattai Go-Buster Oh,,116
+sentai,sentai,Kyutama Gattai Orion Battler,Super Sentai,13075,True,,633,False,,,96
+sentai,sentai,Dai Gattai Don Onitaijin,Super Sentai,12872,True,,1567,False,,popularity,33
+sentai,sentai,Dino Charge Megazord,Power Rangers,12828,True,,207,False,Kamitsuki Gattai Kyoryuzin,,93
+sentai,sentai,Max Liner,Super Sentai,12686,True,,306,False,,,135
+sentai,sentai,Goggle Robo,Super Sentai,12606,True,,1370,False,,popularity,44
+sentai,sentai,Kishiryu Tyramigo,Super Sentai,12572,True,,399,False,,,122
+sentai,sentai,Taiyo Gattai Sun Vulcan Robo,Super Sentai,12398,True,,588,False,,,103
+sentai,sentai,Lion Fire Zord,Power Rangers,12354,True,,345,False,Sky OtomoNin Lion Ha-Ojo,,69
+sentai,sentai,Mach Megazord,Power Rangers,12179,True,,940,False,Engine Gattai Seikuu-O,,49
+sentai,sentai,Plesio Zord,Power Rangers,12096,True,,335,False,Zyudenryu Plezuon,,90
+sentai,sentai,Bakuryu Gattai KillerOh,Super Sentai,12029,True,,185,False,,,
+sentai,sentai,Time Shadow (Timeranger),Super Sentai,11954,True,,273,False,,,144
+sentai,sentai,Time Flyers,Power Rangers,11887,True,,196,False,,,154
+sentai,sentai,Supertrain Megazord,Power Rangers,11824,True,,933,False,Renketsu Gattai Grand Liner,popularity,21
+sentai,sentai,Ohsama Gattai King-Ohger ZERO,Super Sentai,11788,True,,1620,True,,popularity,31
+sentai,sentai,High Octane Megazord,Power Rangers,11740,True,,676,False,Engine Gattai Engine-O,popularity,47
+sentai,sentai,Hyakuju Gattai GaoIcarus,Super Sentai,11725,True,,155,False,,,
+sentai,sentai,Kinkyu GoGo Gattai SirenBuilder,Super Sentai,11704,True,,637,False,,,
+sentai,sentai,Ninja Blaze Megazord,Power Rangers,11704,True,,1666,False,Gekiatsu Shuriken Gattai Gekiatsu Dai-Oh,popularity,11
+sentai,sentai,Astro Megazord,Power Rangers,11657,True,,1504,True,Denji Gattai GalaxyMega,popularity,18
+sentai,sentai,Gosei Great Megazord,Power Rangers,11592,True,,1683,False,Tensou Gattai Gosei Great,popularity,6
+sentai,sentai,Ushi Origami,Super Sentai,11564,True,,287,False,,,
+sentai,sentai,Bakuryu Gattai MaxOhJa,Super Sentai,11409,True,,388,False,,,
+sentai,sentai,Caucasuskabuto Castle,Super Sentai,11373,True,,611,False,,,101
+sentai,sentai,Buster Hercules,Super Sentai,11184,True,,364,False,,,
+sentai,sentai,Tor the Shuttlezord,Power Rangers,11177,True,,1992,True,,popularity,20
+sentai,sentai,Argo Ship,Super Sentai,11036,True,,723,False,,,89
+sentai,sentai,DekaBike,Super Sentai,11007,True,,269,False,,,145
+sentai,sentai,Hyper Change Datas Hyper,Super Sentai,10886,True,,486,False,,,115
+sentai,sentai,Dai Gattai Toradoragonjin,Super Sentai,10816,True,,997,False,,,70
+sentai,sentai,Omni,Power Rangers,10727,False,không có infobox MegazordInfo / SentaiMegazordInfo,,False,,,
+sentai,sentai,Delta Squad Megazord,Power Rangers,10586,True,,1952,True,Tokuso Gattai DekarangerRobo,popularity,15
+sentai,sentai,Zeo Megazord,Power Rangers,10584,True,,1714,True,Choriki Gattai Ohranger Robo,popularity,9
+sentai,sentai,Rescue Megazord,Power Rangers,10540,True,,1968,True,Hissho Gattai VRV Robo,popularity,8
+sentai,sentai,Q-Rex Drill,Power Rangers,10357,True,,375,False,,,125
+sentai,sentai,Mega Voyager (In Space),Power Rangers,10354,True,,1976,True,Ginga Gattai Mega Voyager,popularity,5
+sentai,sentai,Engine Gattai Kyoretsu-O,Super Sentai,10342,True,,311,False,,,
+sentai,sentai,ValveMax Megazord,Power Rangers,10250,True,,789,False,Engine Gattai GunBir-O,popularity,46
+sentai,sentai,Delta Base,Power Rangers,10234,False,không có infobox MegazordInfo / SentaiMegazordInfo,,False,,,
+sentai,sentai,Titano Zord,Power Rangers,10225,True,,616,False,,,100
+sentai,sentai,Lightspeed Megazord,Power Rangers,10212,True,,983,False,Kinkyu Gattai Victory Robo,popularity,17
+sentai,sentai,Battle Caesar Robo,Super Sentai,10199,True,,726,False,,,88
+sentai,sentai,Cutanner Goldtsuiker,Super Sentai,10175,False,không có infobox MegazordInfo / SentaiMegazordInfo,,False,,,
+sentai,sentai,Ricky Goldtsuiker,Super Sentai,10139,False,không có infobox MegazordInfo / SentaiMegazordInfo,,False,,,
+sentai,sentai,Megazord (2017 movie),Power Rangers,10115,True,,228,False,,,151
+sentai,sentai,DeltaMega,Super Sentai,10047,True,,375,False,,,126
+sentai,sentai,BullZord,Power Rangers,9972,True,,702,False,Ushi Origami,,71
+sentai,sentai,Jungle Master Megazord,Power Rangers,9897,True,,983,False,Juken Gattai GekiFire,popularity,34
+sentai,sentai,HyperRessha,Super Sentai,9817,True,,527,False,,,108
+sentai,sentai,Omega Megazord,Power Rangers,9794,True,,985,False,Ryusei Gattai Victory Mars,popularity,19
+sentai,sentai,Predazord,Power Rangers,9763,True,,151,False,,,162
+sentai,sentai,Cho Zenkai Gattaiju ZenKaijuOh,Super Sentai,9586,True,,385,False,,,123
+sentai,sentai,Ressha Gattai SafariGaOh,Super Sentai,9531,True,,767,False,,,86
+sentai,sentai,Cosmic Combo Raptor Zords,Power Rangers,9388,True,,154,False,Kishiryu CosmoRaptor,,78
+sentai,sentai,Ryusoul Gattai KishiRyuOh Three Knights,Super Sentai,9333,True,,299,False,,,
+sentai,sentai,PaleoMax Megazord,Power Rangers,9322,True,,526,False,Engine Gattai Kyoretsu-O,,82
+sentai,sentai,GaoGod,Super Sentai,9264,True,,183,False,,,156
+sentai,sentai,Ninja FalconMegazord,Power Rangers,9243,True,,284,False,,,142
+sentai,sentai,King Pyramidder,Super Sentai,9219,False,không có infobox MegazordInfo / SentaiMegazordInfo,,False,,,
+sentai,sentai,Engine Gattai Seikuu-O,Super Sentai,9190,True,,301,False,,,
+sentai,sentai,Landick Brothers,Super Sentai,9160,True,,131,False,,,
+sentai,sentai,Choju Gattai OhBlocker,Super Sentai,9145,True,,1125,False,,,
+sentai,sentai,Live Boxer,Super Sentai,9059,True,,342,False,,,130
+sentai,sentai,Ryusoul Gattai KishiRyuNeptune,Super Sentai,9058,True,,336,False,,,132
+sentai,sentai,Engine Dai-Shogun,Super Sentai,9017,True,,144,False,,,165
+sentai,sentai,Max Solarzord,Power Rangers,8952,True,,251,False,,,148
+sentai,sentai,Juken Gattai GekiFire,Super Sentai,8945,True,,577,False,,,
+sentai,sentai,Star Carrier,Super Sentai,8765,True,,498,False,,,111
+sentai,sentai,Ptera Freeze Zord,Power Rangers,8638,True,,548,False,Kishiryu Pterardon,popularity,30
+sentai,sentai,DinoStegazord,Power Rangers,8631,True,,845,False,Bakuryu Gattai KillerOh,,64
+sentai,sentai,God Tarantula,Super Sentai,8590,True,,306,False,,,136
+sentai,sentai,V-Rex,Super Sentai,8584,True,,295,False,,,138
+sentai,sentai,Samurai Star Chopper,Power Rangers,8574,False,không có infobox MegazordInfo / SentaiMegazordInfo,,False,,,
+sentai,sentai,Turbo Falcon Zord,Power Rangers,8446,True,,892,False,,,76
+sentai,sentai,Engine Gattai GunBir-O,Super Sentai,8445,True,,560,False,,,
+sentai,sentai,Seaick Brothers,Super Sentai,8419,True,,131,False,,,
+sentai,sentai,Kyosei Kamitsuki Gattai SpinoDai-Oh,Super Sentai,8305,True,,170,False,,,158
+sentai,sentai,Thunder Megazord (Ninja Storm),Power Rangers,8304,True,,691,False,Ikazuchi Gattai Gouraijin,popularity,39
+sentai,sentai,Dekamachine PatStriker,Super Sentai,8300,True,,228,False,,,152
+sentai,sentai,Lupin Magnum,Super Sentai,8235,True,,276,False,,,143
+sentai,sentai,Mezodon Megazord,Power Rangers,8220,True,,675,False,Bakuryu Gattai MaxOhJa,,59
+sentai,sentai,Jackpot Striker,Super Sentai,8169,True,,264,False,,,146
+sentai,sentai,BattleFleet Battleship,Power Rangers,8161,True,,885,False,GoGo Voyager,popularity,22
+sentai,sentai,S.W.A.T. Megazord,Power Rangers,8104,True,,1908,True,Tokuso Gattai DekaWingRobo,popularity,16
+sentai,sentai,MagiDragon,Super Sentai,8030,False,không có infobox MegazordInfo / SentaiMegazordInfo,,False,,,
+sentai,sentai,Ninja Robot,Power Rangers,7992,False,không có infobox MegazordInfo / SentaiMegazordInfo,,False,,,
+sentai,sentai,Dark Magic Horse Varikion,Super Sentai,7783,True,,503,False,,,109
+sentai,sentai,Flash Point Megazord,Power Rangers,7624,True,,713,False,Kinkyu GoGo Gattai SirenBuilder,popularity,45
+sentai,sentai,Rugger Fighter,Super Sentai,7570,True,,341,False,,,131
+sentai,sentai,Cosmic Dragon Zord,Power Rangers,7469,True,,256,False,Kyutama Gattai RyuteiOh,popularity,29
+sentai,sentai,Super Zeo Megazord,Power Rangers,7372,True,,1704,True,Choju Gattai OhBlocker,popularity,10
+sentai,sentai,Kongazord,Power Rangers,7327,True,,136,False,Hyakuju Gattai GaoMuscle,,137
+sentai,sentai,Stratoforce Megazord,Power Rangers,7290,False,không có infobox MegazordInfo / SentaiMegazordInfo,,False,,,
+sentai,sentai,Steel Starbeast GigaRhinos,Super Sentai,7243,True,,871,False,,,80
+sentai,sentai,Skick Brothers,Super Sentai,7218,True,,126,False,,,
+sentai,sentai,Gosei Wonder,Super Sentai,7152,True,,237,False,,,
+sentai,sentai,Steel Starbeast GigaPhoenix,Super Sentai,7117,True,,870,False,,,81
+sentai,sentai,Black Onitaijin Murasame,Super Sentai,7102,True,,154,False,,,161
+sentai,sentai,Superbike Enya Rideon,Super Sentai,7047,True,,897,False,,,75
+sentai,sentai,Centaurus Megazord,Power Rangers,6987,False,không có infobox MegazordInfo / SentaiMegazordInfo,,False,,,
+sentai,sentai,Karakuri Warrior Fūraimaru,Super Sentai,6940,True,,213,False,,,
+sentai,sentai,Sky Brothers Zords,Power Rangers,6918,True,,363,False,Skick Brothers,,114
+sentai,sentai,Kishiryu SpinoThunder,Super Sentai,6871,True,,286,False,,,141
+sentai,sentai,Chronos HyperForce Megazord,Power Rangers,6818,True,,956,False,,,72
+sentai,sentai,Gosei Ultimate,Super Sentai,6795,True,,139,False,,,167
+sentai,sentai,Gosei Grand Megazord,Power Rangers,6769,True,,719,False,Tensou Gattai Gosei Ground,,65
+sentai,sentai,Magma Base,Super Sentai,6767,True,,252,False,,,147
+sentai,sentai,BearKuma50,Super Sentai,6730,True,,373,False,,,127
+sentai,sentai,Flash Titan,Super Sentai,6680,True,,120,False,,,169
+sentai,sentai,Magical Train Travelion Express,Super Sentai,6581,True,,151,False,,,163
+sentai,sentai,Manticore Megazord,Power Rangers,6527,True,,545,False,Densetsu Gasshin Magilegend,,61
+sentai,sentai,Land Brothers Zords,Power Rangers,6515,True,,359,False,Landick Brothers,,113
+sentai,sentai,Ryusoul Gattai Kishiryuzin,Super Sentai,6506,True,,573,False,,,104
+sentai,sentai,BakurenOh,Super Sentai,6489,True,,150,False,,,
+sentai,sentai,Red Lion Wildzord,Power Rangers,6488,True,,891,False,,,77
+sentai,sentai,LightZord,Power Rangers,6459,False,không có infobox MegazordInfo / SentaiMegazordInfo,,False,,,
+sentai,sentai,Gigatronics,Power Rangers,6364,False,không có infobox MegazordInfo / SentaiMegazordInfo,,False,,,
+sentai,sentai,Delta Megaship,Power Rangers,6289,False,không có infobox MegazordInfo / SentaiMegazordInfo,,False,,,
+sentai,sentai,Land Galaxy,Super Sentai,6259,True,,229,False,,,150
+sentai,sentai,Densetsu Gasshin Magilegend,Super Sentai,6247,True,,505,False,,,
+sentai,sentai,Gosei Jet,Power Rangers,6207,True,,353,False,Gosei Wonder,,102
+sentai,sentai,Red Battlezord,Power Rangers,6207,True,,1264,False,,popularity,48
+sentai,sentai,Kaiju Megazord,Power Rangers,6170,True,,1000,True,,,67
+sentai,sentai,Mega Terrorzord,Power Rangers,6169,True,,1000,True,,,68
+sentai,sentai,Minizord,Power Rangers,6166,True,,406,False,Karakuri Warrior Fūraimaru,,98
+sentai,sentai,Pteravolt,Super Sentai,6077,True,,100,False,,,170
+sentai,sentai,Sea Brothers Zords,Power Rangers,6033,True,,361,False,Seaick Brothers,,112
+sentai,sentai,Quantasaurus Rex,Power Rangers,5961,False,không có infobox MegazordInfo / SentaiMegazordInfo,,False,,,
+sentai,sentai,Dino Fury Megazord,Power Rangers,5881,True,,151,False,Ryusoul Gattai KishiRyuOh Three Knights,,118
+sentai,sentai,Striker Megazord,Power Rangers,5870,True,,403,False,Buster Hercules,,87
+sentai,sentai,Stego Spike Zord,Power Rangers,5863,True,,143,False,,,166
+sentai,sentai,Gravezord,Power Rangers,5857,True,,1747,True,,popularity,27
+sentai,sentai,Armada Megazord,Power Rangers,5776,False,không có infobox MegazordInfo / SentaiMegazordInfo,,False,,,
+sentai,sentai,Tricera Blade Zord,Power Rangers,5728,True,,147,False,,,164
+sentai,sentai,ZenkaiOh Black JuraGaon,Super Sentai,5715,True,,706,False,,,91
+sentai,sentai,Blizzard Force Megazord,Power Rangers,5702,True,,171,False,BakurenOh,,133
+sentai,sentai,Ripper Zord,Power Rangers,5625,False,không có infobox MegazordInfo / SentaiMegazordInfo,,False,,,
+sentai,sentai,General Schwarz's Kuliner,Super Sentai,5574,True,,125,False,,,168
+sentai,sentai,Giga Bragigas,Super Sentai,5403,True,,97,False,,,171
+sentai,sentai,Isis Megazord,Power Rangers,5287,True,,133,False,Hyakuju Gattai GaoIcarus,,140
+sentai,sentai,Wolf Animal Spirit,Power Rangers,5241,True,,291,False,,,139

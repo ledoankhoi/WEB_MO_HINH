@@ -1,0 +1,39 @@
+# Thư viện cấp cao của đường ống nhận dạng robot (docs/nhan-dang-robot/00-ke-hoach.md mục 5).
+# Phiên bản chính xác đã dùng ghi ở requirements.lock.txt (sinh bằng `pip freeze`) và in ở đầu mỗi báo cáo.
+#
+# PyTorch cài riêng theo máy:
+#   - Máy có GPU NVIDIA: pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
+#   - Colab: đã có sẵn, không cài lại.
+
+# Chung (B0)
+numpy
+pandas
+scipy
+matplotlib
+pyyaml
+tqdm
+requests
+nbformat
+pytest
+
+# B1: danh mục robot (MediaWiki)
+mwparserfromhell
+rapidfuzz
+
+# Xuất kết quả ra Excel (ml/scripts/export_excel.py)
+openpyxl
+
+# B2: thu thập ảnh
+ddgs
+Pillow
+
+# B3: làm sạch (pHash, đặc trưng CLIP); B5–B6: mạng huấn luyện sẵn
+ImageHash
+open_clip_torch
+timm
+
+# Xuất báo cáo sang Word để đưa lên Drive (ml/scripts/export_drive.py)
+pypandoc_binary
+
+# B4, B5: chia tập phân tầng theo nhóm, t-SNE, đối chiếu hồi quy logistic
+scikit-learn

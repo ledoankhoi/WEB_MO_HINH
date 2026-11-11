@@ -1,0 +1,1719 @@
+{
+  "step": "B02",
+  "title": "Thu thập ảnh",
+  "environment": {
+    "time_utc": "2026-11-11T06:43:05+00:00",
+    "python": "3.11.9",
+    "os": "Windows 11 (build 10.0.26300, AMD64)",
+    "cpu": "12th Gen Intel(R) Core(TM) i7-12800H",
+    "cpu_count": 20,
+    "ram_gb": 31.7,
+    "colab": false,
+    "gpu": {
+      "torch_cuda": true,
+      "devices": [
+        {
+          "name": "NVIDIA RTX A2000 Laptop GPU",
+          "memory_gb": 4.0,
+          "capability": "8.6"
+        }
+      ],
+      "torch_cuda_version": "12.8",
+      "cudnn": 91900,
+      "nvidia_smi": [
+        "NVIDIA RTX A2000 Laptop GPU, 4096 MiB, 596.52"
+      ]
+    },
+    "packages": {
+      "numpy": "2.4.6",
+      "pandas": "3.1.1",
+      "scipy": "1.17.1",
+      "matplotlib": "3.11.2",
+      "torch": "2.11.0+cu128",
+      "torchvision": "0.26.0+cu128",
+      "timm": "1.0.31",
+      "open_clip_torch": "4.2.1",
+      "Pillow": "13.0.0",
+      "ImageHash": "4.3.2",
+      "mwparserfromhell": "0.7.2",
+      "rapidfuzz": "3.14.6",
+      "requests": "2.34.2",
+      "ddgs": "9.16.1"
+    },
+    "git": {
+      "commit": "c56347e213be91c0f2232924dc478302a25a5eb3",
+      "short": "c56347e",
+      "dirty": true
+    },
+    "data_root_env": null
+  },
+  "summary": {
+    "Số lớp": 230,
+    "Ảnh tải được": 75792,
+    "Ảnh mỗi lớp: nhỏ nhất": 201,
+    "Ảnh mỗi lớp: trung vị": 317.0,
+    "Ảnh mỗi lớp: trung bình ± độ lệch chuẩn": "329.5 ± 70.8",
+    "Ảnh mỗi lớp: lớn nhất": 650,
+    "Lớp dưới 200 ảnh": 0,
+    "Lượt thử": 95869,
+    "Thời gian có tải, cộng mọi lần chạy (phút)": 381.9,
+    "Dung lượng ảnh (MB)": 3033.6
+  },
+  "by_source": [
+    {
+      "Nguồn": "Wiki",
+      "URL đã thử": 10254,
+      "Tải được": 9856,
+      "Tỉ lệ tải được": "96.1%",
+      "HTTP 4xx (bị từ chối, không còn)": 0,
+      "HTTP 5xx / 429 (máy chủ lỗi, quá tải)": 0,
+      "hết thời gian": 11,
+      "lỗi mạng": 0,
+      "không phải ảnh": 0,
+      "không đọc được ảnh": 0,
+      "quá 20 MB": 0,
+      "cạnh ngắn < 32 px": 101,
+      "robots.txt không cho phép": 286,
+      "host trong danh sách không truy cập": 0
+    },
+    {
+      "Nguồn": "DuckDuckGo",
+      "URL đã thử": 85615,
+      "Tải được": 65936,
+      "Tỉ lệ tải được": "77.0%",
+      "HTTP 4xx (bị từ chối, không còn)": 8664,
+      "HTTP 5xx / 429 (máy chủ lỗi, quá tải)": 52,
+      "hết thời gian": 468,
+      "lỗi mạng": 508,
+      "không phải ảnh": 498,
+      "không đọc được ảnh": 1,
+      "quá 20 MB": 0,
+      "cạnh ngắn < 32 px": 161,
+      "robots.txt không cho phép": 9135,
+      "host trong danh sách không truy cập": 192
+    }
+  ],
+  "low_classes": [],
+  "per_class": [
+    {
+      "Lớp": "Arcee (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 286,
+      "Từ wiki": 17,
+      "Từ DuckDuckGo": 269
+    },
+    {
+      "Lớp": "Blades (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 286,
+      "Từ wiki": 13,
+      "Từ DuckDuckGo": 273
+    },
+    {
+      "Lớp": "Blast Off (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 309,
+      "Từ wiki": 10,
+      "Từ DuckDuckGo": 299
+    },
+    {
+      "Lớp": "Bonecrusher (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 220,
+      "Từ wiki": 7,
+      "Từ DuckDuckGo": 213
+    },
+    {
+      "Lớp": "Brawl (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 265,
+      "Từ wiki": 9,
+      "Từ DuckDuckGo": 256
+    },
+    {
+      "Lớp": "Breakdown (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 270,
+      "Từ wiki": 8,
+      "Từ DuckDuckGo": 262
+    },
+    {
+      "Lớp": "Bruticus (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 310,
+      "Từ wiki": 18,
+      "Từ DuckDuckGo": 292
+    },
+    {
+      "Lớp": "Bumblebee (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 288,
+      "Từ wiki": 25,
+      "Từ DuckDuckGo": 263
+    },
+    {
+      "Lớp": "Cliffjumper (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 281,
+      "Từ wiki": 9,
+      "Từ DuckDuckGo": 272
+    },
+    {
+      "Lớp": "Dead End (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 275,
+      "Từ wiki": 9,
+      "Từ DuckDuckGo": 266
+    },
+    {
+      "Lớp": "Defensor (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 278,
+      "Từ wiki": 8,
+      "Từ DuckDuckGo": 270
+    },
+    {
+      "Lớp": "Devastator (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 294,
+      "Từ wiki": 28,
+      "Từ DuckDuckGo": 266
+    },
+    {
+      "Lớp": "Drag Strip (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 206,
+      "Từ wiki": 10,
+      "Từ DuckDuckGo": 196
+    },
+    {
+      "Lớp": "First Aid (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 230,
+      "Từ wiki": 9,
+      "Từ DuckDuckGo": 221
+    },
+    {
+      "Lớp": "Galvatron (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 318,
+      "Từ wiki": 27,
+      "Từ DuckDuckGo": 291
+    },
+    {
+      "Lớp": "Grimlock (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 331,
+      "Từ wiki": 29,
+      "Từ DuckDuckGo": 302
+    },
+    {
+      "Lớp": "Groove (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 273,
+      "Từ wiki": 10,
+      "Từ DuckDuckGo": 263
+    },
+    {
+      "Lớp": "Hook (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 267,
+      "Từ wiki": 8,
+      "Từ DuckDuckGo": 259
+    },
+    {
+      "Lớp": "Hot Spot (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 260,
+      "Từ wiki": 19,
+      "Từ DuckDuckGo": 241
+    },
+    {
+      "Lớp": "Hound (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 260,
+      "Từ wiki": 17,
+      "Từ DuckDuckGo": 243
+    },
+    {
+      "Lớp": "Ironhide (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 297,
+      "Từ wiki": 23,
+      "Từ DuckDuckGo": 274
+    },
+    {
+      "Lớp": "Jazz (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 284,
+      "Từ wiki": 20,
+      "Từ DuckDuckGo": 264
+    },
+    {
+      "Lớp": "Jetfire (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 300,
+      "Từ wiki": 28,
+      "Từ DuckDuckGo": 272
+    },
+    {
+      "Lớp": "Long Haul (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 210,
+      "Từ wiki": 12,
+      "Từ DuckDuckGo": 198
+    },
+    {
+      "Lớp": "Megatron (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 331,
+      "Từ wiki": 50,
+      "Từ DuckDuckGo": 281
+    },
+    {
+      "Lớp": "Menasor (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 302,
+      "Từ wiki": 13,
+      "Từ DuckDuckGo": 289
+    },
+    {
+      "Lớp": "Mixmaster (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 231,
+      "Từ wiki": 8,
+      "Từ DuckDuckGo": 223
+    },
+    {
+      "Lớp": "Motormaster (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 284,
+      "Từ wiki": 11,
+      "Từ DuckDuckGo": 273
+    },
+    {
+      "Lớp": "Onslaught (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 262,
+      "Từ wiki": 13,
+      "Từ DuckDuckGo": 249
+    },
+    {
+      "Lớp": "Optimus Prime (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 339,
+      "Từ wiki": 40,
+      "Từ DuckDuckGo": 299
+    },
+    {
+      "Lớp": "Hot Rod (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 279,
+      "Từ wiki": 23,
+      "Từ DuckDuckGo": 256
+    },
+    {
+      "Lớp": "Scavenger (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 247,
+      "Từ wiki": 8,
+      "Từ DuckDuckGo": 239
+    },
+    {
+      "Lớp": "Scrapper (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 264,
+      "Từ wiki": 13,
+      "Từ DuckDuckGo": 251
+    },
+    {
+      "Lớp": "Shockwave (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 298,
+      "Từ wiki": 29,
+      "Từ DuckDuckGo": 269
+    },
+    {
+      "Lớp": "Skywarp (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 280,
+      "Từ wiki": 25,
+      "Từ DuckDuckGo": 255
+    },
+    {
+      "Lớp": "Slag (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 320,
+      "Từ wiki": 12,
+      "Từ DuckDuckGo": 308
+    },
+    {
+      "Lớp": "Sludge (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 252,
+      "Từ wiki": 10,
+      "Từ DuckDuckGo": 242
+    },
+    {
+      "Lớp": "Snarl (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 248,
+      "Từ wiki": 11,
+      "Từ DuckDuckGo": 237
+    },
+    {
+      "Lớp": "Soundwave (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 338,
+      "Từ wiki": 47,
+      "Từ DuckDuckGo": 291
+    },
+    {
+      "Lớp": "Star Saber (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 320,
+      "Từ wiki": 0,
+      "Từ DuckDuckGo": 320
+    },
+    {
+      "Lớp": "Starscream (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 295,
+      "Từ wiki": 12,
+      "Từ DuckDuckGo": 283
+    },
+    {
+      "Lớp": "Streetwise (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 340,
+      "Từ wiki": 9,
+      "Từ DuckDuckGo": 331
+    },
+    {
+      "Lớp": "Swindle (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 275,
+      "Từ wiki": 14,
+      "Từ DuckDuckGo": 261
+    },
+    {
+      "Lớp": "Swoop (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 307,
+      "Từ wiki": 10,
+      "Từ DuckDuckGo": 297
+    },
+    {
+      "Lớp": "Thundercracker (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 281,
+      "Từ wiki": 19,
+      "Từ DuckDuckGo": 262
+    },
+    {
+      "Lớp": "Ultra Magnus (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 304,
+      "Từ wiki": 20,
+      "Từ DuckDuckGo": 284
+    },
+    {
+      "Lớp": "Volcanicus (POTP)",
+      "Franchise": "Transformers",
+      "Ảnh": 307,
+      "Từ wiki": 0,
+      "Từ DuckDuckGo": 307
+    },
+    {
+      "Lớp": "Vortex (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 255,
+      "Từ wiki": 8,
+      "Từ DuckDuckGo": 247
+    },
+    {
+      "Lớp": "Wheeljack (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 266,
+      "Từ wiki": 6,
+      "Từ DuckDuckGo": 260
+    },
+    {
+      "Lớp": "Wildrider (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 211,
+      "Từ wiki": 3,
+      "Từ DuckDuckGo": 208
+    },
+    {
+      "Lớp": "Scorponok (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 208,
+      "Từ wiki": 16,
+      "Từ DuckDuckGo": 192
+    },
+    {
+      "Lớp": "Fortress Maximus (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 278,
+      "Từ wiki": 0,
+      "Từ DuckDuckGo": 278
+    },
+    {
+      "Lớp": "Alpha Trion",
+      "Franchise": "Transformers",
+      "Ảnh": 268,
+      "Từ wiki": 13,
+      "Từ DuckDuckGo": 255
+    },
+    {
+      "Lớp": "Metroplex (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 317,
+      "Từ wiki": 8,
+      "Từ DuckDuckGo": 309
+    },
+    {
+      "Lớp": "Trypticon (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 306,
+      "Từ wiki": 17,
+      "Từ DuckDuckGo": 289
+    },
+    {
+      "Lớp": "Mirage (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 286,
+      "Từ wiki": 17,
+      "Từ DuckDuckGo": 269
+    },
+    {
+      "Lớp": "Astrotrain (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 309,
+      "Từ wiki": 17,
+      "Từ DuckDuckGo": 292
+    },
+    {
+      "Lớp": "Rumble (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 269,
+      "Từ wiki": 13,
+      "Từ DuckDuckGo": 256
+    },
+    {
+      "Lớp": "Blurr (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 227,
+      "Từ wiki": 12,
+      "Từ DuckDuckGo": 215
+    },
+    {
+      "Lớp": "Skids (G1)",
+      "Franchise": "Transformers",
+      "Ảnh": 302,
+      "Từ wiki": 11,
+      "Từ DuckDuckGo": 291
+    },
+    {
+      "Lớp": "Bumblebee (Movie)",
+      "Franchise": "Transformers",
+      "Ảnh": 450,
+      "Từ wiki": 216,
+      "Từ DuckDuckGo": 234
+    },
+    {
+      "Lớp": "Megatron (Movie)",
+      "Franchise": "Transformers",
+      "Ảnh": 317,
+      "Từ wiki": 10,
+      "Từ DuckDuckGo": 307
+    },
+    {
+      "Lớp": "Optimus Prime (Movie)",
+      "Franchise": "Transformers",
+      "Ảnh": 353,
+      "Từ wiki": 46,
+      "Từ DuckDuckGo": 307
+    },
+    {
+      "Lớp": "Starscream (Movie)",
+      "Franchise": "Transformers",
+      "Ảnh": 289,
+      "Từ wiki": 34,
+      "Từ DuckDuckGo": 255
+    },
+    {
+      "Lớp": "Ironhide (Movie)",
+      "Franchise": "Transformers",
+      "Ảnh": 313,
+      "Từ wiki": 33,
+      "Từ DuckDuckGo": 280
+    },
+    {
+      "Lớp": "Ratchet (Movie)",
+      "Franchise": "Transformers",
+      "Ảnh": 324,
+      "Từ wiki": 30,
+      "Từ DuckDuckGo": 294
+    },
+    {
+      "Lớp": "Barricade (Movie)",
+      "Franchise": "Transformers",
+      "Ảnh": 316,
+      "Từ wiki": 32,
+      "Từ DuckDuckGo": 284
+    },
+    {
+      "Lớp": "Sideswipe (Movie)",
+      "Franchise": "Transformers",
+      "Ảnh": 316,
+      "Từ wiki": 21,
+      "Từ DuckDuckGo": 295
+    },
+    {
+      "Lớp": "Jazz (Movie)",
+      "Franchise": "Transformers",
+      "Ảnh": 292,
+      "Từ wiki": 26,
+      "Từ DuckDuckGo": 266
+    },
+    {
+      "Lớp": "Arcee (Movie)",
+      "Franchise": "Transformers",
+      "Ảnh": 280,
+      "Từ wiki": 13,
+      "Từ DuckDuckGo": 267
+    },
+    {
+      "Lớp": "Shockwave (Movie)",
+      "Franchise": "Transformers",
+      "Ảnh": 296,
+      "Từ wiki": 15,
+      "Từ DuckDuckGo": 281
+    },
+    {
+      "Lớp": "Jetfire (Movie)",
+      "Franchise": "Transformers",
+      "Ảnh": 313,
+      "Từ wiki": 7,
+      "Từ DuckDuckGo": 306
+    },
+    {
+      "Lớp": "Blackout (Movie)",
+      "Franchise": "Transformers",
+      "Ảnh": 305,
+      "Từ wiki": 22,
+      "Từ DuckDuckGo": 283
+    },
+    {
+      "Lớp": "Brawl (Movie)",
+      "Franchise": "Transformers",
+      "Ảnh": 241,
+      "Từ wiki": 16,
+      "Từ DuckDuckGo": 225
+    },
+    {
+      "Lớp": "Frenzy (Movie)",
+      "Franchise": "Transformers",
+      "Ảnh": 262,
+      "Từ wiki": 15,
+      "Từ DuckDuckGo": 247
+    },
+    {
+      "Lớp": "Hound (Movie)",
+      "Franchise": "Transformers",
+      "Ảnh": 263,
+      "Từ wiki": 8,
+      "Từ DuckDuckGo": 255
+    },
+    {
+      "Lớp": "Scorponok (Movie)",
+      "Franchise": "Transformers",
+      "Ảnh": 303,
+      "Từ wiki": 20,
+      "Từ DuckDuckGo": 283
+    },
+    {
+      "Lớp": "Bonecrusher (Movie)",
+      "Franchise": "Transformers",
+      "Ảnh": 318,
+      "Từ wiki": 14,
+      "Từ DuckDuckGo": 304
+    },
+    {
+      "Lớp": "Arcee (WFC)",
+      "Franchise": "Transformers",
+      "Ảnh": 317,
+      "Từ wiki": 10,
+      "Từ DuckDuckGo": 307
+    },
+    {
+      "Lớp": "Soundwave (WFC)",
+      "Franchise": "Transformers",
+      "Ảnh": 299,
+      "Từ wiki": 13,
+      "Từ DuckDuckGo": 286
+    },
+    {
+      "Lớp": "Optimus Prime (WFC)",
+      "Franchise": "Transformers",
+      "Ảnh": 316,
+      "Từ wiki": 25,
+      "Từ DuckDuckGo": 291
+    },
+    {
+      "Lớp": "Megatron (WFC)",
+      "Franchise": "Transformers",
+      "Ảnh": 301,
+      "Từ wiki": 0,
+      "Từ DuckDuckGo": 301
+    },
+    {
+      "Lớp": "Shockwave (WFC)",
+      "Franchise": "Transformers",
+      "Ảnh": 312,
+      "Từ wiki": 7,
+      "Từ DuckDuckGo": 305
+    },
+    {
+      "Lớp": "Wheeljack (Prime)",
+      "Franchise": "Transformers",
+      "Ảnh": 313,
+      "Từ wiki": 4,
+      "Từ DuckDuckGo": 309
+    },
+    {
+      "Lớp": "Breakdown (WFC)",
+      "Franchise": "Transformers",
+      "Ảnh": 332,
+      "Từ wiki": 11,
+      "Từ DuckDuckGo": 321
+    },
+    {
+      "Lớp": "Smokescreen (Prime)",
+      "Franchise": "Transformers",
+      "Ảnh": 293,
+      "Từ wiki": 1,
+      "Từ DuckDuckGo": 292
+    },
+    {
+      "Lớp": "Megatron (BW)",
+      "Franchise": "Transformers",
+      "Ảnh": 309,
+      "Từ wiki": 21,
+      "Từ DuckDuckGo": 288
+    },
+    {
+      "Lớp": "Optimus Primal (BW)",
+      "Franchise": "Transformers",
+      "Ảnh": 334,
+      "Từ wiki": 14,
+      "Từ DuckDuckGo": 320
+    },
+    {
+      "Lớp": "Waspinator (BW)",
+      "Franchise": "Transformers",
+      "Ảnh": 307,
+      "Từ wiki": 12,
+      "Từ DuckDuckGo": 295
+    },
+    {
+      "Lớp": "Lio Convoy (BW)",
+      "Franchise": "Transformers",
+      "Ảnh": 228,
+      "Từ wiki": 13,
+      "Từ DuckDuckGo": 215
+    },
+    {
+      "Lớp": "Blackarachnia (BW)",
+      "Franchise": "Transformers",
+      "Ảnh": 323,
+      "Từ wiki": 16,
+      "Từ DuckDuckGo": 307
+    },
+    {
+      "Lớp": "Cheetor (BW)",
+      "Franchise": "Transformers",
+      "Ảnh": 314,
+      "Từ wiki": 26,
+      "Từ DuckDuckGo": 288
+    },
+    {
+      "Lớp": "Tarantulas (BW)",
+      "Franchise": "Transformers",
+      "Ảnh": 336,
+      "Từ wiki": 7,
+      "Từ DuckDuckGo": 329
+    },
+    {
+      "Lớp": "Rhinox (BW)",
+      "Franchise": "Transformers",
+      "Ảnh": 318,
+      "Từ wiki": 13,
+      "Từ DuckDuckGo": 305
+    },
+    {
+      "Lớp": "Dinobot (BW)",
+      "Franchise": "Transformers",
+      "Ảnh": 318,
+      "Từ wiki": 17,
+      "Từ DuckDuckGo": 301
+    },
+    {
+      "Lớp": "Airazor (BW)",
+      "Franchise": "Transformers",
+      "Ảnh": 271,
+      "Từ wiki": 12,
+      "Từ DuckDuckGo": 259
+    },
+    {
+      "Lớp": "Optimus Prime (Animated)",
+      "Franchise": "Transformers",
+      "Ảnh": 325,
+      "Từ wiki": 20,
+      "Từ DuckDuckGo": 305
+    },
+    {
+      "Lớp": "Megatron (Animated)",
+      "Franchise": "Transformers",
+      "Ảnh": 327,
+      "Từ wiki": 24,
+      "Từ DuckDuckGo": 303
+    },
+    {
+      "Lớp": "Bumblebee (Animated)",
+      "Franchise": "Transformers",
+      "Ảnh": 327,
+      "Từ wiki": 16,
+      "Từ DuckDuckGo": 311
+    },
+    {
+      "Lớp": "Bulkhead (Animated)",
+      "Franchise": "Transformers",
+      "Ảnh": 299,
+      "Từ wiki": 14,
+      "Từ DuckDuckGo": 285
+    },
+    {
+      "Lớp": "Bumblebee (Cyberverse)",
+      "Franchise": "Transformers",
+      "Ảnh": 307,
+      "Từ wiki": 4,
+      "Từ DuckDuckGo": 303
+    },
+    {
+      "Lớp": "Optimus Prime (Cyberverse)",
+      "Franchise": "Transformers",
+      "Ảnh": 313,
+      "Từ wiki": 3,
+      "Từ DuckDuckGo": 310
+    },
+    {
+      "Lớp": "Optimus Prime (ES)",
+      "Franchise": "Transformers",
+      "Ảnh": 217,
+      "Từ wiki": 0,
+      "Từ DuckDuckGo": 217
+    },
+    {
+      "Lớp": "Bumblebee (ES)",
+      "Franchise": "Transformers",
+      "Ảnh": 273,
+      "Từ wiki": 0,
+      "Từ DuckDuckGo": 273
+    },
+    {
+      "Lớp": "Twitch",
+      "Franchise": "Transformers",
+      "Ảnh": 226,
+      "Từ wiki": 0,
+      "Từ DuckDuckGo": 226
+    },
+    {
+      "Lớp": "Bumblebee (One)",
+      "Franchise": "Transformers",
+      "Ảnh": 306,
+      "Từ wiki": 3,
+      "Từ DuckDuckGo": 303
+    },
+    {
+      "Lớp": "Optimus Prime (One)",
+      "Franchise": "Transformers",
+      "Ảnh": 320,
+      "Từ wiki": 3,
+      "Từ DuckDuckGo": 317
+    },
+    {
+      "Lớp": "Megatron (One)",
+      "Franchise": "Transformers",
+      "Ảnh": 325,
+      "Từ wiki": 3,
+      "Từ DuckDuckGo": 322
+    },
+    {
+      "Lớp": "Elita-1 (One)",
+      "Franchise": "Transformers",
+      "Ảnh": 265,
+      "Từ wiki": 5,
+      "Từ DuckDuckGo": 260
+    },
+    {
+      "Lớp": "Starscream (One)",
+      "Franchise": "Transformers",
+      "Ảnh": 312,
+      "Từ wiki": 6,
+      "Từ DuckDuckGo": 306
+    },
+    {
+      "Lớp": "MS-06S Char's Zaku II",
+      "Franchise": "Gundam",
+      "Ảnh": 386,
+      "Từ wiki": 45,
+      "Từ DuckDuckGo": 341
+    },
+    {
+      "Lớp": "MSM-04 Acguy",
+      "Franchise": "Gundam",
+      "Ảnh": 399,
+      "Từ wiki": 63,
+      "Từ DuckDuckGo": 336
+    },
+    {
+      "Lớp": "MSZ-006 Zeta Gundam",
+      "Franchise": "Gundam",
+      "Ảnh": 450,
+      "Từ wiki": 240,
+      "Từ DuckDuckGo": 210
+    },
+    {
+      "Lớp": "RX-78-2 Gundam",
+      "Franchise": "Gundam",
+      "Ảnh": 460,
+      "Từ wiki": 249,
+      "Từ DuckDuckGo": 211
+    },
+    {
+      "Lớp": "MSN-04 Sazabi",
+      "Franchise": "Gundam",
+      "Ảnh": 450,
+      "Từ wiki": 166,
+      "Từ DuckDuckGo": 284
+    },
+    {
+      "Lớp": "RX-0 Unicorn Gundam",
+      "Franchise": "Gundam",
+      "Ảnh": 450,
+      "Từ wiki": 235,
+      "Từ DuckDuckGo": 215
+    },
+    {
+      "Lớp": "RX-0 Unicorn Gundam 03 Phenex",
+      "Franchise": "Gundam",
+      "Ảnh": 406,
+      "Từ wiki": 75,
+      "Từ DuckDuckGo": 331
+    },
+    {
+      "Lớp": "MS-06F Zaku II",
+      "Franchise": "Gundam",
+      "Ảnh": 450,
+      "Từ wiki": 133,
+      "Từ DuckDuckGo": 317
+    },
+    {
+      "Lớp": "MS-09 Dom",
+      "Franchise": "Gundam",
+      "Ảnh": 450,
+      "Từ wiki": 119,
+      "Từ DuckDuckGo": 331
+    },
+    {
+      "Lớp": "RGM-79 GM",
+      "Franchise": "Gundam",
+      "Ảnh": 450,
+      "Từ wiki": 109,
+      "Từ DuckDuckGo": 341
+    },
+    {
+      "Lớp": "MS-14A Gelgoog",
+      "Franchise": "Gundam",
+      "Ảnh": 395,
+      "Từ wiki": 101,
+      "Từ DuckDuckGo": 294
+    },
+    {
+      "Lớp": "RX-178 Gundam Mk-II",
+      "Franchise": "Gundam",
+      "Ảnh": 450,
+      "Từ wiki": 167,
+      "Từ DuckDuckGo": 283
+    },
+    {
+      "Lớp": "MSA-003 Nemo",
+      "Franchise": "Gundam",
+      "Ảnh": 406,
+      "Từ wiki": 64,
+      "Từ DuckDuckGo": 342
+    },
+    {
+      "Lớp": "RMS-108 Marasai",
+      "Franchise": "Gundam",
+      "Ảnh": 362,
+      "Từ wiki": 56,
+      "Từ DuckDuckGo": 306
+    },
+    {
+      "Lớp": "RMS-179 GM II",
+      "Franchise": "Gundam",
+      "Ảnh": 373,
+      "Từ wiki": 84,
+      "Từ DuckDuckGo": 289
+    },
+    {
+      "Lớp": "MSM-07 Z'Gok",
+      "Franchise": "Gundam",
+      "Ảnh": 381,
+      "Từ wiki": 59,
+      "Từ DuckDuckGo": 322
+    },
+    {
+      "Lớp": "RX-75 Guntank",
+      "Franchise": "Gundam",
+      "Ảnh": 393,
+      "Từ wiki": 31,
+      "Từ DuckDuckGo": 362
+    },
+    {
+      "Lớp": "RX-77-2 Guncannon",
+      "Franchise": "Gundam",
+      "Ảnh": 423,
+      "Từ wiki": 85,
+      "Từ DuckDuckGo": 338
+    },
+    {
+      "Lớp": "RMS-106 Hizack",
+      "Franchise": "Gundam",
+      "Ảnh": 415,
+      "Từ wiki": 88,
+      "Từ DuckDuckGo": 327
+    },
+    {
+      "Lớp": "MS-05B Zaku I",
+      "Franchise": "Gundam",
+      "Ảnh": 386,
+      "Từ wiki": 85,
+      "Từ DuckDuckGo": 301
+    },
+    {
+      "Lớp": "RMS-099 Rick Dias",
+      "Franchise": "Gundam",
+      "Ảnh": 400,
+      "Từ wiki": 72,
+      "Từ DuckDuckGo": 328
+    },
+    {
+      "Lớp": "MSN-00100 Hyaku Shiki",
+      "Franchise": "Gundam",
+      "Ảnh": 450,
+      "Từ wiki": 105,
+      "Từ DuckDuckGo": 345
+    },
+    {
+      "Lớp": "MS-07B Gouf",
+      "Franchise": "Gundam",
+      "Ảnh": 422,
+      "Từ wiki": 93,
+      "Từ DuckDuckGo": 329
+    },
+    {
+      "Lớp": "MSN-02 Zeong",
+      "Franchise": "Gundam",
+      "Ảnh": 439,
+      "Từ wiki": 74,
+      "Từ DuckDuckGo": 365
+    },
+    {
+      "Lớp": "RGM-86R GM III",
+      "Franchise": "Gundam",
+      "Ảnh": 285,
+      "Từ wiki": 20,
+      "Từ DuckDuckGo": 265
+    },
+    {
+      "Lớp": "RX-93 ν Gundam",
+      "Franchise": "Gundam",
+      "Ảnh": 450,
+      "Từ wiki": 239,
+      "Từ DuckDuckGo": 211
+    },
+    {
+      "Lớp": "AMS-119 Geara Doga",
+      "Franchise": "Gundam",
+      "Ảnh": 387,
+      "Từ wiki": 83,
+      "Từ DuckDuckGo": 304
+    },
+    {
+      "Lớp": "YMS-15 Gyan",
+      "Franchise": "Gundam",
+      "Ảnh": 358,
+      "Từ wiki": 47,
+      "Từ DuckDuckGo": 311
+    },
+    {
+      "Lớp": "MSZ-010 ΖΖ Gundam",
+      "Franchise": "Gundam",
+      "Ảnh": 450,
+      "Từ wiki": 127,
+      "Từ DuckDuckGo": 323
+    },
+    {
+      "Lớp": "AMX-107 Bawoo",
+      "Franchise": "Gundam",
+      "Ảnh": 404,
+      "Từ wiki": 75,
+      "Từ DuckDuckGo": 329
+    },
+    {
+      "Lớp": "RGM-89 Jegan",
+      "Franchise": "Gundam",
+      "Ảnh": 381,
+      "Từ wiki": 69,
+      "Từ DuckDuckGo": 312
+    },
+    {
+      "Lớp": "RGC-80 GM Cannon",
+      "Franchise": "Gundam",
+      "Ảnh": 315,
+      "Từ wiki": 38,
+      "Từ DuckDuckGo": 277
+    },
+    {
+      "Lớp": "XXXG-01W Wing Gundam",
+      "Franchise": "Gundam",
+      "Ảnh": 450,
+      "Từ wiki": 116,
+      "Từ DuckDuckGo": 334
+    },
+    {
+      "Lớp": "XXXG-00W0 Wing Gundam Zero",
+      "Franchise": "Gundam",
+      "Ảnh": 450,
+      "Từ wiki": 107,
+      "Từ DuckDuckGo": 343
+    },
+    {
+      "Lớp": "OZ-06MS Leo",
+      "Franchise": "Gundam",
+      "Ảnh": 394,
+      "Từ wiki": 95,
+      "Từ DuckDuckGo": 299
+    },
+    {
+      "Lớp": "XXXG-01S Shenlong Gundam",
+      "Franchise": "Gundam",
+      "Ảnh": 359,
+      "Từ wiki": 44,
+      "Từ DuckDuckGo": 315
+    },
+    {
+      "Lớp": "WF-02MD Virgo II",
+      "Franchise": "Gundam",
+      "Ảnh": 208,
+      "Từ wiki": 34,
+      "Từ DuckDuckGo": 174
+    },
+    {
+      "Lớp": "OZ-13MS Gundam Epyon",
+      "Franchise": "Gundam",
+      "Ảnh": 397,
+      "Từ wiki": 91,
+      "Từ DuckDuckGo": 306
+    },
+    {
+      "Lớp": "XXXG-01SR Gundam Sandrock",
+      "Franchise": "Gundam",
+      "Ảnh": 356,
+      "Từ wiki": 49,
+      "Từ DuckDuckGo": 307
+    },
+    {
+      "Lớp": "XXXG-01H Gundam Heavyarms",
+      "Franchise": "Gundam",
+      "Ảnh": 344,
+      "Từ wiki": 48,
+      "Từ DuckDuckGo": 296
+    },
+    {
+      "Lớp": "ZGMF-X20A Strike Freedom Gundam",
+      "Franchise": "Gundam",
+      "Ảnh": 450,
+      "Từ wiki": 138,
+      "Từ DuckDuckGo": 312
+    },
+    {
+      "Lớp": "ZGMF-1017 GINN",
+      "Franchise": "Gundam",
+      "Ảnh": 375,
+      "Từ wiki": 71,
+      "Từ DuckDuckGo": 304
+    },
+    {
+      "Lớp": "ZGMF-X10A Freedom Gundam",
+      "Franchise": "Gundam",
+      "Ảnh": 450,
+      "Từ wiki": 154,
+      "Từ DuckDuckGo": 296
+    },
+    {
+      "Lớp": "GAT-X105 Strike Gundam",
+      "Franchise": "Gundam",
+      "Ảnh": 450,
+      "Từ wiki": 104,
+      "Từ DuckDuckGo": 346
+    },
+    {
+      "Lớp": "MBF-M1 M1 Astray",
+      "Franchise": "Gundam",
+      "Ảnh": 250,
+      "Từ wiki": 55,
+      "Từ DuckDuckGo": 195
+    },
+    {
+      "Lớp": "ZGMF-600 GuAIZ",
+      "Franchise": "Gundam",
+      "Ảnh": 210,
+      "Từ wiki": 38,
+      "Từ DuckDuckGo": 172
+    },
+    {
+      "Lớp": "ZGMF-515 CGUE",
+      "Franchise": "Gundam",
+      "Ảnh": 256,
+      "Từ wiki": 39,
+      "Từ DuckDuckGo": 217
+    },
+    {
+      "Lớp": "GAT-X102 Duel Gundam",
+      "Franchise": "Gundam",
+      "Ảnh": 400,
+      "Từ wiki": 109,
+      "Từ DuckDuckGo": 291
+    },
+    {
+      "Lớp": "MBF-P02 Gundam Astray Red Frame",
+      "Franchise": "Gundam",
+      "Ảnh": 437,
+      "Từ wiki": 70,
+      "Từ DuckDuckGo": 367
+    },
+    {
+      "Lớp": "GAT-X103 Buster Gundam",
+      "Franchise": "Gundam",
+      "Ảnh": 375,
+      "Từ wiki": 71,
+      "Từ DuckDuckGo": 304
+    },
+    {
+      "Lớp": "GN-001 Gundam Exia",
+      "Franchise": "Gundam",
+      "Ảnh": 364,
+      "Từ wiki": 18,
+      "Từ DuckDuckGo": 346
+    },
+    {
+      "Lớp": "GN-003 Gundam Kyrios",
+      "Franchise": "Gundam",
+      "Ảnh": 388,
+      "Từ wiki": 67,
+      "Từ DuckDuckGo": 321
+    },
+    {
+      "Lớp": "GN-002 Gundam Dynames",
+      "Franchise": "Gundam",
+      "Ảnh": 389,
+      "Từ wiki": 75,
+      "Từ DuckDuckGo": 314
+    },
+    {
+      "Lớp": "GN-0000 00 Gundam",
+      "Franchise": "Gundam",
+      "Ảnh": 341,
+      "Từ wiki": 46,
+      "Từ DuckDuckGo": 295
+    },
+    {
+      "Lớp": "GN-000 0 Gundam",
+      "Franchise": "Gundam",
+      "Ảnh": 367,
+      "Từ wiki": 53,
+      "Từ DuckDuckGo": 314
+    },
+    {
+      "Lớp": "GNX-603T GN-X",
+      "Franchise": "Gundam",
+      "Ảnh": 314,
+      "Từ wiki": 59,
+      "Từ DuckDuckGo": 255
+    },
+    {
+      "Lớp": "AEU-09 AEU Enact",
+      "Franchise": "Gundam",
+      "Ảnh": 203,
+      "Từ wiki": 12,
+      "Từ DuckDuckGo": 191
+    },
+    {
+      "Lớp": "ASW-G-08 Gundam Barbatos",
+      "Franchise": "Gundam",
+      "Ảnh": 351,
+      "Từ wiki": 29,
+      "Từ DuckDuckGo": 322
+    },
+    {
+      "Lớp": "EB-06 Graze",
+      "Franchise": "Gundam",
+      "Ảnh": 290,
+      "Từ wiki": 40,
+      "Từ DuckDuckGo": 250
+    },
+    {
+      "Lớp": "ASW-G-01 Gundam Bael",
+      "Franchise": "Gundam",
+      "Ảnh": 316,
+      "Từ wiki": 54,
+      "Từ DuckDuckGo": 262
+    },
+    {
+      "Lớp": "UGY-R38 Spinner Rodi",
+      "Franchise": "Gundam",
+      "Ảnh": 243,
+      "Từ wiki": 30,
+      "Từ DuckDuckGo": 213
+    },
+    {
+      "Lớp": "EB-05s Schwalbe Graze",
+      "Franchise": "Gundam",
+      "Ảnh": 237,
+      "Từ wiki": 32,
+      "Từ DuckDuckGo": 205
+    },
+    {
+      "Lớp": "STH-05 Hyakuren",
+      "Franchise": "Gundam",
+      "Ảnh": 237,
+      "Từ wiki": 13,
+      "Từ DuckDuckGo": 224
+    },
+    {
+      "Lớp": "XVX-016 Gundam Aerial",
+      "Franchise": "Gundam",
+      "Ảnh": 450,
+      "Từ wiki": 106,
+      "Từ DuckDuckGo": 344
+    },
+    {
+      "Lớp": "XGF-01 Gundam Lfrith Pre-Production Model",
+      "Franchise": "Gundam",
+      "Ảnh": 352,
+      "Từ wiki": 24,
+      "Từ DuckDuckGo": 328
+    },
+    {
+      "Lớp": "EDM-GA-02 Gundam Lfrith Thorn",
+      "Franchise": "Gundam",
+      "Ảnh": 450,
+      "Từ wiki": 22,
+      "Từ DuckDuckGo": 428
+    },
+    {
+      "Lớp": "EDM-GA-01 Gundam Lfrith Ur",
+      "Franchise": "Gundam",
+      "Ảnh": 311,
+      "Từ wiki": 22,
+      "Từ DuckDuckGo": 289
+    },
+    {
+      "Lớp": "GF13-017NJII God Gundam",
+      "Franchise": "Gundam",
+      "Ảnh": 450,
+      "Từ wiki": 121,
+      "Từ DuckDuckGo": 329
+    },
+    {
+      "Lớp": "JDG-00X Devil Gundam",
+      "Franchise": "Gundam",
+      "Ảnh": 280,
+      "Từ wiki": 37,
+      "Từ DuckDuckGo": 243
+    },
+    {
+      "Lớp": "GF13-017NJ Shining Gundam",
+      "Franchise": "Gundam",
+      "Ảnh": 338,
+      "Từ wiki": 79,
+      "Từ DuckDuckGo": 259
+    },
+    {
+      "Lớp": "Wild Force Megazord",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 434,
+      "Từ wiki": 76,
+      "Từ DuckDuckGo": 358
+    },
+    {
+      "Lớp": "Shogun Megazord",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 343,
+      "Từ wiki": 48,
+      "Từ DuckDuckGo": 295
+    },
+    {
+      "Lớp": "Dino Megazord",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 450,
+      "Từ wiki": 150,
+      "Từ DuckDuckGo": 300
+    },
+    {
+      "Lớp": "Ninja Megazord",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 361,
+      "Từ wiki": 51,
+      "Từ DuckDuckGo": 310
+    },
+    {
+      "Lớp": "Legendary Megazord",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 364,
+      "Từ wiki": 65,
+      "Từ DuckDuckGo": 299
+    },
+    {
+      "Lớp": "Ninja Steel Megazord",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 423,
+      "Từ wiki": 98,
+      "Từ DuckDuckGo": 325
+    },
+    {
+      "Lớp": "Mega Voyager",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 379,
+      "Từ wiki": 56,
+      "Từ DuckDuckGo": 323
+    },
+    {
+      "Lớp": "Gosei Great Megazord",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 389,
+      "Từ wiki": 47,
+      "Từ DuckDuckGo": 342
+    },
+    {
+      "Lớp": "Turbo Megazord",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 350,
+      "Từ wiki": 67,
+      "Từ DuckDuckGo": 283
+    },
+    {
+      "Lớp": "Rescue Megazord",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 347,
+      "Từ wiki": 48,
+      "Từ DuckDuckGo": 299
+    },
+    {
+      "Lớp": "Zeo Megazord",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 316,
+      "Từ wiki": 54,
+      "Từ DuckDuckGo": 262
+    },
+    {
+      "Lớp": "Super Zeo Megazord",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 309,
+      "Từ wiki": 34,
+      "Từ DuckDuckGo": 275
+    },
+    {
+      "Lớp": "Ninja Blaze Megazord",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 353,
+      "Từ wiki": 37,
+      "Từ DuckDuckGo": 316
+    },
+    {
+      "Lớp": "Galaxy Megazord",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 401,
+      "Từ wiki": 87,
+      "Từ DuckDuckGo": 314
+    },
+    {
+      "Lớp": "Samurai Megazord",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 361,
+      "Từ wiki": 89,
+      "Từ DuckDuckGo": 272
+    },
+    {
+      "Lớp": "DriveMax Megazord",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 421,
+      "Từ wiki": 84,
+      "Từ DuckDuckGo": 337
+    },
+    {
+      "Lớp": "Delta Squad Megazord",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 380,
+      "Từ wiki": 51,
+      "Từ DuckDuckGo": 329
+    },
+    {
+      "Lớp": "S.W.A.T. Megazord",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 328,
+      "Từ wiki": 43,
+      "Từ DuckDuckGo": 285
+    },
+    {
+      "Lớp": "Lightspeed Megazord",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 354,
+      "Từ wiki": 39,
+      "Từ DuckDuckGo": 315
+    },
+    {
+      "Lớp": "Astro Megazord",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 365,
+      "Từ wiki": 57,
+      "Từ DuckDuckGo": 308
+    },
+    {
+      "Lớp": "Omega Megazord",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 327,
+      "Từ wiki": 25,
+      "Từ DuckDuckGo": 302
+    },
+    {
+      "Lớp": "Thunder Ultrazord",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 329,
+      "Từ wiki": 14,
+      "Từ DuckDuckGo": 315
+    },
+    {
+      "Lớp": "Supertrain Megazord",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 326,
+      "Từ wiki": 27,
+      "Từ DuckDuckGo": 299
+    },
+    {
+      "Lớp": "BattleFleet Battleship",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 358,
+      "Từ wiki": 53,
+      "Từ DuckDuckGo": 305
+    },
+    {
+      "Lớp": "Ressha Gattai ToQ-Oh",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 302,
+      "Từ wiki": 72,
+      "Từ DuckDuckGo": 230
+    },
+    {
+      "Lớp": "Battleship CrocoDaiOh",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 329,
+      "Từ wiki": 23,
+      "Từ DuckDuckGo": 306
+    },
+    {
+      "Lớp": "Ohsama Gattai King-Ohger",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 287,
+      "Từ wiki": 63,
+      "Từ DuckDuckGo": 224
+    },
+    {
+      "Lớp": "Zenkai Gattai ZenkaiOh",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 280,
+      "Từ wiki": 32,
+      "Từ DuckDuckGo": 248
+    },
+    {
+      "Lớp": "Gravezord",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 362,
+      "Từ wiki": 33,
+      "Từ DuckDuckGo": 329
+    },
+    {
+      "Lớp": "X Emperor Slash",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 317,
+      "Từ wiki": 51,
+      "Từ DuckDuckGo": 266
+    },
+    {
+      "Lớp": "Cosmic Dragon Megazord",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 381,
+      "Từ wiki": 53,
+      "Từ DuckDuckGo": 328
+    },
+    {
+      "Lớp": "Ptera Freeze Zord Battle Mode",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 284,
+      "Từ wiki": 34,
+      "Từ DuckDuckGo": 250
+    },
+    {
+      "Lớp": "Ohsama Gattai King-Ohger ZERO",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 247,
+      "Từ wiki": 18,
+      "Từ DuckDuckGo": 229
+    },
+    {
+      "Lớp": "DualDrive Megazord",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 272,
+      "Từ wiki": 19,
+      "Từ DuckDuckGo": 253
+    },
+    {
+      "Lớp": "Dai Gattai Don Onitaijin",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 236,
+      "Từ wiki": 17,
+      "Từ DuckDuckGo": 219
+    },
+    {
+      "Lớp": "Jungle Master Megazord",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 311,
+      "Từ wiki": 25,
+      "Từ DuckDuckGo": 286
+    },
+    {
+      "Lớp": "Thunder Megazord (Power Rangers Mighty Morphin 2)",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 649,
+      "Từ wiki": 31,
+      "Từ DuckDuckGo": 618
+    },
+    {
+      "Lớp": "Storm Megazord",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 395,
+      "Từ wiki": 77,
+      "Từ DuckDuckGo": 318
+    },
+    {
+      "Lớp": "Kyutama Gattai 01*03*05*07*09 KyurenOh",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 303,
+      "Từ wiki": 101,
+      "Từ DuckDuckGo": 202
+    },
+    {
+      "Lớp": "Bull Rider Megazord",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 334,
+      "Từ wiki": 33,
+      "Từ DuckDuckGo": 301
+    },
+    {
+      "Lớp": "Thunder Megazord (Ninpu Sentai Hurricaneger / Power Rangers Ninja Storm)",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 650,
+      "Từ wiki": 47,
+      "Từ DuckDuckGo": 603
+    },
+    {
+      "Lớp": "Titan Megazord",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 275,
+      "Từ wiki": 16,
+      "Từ DuckDuckGo": 259
+    },
+    {
+      "Lớp": "Giant God TegaSword",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 364,
+      "Từ wiki": 21,
+      "Từ DuckDuckGo": 343
+    },
+    {
+      "Lớp": "Doubutsu Gattai Tousai Zyuoh",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 208,
+      "Từ wiki": 37,
+      "Từ DuckDuckGo": 171
+    },
+    {
+      "Lớp": "Jungle Pride Megazord",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 320,
+      "Từ wiki": 35,
+      "Từ DuckDuckGo": 285
+    },
+    {
+      "Lớp": "Goggle Robo",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 329,
+      "Từ wiki": 27,
+      "Từ DuckDuckGo": 302
+    },
+    {
+      "Lớp": "Flash Point Megazord",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 351,
+      "Từ wiki": 24,
+      "Từ DuckDuckGo": 327
+    },
+    {
+      "Lớp": "ValveMax Megazord",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 333,
+      "Từ wiki": 26,
+      "Từ DuckDuckGo": 307
+    },
+    {
+      "Lớp": "High Octane Megazord",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 308,
+      "Từ wiki": 47,
+      "Từ DuckDuckGo": 261
+    },
+    {
+      "Lớp": "Zeo Mega Battlezord",
+      "Franchise": "Super Sentai / Power Rangers",
+      "Ảnh": 201,
+      "Từ wiki": 14,
+      "Từ DuckDuckGo": 187
+    }
+  ],
+  "reproduce": {
+    "commands": [
+      "ml/.venv/Scripts/python ml/scripts/b02_thu_anh.py"
+    ],
+    "config": "ml/configs/b02_thu_anh.yaml",
+    "config_hash": "1ccda48a03b1",
+    "seed": 42,
+    "dataset_version": "robots.json sha256 000da3c769a5"
+  },
+  "duration_s": 4.8
+}

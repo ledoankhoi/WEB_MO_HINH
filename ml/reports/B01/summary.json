@@ -1,0 +1,544 @@
+{
+  "step": "B01",
+  "title": "Danh mục robot và kho thông tin",
+  "environment": {
+    "time_utc": "2026-11-07T14:30:01+00:00",
+    "python": "3.11.9",
+    "os": "Windows 11 (build 10.0.26200, AMD64)",
+    "cpu": "12th Gen Intel(R) Core(TM) i7-12800H",
+    "cpu_count": 20,
+    "ram_gb": 31.7,
+    "colab": false,
+    "gpu": {
+      "torch_cuda": true,
+      "devices": [
+        {
+          "name": "NVIDIA RTX A2000 Laptop GPU",
+          "memory_gb": 4.0,
+          "capability": "8.6"
+        }
+      ],
+      "torch_cuda_version": "12.8",
+      "cudnn": 91900,
+      "nvidia_smi": [
+        "NVIDIA RTX A2000 Laptop GPU, 4096 MiB, 596.52"
+      ]
+    },
+    "packages": {
+      "numpy": "2.4.6",
+      "pandas": "3.1.1",
+      "scipy": "1.17.1",
+      "matplotlib": "3.11.2",
+      "torch": "2.11.0+cu128",
+      "torchvision": "0.26.0+cu128",
+      "timm": "1.0.31",
+      "open_clip_torch": "4.2.1",
+      "Pillow": "13.0.0",
+      "ImageHash": "4.3.2",
+      "mwparserfromhell": "0.7.2",
+      "rapidfuzz": "3.14.6",
+      "requests": "2.34.2",
+      "ddgs": "9.16.1"
+    },
+    "git": {
+      "commit": "c56347e213be91c0f2232924dc478302a25a5eb3",
+      "short": "c56347e",
+      "dirty": true
+    },
+    "data_root_env": null
+  },
+  "classes": {
+    "total": 230,
+    "by_franchise": {
+      "Transformers": 110,
+      "Gundam": 70,
+      "Super Sentai / Power Rangers": 50
+    },
+    "by_source": {
+      "store": 73,
+      "popularity": 157
+    },
+    "merged_pairs": 56
+  },
+  "groups": [
+    {
+      "Franchise": "Transformers",
+      "Nhóm (dòng)": "Generation 1",
+      "Ứng viên từ category": 263,
+      "Sau lọc tên": 252,
+      "Đã đọc nội dung": 252,
+      "Qua lọc cấu trúc": 234,
+      "Hạn mức": 60,
+      "Chọn: cửa hàng": 50,
+      "Chọn: phổ biến": 10,
+      "Tổng lớp": 60,
+      "Liên kết đến (trung vị)": 548,
+      "Liên kết đến (nhỏ nhất)": 101
+    },
+    {
+      "Franchise": "Transformers",
+      "Nhóm (dòng)": "Phim live-action (2007–2023)",
+      "Ứng viên từ category": 148,
+      "Sau lọc tên": 132,
+      "Đã đọc nội dung": 104,
+      "Qua lọc cấu trúc": 102,
+      "Hạn mức": 18,
+      "Chọn: cửa hàng": 4,
+      "Chọn: phổ biến": 14,
+      "Tổng lớp": 18,
+      "Liên kết đến (trung vị)": 312,
+      "Liên kết đến (nhỏ nhất)": 172
+    },
+    {
+      "Franchise": "Transformers",
+      "Nhóm (dòng)": "Aligned (Transformers: Prime, War for Cybertron)",
+      "Ứng viên từ category": 191,
+      "Sau lọc tên": 169,
+      "Đã đọc nội dung": 102,
+      "Qua lọc cấu trúc": 35,
+      "Hạn mức": 8,
+      "Chọn: cửa hàng": 2,
+      "Chọn: phổ biến": 6,
+      "Tổng lớp": 8,
+      "Liên kết đến (trung vị)": 344,
+      "Liên kết đến (nhỏ nhất)": 201
+    },
+    {
+      "Franchise": "Transformers",
+      "Nhóm (dòng)": "Beast Wars",
+      "Ứng viên từ category": 229,
+      "Sau lọc tên": 182,
+      "Đã đọc nội dung": 53,
+      "Qua lọc cấu trúc": 47,
+      "Hạn mức": 10,
+      "Chọn: cửa hàng": 3,
+      "Chọn: phổ biến": 7,
+      "Tổng lớp": 10,
+      "Liên kết đến (trung vị)": 571,
+      "Liên kết đến (nhỏ nhất)": 363
+    },
+    {
+      "Franchise": "Transformers",
+      "Nhóm (dòng)": "Transformers: Animated",
+      "Ứng viên từ category": 277,
+      "Sau lọc tên": 271,
+      "Đã đọc nội dung": 50,
+      "Qua lọc cấu trúc": 41,
+      "Hạn mức": 4,
+      "Chọn: cửa hàng": 0,
+      "Chọn: phổ biến": 4,
+      "Tổng lớp": 4,
+      "Liên kết đến (trung vị)": 431,
+      "Liên kết đến (nhỏ nhất)": 403
+    },
+    {
+      "Franchise": "Transformers",
+      "Nhóm (dòng)": "Transformers: Cyberverse",
+      "Ứng viên từ category": 76,
+      "Sau lọc tên": 74,
+      "Đã đọc nội dung": 50,
+      "Qua lọc cấu trúc": 46,
+      "Hạn mức": 2,
+      "Chọn: cửa hàng": 0,
+      "Chọn: phổ biến": 2,
+      "Tổng lớp": 2,
+      "Liên kết đến (trung vị)": 256,
+      "Liên kết đến (nhỏ nhất)": 248
+    },
+    {
+      "Franchise": "Transformers",
+      "Nhóm (dòng)": "Transformers: EarthSpark",
+      "Ứng viên từ category": 44,
+      "Sau lọc tên": 44,
+      "Đã đọc nội dung": 44,
+      "Qua lọc cấu trúc": 41,
+      "Hạn mức": 3,
+      "Chọn: cửa hàng": 0,
+      "Chọn: phổ biến": 3,
+      "Tổng lớp": 3,
+      "Liên kết đến (trung vị)": 162,
+      "Liên kết đến (nhỏ nhất)": 160
+    },
+    {
+      "Franchise": "Transformers",
+      "Nhóm (dòng)": "Transformers One (2024)",
+      "Ứng viên từ category": 34,
+      "Sau lọc tên": 34,
+      "Đã đọc nội dung": 34,
+      "Qua lọc cấu trúc": 33,
+      "Hạn mức": 5,
+      "Chọn: cửa hàng": 1,
+      "Chọn: phổ biến": 4,
+      "Tổng lớp": 5,
+      "Liên kết đến (trung vị)": 104,
+      "Liên kết đến (nhỏ nhất)": 65
+    },
+    {
+      "Franchise": "Gundam",
+      "Nhóm (dòng)": "Universal Century",
+      "Ứng viên từ category": 1879,
+      "Sau lọc tên": 1823,
+      "Đã đọc nội dung": 208,
+      "Qua lọc cấu trúc": 169,
+      "Hạn mức": 32,
+      "Chọn: cửa hàng": 8,
+      "Chọn: phổ biến": 24,
+      "Tổng lớp": 32,
+      "Liên kết đến (trung vị)": 461,
+      "Liên kết đến (nhỏ nhất)": 123
+    },
+    {
+      "Franchise": "Gundam",
+      "Nhóm (dòng)": "After Colony (Gundam Wing)",
+      "Ứng viên từ category": 95,
+      "Sau lọc tên": 94,
+      "Đã đọc nội dung": 51,
+      "Qua lọc cấu trúc": 47,
+      "Hạn mức": 8,
+      "Chọn: cửa hàng": 1,
+      "Chọn: phổ biến": 7,
+      "Tổng lớp": 8,
+      "Liên kết đến (trung vị)": 150,
+      "Liên kết đến (nhỏ nhất)": 133
+    },
+    {
+      "Franchise": "Gundam",
+      "Nhóm (dòng)": "Cosmic Era (Gundam SEED)",
+      "Ứng viên từ category": 382,
+      "Sau lọc tên": 308,
+      "Đã đọc nội dung": 51,
+      "Qua lọc cấu trúc": 44,
+      "Hạn mức": 10,
+      "Chọn: cửa hàng": 1,
+      "Chọn: phổ biến": 9,
+      "Tổng lớp": 10,
+      "Liên kết đến (trung vị)": 358,
+      "Liên kết đến (nhỏ nhất)": 312
+    },
+    {
+      "Franchise": "Gundam",
+      "Nhóm (dòng)": "Anno Domini (Gundam 00)",
+      "Ứng viên từ category": 199,
+      "Sau lọc tên": 158,
+      "Đã đọc nội dung": 51,
+      "Qua lọc cấu trúc": 44,
+      "Hạn mức": 7,
+      "Chọn: cửa hàng": 1,
+      "Chọn: phổ biến": 6,
+      "Tổng lớp": 7,
+      "Liên kết đến (trung vị)": 229,
+      "Liên kết đến (nhỏ nhất)": 194
+    },
+    {
+      "Franchise": "Gundam",
+      "Nhóm (dòng)": "Post Disaster (Iron-Blooded Orphans)",
+      "Ứng viên từ category": 114,
+      "Sau lọc tên": 98,
+      "Đã đọc nội dung": 50,
+      "Qua lọc cấu trúc": 47,
+      "Hạn mức": 6,
+      "Chọn: cửa hàng": 0,
+      "Chọn: phổ biến": 6,
+      "Tổng lớp": 6,
+      "Liên kết đến (trung vị)": 89,
+      "Liên kết đến (nhỏ nhất)": 83
+    },
+    {
+      "Franchise": "Gundam",
+      "Nhóm (dòng)": "Ad Stella (The Witch from Mercury)",
+      "Ứng viên từ category": 51,
+      "Sau lọc tên": 48,
+      "Đã đọc nội dung": 48,
+      "Qua lọc cấu trúc": 43,
+      "Hạn mức": 4,
+      "Chọn: cửa hàng": 0,
+      "Chọn: phổ biến": 4,
+      "Tổng lớp": 4,
+      "Liên kết đến (trung vị)": 35,
+      "Liên kết đến (nhỏ nhất)": 34
+    },
+    {
+      "Franchise": "Gundam",
+      "Nhóm (dòng)": "Future Century (G Gundam)",
+      "Ứng viên từ category": 122,
+      "Sau lọc tên": 122,
+      "Đã đọc nội dung": 50,
+      "Qua lọc cấu trúc": 49,
+      "Hạn mức": 3,
+      "Chọn: cửa hàng": 0,
+      "Chọn: phổ biến": 3,
+      "Tổng lớp": 3,
+      "Liên kết đến (trung vị)": 262,
+      "Liên kết đến (nhỏ nhất)": 214
+    },
+    {
+      "Franchise": "Super Sentai / Power Rangers",
+      "Nhóm (dòng)": "Super Sentai / Power Rangers",
+      "Ứng viên từ category": 466,
+      "Sau lọc tên": 465,
+      "Đã đọc nội dung": 252,
+      "Qua lọc cấu trúc": 229,
+      "Hạn mức": 50,
+      "Chọn: cửa hàng": 2,
+      "Chọn: phổ biến": 48,
+      "Tổng lớp": 50,
+      "Liên kết đến (trung vị)": 1760,
+      "Liên kết đến (nhỏ nhất)": 432
+    }
+  ],
+  "spearman_length_backlinks": [
+    {
+      "Franchise": "Transformers",
+      "Số trang": 581,
+      "Spearman ρ": 0.977,
+      "p": "0.0e+00"
+    },
+    {
+      "Franchise": "Gundam",
+      "Số trang": 443,
+      "Spearman ρ": 0.613,
+      "p": "5.0e-47"
+    },
+    {
+      "Franchise": "Super Sentai / Power Rangers",
+      "Số trang": 229,
+      "Spearman ρ": 0.437,
+      "p": "4.3e-12"
+    }
+  ],
+  "filter_reasons": [
+    {
+      "Franchise": "gundam",
+      "Lý do loại": "trang con",
+      "Số trang": 191
+    },
+    {
+      "Franchise": "gundam",
+      "Lý do loại": "type = Ship (không phải robot hình người)",
+      "Số trang": 31
+    },
+    {
+      "Franchise": "gundam",
+      "Lý do loại": "type = Armor (không phải robot hình người)",
+      "Số trang": 19
+    },
+    {
+      "Franchise": "gundam",
+      "Lý do loại": "type = Vehicle (không phải robot hình người)",
+      "Số trang": 7
+    },
+    {
+      "Franchise": "gundam",
+      "Lý do loại": "type = Weapon (không phải robot hình người)",
+      "Số trang": 5
+    },
+    {
+      "Franchise": "gundam",
+      "Lý do loại": "không có infobox Infobox/Mobile Weapon",
+      "Số trang": 3
+    },
+    {
+      "Franchise": "gundam",
+      "Lý do loại": "type = Pod (không phải robot hình người)",
+      "Số trang": 1
+    },
+    {
+      "Franchise": "sentai",
+      "Lý do loại": "không có infobox MegazordInfo / SentaiMegazordInfo",
+      "Số trang": 23
+    },
+    {
+      "Franchise": "sentai",
+      "Lý do loại": "trang con",
+      "Số trang": 1
+    },
+    {
+      "Franchise": "transformers",
+      "Lý do loại": "không có thẻ phe {{factions}} (không phải trang nhân vật)",
+      "Số trang": 107
+    },
+    {
+      "Franchise": "transformers",
+      "Lý do loại": "trang con",
+      "Số trang": 71
+    },
+    {
+      "Franchise": "transformers",
+      "Lý do loại": "hậu tố",
+      "Số trang": 39
+    },
+    {
+      "Franchise": "transformers",
+      "Lý do loại": "đã thuộc nhóm trước",
+      "Số trang": 14
+    },
+    {
+      "Franchise": "transformers",
+      "Lý do loại": "loại tay: trang về phe Predacon của Beast Wars, không phải một robot",
+      "Số trang": 1
+    },
+    {
+      "Franchise": "transformers",
+      "Lý do loại": "loại tay: nhân vật của Transformers: Cybertron, trang chung nhiều dòng, không mang thiết kế Animated",
+      "Số trang": 1
+    },
+    {
+      "Franchise": "transformers",
+      "Lý do loại": "loại tay: sinh vật ký sinh dạng bầy, không phải một robot",
+      "Số trang": 1
+    }
+  ],
+  "store_map": {
+    "products": 76,
+    "rows": 76,
+    "classes": 73,
+    "unmapped": [],
+    "stale": [],
+    "auto_correct": 71,
+    "auto_ci": [
+      0.8550647346629656,
+      0.9715734677804679
+    ]
+  },
+  "missing_fields": {
+    "mô tả": 0,
+    "ảnh đại diện (URL)": 0,
+    "phe": 1,
+    "dòng": 1
+  },
+  "merge_rules": {
+    "ảnh có tiền tố series": 53,
+    "tên ảnh": 3
+  },
+  "variants_dropped": [
+    {
+      "Nhóm": "Universal Century",
+      "Biến thể bỏ": "MS-09R Rick Dom",
+      "Giữ lớp": "MS-09 Dom",
+      "Họ": "ms-09|dom",
+      "Liên kết đến": 512
+    },
+    {
+      "Nhóm": "Universal Century",
+      "Biến thể bỏ": "MS-06S Zaku II Commander Type",
+      "Giữ lớp": "MS-06S Char's Zaku II",
+      "Họ": "ms-06|zaku",
+      "Liên kết đến": 403
+    },
+    {
+      "Nhóm": "Universal Century",
+      "Biến thể bỏ": "RGM-79C GM Type C",
+      "Giữ lớp": "RGM-79 GM",
+      "Họ": "rgm-79|gm",
+      "Liên kết đến": 377
+    },
+    {
+      "Nhóm": "Universal Century",
+      "Biến thể bỏ": "MS-06J Zaku II Ground Type",
+      "Giữ lớp": "MS-06S Char's Zaku II",
+      "Họ": "ms-06|zaku",
+      "Liên kết đến": 374
+    },
+    {
+      "Nhóm": "Universal Century",
+      "Biến thể bỏ": "RGM-79Q GM Quel",
+      "Giữ lớp": "RGM-79 GM",
+      "Họ": "rgm-79|gm",
+      "Liên kết đến": 362
+    },
+    {
+      "Nhóm": "Universal Century",
+      "Biến thể bỏ": "MS-06FZ Zaku II FZ",
+      "Giữ lớp": "MS-06S Char's Zaku II",
+      "Họ": "ms-06|zaku",
+      "Liên kết đến": 350
+    },
+    {
+      "Nhóm": "Universal Century",
+      "Biến thể bỏ": "MS-06F-2 Zaku II F2 Type",
+      "Giữ lớp": "MS-06S Char's Zaku II",
+      "Họ": "ms-06|zaku",
+      "Liên kết đến": 315
+    },
+    {
+      "Nhóm": "Universal Century",
+      "Biến thể bỏ": "MS-14S Gelgoog Commander Type",
+      "Giữ lớp": "MS-14A Gelgoog",
+      "Họ": "ms-14|gelgoog",
+      "Liên kết đến": 309
+    },
+    {
+      "Nhóm": "Universal Century",
+      "Biến thể bỏ": "MS-14F Gelgoog Marine",
+      "Giữ lớp": "MS-14A Gelgoog",
+      "Họ": "ms-14|gelgoog",
+      "Liên kết đến": 300
+    },
+    {
+      "Nhóm": "Universal Century",
+      "Biến thể bỏ": "RGM-79SC GM Sniper Custom",
+      "Giữ lớp": "RGM-79 GM",
+      "Họ": "rgm-79|gm",
+      "Liên kết đến": 290
+    },
+    {
+      "Nhóm": "Universal Century",
+      "Biến thể bỏ": "MS-06R-1A Zaku II High Mobility Type",
+      "Giữ lớp": "MS-06S Char's Zaku II",
+      "Họ": "ms-06|zaku",
+      "Liên kết đến": 276
+    },
+    {
+      "Nhóm": "After Colony (Gundam Wing)",
+      "Biến thể bỏ": "XXXG-00W0 Wing Gundam Zero EW",
+      "Giữ lớp": "XXXG-00W0 Wing Gundam Zero",
+      "Họ": "xxxg-00|wing",
+      "Liên kết đến": 154
+    },
+    {
+      "Nhóm": "Post Disaster (Iron-Blooded Orphans)",
+      "Biến thể bỏ": "ASW-G-08 Gundam Barbatos Lupus",
+      "Giữ lớp": "ASW-G-08 Gundam Barbatos",
+      "Họ": "asw-g-08|barbatos",
+      "Liên kết đến": 97
+    },
+    {
+      "Nhóm": "Post Disaster (Iron-Blooded Orphans)",
+      "Biến thể bỏ": "EB-06rs Graze Ritter Commander Type",
+      "Giữ lớp": "EB-06 Graze",
+      "Họ": "eb-06|graze",
+      "Liên kết đến": 94
+    },
+    {
+      "Nhóm": "Post Disaster (Iron-Blooded Orphans)",
+      "Biến thể bỏ": "EB-06s Graze Commander Type",
+      "Giữ lớp": "EB-06 Graze",
+      "Họ": "eb-06|graze",
+      "Liên kết đến": 92
+    },
+    {
+      "Nhóm": "Post Disaster (Iron-Blooded Orphans)",
+      "Biến thể bỏ": "ASW-G-08 Gundam Barbatos Lupus Rex",
+      "Giữ lớp": "ASW-G-08 Gundam Barbatos",
+      "Họ": "asw-g-08|barbatos",
+      "Liên kết đến": 90
+    },
+    {
+      "Nhóm": "Ad Stella (The Witch from Mercury)",
+      "Biến thể bỏ": "XVX-016RN Gundam Aerial Rebuild",
+      "Giữ lớp": "XVX-016 Gundam Aerial",
+      "Họ": "xvx-016|aerial",
+      "Liên kết đến": 55
+    }
+  ],
+  "reproduce": {
+    "commands": [
+      "ml/.venv/Scripts/python ml/scripts/b01_danh_muc.py"
+    ],
+    "config": "ml/configs/b01_danh_muc.yaml, ml/configs/store_robot_map.yaml",
+    "config_hash": "26b9b1859433",
+    "seed": null,
+    "dataset_version": "robots.json sha256 000da3c769a5"
+  },
+  "duration_s": 0.9
+}

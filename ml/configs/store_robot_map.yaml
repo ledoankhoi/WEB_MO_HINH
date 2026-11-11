@@ -1,0 +1,84 @@
+# Ghép 76 sản phẩm đang bán (bảng products, status = published) với trang wiki của robot (B1).
+# Lập bằng tay; b01_danh_muc.py kiểm tra từng trang có thật (theo chuyển hướng) và so với cách ghép tự động.
+# Robot ở đây luôn được đưa vào danh mục lớp, không phụ thuộc hạn mức phổ biến.
+#
+# wiki: tf (TFWiki), gundam (Gundam Wiki), ranger (RangerWiki: Power Rangers và Super Sentai)
+# group: nhóm dòng trong b01_danh_muc.yaml
+# note: lý do khi cách ghép không hiển nhiên
+
+- {product: "Arcee G1 The Movie", wiki: tf, title: "Arcee (G1)", group: g1}
+- {product: "Arcee Transformers Prime Deluxe", wiki: tf, title: "Arcee (WFC)", group: aligned, note: "TFWiki gộp Transformers: Prime vào dòng Aligned, hậu tố (WFC)"}
+- {product: "B-127 Transformers One Deluxe", wiki: tf, title: "Bumblebee (One)", group: one, note: "B-127 là tên của Bumblebee trong Transformers One; trang B-127 (One) chỉ chuyển hướng tới Bumblebee (One)"}
+- {product: "Blades Protectobot", wiki: tf, title: "Blades (G1)", group: g1}
+- {product: "Blast Off Combaticon", wiki: tf, title: "Blast Off (G1)", group: g1}
+- {product: "Bộ pháo tay Bumblebee", wiki: tf, title: "Bumblebee (Movie)", group: movie, note: "phụ kiện (pháo tay) của Bumblebee phim live-action, không phải robot"}
+- {product: "Bonecrusher Constructicon", wiki: tf, title: "Bonecrusher (G1)", group: g1}
+- {product: "Brawl Combaticon", wiki: tf, title: "Brawl (G1)", group: g1}
+- {product: "Breakdown Stunticon", wiki: tf, title: "Breakdown (G1)", group: g1}
+- {product: "Bruticus Combaticons (bộ 5 hợp thể)", wiki: tf, title: "Bruticus (G1)", group: g1}
+- {product: "Bumblebee G1 Masterpiece", wiki: tf, title: "Bumblebee (G1)", group: g1}
+- {product: "Bumblebee Studio Series Deluxe", wiki: tf, title: "Bumblebee (Movie)", group: movie}
+- {product: "Cliffjumper Autobot", wiki: tf, title: "Cliffjumper (G1)", group: g1}
+- {product: "Dead End Stunticon", wiki: tf, title: "Dead End (G1)", group: g1}
+- {product: "Defensor Protectobots (bộ 5 hợp thể)", wiki: tf, title: "Defensor (G1)", group: g1}
+- {product: "Devastator Constructicons (bộ 6 hợp thể)", wiki: tf, title: "Devastator (G1)", group: g1}
+- {product: "Drag Strip Stunticon", wiki: tf, title: "Drag Strip (G1)", group: g1}
+- {product: "First Aid Protectobot", wiki: tf, title: "First Aid (G1)", group: g1}
+- {product: "Galvatron Decepticon", wiki: tf, title: "Galvatron (G1)", group: g1}
+- {product: "Grimlock Dinobot", wiki: tf, title: "Grimlock (G1)", group: g1}
+- {product: "Grimlock Dinobot Leader", wiki: tf, title: "Grimlock (G1)", group: g1}
+- {product: "Groove Protectobot", wiki: tf, title: "Groove (G1)", group: g1}
+- {product: "HG MS-06S Char's Zaku II", wiki: gundam, title: "MS-06S Char's Zaku II", group: uc}
+- {product: "HG MSM-04 Acguy", wiki: gundam, title: "MSM-04 Acguy", group: uc}
+- {product: "HG XXXG-01W Wing Gundam", wiki: gundam, title: "XXXG-01W Wing Gundam", group: ac}
+- {product: "Hook Constructicon", wiki: tf, title: "Hook (G1)", group: g1}
+- {product: "Hot Spot Protectobot", wiki: tf, title: "Hot Spot (G1)", group: g1}
+- {product: "Hound Autobot", wiki: tf, title: "Hound (G1)", group: g1}
+- {product: "Ironhide Autobot", wiki: tf, title: "Ironhide (G1)", group: g1}
+- {product: "Jazz Autobot", wiki: tf, title: "Jazz (G1)", group: g1}
+- {product: "Jetfire Autobot", wiki: tf, title: "Jetfire (G1)", group: g1}
+- {product: "Long Haul Constructicon", wiki: tf, title: "Long Haul (G1)", group: g1}
+- {product: "Megatron Beast Wars", wiki: tf, title: "Megatron (BW)", group: bw}
+- {product: "Megatron G1 Masterpiece", wiki: tf, title: "Megatron (G1)", group: g1}
+- {product: "Megatron Studio Series Leader", wiki: tf, title: "Megatron (Movie)", group: movie}
+- {product: "Menasor Stunticons (bộ 5 hợp thể)", wiki: tf, title: "Menasor (G1)", group: g1}
+- {product: "MG GN-001 Gundam Exia", wiki: gundam, title: "GN-001 Gundam Exia", group: ad}
+- {product: "MG MSZ-006 Zeta Gundam Ver. Ka", wiki: gundam, title: "MSZ-006 Zeta Gundam", group: uc}
+- {product: "MG RX-78-2 Gundam Ver. 3.0", wiki: gundam, title: "RX-78-2 Gundam", group: uc}
+- {product: "Mixmaster Constructicon", wiki: tf, title: "Mixmaster (G1)", group: g1}
+- {product: "Motormaster Stunticon", wiki: tf, title: "Motormaster (G1)", group: g1}
+- {product: "Muteki Shogun Ninja Sentai Kakuranger", wiki: ranger, title: "Ninja Gattai Muteki Shogun", group: sentai}
+- {product: "Onslaught Combaticon", wiki: tf, title: "Onslaught (G1)", group: g1}
+- {product: "Optimus Primal Beast Wars", wiki: tf, title: "Optimus Primal (BW)", group: bw}
+- {product: "Optimus Prime G1 Commander Class", wiki: tf, title: "Optimus Prime (G1)", group: g1}
+- {product: "Optimus Prime G1 Masterpiece", wiki: tf, title: "Optimus Prime (G1)", group: g1}
+- {product: "Optimus Prime Rise of the Beasts Voyager", wiki: tf, title: "Optimus Prime (Movie)", group: movie, note: "Rise of the Beasts thuộc dòng phim live-action"}
+- {product: "RG MSN-04 Sazabi", wiki: gundam, title: "MSN-04 Sazabi", group: uc}
+- {product: "RG RX-0 Full Armor Unicorn Gundam", wiki: gundam, title: "RX-0 Unicorn Gundam", group: uc, note: "Full Armor là cấu hình trang bị thêm của RX-0 Unicorn Gundam; gộp vào lớp gốc"}
+- {product: "RG ZGMF-X20A Strike Freedom Gundam", wiki: gundam, title: "ZGMF-X20A Strike Freedom Gundam", group: ce}
+- {product: "Rodimus Prime Autobot", wiki: tf, title: "Hot Rod (G1)", group: g1, note: "TFWiki đặt Rodimus Prime ở trang Hot Rod (G1)"}
+- {product: "RX-0 Unicorn Gundam 03 Phenex", wiki: gundam, title: "RX-0 Unicorn Gundam 03 Phenex", group: uc}
+- {product: "Scavenger Constructicon", wiki: tf, title: "Scavenger (G1)", group: g1}
+- {product: "Scrapper Constructicon", wiki: tf, title: "Scrapper (G1)", group: g1}
+- {product: "Shockwave Decepticon", wiki: tf, title: "Shockwave (G1)", group: g1}
+- {product: "Skywarp Decepticon", wiki: tf, title: "Skywarp (G1)", group: g1}
+- {product: "Slag Dinobot", wiki: tf, title: "Slag (G1)", group: g1}
+- {product: "Sludge Dinobot", wiki: tf, title: "Sludge (G1)", group: g1}
+- {product: "Snarl Dinobot", wiki: tf, title: "Snarl (G1)", group: g1}
+- {product: "Soundwave G1 Masterpiece", wiki: tf, title: "Soundwave (G1)", group: g1}
+- {product: "Soundwave Transformers Prime Voyager", wiki: tf, title: "Soundwave (WFC)", group: aligned, note: "TFWiki gộp Transformers: Prime vào dòng Aligned, hậu tố (WFC)"}
+- {product: "Star Saber Victory", wiki: tf, title: "Star Saber (G1)", group: g1, note: "Victory thuộc họ Generation 1"}
+- {product: "Starscream G1 Masterpiece", wiki: tf, title: "Starscream (G1)", group: g1}
+- {product: "Starscream Transformers 2007 Voyager", wiki: tf, title: "Starscream (Movie)", group: movie}
+- {product: "Streetwise Protectobot", wiki: tf, title: "Streetwise (G1)", group: g1}
+- {product: "Súng máy Zaku 1/100", wiki: gundam, title: "MS-06F Zaku II", group: uc, note: "phụ kiện (súng máy) của Zaku II, không phải robot"}
+- {product: "Swindle Combaticon", wiki: tf, title: "Swindle (G1)", group: g1}
+- {product: "Swoop Dinobot", wiki: tf, title: "Swoop (G1)", group: g1}
+- {product: "Thundercracker Decepticon", wiki: tf, title: "Thundercracker (G1)", group: g1}
+- {product: "Ultra Magnus Autobot", wiki: tf, title: "Ultra Magnus (G1)", group: g1}
+- {product: "Volcanicus Dinobots (bộ 5 hợp thể)", wiki: tf, title: "Volcanicus (POTP)", group: g1, note: "hợp thể Dinobot của Power of the Primes, thiết kế kiểu G1"}
+- {product: "Vortex Combaticon", wiki: tf, title: "Vortex (G1)", group: g1}
+- {product: "Waspinator Beast Wars", wiki: tf, title: "Waspinator (BW)", group: bw}
+- {product: "Wheeljack Autobot", wiki: tf, title: "Wheeljack (G1)", group: g1}
+- {product: "Wild Force Megazord", wiki: ranger, title: "Wild Force Megazord", group: sentai, note: "bản Power Rangers của Hyakuju Gattai GaoKing (Gaoranger)"}
+- {product: "Wildrider Stunticon", wiki: tf, title: "Wildrider (G1)", group: g1}

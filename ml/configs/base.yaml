@@ -1,0 +1,11 @@
+# Cấu hình chung của mọi bước. Mỗi bước có file cấu hình riêng (bXX_*.yaml) ghi đè các khoá cần thiết.
+
+# Hạt giống mặc định. Huấn luyện chạy lại với 42, 43, 44 (kế hoạch mục 7.1).
+seed: 42
+seeds: [42, 43, 44]
+
+# Thống kê (kế hoạch mục 7.1)
+stats:
+  alpha: 0.05
+  bootstrap_resamples: 1000
+  ci_level: 0.95

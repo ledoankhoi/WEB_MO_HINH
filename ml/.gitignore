@@ -1,0 +1,15 @@
+# Môi trường Python của máy này
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Ảnh, checkpoint, file ONNX: nặng và (với ảnh) chỉ dùng cho nghiên cứu, không đưa lên git.
+# Trên Colab các file này nằm ở Google Drive (biến ROBOTREC_DATA).
+data/store/
+*.onnx
+*.pt
+*.pth
+*.safetensors
+runs/

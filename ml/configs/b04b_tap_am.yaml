@@ -1,0 +1,37 @@
+# B4b. Tập âm: ảnh KHÔNG phải robot, để đo khả năng từ chối (far-OOD; kế hoạch mục 8, B4 bước 3).
+
+seed: 42
+max_side: 512
+jpeg_quality: 90
+
+# Nhóm 1: ảnh đời thường của COCO val2017 (Lin et al., 2014). Danh sách ảnh và giấy phép lấy từ file chú thích chính thức.
+coco:
+  annotations_url: "http://images.cocodataset.org/annotations/annotations_trainval2017.zip"
+  member: "annotations/instances_val2017.json"
+  count: 2000
+
+# Nhóm 2: đồ chơi, mô hình và xe KHÔNG phải robot (tìm ảnh qua ddgs như B2). Đây là ảnh âm "khó": cùng kiểu chụp với ảnh robot.
+toys:
+  per_query: 70          # số ảnh tải được tối đa mỗi truy vấn
+  pages: 3
+  delay: 3.5
+  queries:
+    - "diecast toy car"
+    - "lego city set"
+    - "teddy bear plush toy"
+    - "fashion doll toy"
+    - "superhero action figure"
+    - "dinosaur toy figure"
+    - "anime girl scale figure"
+    - "rc monster truck toy"
+    - "wooden toy train set"
+    - "sports car photo"
+    - "excavator construction machine"
+    - "motorcycle photo"
+    - "fighter jet aircraft"
+    - "medieval knight armor"
+    - "stormtrooper helmet replica"
+    - "scale model tank kit"
+
+# Chia: âm-train (chỉ dùng cho thí nghiệm outlier exposure E7) / âm-val / âm-test, phân tầng theo nhóm con.
+split: {train: 0.5, val: 0.25, test: 0.25}

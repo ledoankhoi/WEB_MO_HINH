@@ -1,0 +1,34 @@
+# B5. Mô hình nền trên đặc trưng đóng băng (docs/nhan-dang-robot/00-ke-hoach.md mục 8, B5; thí nghiệm E1).
+
+seed: 42
+batch_size: 64
+loader_workers: 6
+
+# Bộ trích đặc trưng. kind = clip (open_clip, trọng số OpenAI) hoặc timm (DINOv2, trọng số LVD-142M của Meta).
+backbones:
+  - {id: clip-b32, label: "CLIP ViT-B/32", kind: clip, model: ViT-B-32, pretrained: openai}
+  - {id: clip-b16, label: "CLIP ViT-B/16", kind: clip, model: ViT-B-16, pretrained: openai}
+  - {id: clip-l14, label: "CLIP ViT-L/14", kind: clip, model: ViT-L-14, pretrained: openai}
+  - {id: dinov2-s14, label: "DINOv2 ViT-S/14", kind: timm, model: vit_small_patch14_dinov2.lvd142m}
+  - {id: dinov2-b14, label: "DINOv2 ViT-B/14", kind: timm, model: vit_base_patch14_dinov2.lvd142m}
+
+# (a) Zero-shot CLIP: 5 mẫu câu mỗi lớp, lấy trung bình vector văn bản.
+zero_shot_templates:
+  - "a photo of {name}, a robot from {series}"
+  - "a toy figure of {name} from {series}"
+  - "a model kit of {name} from {series}"
+  - "a screenshot of {name} in {series}"
+  - "{name}, {series}"
+
+# (b) Linear probe: hồi quy logistic đa lớp, L-BFGS tối đa 2.000 vòng; chọn C bằng 5-fold CV trên train.
+linear_probe:
+  c_grid: [0.001, 0.01, 0.1, 1, 10, 100]
+  c_extend_to: 100000      # nếu C tốt nhất nằm ở mép trên của lưới thì thử tiếp C × 10 tới mức này
+  max_iter: 2000
+  cv_folds: 5
+
+# (c) k-NN cô-sin, bỏ phiếu có trọng số theo độ giống.
+knn_k: [1, 5, 10]
+
+bootstrap_resamples: 1000
+tsne: {perplexity: 30, max_images: 6000}
