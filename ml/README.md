@@ -52,6 +52,18 @@ ml/.venv/Scripts/python ml/scripts/b06_bao_cao.py                               
 
 Đặt `ROBOTREC_RUNS="G:/My Drive/robotica-ml/runs"` để đọc kết quả Colab ngay trên máy qua Google Drive cho máy tính.
 
+## B8, B9: đánh giá và xuất mô hình
+
+```bash
+ml/.venv/Scripts/python ml/scripts/b08_danh_gia.py --source b05                       # đánh giá toàn diện mốc B5 → báo cáo B08a
+ml/.venv/Scripts/python ml/scripts/b08_danh_gia.py --source b06 --arch convnext_tiny  # mô hình chính (đủ hạt giống) → báo cáo B08
+ml/.venv/Scripts/python ml/scripts/b09_xuat_onnx.py --run <ROBOTREC_RUNS>/b06/<kiến trúc>-s<hạt giống>   # ONNX, nén, gói cho web
+```
+
+B8 chọn nhiệt độ T và ngưỡng t₁–t₃ trên val; tập test chỉ để báo số liệu. B9 ghi gói vào `<ROBOTREC_DATA>/b09/<mã mô hình>/goi/`
+(các phần `model.partNN.onnx` ≤ 45 MB, `labels.json`, `model-card.json` có T và ngưỡng của B8). Các bước chạy nặng CPU (B9, trích đặc trưng)
+nên chạy khi không huấn luyện, nếu không sẽ làm chậm huấn luyện.
+
 ## Quy ước
 
 - Mỗi bước kết thúc bằng báo cáo 8 mục (`robotrec.report.Report`), gồm số liệu dạng trung bình ± độ lệch chuẩn và khoảng tin cậy 95% (`robotrec.stats`).

@@ -1,0 +1,1562 @@
+[
+ {
+  "index": 0,
+  "slug": "gundam-aeu-09-aeu-enact",
+  "name": "AEU-09 AEU Enact",
+  "character": "AEU-09 AEU Enact",
+  "franchise": "gundam",
+  "series": "Anno Domini · Mobile Suit Gundam 00"
+ },
+ {
+  "index": 1,
+  "slug": "gundam-ams-119-geara-doga",
+  "name": "AMS-119 Geara Doga",
+  "character": "AMS-119 Geara Doga",
+  "franchise": "gundam",
+  "series": "Universal Century · Mobile Suit Gundam Unicorn"
+ },
+ {
+  "index": 2,
+  "slug": "gundam-amx-107-bawoo",
+  "name": "AMX-107 Bawoo",
+  "character": "AMX-107 Bawoo",
+  "franchise": "gundam",
+  "series": "Universal Century · Mobile Suit Gundam Unicorn"
+ },
+ {
+  "index": 3,
+  "slug": "gundam-asw-g-01-gundam-bael",
+  "name": "ASW-G-01 Gundam Bael",
+  "character": "ASW-G-01 Gundam Bael",
+  "franchise": "gundam",
+  "series": "Post Disaster · Mobile Suit Gundam IRON-BLOODED ORPHANS"
+ },
+ {
+  "index": 4,
+  "slug": "gundam-eb-06-graze",
+  "name": "EB-06 Graze",
+  "character": "EB-06 Graze",
+  "franchise": "gundam",
+  "series": "Post Disaster · Mobile Suit Gundam IRON-BLOODED ORPHANS"
+ },
+ {
+  "index": 5,
+  "slug": "gundam-edm-ga-01-gundam-lfrith-ur",
+  "name": "EDM-GA-01 Gundam Lfrith Ur",
+  "character": "EDM-GA-01 Gundam Lfrith Ur",
+  "franchise": "gundam",
+  "series": "Ad Stella"
+ },
+ {
+  "index": 6,
+  "slug": "gundam-edm-ga-02-gundam-lfrith-thorn",
+  "name": "EDM-GA-02 Gundam Lfrith Thorn",
+  "character": "EDM-GA-02 Gundam Lfrith Thorn",
+  "franchise": "gundam",
+  "series": "Ad Stella"
+ },
+ {
+  "index": 7,
+  "slug": "gundam-gat-x102-duel-gundam",
+  "name": "GAT-X102 Duel Gundam",
+  "character": "GAT-X102 Duel Gundam",
+  "franchise": "gundam",
+  "series": "Cosmic Era · Mobile Suit Gundam SEED"
+ },
+ {
+  "index": 8,
+  "slug": "gundam-gat-x103-buster-gundam",
+  "name": "GAT-X103 Buster Gundam",
+  "character": "GAT-X103 Buster Gundam",
+  "franchise": "gundam",
+  "series": "Cosmic Era · Mobile Suit Gundam SEED"
+ },
+ {
+  "index": 9,
+  "slug": "gundam-gf13-017nj-shining-gundam",
+  "name": "GF13-017NJ Shining Gundam",
+  "character": "GF13-017NJ Shining Gundam",
+  "franchise": "gundam",
+  "series": "Future Century · Mobile Fighter G Gundam"
+ },
+ {
+  "index": 10,
+  "slug": "gundam-gf13-017njii-god-gundam",
+  "name": "GF13-017NJII God Gundam",
+  "character": "GF13-017NJII God Gundam",
+  "franchise": "gundam",
+  "series": "Future Century · Mobile Fighter G Gundam"
+ },
+ {
+  "index": 11,
+  "slug": "gundam-gn-000-0-gundam",
+  "name": "GN-000 0 Gundam",
+  "character": "GN-000 0 Gundam",
+  "franchise": "gundam",
+  "series": "Anno Domini · Mobile Suit Gundam 00"
+ },
+ {
+  "index": 12,
+  "slug": "gundam-gn-0000-00-gundam",
+  "name": "GN-0000 00 Gundam",
+  "character": "GN-0000 00 Gundam",
+  "franchise": "gundam",
+  "series": "Anno Domini · Mobile Suit Gundam 00"
+ },
+ {
+  "index": 13,
+  "slug": "gundam-gn-001-gundam-exia",
+  "name": "GN-001 Gundam Exia",
+  "character": "GN-001 Gundam Exia",
+  "franchise": "gundam",
+  "series": "Anno Domini · Mobile Suit Gundam 00"
+ },
+ {
+  "index": 14,
+  "slug": "gundam-gn-002-gundam-dynames",
+  "name": "GN-002 Gundam Dynames",
+  "character": "GN-002 Gundam Dynames",
+  "franchise": "gundam",
+  "series": "Anno Domini · Mobile Suit Gundam 00"
+ },
+ {
+  "index": 15,
+  "slug": "gundam-gn-003-gundam-kyrios",
+  "name": "GN-003 Gundam Kyrios",
+  "character": "GN-003 Gundam Kyrios",
+  "franchise": "gundam",
+  "series": "Anno Domini · Mobile Suit Gundam 00"
+ },
+ {
+  "index": 16,
+  "slug": "gundam-gnx-603t-gn-x",
+  "name": "GNX-603T GN-X",
+  "character": "GNX-603T GN-X",
+  "franchise": "gundam",
+  "series": "Anno Domini · Mobile Suit Gundam 00"
+ },
+ {
+  "index": 17,
+  "slug": "gundam-jdg-00x-devil-gundam",
+  "name": "JDG-00X Devil Gundam",
+  "character": "JDG-00X Devil Gundam",
+  "franchise": "gundam",
+  "series": "Future Century · Mobile Fighter G Gundam"
+ },
+ {
+  "index": 18,
+  "slug": "gundam-mbf-m1-m1-astray",
+  "name": "MBF-M1 M1 Astray",
+  "character": "MBF-M1 M1 Astray",
+  "franchise": "gundam",
+  "series": "Cosmic Era · Mobile Suit Gundam SEED"
+ },
+ {
+  "index": 19,
+  "slug": "gundam-mbf-p02-gundam-astray-red-frame",
+  "name": "MBF-P02 Gundam Astray Red Frame",
+  "character": "MBF-P02 Gundam Astray Red Frame",
+  "franchise": "gundam",
+  "series": "Cosmic Era · Mobile Suit Gundam SEED Astray"
+ },
+ {
+  "index": 20,
+  "slug": "gundam-ms-06f-zaku-ii",
+  "name": "MS-06F Zaku II",
+  "character": "MS-06F Zaku II",
+  "franchise": "gundam",
+  "series": "Universal Century · Mobile Suit Gundam I"
+ },
+ {
+  "index": 21,
+  "slug": "gundam-ms-06s-char-s-zaku-ii",
+  "name": "MS-06S Char's Zaku II",
+  "character": "MS-06S Char's Zaku II",
+  "franchise": "gundam",
+  "series": "Universal Century · Mobile Suit Gundam: The Origin (Manga)"
+ },
+ {
+  "index": 22,
+  "slug": "gundam-ms-07b-gouf",
+  "name": "MS-07B Gouf",
+  "character": "MS-07B Gouf",
+  "franchise": "gundam",
+  "series": "Universal Century · Mobile Suit Gundam"
+ },
+ {
+  "index": 23,
+  "slug": "gundam-ms-09-dom",
+  "name": "MS-09 Dom",
+  "character": "MS-09 Dom",
+  "franchise": "gundam",
+  "series": "Universal Century · Mobile Suit Gundam"
+ },
+ {
+  "index": 24,
+  "slug": "gundam-ms-14a-gelgoog",
+  "name": "MS-14A Gelgoog",
+  "character": "MS-14A Gelgoog",
+  "franchise": "gundam",
+  "series": "Universal Century · Mobile Suit Gundam"
+ },
+ {
+  "index": 25,
+  "slug": "gundam-msa-003-nemo",
+  "name": "MSA-003 Nemo",
+  "character": "MSA-003 Nemo",
+  "franchise": "gundam",
+  "series": "Universal Century · Mobile Suit Zeta Gundam"
+ },
+ {
+  "index": 26,
+  "slug": "gundam-msm-04-acguy",
+  "name": "MSM-04 Acguy",
+  "character": "MSM-04 Acguy",
+  "franchise": "gundam",
+  "series": "Universal Century · Mobile Suit Gundam"
+ },
+ {
+  "index": 27,
+  "slug": "gundam-msm-07-z-gok",
+  "name": "MSM-07 Z'Gok",
+  "character": "MSM-07 Z'Gok",
+  "franchise": "gundam",
+  "series": "Universal Century · Mobile Suit Gundam"
+ },
+ {
+  "index": 28,
+  "slug": "gundam-msn-00100-hyaku-shiki",
+  "name": "MSN-00100 Hyaku Shiki",
+  "character": "MSN-00100 Hyaku Shiki",
+  "franchise": "gundam",
+  "series": "Universal Century · Mobile Suit Zeta Gundam"
+ },
+ {
+  "index": 29,
+  "slug": "gundam-msn-02-zeong",
+  "name": "MSN-02 Zeong",
+  "character": "MSN-02 Zeong",
+  "franchise": "gundam",
+  "series": "Universal Century · Mobile Suit Gundam III: Encounters in Space"
+ },
+ {
+  "index": 30,
+  "slug": "gundam-msn-04-sazabi",
+  "name": "MSN-04 Sazabi",
+  "character": "MSN-04 Sazabi",
+  "franchise": "gundam",
+  "series": "Universal Century · Mobile Suit Gundam: Char's Counterattack"
+ },
+ {
+  "index": 31,
+  "slug": "gundam-msz-006-zeta-gundam",
+  "name": "MSZ-006 Zeta Gundam",
+  "character": "MSZ-006 Zeta Gundam",
+  "franchise": "gundam",
+  "series": "Universal Century · Mobile Suit Zeta Gundam"
+ },
+ {
+  "index": 32,
+  "slug": "gundam-msz-010-gundam",
+  "name": "MSZ-010 ΖΖ Gundam",
+  "character": "MSZ-010 ΖΖ Gundam",
+  "franchise": "gundam",
+  "series": "Universal Century · Mobile Suit Gundam in UC 0099: Moon Crisis"
+ },
+ {
+  "index": 33,
+  "slug": "gundam-oz-13ms-gundam-epyon",
+  "name": "OZ-13MS Gundam Epyon",
+  "character": "OZ-13MS Gundam Epyon",
+  "franchise": "gundam",
+  "series": "After Colony · Mobile Suit Gundam Wing"
+ },
+ {
+  "index": 34,
+  "slug": "gundam-rgm-79-gm",
+  "name": "RGM-79 GM",
+  "character": "RGM-79 GM",
+  "franchise": "gundam",
+  "series": "Universal Century · Mobile Suit Gundam"
+ },
+ {
+  "index": 35,
+  "slug": "gundam-rgm-86r-gm-iii",
+  "name": "RGM-86R GM III",
+  "character": "RGM-86R GM III",
+  "franchise": "gundam",
+  "series": "Universal Century · Mobile Suit Gundam ZZ"
+ },
+ {
+  "index": 36,
+  "slug": "gundam-rgm-89-jegan",
+  "name": "RGM-89 Jegan",
+  "character": "RGM-89 Jegan",
+  "franchise": "gundam",
+  "series": "Universal Century"
+ },
+ {
+  "index": 37,
+  "slug": "gundam-rms-099-rick-dias",
+  "name": "RMS-099 Rick Dias",
+  "character": "RMS-099 Rick Dias",
+  "franchise": "gundam",
+  "series": "Universal Century · Mobile Suit Zeta Gundam"
+ },
+ {
+  "index": 38,
+  "slug": "gundam-rms-179-gm-ii",
+  "name": "RMS-179 GM II",
+  "character": "RMS-179 GM II",
+  "franchise": "gundam",
+  "series": "Universal Century · Mobile Suit Zeta Gundam"
+ },
+ {
+  "index": 39,
+  "slug": "gundam-rx-0-unicorn-gundam",
+  "name": "RX-0 Unicorn Gundam",
+  "character": "RX-0 Unicorn Gundam",
+  "franchise": "gundam",
+  "series": "Universal Century · Mobile Suit Gundam Unicorn RE:0096"
+ },
+ {
+  "index": 40,
+  "slug": "gundam-rx-0-unicorn-gundam-03-phenex",
+  "name": "RX-0 Unicorn Gundam 03 Phenex",
+  "character": "RX-0 Unicorn Gundam 03 Phenex",
+  "franchise": "gundam",
+  "series": "Universal Century · Mobile Suit Gundam UC: One of Seventy Two"
+ },
+ {
+  "index": 41,
+  "slug": "gundam-rx-178-gundam-mk-ii",
+  "name": "RX-178 Gundam Mk-II",
+  "character": "RX-178 Gundam Mk-II",
+  "franchise": "gundam",
+  "series": "Universal Century · Mobile Suit Zeta Gundam"
+ },
+ {
+  "index": 42,
+  "slug": "gundam-rx-75-guntank",
+  "name": "RX-75 Guntank",
+  "character": "RX-75 Guntank",
+  "franchise": "gundam",
+  "series": "Universal Century · Mobile Suit Gundam"
+ },
+ {
+  "index": 43,
+  "slug": "gundam-rx-77-2-guncannon",
+  "name": "RX-77-2 Guncannon",
+  "character": "RX-77-2 Guncannon",
+  "franchise": "gundam",
+  "series": "Universal Century · Mobile Suit Gundam"
+ },
+ {
+  "index": 44,
+  "slug": "gundam-rx-78-2-gundam",
+  "name": "RX-78-2 Gundam",
+  "character": "RX-78-2 Gundam",
+  "franchise": "gundam",
+  "series": "Universal Century · Mobile Suit Gundam I"
+ },
+ {
+  "index": 45,
+  "slug": "gundam-rx-93-gundam",
+  "name": "RX-93 ν Gundam",
+  "character": "RX-93 ν Gundam",
+  "franchise": "gundam",
+  "series": "Universal Century"
+ },
+ {
+  "index": 46,
+  "slug": "gundam-sth-05-hyakuren",
+  "name": "STH-05 Hyakuren",
+  "character": "STH-05 Hyakuren",
+  "franchise": "gundam",
+  "series": "Post Disaster · Mobile Suit Gundam IRON-BLOODED ORPHANS"
+ },
+ {
+  "index": 47,
+  "slug": "gundam-wf-02md-virgo-ii",
+  "name": "WF-02MD Virgo II",
+  "character": "WF-02MD Virgo II",
+  "franchise": "gundam",
+  "series": "After Colony · Mobile Suit Gundam Wing"
+ },
+ {
+  "index": 48,
+  "slug": "gundam-xgf-01-gundam-lfrith-pre-production-model",
+  "name": "XGF-01 Gundam Lfrith Pre-Production Model",
+  "character": "XGF-01 Gundam Lfrith Pre-Production Model",
+  "franchise": "gundam",
+  "series": "Ad Stella"
+ },
+ {
+  "index": 49,
+  "slug": "gundam-xvx-016-gundam-aerial",
+  "name": "XVX-016 Gundam Aerial",
+  "character": "XVX-016 Gundam Aerial",
+  "franchise": "gundam",
+  "series": "Ad Stella · Mobile Suit Gundam the Witch from Mercury"
+ },
+ {
+  "index": 50,
+  "slug": "gundam-xxxg-00w0-wing-gundam-zero",
+  "name": "XXXG-00W0 Wing Gundam Zero",
+  "character": "XXXG-00W0 Wing Gundam Zero",
+  "franchise": "gundam",
+  "series": "After Colony · Mobile Suit Gundam Wing"
+ },
+ {
+  "index": 51,
+  "slug": "gundam-xxxg-01h-gundam-heavyarms",
+  "name": "XXXG-01H Gundam Heavyarms",
+  "character": "XXXG-01H Gundam Heavyarms",
+  "franchise": "gundam",
+  "series": "After Colony · Mobile Suit Gundam Wing"
+ },
+ {
+  "index": 52,
+  "slug": "gundam-xxxg-01sr-gundam-sandrock",
+  "name": "XXXG-01SR Gundam Sandrock",
+  "character": "XXXG-01SR Gundam Sandrock",
+  "franchise": "gundam",
+  "series": "After Colony · Mobile Suit Gundam Wing"
+ },
+ {
+  "index": 53,
+  "slug": "gundam-xxxg-01w-wing-gundam",
+  "name": "XXXG-01W Wing Gundam",
+  "character": "XXXG-01W Wing Gundam",
+  "franchise": "gundam",
+  "series": "After Colony · Mobile Suit Gundam Wing"
+ },
+ {
+  "index": 54,
+  "slug": "gundam-zgmf-1017-ginn",
+  "name": "ZGMF-1017 GINN",
+  "character": "ZGMF-1017 GINN",
+  "franchise": "gundam",
+  "series": "Cosmic Era · Mobile Suit Gundam SEED"
+ },
+ {
+  "index": 55,
+  "slug": "gundam-zgmf-515-cgue",
+  "name": "ZGMF-515 CGUE",
+  "character": "ZGMF-515 CGUE",
+  "franchise": "gundam",
+  "series": "Cosmic Era"
+ },
+ {
+  "index": 56,
+  "slug": "gundam-zgmf-600-guaiz",
+  "name": "ZGMF-600 GuAIZ",
+  "character": "ZGMF-600 GuAIZ",
+  "franchise": "gundam",
+  "series": "Cosmic Era · Mobile Suit Gundam SEED"
+ },
+ {
+  "index": 57,
+  "slug": "gundam-zgmf-x10a-freedom-gundam",
+  "name": "ZGMF-X10A Freedom Gundam",
+  "character": "ZGMF-X10A Freedom Gundam",
+  "franchise": "gundam",
+  "series": "Cosmic Era · Mobile Suit Gundam SEED"
+ },
+ {
+  "index": 58,
+  "slug": "gundam-zgmf-x20a-strike-freedom-gundam",
+  "name": "ZGMF-X20A Strike Freedom Gundam",
+  "character": "ZGMF-X20A Strike Freedom Gundam",
+  "franchise": "gundam",
+  "series": "Cosmic Era · Mobile Suit Gundam SEED Destiny"
+ },
+ {
+  "index": 59,
+  "slug": "sentai-astro-megazord",
+  "name": "Astro Megazord",
+  "character": "Astro Megazord",
+  "franchise": "sentai",
+  "series": "Denji Sentai Megaranger / Power Rangers In Space"
+ },
+ {
+  "index": 60,
+  "slug": "sentai-battlefleet-battleship",
+  "name": "BattleFleet Battleship",
+  "character": "BattleFleet Battleship",
+  "franchise": "sentai",
+  "series": "Power Rangers Operation Overdrive"
+ },
+ {
+  "index": 61,
+  "slug": "sentai-battleship-crocodaioh",
+  "name": "Battleship CrocoDaiOh",
+  "character": "Battleship CrocoDaiOh",
+  "franchise": "sentai",
+  "series": "Kikai Sentai Zenkaiger"
+ },
+ {
+  "index": 62,
+  "slug": "sentai-bull-rider-megazord",
+  "name": "Bull Rider Megazord",
+  "character": "Bull Rider Megazord",
+  "franchise": "sentai",
+  "series": "Shuriken Sentai Ninninger / Power Rangers"
+ },
+ {
+  "index": 63,
+  "slug": "sentai-cosmic-dragon-zord",
+  "name": "Cosmic Dragon Megazord",
+  "character": "Cosmic Dragon Megazord",
+  "franchise": "sentai",
+  "series": "Uchu Sentai Kyuranger / Power Rangers Cosmic Fury"
+ },
+ {
+  "index": 64,
+  "slug": "sentai-dai-gattai-don-onitaijin",
+  "name": "Dai Gattai Don Onitaijin",
+  "character": "Dai Gattai Don Onitaijin",
+  "franchise": "sentai",
+  "series": "Avataro Sentai Donbrothers"
+ },
+ {
+  "index": 65,
+  "slug": "sentai-delta-squad-megazord",
+  "name": "Delta Squad Megazord",
+  "character": "Delta Squad Megazord",
+  "franchise": "sentai",
+  "series": "Tokuso Sentai Dekaranger / Power Rangers S.P.D."
+ },
+ {
+  "index": 66,
+  "slug": "sentai-doubutsu-gattai-tousai-zyuoh",
+  "name": "Doubutsu Gattai Tousai Zyuoh",
+  "character": "Doubutsu Gattai Tousai Zyuoh",
+  "franchise": "sentai",
+  "series": "Doubutsu Sentai Zyuohger"
+ },
+ {
+  "index": 67,
+  "slug": "sentai-drivemax-megazord",
+  "name": "DriveMax Megazord",
+  "character": "DriveMax Megazord",
+  "franchise": "sentai",
+  "series": "GoGo Sentai Boukenger / Power Rangers Operation Overdrive"
+ },
+ {
+  "index": 68,
+  "slug": "sentai-dualdrive-megazord",
+  "name": "DualDrive Megazord",
+  "character": "DualDrive Megazord",
+  "franchise": "sentai",
+  "series": "Power Rangers Operation Overdrive"
+ },
+ {
+  "index": 69,
+  "slug": "sentai-flash-point-megazord",
+  "name": "Flash Point Megazord",
+  "character": "Flash Point Megazord",
+  "franchise": "sentai",
+  "series": "GoGo Sentai Boukenger / Power Rangers Operation Overdrive"
+ },
+ {
+  "index": 70,
+  "slug": "sentai-galaxy-megazord",
+  "name": "Galaxy Megazord",
+  "character": "Galaxy Megazord",
+  "franchise": "sentai",
+  "series": "Seiju Sentai Gingaman / Power Rangers Lost Galaxy"
+ },
+ {
+  "index": 71,
+  "slug": "sentai-goggle-robo",
+  "name": "Goggle Robo",
+  "character": "Goggle Robo",
+  "franchise": "sentai",
+  "series": "Dai Sentai Goggle-V"
+ },
+ {
+  "index": 72,
+  "slug": "sentai-gosei-great-megazord",
+  "name": "Gosei Great Megazord",
+  "character": "Gosei Great Megazord",
+  "franchise": "sentai",
+  "series": "Tensou Sentai Goseiger / Power Rangers Megaforce"
+ },
+ {
+  "index": 73,
+  "slug": "sentai-high-octane-megazord",
+  "name": "High Octane Megazord",
+  "character": "High Octane Megazord",
+  "franchise": "sentai",
+  "series": "Engine Sentai Go-Onger / Power Rangers RPM"
+ },
+ {
+  "index": 74,
+  "slug": "sentai-jungle-master-megazord",
+  "name": "Jungle Master Megazord",
+  "character": "Jungle Master Megazord",
+  "franchise": "sentai",
+  "series": "Juken Sentai Gekiranger / Power Rangers Jungle Fury"
+ },
+ {
+  "index": 75,
+  "slug": "sentai-kyutama-gattai-kyurenoh",
+  "name": "Kyutama Gattai 01*03*05*07*09 KyurenOh",
+  "character": "Kyutama Gattai 01*03*05*07*09 KyurenOh",
+  "franchise": "sentai",
+  "series": "Uchu Sentai Kyuranger"
+ },
+ {
+  "index": 76,
+  "slug": "sentai-legendary-megazord",
+  "name": "Legendary Megazord",
+  "character": "Legendary Megazord",
+  "franchise": "sentai",
+  "series": "Kaizoku Sentai Gokaiger / Power Rangers Super Megaforce"
+ },
+ {
+  "index": 77,
+  "slug": "sentai-lightspeed-megazord",
+  "name": "Lightspeed Megazord",
+  "character": "Lightspeed Megazord",
+  "franchise": "sentai",
+  "series": "Kyukyu Sentai GoGoFive / Power Rangers Lightspeed Rescue"
+ },
+ {
+  "index": 78,
+  "slug": "sentai-mega-voyager-in-space",
+  "name": "Mega Voyager",
+  "character": "Mega Voyager",
+  "franchise": "sentai",
+  "series": "Denji Sentai Megaranger / Power Rangers In Space"
+ },
+ {
+  "index": 79,
+  "slug": "sentai-ninja-blaze-megazord",
+  "name": "Ninja Blaze Megazord",
+  "character": "Ninja Blaze Megazord",
+  "franchise": "sentai",
+  "series": "Shuriken Sentai Ninninger / Power Rangers"
+ },
+ {
+  "index": 80,
+  "slug": "sentai-ninja-megazord",
+  "name": "Ninja Megazord",
+  "character": "Ninja Megazord",
+  "franchise": "sentai",
+  "series": "Ninja Sentai Kakuranger / Power Rangers Mighty Morphin"
+ },
+ {
+  "index": 81,
+  "slug": "sentai-ninja-steel-megazord",
+  "name": "Ninja Steel Megazord",
+  "character": "Ninja Steel Megazord",
+  "franchise": "sentai",
+  "series": "Shuriken Sentai Ninninger / Power Rangers"
+ },
+ {
+  "index": 82,
+  "slug": "sentai-ohsama-gattai-king-ohger",
+  "name": "Ohsama Gattai King-Ohger",
+  "character": "Ohsama Gattai King-Ohger",
+  "franchise": "sentai",
+  "series": "Ohsama Sentai King-Ohger"
+ },
+ {
+  "index": 83,
+  "slug": "sentai-omega-megazord",
+  "name": "Omega Megazord",
+  "character": "Omega Megazord",
+  "franchise": "sentai",
+  "series": "Kyukyu Sentai GoGoFive / Power Rangers Lightspeed Rescue"
+ },
+ {
+  "index": 84,
+  "slug": "sentai-ptera-freeze-zord",
+  "name": "Ptera Freeze Zord Battle Mode",
+  "character": "Ptera Freeze Zord Battle Mode",
+  "franchise": "sentai",
+  "series": "Kishiryu Sentai Ryusoulger / Power Rangers"
+ },
+ {
+  "index": 85,
+  "slug": "sentai-rescue-megazord",
+  "name": "Rescue Megazord",
+  "character": "Rescue Megazord",
+  "franchise": "sentai",
+  "series": "Gekiso Sentai Carranger / Power Rangers Turbo"
+ },
+ {
+  "index": 86,
+  "slug": "sentai-ressha-gattai-toq-oh",
+  "name": "Ressha Gattai ToQ-Oh",
+  "character": "Ressha Gattai ToQ-Oh",
+  "franchise": "sentai",
+  "series": "Ressha Sentai ToQger"
+ },
+ {
+  "index": 87,
+  "slug": "sentai-s-w-a-t-megazord",
+  "name": "S.W.A.T. Megazord",
+  "character": "S.W.A.T. Megazord",
+  "franchise": "sentai",
+  "series": "Tokuso Sentai Dekaranger / Power Rangers S.P.D."
+ },
+ {
+  "index": 88,
+  "slug": "sentai-samurai-megazord",
+  "name": "Samurai Megazord",
+  "character": "Samurai Megazord",
+  "franchise": "sentai",
+  "series": "Samurai Sentai Shinkenger / Power Rangers"
+ },
+ {
+  "index": 89,
+  "slug": "sentai-shogun-megazord",
+  "name": "Shogun Megazord",
+  "character": "Shogun Megazord",
+  "franchise": "sentai",
+  "series": "Ninja Sentai Kakuranger / Power Rangers Mighty Morphin"
+ },
+ {
+  "index": 90,
+  "slug": "sentai-storm-megazord",
+  "name": "Storm Megazord",
+  "character": "Storm Megazord",
+  "franchise": "sentai",
+  "series": "Ninpu Sentai Hurricaneger / Power Rangers Ninja Storm"
+ },
+ {
+  "index": 91,
+  "slug": "sentai-supertrain-megazord",
+  "name": "Supertrain Megazord",
+  "character": "Supertrain Megazord",
+  "franchise": "sentai",
+  "series": "Kyukyu Sentai GoGoFive / Power Rangers Lightspeed Rescue"
+ },
+ {
+  "index": 92,
+  "slug": "sentai-tegasword",
+  "name": "Giant God TegaSword",
+  "character": "Giant God TegaSword",
+  "franchise": "sentai",
+  "series": "No.1 Sentai Gozyuger"
+ },
+ {
+  "index": 93,
+  "slug": "sentai-thunder-megazord-mighty-morphin",
+  "name": "Thunder Megazord (Power Rangers Mighty Morphin 2)",
+  "character": "Thunder Megazord",
+  "franchise": "sentai",
+  "series": "Power Rangers Mighty Morphin 2"
+ },
+ {
+  "index": 94,
+  "slug": "sentai-thunder-megazord-ninja-storm",
+  "name": "Thunder Megazord (Ninpu Sentai Hurricaneger / Power Rangers Ninja Storm)",
+  "character": "Thunder Megazord",
+  "franchise": "sentai",
+  "series": "Ninpu Sentai Hurricaneger / Power Rangers Ninja Storm"
+ },
+ {
+  "index": 95,
+  "slug": "sentai-tor-the-shuttlezord",
+  "name": "Thunder Ultrazord",
+  "character": "Thunder Ultrazord",
+  "franchise": "sentai",
+  "series": "Power Rangers"
+ },
+ {
+  "index": 96,
+  "slug": "sentai-turbo-megazord",
+  "name": "Turbo Megazord",
+  "character": "Turbo Megazord",
+  "franchise": "sentai",
+  "series": "Gekiso Sentai Carranger / Power Rangers Turbo"
+ },
+ {
+  "index": 97,
+  "slug": "sentai-valvemax-megazord",
+  "name": "ValveMax Megazord",
+  "character": "ValveMax Megazord",
+  "franchise": "sentai",
+  "series": "Engine Sentai Go-Onger / Power Rangers RPM"
+ },
+ {
+  "index": 98,
+  "slug": "sentai-wild-force-megazord",
+  "name": "Wild Force Megazord",
+  "character": "Wild Force Megazord",
+  "franchise": "sentai",
+  "series": "Hyakuju Sentai Gaoranger / Power Rangers Wild Force"
+ },
+ {
+  "index": 99,
+  "slug": "sentai-x-trains",
+  "name": "X Emperor Slash",
+  "character": "X Emperor Slash",
+  "franchise": "sentai",
+  "series": ""
+ },
+ {
+  "index": 100,
+  "slug": "sentai-zenkai-gattai-zenkaioh",
+  "name": "Zenkai Gattai ZenkaiOh",
+  "character": "Zenkai Gattai ZenkaiOh",
+  "franchise": "sentai",
+  "series": "Kikai Sentai Zenkaiger"
+ },
+ {
+  "index": 101,
+  "slug": "sentai-zeo-megazord",
+  "name": "Zeo Megazord",
+  "character": "Zeo Megazord",
+  "franchise": "sentai",
+  "series": "Choriki Sentai Ohranger / Power Rangers Zeo"
+ },
+ {
+  "index": 102,
+  "slug": "transformers-airazor-bw",
+  "name": "Airazor (BW)",
+  "character": "Airazor",
+  "franchise": "transformers",
+  "series": "Beast Wars"
+ },
+ {
+  "index": 103,
+  "slug": "transformers-alpha-trion",
+  "name": "Alpha Trion",
+  "character": "Alpha Trion",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 104,
+  "slug": "transformers-arcee-g1",
+  "name": "Arcee (G1)",
+  "character": "Arcee",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 105,
+  "slug": "transformers-arcee-wfc",
+  "name": "Arcee (WFC)",
+  "character": "Arcee",
+  "franchise": "transformers",
+  "series": "Aligned (Transformers: Prime, War for Cybertron)"
+ },
+ {
+  "index": 106,
+  "slug": "transformers-barricade-movie",
+  "name": "Barricade (Movie)",
+  "character": "Barricade",
+  "franchise": "transformers",
+  "series": "Phim live-action (2007–2023)"
+ },
+ {
+  "index": 107,
+  "slug": "transformers-blackarachnia-bw",
+  "name": "Blackarachnia (BW)",
+  "character": "Blackarachnia",
+  "franchise": "transformers",
+  "series": "Beast Wars"
+ },
+ {
+  "index": 108,
+  "slug": "transformers-blades-g1",
+  "name": "Blades (G1)",
+  "character": "Blades",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 109,
+  "slug": "transformers-blast-off-g1",
+  "name": "Blast Off (G1)",
+  "character": "Blast Off",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 110,
+  "slug": "transformers-blurr-g1",
+  "name": "Blurr (G1)",
+  "character": "Blurr",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 111,
+  "slug": "transformers-bonecrusher-g1",
+  "name": "Bonecrusher (G1)",
+  "character": "Bonecrusher",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 112,
+  "slug": "transformers-bonecrusher-movie",
+  "name": "Bonecrusher (Movie)",
+  "character": "Bonecrusher",
+  "franchise": "transformers",
+  "series": "Phim live-action (2007–2023)"
+ },
+ {
+  "index": 113,
+  "slug": "transformers-brawl-g1",
+  "name": "Brawl (G1)",
+  "character": "Brawl",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 114,
+  "slug": "transformers-brawl-movie",
+  "name": "Brawl (Movie)",
+  "character": "Brawl",
+  "franchise": "transformers",
+  "series": "Phim live-action (2007–2023)"
+ },
+ {
+  "index": 115,
+  "slug": "transformers-breakdown-g1",
+  "name": "Breakdown (G1)",
+  "character": "Breakdown",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 116,
+  "slug": "transformers-breakdown-wfc",
+  "name": "Breakdown (WFC)",
+  "character": "Breakdown",
+  "franchise": "transformers",
+  "series": "Aligned (Transformers: Prime, War for Cybertron)"
+ },
+ {
+  "index": 117,
+  "slug": "transformers-bruticus-g1",
+  "name": "Bruticus (G1)",
+  "character": "Bruticus",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 118,
+  "slug": "transformers-bumblebee-animated",
+  "name": "Bumblebee (Animated)",
+  "character": "Bumblebee",
+  "franchise": "transformers",
+  "series": "Transformers: Animated"
+ },
+ {
+  "index": 119,
+  "slug": "transformers-bumblebee-cyberverse",
+  "name": "Bumblebee (Cyberverse)",
+  "character": "Bumblebee",
+  "franchise": "transformers",
+  "series": "Transformers: Cyberverse"
+ },
+ {
+  "index": 120,
+  "slug": "transformers-bumblebee-es",
+  "name": "Bumblebee (ES)",
+  "character": "Bumblebee",
+  "franchise": "transformers",
+  "series": "Transformers: EarthSpark"
+ },
+ {
+  "index": 121,
+  "slug": "transformers-bumblebee-g1",
+  "name": "Bumblebee (G1)",
+  "character": "Bumblebee",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 122,
+  "slug": "transformers-bumblebee-movie",
+  "name": "Bumblebee (Movie)",
+  "character": "Bumblebee",
+  "franchise": "transformers",
+  "series": "Phim live-action (2007–2023)"
+ },
+ {
+  "index": 123,
+  "slug": "transformers-bumblebee-one",
+  "name": "Bumblebee (One)",
+  "character": "Bumblebee",
+  "franchise": "transformers",
+  "series": "Transformers One (2024)"
+ },
+ {
+  "index": 124,
+  "slug": "transformers-cliffjumper-g1",
+  "name": "Cliffjumper (G1)",
+  "character": "Cliffjumper",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 125,
+  "slug": "transformers-dead-end-g1",
+  "name": "Dead End (G1)",
+  "character": "Dead End",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 126,
+  "slug": "transformers-defensor-g1",
+  "name": "Defensor (G1)",
+  "character": "Defensor",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 127,
+  "slug": "transformers-devastator-g1",
+  "name": "Devastator (G1)",
+  "character": "Devastator",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 128,
+  "slug": "transformers-dinobot-bw",
+  "name": "Dinobot (BW)",
+  "character": "Dinobot",
+  "franchise": "transformers",
+  "series": "Beast Wars"
+ },
+ {
+  "index": 129,
+  "slug": "transformers-drag-strip-g1",
+  "name": "Drag Strip (G1)",
+  "character": "Drag Strip",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 130,
+  "slug": "transformers-elita-1-one",
+  "name": "Elita-1 (One)",
+  "character": "Elita-1",
+  "franchise": "transformers",
+  "series": "Transformers One (2024)"
+ },
+ {
+  "index": 131,
+  "slug": "transformers-first-aid-g1",
+  "name": "First Aid (G1)",
+  "character": "First Aid",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 132,
+  "slug": "transformers-fortress-maximus-g1",
+  "name": "Fortress Maximus (G1)",
+  "character": "Fortress Maximus",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 133,
+  "slug": "transformers-galvatron-g1",
+  "name": "Galvatron (G1)",
+  "character": "Galvatron",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 134,
+  "slug": "transformers-grimlock-g1",
+  "name": "Grimlock (G1)",
+  "character": "Grimlock",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 135,
+  "slug": "transformers-groove-g1",
+  "name": "Groove (G1)",
+  "character": "Groove",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 136,
+  "slug": "transformers-hook-g1",
+  "name": "Hook (G1)",
+  "character": "Hook",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 137,
+  "slug": "transformers-hot-rod-g1",
+  "name": "Hot Rod (G1)",
+  "character": "Hot Rod",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 138,
+  "slug": "transformers-hot-spot-g1",
+  "name": "Hot Spot (G1)",
+  "character": "Hot Spot",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 139,
+  "slug": "transformers-hound-g1",
+  "name": "Hound (G1)",
+  "character": "Hound",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 140,
+  "slug": "transformers-hound-movie",
+  "name": "Hound (Movie)",
+  "character": "Hound",
+  "franchise": "transformers",
+  "series": "Phim live-action (2007–2023)"
+ },
+ {
+  "index": 141,
+  "slug": "transformers-ironhide-g1",
+  "name": "Ironhide (G1)",
+  "character": "Ironhide",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 142,
+  "slug": "transformers-jazz-g1",
+  "name": "Jazz (G1)",
+  "character": "Jazz",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 143,
+  "slug": "transformers-jazz-movie",
+  "name": "Jazz (Movie)",
+  "character": "Jazz",
+  "franchise": "transformers",
+  "series": "Phim live-action (2007–2023)"
+ },
+ {
+  "index": 144,
+  "slug": "transformers-jetfire-g1",
+  "name": "Jetfire (G1)",
+  "character": "Jetfire",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 145,
+  "slug": "transformers-jetfire-movie",
+  "name": "Jetfire (Movie)",
+  "character": "Jetfire",
+  "franchise": "transformers",
+  "series": "Phim live-action (2007–2023)"
+ },
+ {
+  "index": 146,
+  "slug": "transformers-lio-convoy-bw",
+  "name": "Lio Convoy (BW)",
+  "character": "Lio Convoy",
+  "franchise": "transformers",
+  "series": "Beast Wars"
+ },
+ {
+  "index": 147,
+  "slug": "transformers-long-haul-g1",
+  "name": "Long Haul (G1)",
+  "character": "Long Haul",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 148,
+  "slug": "transformers-megatron-bw",
+  "name": "Megatron (BW)",
+  "character": "Megatron",
+  "franchise": "transformers",
+  "series": "Beast Wars"
+ },
+ {
+  "index": 149,
+  "slug": "transformers-megatron-g1",
+  "name": "Megatron (G1)",
+  "character": "Megatron",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 150,
+  "slug": "transformers-megatron-movie",
+  "name": "Megatron (Movie)",
+  "character": "Megatron",
+  "franchise": "transformers",
+  "series": "Phim live-action (2007–2023)"
+ },
+ {
+  "index": 151,
+  "slug": "transformers-megatron-one",
+  "name": "Megatron (One)",
+  "character": "Megatron",
+  "franchise": "transformers",
+  "series": "Transformers One (2024)"
+ },
+ {
+  "index": 152,
+  "slug": "transformers-megatron-wfc",
+  "name": "Megatron (WFC)",
+  "character": "Megatron",
+  "franchise": "transformers",
+  "series": "Aligned (Transformers: Prime, War for Cybertron)"
+ },
+ {
+  "index": 153,
+  "slug": "transformers-menasor-g1",
+  "name": "Menasor (G1)",
+  "character": "Menasor",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 154,
+  "slug": "transformers-metroplex-g1",
+  "name": "Metroplex (G1)",
+  "character": "Metroplex",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 155,
+  "slug": "transformers-mirage-g1",
+  "name": "Mirage (G1)",
+  "character": "Mirage",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 156,
+  "slug": "transformers-mixmaster-g1",
+  "name": "Mixmaster (G1)",
+  "character": "Mixmaster",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 157,
+  "slug": "transformers-motormaster-g1",
+  "name": "Motormaster (G1)",
+  "character": "Motormaster",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 158,
+  "slug": "transformers-onslaught-g1",
+  "name": "Onslaught (G1)",
+  "character": "Onslaught",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 159,
+  "slug": "transformers-optimus-primal-bw",
+  "name": "Optimus Primal (BW)",
+  "character": "Optimus Primal",
+  "franchise": "transformers",
+  "series": "Beast Wars"
+ },
+ {
+  "index": 160,
+  "slug": "transformers-optimus-prime-g1",
+  "name": "Optimus Prime (G1)",
+  "character": "Optimus Prime",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 161,
+  "slug": "transformers-optimus-prime-movie",
+  "name": "Optimus Prime (Movie)",
+  "character": "Optimus Prime",
+  "franchise": "transformers",
+  "series": "Phim live-action (2007–2023)"
+ },
+ {
+  "index": 162,
+  "slug": "transformers-optimus-prime-wfc",
+  "name": "Optimus Prime (WFC)",
+  "character": "Optimus Prime",
+  "franchise": "transformers",
+  "series": "Aligned (Transformers: Prime, War for Cybertron)"
+ },
+ {
+  "index": 163,
+  "slug": "transformers-ratchet-movie",
+  "name": "Ratchet (Movie)",
+  "character": "Ratchet",
+  "franchise": "transformers",
+  "series": "Phim live-action (2007–2023)"
+ },
+ {
+  "index": 164,
+  "slug": "transformers-rhinox-bw",
+  "name": "Rhinox (BW)",
+  "character": "Rhinox",
+  "franchise": "transformers",
+  "series": "Beast Wars"
+ },
+ {
+  "index": 165,
+  "slug": "transformers-rumble-g1",
+  "name": "Rumble (G1)",
+  "character": "Rumble",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 166,
+  "slug": "transformers-scavenger-g1",
+  "name": "Scavenger (G1)",
+  "character": "Scavenger",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 167,
+  "slug": "transformers-scorponok-movie",
+  "name": "Scorponok (Movie)",
+  "character": "Scorponok",
+  "franchise": "transformers",
+  "series": "Phim live-action (2007–2023)"
+ },
+ {
+  "index": 168,
+  "slug": "transformers-scrapper-g1",
+  "name": "Scrapper (G1)",
+  "character": "Scrapper",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 169,
+  "slug": "transformers-shockwave-g1",
+  "name": "Shockwave (G1)",
+  "character": "Shockwave",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 170,
+  "slug": "transformers-shockwave-movie",
+  "name": "Shockwave (Movie)",
+  "character": "Shockwave",
+  "franchise": "transformers",
+  "series": "Phim live-action (2007–2023)"
+ },
+ {
+  "index": 171,
+  "slug": "transformers-shockwave-wfc",
+  "name": "Shockwave (WFC)",
+  "character": "Shockwave",
+  "franchise": "transformers",
+  "series": "Aligned (Transformers: Prime, War for Cybertron)"
+ },
+ {
+  "index": 172,
+  "slug": "transformers-skywarp-g1",
+  "name": "Skywarp (G1)",
+  "character": "Skywarp",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 173,
+  "slug": "transformers-slag-g1",
+  "name": "Slag (G1)",
+  "character": "Slag",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 174,
+  "slug": "transformers-sludge-g1",
+  "name": "Sludge (G1)",
+  "character": "Sludge",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 175,
+  "slug": "transformers-smokescreen-prime",
+  "name": "Smokescreen (Prime)",
+  "character": "Smokescreen",
+  "franchise": "transformers",
+  "series": "Aligned (Transformers: Prime, War for Cybertron)"
+ },
+ {
+  "index": 176,
+  "slug": "transformers-snarl-g1",
+  "name": "Snarl (G1)",
+  "character": "Snarl",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 177,
+  "slug": "transformers-soundwave-g1",
+  "name": "Soundwave (G1)",
+  "character": "Soundwave",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 178,
+  "slug": "transformers-soundwave-wfc",
+  "name": "Soundwave (WFC)",
+  "character": "Soundwave",
+  "franchise": "transformers",
+  "series": "Aligned (Transformers: Prime, War for Cybertron)"
+ },
+ {
+  "index": 179,
+  "slug": "transformers-star-saber-g1",
+  "name": "Star Saber (G1)",
+  "character": "Star Saber",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 180,
+  "slug": "transformers-starscream-g1",
+  "name": "Starscream (G1)",
+  "character": "Starscream",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 181,
+  "slug": "transformers-starscream-movie",
+  "name": "Starscream (Movie)",
+  "character": "Starscream",
+  "franchise": "transformers",
+  "series": "Phim live-action (2007–2023)"
+ },
+ {
+  "index": 182,
+  "slug": "transformers-streetwise-g1",
+  "name": "Streetwise (G1)",
+  "character": "Streetwise",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 183,
+  "slug": "transformers-swindle-g1",
+  "name": "Swindle (G1)",
+  "character": "Swindle",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 184,
+  "slug": "transformers-swoop-g1",
+  "name": "Swoop (G1)",
+  "character": "Swoop",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 185,
+  "slug": "transformers-thundercracker-g1",
+  "name": "Thundercracker (G1)",
+  "character": "Thundercracker",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 186,
+  "slug": "transformers-trypticon-g1",
+  "name": "Trypticon (G1)",
+  "character": "Trypticon",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 187,
+  "slug": "transformers-twitch",
+  "name": "Twitch",
+  "character": "Twitch",
+  "franchise": "transformers",
+  "series": "Transformers: EarthSpark"
+ },
+ {
+  "index": 188,
+  "slug": "transformers-ultra-magnus-g1",
+  "name": "Ultra Magnus (G1)",
+  "character": "Ultra Magnus",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 189,
+  "slug": "transformers-volcanicus-potp",
+  "name": "Volcanicus (POTP)",
+  "character": "Volcanicus",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 190,
+  "slug": "transformers-vortex-g1",
+  "name": "Vortex (G1)",
+  "character": "Vortex",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 191,
+  "slug": "transformers-waspinator-bw",
+  "name": "Waspinator (BW)",
+  "character": "Waspinator",
+  "franchise": "transformers",
+  "series": "Beast Wars"
+ },
+ {
+  "index": 192,
+  "slug": "transformers-wheeljack-g1",
+  "name": "Wheeljack (G1)",
+  "character": "Wheeljack",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ },
+ {
+  "index": 193,
+  "slug": "transformers-wheeljack-prime",
+  "name": "Wheeljack (Prime)",
+  "character": "Wheeljack",
+  "franchise": "transformers",
+  "series": "Aligned (Transformers: Prime, War for Cybertron)"
+ },
+ {
+  "index": 194,
+  "slug": "transformers-wildrider-g1",
+  "name": "Wildrider (G1)",
+  "character": "Wildrider",
+  "franchise": "transformers",
+  "series": "Generation 1"
+ }
+]

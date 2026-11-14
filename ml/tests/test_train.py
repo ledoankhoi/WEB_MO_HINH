@@ -119,3 +119,41 @@ def test_early_stopping(tmp_path):
     cfg = {**CFG, "epochs_max": 30, "patience": 2, "lr": 0.0, "lr_head": 0.0}  # tốc độ học 0: không bao giờ tốt lên
     out = fit(model, train, ytrain, val, yval, 4, cfg, tmp_path, "cpu", log=lambda *a: None)
     assert len(out["history"]) == 3 and out["stopped_early"]
+
+
+def test_mixup_cutmix_training_runs_and_resumes(tmp_path):
+    torch.manual_seed(0)
+    cfg = {**CFG, "epochs_max": 3, "mixup": {"mixup_alpha": 0.2, "cutmix_alpha": 0.0}}  # dữ liệu dạng vectơ: chỉ Mixup
+    model = Tiny()
+    train, ytrain = toy_data(96, 1)
+    val, yval = toy_data(40, 2)
+    full = fit(model, train, ytrain, val, yval, 4, cfg, tmp_path / "full", "cpu", log=lambda *a: None)
+    assert full["finished"] and len(full["history"]) == 3
+    torch.manual_seed(0)
+    plain = fit(Tiny(), train, ytrain, val, yval, 4, {**cfg, "mixup": None}, tmp_path / "plain", "cpu", log=lambda *a: None)
+    assert full["history"][0]["train_loss"] != plain["history"][0]["train_loss"]  # Mixup thật sự được áp dụng
+    torch.manual_seed(0)
+    fit(Tiny(), train, ytrain, val, yval, 4, cfg, tmp_path / "split", "cpu", log=lambda *a: None, stop_after_epochs=2)
+    resumed = fit(Tiny(), train, ytrain, val, yval, 4, cfg, tmp_path / "split", "cpu", log=lambda *a: None)
+    # Mixup lấy ngẫu nhiên theo hạt giống của từng epoch nên chạy tiếp vẫn cho đúng kết quả như chạy liền
+    assert [round(h["val_loss"], 6) for h in full["history"]] == [round(h["val_loss"], 6) for h in resumed["history"]]
+
+
+class Asymmetric(torch.nn.Module):
+    """Điểm lớp 0 = tổng nửa trái của ảnh, lớp 1 = tổng nửa phải: lật ngang đổi chỗ hai điểm."""
+
+    def forward(self, x):
+        half = x.shape[-1] // 2
+        return torch.stack([x[..., :half].sum(dim=(1, 2, 3)), x[..., half:].sum(dim=(1, 2, 3))], dim=1)
+
+
+def test_predict_with_flip_tta_averages_both_views():
+    from robotrec.train import predict
+
+    x = torch.zeros(3, 1, 2, 4)
+    x[:, :, :, :2] = 1.0  # toàn bộ tín hiệu ở nửa trái
+    data = torch.utils.data.TensorDataset(x, torch.zeros(3, dtype=torch.long))
+    plain = predict(Asymmetric(), data, "cpu", amp=False)
+    both = predict(Asymmetric(), data, "cpu", amp=False, tta_flip=True)
+    assert plain[0].tolist() == [4.0, 0.0]
+    assert both[0].tolist() == [2.0, 2.0]  # trung bình của ảnh gốc và ảnh lật

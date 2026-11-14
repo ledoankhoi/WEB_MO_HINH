@@ -1,5 +1,6 @@
 # Môi trường Python của máy này
 .venv/
+.venv-cloud/
 __pycache__/
 *.pyc
 .pytest_cache/

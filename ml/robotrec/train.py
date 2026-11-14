@@ -107,14 +107,18 @@ def _seed_worker(worker_id: int) -> None:
 
 
 @torch.no_grad()
-def predict(model: torch.nn.Module, dataset, device: str, batch_size: int = 128, workers: int = 0, amp: bool = True) -> np.ndarray:
-    """Logits (N × số lớp, float32) theo đúng thứ tự của dataset."""
+def predict(model: torch.nn.Module, dataset, device: str, batch_size: int = 128, workers: int = 0, amp: bool = True, tta_flip: bool = False) -> np.ndarray:
+    """Logits (N × số lớp, float32) theo đúng thứ tự của dataset. `tta_flip`: trung bình logits của ảnh và ảnh lật ngang (thí nghiệm A7)."""
     model.eval()
     loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=workers, pin_memory=device == "cuda")
     out = []
     for x, _ in loader:
+        x = x.to(device, non_blocking=True)
         with torch.autocast(device_type="cuda" if device == "cuda" else "cpu", dtype=torch.float16, enabled=amp and device == "cuda"):
-            out.append(model(x.to(device, non_blocking=True)).float().cpu())
+            logits = model(x).float()
+            if tta_flip:
+                logits = (logits + model(torch.flip(x, dims=[-1])).float()) / 2
+        out.append(logits.cpu())
     return torch.cat(out).numpy()
 
 
@@ -162,6 +166,13 @@ def fit(model: torch.nn.Module, train_set, train_labels: np.ndarray, val_set, va
     total_steps = max(1, (epochs_max - epochs_head) * steps_per_epoch)
     warmup_steps = cfg["warmup_epochs"] * steps_per_epoch
     criterion = torch.nn.CrossEntropyLoss(label_smoothing=cfg["label_smoothing"])
+    mixer = None
+    if cfg.get("mixup"):  # Mixup / CutMix (thí nghiệm A4): nhãn mềm, đã gồm làm trơn nhãn
+        from timm.data import Mixup
+
+        mixer = Mixup(mixup_alpha=cfg["mixup"].get("mixup_alpha", 0.0), cutmix_alpha=cfg["mixup"].get("cutmix_alpha", 0.0),
+                      prob=cfg["mixup"].get("prob", 1.0), switch_prob=cfg["mixup"].get("switch_prob", 0.5),
+                      label_smoothing=cfg["label_smoothing"], num_classes=n_classes)
     head = model.get_classifier()
     head_ids = {id(p) for p in head.parameters()}
     model.to(device)
@@ -212,6 +223,7 @@ def fit(model: torch.nn.Module, train_set, train_labels: np.ndarray, val_set, va
             model.eval()
             head.train()
         generator = torch.Generator().manual_seed(cfg["seed"] * 1000 + epoch)
+        np.random.seed(cfg["seed"] * 1000 + epoch + 7)  # Mixup của timm rút ngẫu nhiên bằng numpy: cố định theo epoch để chạy tiếp cho đúng kết quả
         sampler = torch.utils.data.WeightedRandomSampler(weights, num_samples=len(train_set), replacement=True, generator=generator)
         loader = torch.utils.data.DataLoader(
             train_set, batch_size=micro, sampler=sampler, num_workers=workers, pin_memory=device == "cuda", drop_last=False,
@@ -230,9 +242,15 @@ def fit(model: torch.nn.Module, train_set, train_labels: np.ndarray, val_set, va
                 for group in optimizer.param_groups:
                     group["lr"] = group["base_lr"] * factor
             x, y = x.to(device, non_blocking=True), y.to(device, non_blocking=True)
+            soft = None
+            if mixer is not None and len(y) % 2 == 0:  # Mixup của timm cần số ảnh chẵn; micro-batch lẻ cuối epoch học nhãn thường
+                x, soft = mixer(x, y)
             with torch.autocast(device_type=autocast_device, dtype=torch.float16, enabled=amp):
                 logits = model(x)
-                loss = criterion(logits.float(), y)
+                if soft is None:
+                    loss = criterion(logits.float(), y)
+                else:
+                    loss = torch.sum(-soft * torch.nn.functional.log_softmax(logits.float(), dim=-1), dim=-1).mean()
             scaler.scale(loss / accumulate).backward()
             loss_sum += float(loss.detach()) * len(y)
             correct += int((logits.argmax(1) == y).sum())

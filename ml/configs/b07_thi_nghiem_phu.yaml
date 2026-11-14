@@ -1,0 +1,17 @@
+# B7. Thí nghiệm phụ (docs/nhan-dang-robot/00-ke-hoach.md mục 8, B7; thí nghiệm E3, E4).
+# Mỗi thí nghiệm đổi MỘT yếu tố so với cấu hình chính của B6 (configs/b06_huan_luyen.yaml), trên kiến trúc được chọn ở B6.
+# GPU của máy có hạn nên theo phương án dự phòng của kế hoạch: A1–A5 chạy 1 hạt giống, A6 giữ đủ 3 hạt giống.
+
+seeds_one: [42]
+seeds_all: [42, 43, 44]
+
+experiments:
+  A1: {label: "Tăng cường cơ bản (chỉ cắt + lật)", aug: {randaugment: false, color_jitter: 0.0, erasing: 0.0}, seeds: one}
+  A2: {label: "Lấy mẫu thường (không cân bằng lớp)", train: {sampler_power: 1.0}, seeds: one}
+  A3: {label: "Không làm trơn nhãn (ε = 0)", train: {label_smoothing: 0.0}, seeds: one}
+  A4: {label: "Thêm Mixup (α = 0,2) và CutMix (α = 1,0)", train: {mixup: {mixup_alpha: 0.2, cutmix_alpha: 1.0, switch_prob: 0.5}}, seeds: one}
+  A5: {label: "Khởi tạo ImageNet-21k thay cho CLIP (chỉ ViT)", timm: {vit_b16_clip: vit_base_patch16_224.augreg_in21k_ft_in1k}, only: [vit_b16_clip], seeds: one}
+  A6: {label: "Lượng dữ liệu: 10%, 25%, 50% ảnh mỗi lớp (100% là cấu hình chính của B6)", fractions: [0.1, 0.25, 0.5], seeds: all}
+  # A7 (suy luận thêm ảnh lật ngang) không cần huấn luyện lại: đo trên checkpoint của B6 trong b07_bao_cao.py.
+
+order: [A6, A1, A2, A3, A4, A5]   # A6 trước vì cần 3 hạt giống cho đường học theo lượng dữ liệu

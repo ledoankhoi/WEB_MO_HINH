@@ -49,6 +49,27 @@ def ms(values: list[float], digits: int = 2) -> str:
     return f"{vn(100 * mean, digits)} ± {vn(100 * std, digits)}"
 
 
+def effective_seconds(h: pd.DataFrame) -> tuple[float, int]:
+    """Thời gian huấn luyện thật của một lần chạy: epoch dài hơn 2 lần trung vị cùng pha (máy vào Modern Standby giữa epoch,
+    Windows tạm dừng tiến trình) tính bằng trung vị của pha đó. Trả (giây, số epoch bị thay)."""
+    total, replaced = 0.0, 0
+    for _, part in h.groupby("phase"):
+        median = float(part["seconds"].median())
+        long = part["seconds"] > 2 * median
+        replaced += int(long.sum())
+        total += float(part["seconds"].where(~long, median).sum())
+    return total, replaced
+
+
+def machine_of(meta: dict) -> str:
+    """Máy chạy lần chạy này, đọc từ config.json: máy nhà, Colab hoặc Kaggle (ml/scripts/dieu_phoi.py chia việc), kèm tên GPU."""
+    env = meta.get("environment", {})
+    devices = env.get("gpu", {}).get("devices") or [{}]
+    gpu = str(devices[0].get("name", "CPU")).replace("NVIDIA ", "").replace("Tesla ", "").replace(" GPU", "")
+    where = "Colab" if env.get("colab") else "Kaggle" if str(env.get("data_root_env") or "").startswith("/tmp/robotica") else "máy nhà"
+    return f"{where} ({gpu})"
+
+
 def complexity(timm_name: str, n_classes: int) -> dict:
     """Số tham số, GFLOPs (một ảnh 224×224, đếm bằng torch.utils.flop_counter; 1 phép nhân-cộng = 2 FLOP), số tầng có trọng số."""
     import timm
@@ -163,17 +184,28 @@ def main() -> None:
     status_rows = []
     for r in runs:
         if r["status"] == "chưa chạy":
-            status_rows.append([labels[r["arch"]], r["seed"], r["status"], "—", "—", "—", "—", "—"])
+            status_rows.append([labels[r["arch"]], r["seed"], r["status"], "—", "—", "—", "—", "—", "—", "—"])
             continue
         h = r["history"]
         best = r["result"]["best"] if r["result"] else (h.loc[h["val_macro_f1"].idxmax()].to_dict() if len(h) else {})
-        status_rows.append([labels[r["arch"]], r["seed"], r["status"], len(h), int(best.get("epoch", 0)) if best else "—",
-                            vn(100 * best["val_macro_f1"], 2) if best else "—", vn(h["seconds"].sum() / 3600, 2) if len(h) else "—",
+        status_rows.append([labels[r["arch"]], r["seed"], r["status"], machine_of(r["meta"]), len(h), int(best.get("epoch", 0)) if best else "—",
+                            vn(100 * best["val_macro_f1"], 2) if best else "—", vn(effective_seconds(h)[0] / 3600, 2) if len(h) else "—",
+                            effective_seconds(h)[1] if len(h) else "—",
                             "có" if r["result"] and r["result"].get("stopped_early") else "không"])
-    status_columns = ["Kiến trúc", "Hạt giống", "Trạng thái", "Số epoch đã chạy", "Epoch tốt nhất", "macro-F1 val tốt nhất (%)", "Giờ GPU", "Dừng sớm"]
+    status_columns = ["Kiến trúc", "Hạt giống", "Trạng thái", "Máy (GPU)", "Số epoch đã chạy", "Epoch tốt nhất", "macro-F1 val tốt nhất (%)", "Giờ GPU",
+                      "Epoch bị máy ngủ cắt ngang", "Dừng sớm"]
     report.table(status_rows, status_columns, caption="Bảng 1. Các lần chạy")
-    gpu_hours = sum(r["history"]["seconds"].sum() for r in runs if "history" in r and len(r["history"])) / 3600
-    report.p(f"Tổng thời gian huấn luyện (cả đánh giá val mỗi epoch): {vn(gpu_hours, 2)} giờ GPU.")
+    if len({machine_of(r["meta"]) for r in runs if "meta" in r}) > 1:
+        report.p("Các lần chạy nằm trên nhiều máy để rút ngắn thời gian (ml/scripts/dieu_phoi.py): cùng mã, cùng cấu hình, cùng thứ tự dữ liệu theo hạt giống. "
+                 "Trên GPU 16 GB mỗi bước tối ưu lan truyền một lần 64 ảnh, trên GPU 4 GB của máy nhà là 2 lần 32 ảnh rồi cộng dồn gradient: "
+                 "về toán học như nhau (ConvNeXt và ViT dùng LayerNorm, không phụ thuộc cỡ lô), chỉ lệch ở sai số làm tròn. "
+                 "EfficientNetV2-S dùng BatchNorm nên chỉ chạy ở máy nhà. Giờ GPU của các máy khác nhau không so trực tiếp được.")
+    with_history = [r["history"] for r in runs if "history" in r and len(r["history"])]
+    gpu_hours = sum(effective_seconds(h)[0] for h in with_history) / 3600
+    wall_hours = sum(float(h["seconds"].sum()) for h in with_history) / 3600
+    report.p(f"Tổng thời gian huấn luyện (cả đánh giá val mỗi epoch): {vn(gpu_hours, 2)} giờ GPU. Thời gian đồng hồ đo được là {vn(wall_hours, 2)} giờ, "
+             "vì máy vào Modern Standby (Windows tạm dừng tiến trình) giữa một số epoch. Epoch nào dài hơn 2 lần trung vị cùng pha của lần chạy đó "
+             "được tính bằng trung vị; số epoch bị thay ghi ở bảng 1. Máy ngủ chỉ làm chậm, không đổi kết quả: trọng số và thứ tự dữ liệu không phụ thuộc thời gian.")
 
     comp = {a: complexity(cfg["architectures"][a]["timm"], n_classes) for a in archs}
     arch_rows, by_arch = [], {}

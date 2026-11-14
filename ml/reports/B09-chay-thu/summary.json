@@ -1,0 +1,273 @@
+{
+  "step": "B09-chay-thu",
+  "title": "Xuất và nén mô hình cho trình duyệt (thí nghiệm E8) — chạy thử",
+  "environment": {
+    "time_utc": "2026-11-12T04:28:47+00:00",
+    "python": "3.11.9",
+    "os": "Windows 11 (build 10.0.26300, AMD64)",
+    "cpu": "12th Gen Intel(R) Core(TM) i7-12800H",
+    "cpu_count": 20,
+    "ram_gb": 31.7,
+    "colab": false,
+    "gpu": {
+      "torch_cuda": true,
+      "devices": [
+        {
+          "name": "NVIDIA RTX A2000 Laptop GPU",
+          "memory_gb": 4.0,
+          "capability": "8.6"
+        }
+      ],
+      "torch_cuda_version": "12.8",
+      "cudnn": 91900,
+      "nvidia_smi": [
+        "NVIDIA RTX A2000 Laptop GPU, 4096 MiB, 596.52"
+      ]
+    },
+    "packages": {
+      "numpy": "2.4.6",
+      "pandas": "3.1.1",
+      "scipy": "1.17.1",
+      "scikit-learn": "1.9.1",
+      "matplotlib": "3.11.2",
+      "torch": "2.11.0+cu128",
+      "torchvision": "0.26.0+cu128",
+      "timm": "1.0.31",
+      "open_clip_torch": "4.2.1",
+      "Pillow": "13.0.0",
+      "ImageHash": "4.3.2",
+      "mwparserfromhell": "0.7.2",
+      "rapidfuzz": "3.14.6",
+      "requests": "2.34.2",
+      "ddgs": "9.16.1",
+      "onnx": "1.23.2",
+      "onnxruntime": "1.31.1"
+    },
+    "git": {
+      "commit": "e0d7aa7c36ea3cb20d6287c1cc0a4733ac2890a3",
+      "short": "e0d7aa7",
+      "dirty": true
+    },
+    "data_root_env": null
+  },
+  "results": {
+    "fp32": {
+      "mb": 106.77162742614746,
+      "top1": 0.087890625,
+      "macro_f1": 0.059594251548582326,
+      "ece": 0.027042244521544617,
+      "agree": 1.0,
+      "max_diff": 1.3217329978942871e-05,
+      "lat1": [
+        166.37854999999035,
+        334.6405599998546
+      ],
+      "lat4": [
+        186.69680000004973,
+        277.8506900000479
+      ]
+    },
+    "fp16": {
+      "mb": 53.45078372955322,
+      "top1": 0.0859375,
+      "macro_f1": 0.056402762186880215,
+      "ece": 0.02508606651930478,
+      "agree": 0.998046875,
+      "max_diff": 0.01354914903640747,
+      "lat1": [
+        201.21470000003683,
+        266.96802000014924
+      ],
+      "lat4": [
+        96.10524999993686,
+        286.65434499996525
+      ]
+    },
+    "int8-dynamic": {
+      "mb": 32.374993324279785,
+      "top1": 0.0859375,
+      "macro_f1": 0.05538138703936057,
+      "ece": 0.027166540899084584,
+      "agree": 0.77734375,
+      "max_diff": 0.7416037321090698,
+      "lat1": [
+        94.05839999976706,
+        184.47057499963648
+      ],
+      "lat4": [
+        32.15950000003431,
+        347.85983500007654
+      ]
+    },
+    "int8-static-minmax": {
+      "mb": 27.362716674804688,
+      "top1": 0.005859375,
+      "macro_f1": 0.0020411295273173725,
+      "ece": 0.025385164019822496,
+      "agree": 0.015625,
+      "max_diff": 5.3183348178863525,
+      "lat1": [
+        85.44250000022657,
+        138.49968000017725
+      ],
+      "lat4": [
+        37.37890000002153,
+        223.74227000004785
+      ]
+    },
+    "int8-static-entropy": {
+      "mb": 27.362716674804688,
+      "top1": 0.005859375,
+      "macro_f1": 0.0020411295273173725,
+      "ece": 0.025385164019822496,
+      "agree": 0.015625,
+      "max_diff": 5.3183348178863525,
+      "lat1": [
+        74.46215000004486,
+        80.85177500036025
+      ],
+      "lat4": [
+        33.276949999844874,
+        55.711169999767655
+      ]
+    }
+  },
+  "chosen": "fp16",
+  "model_card": {
+    "id": "robotrec-convnext-tiny-dff6fdbb-s42-thu",
+    "label": "ConvNeXt-Tiny (hạt giống 42)",
+    "arch": "convnext_tiny",
+    "timm": "convnext_tiny.fb_in22k_ft_in1k",
+    "dataset_version": "dff6fdbb77c03329f102e15fa326bb9a1780c4432e0de7e5e40eb51eb535cf69",
+    "classes": 195,
+    "input": {
+      "name": "pixel_values",
+      "layout": "NCHW",
+      "size": 224,
+      "resize_short_side": 256,
+      "interpolation": "bilinear",
+      "crop": "center",
+      "scale": "0..1 rồi chuẩn hoá",
+      "mean": [
+        0.485,
+        0.456,
+        0.406
+      ],
+      "std": [
+        0.229,
+        0.224,
+        0.225
+      ]
+    },
+    "output": {
+      "name": "logits",
+      "probabilities": "softmax(logits / temperature)"
+    },
+    "temperature": 0.8475213482557111,
+    "thresholds": null,
+    "variant": "fp16",
+    "files": [
+      {
+        "name": "model.part00.onnx",
+        "bytes": 47185920,
+        "sha256": "dee4194b04d426131b1b7a8555d84bbfc1500e776208a49a300ba91241059622"
+      },
+      {
+        "name": "model.part01.onnx",
+        "bytes": 8861289,
+        "sha256": "90bf8e2d14e8c7563a04332b321891c81daef1543b86d84feaabfed638e38768"
+      }
+    ],
+    "mb": 53.45,
+    "metrics": {
+      "top1": 0.0859375,
+      "macro_f1": 0.056402762186880215,
+      "ece": 0.02508606651930478,
+      "agree": 0.998046875
+    },
+    "smoke": true,
+    "created_at": "2026-11-12T04:51:55+00:00"
+  },
+  "tables": {
+    "Bảng 1. Các bản xuất": {
+      "columns": [
+        "Bản",
+        "Kích thước (MB)",
+        "top-1 test (%)",
+        "macro-F1 (%)",
+        "ECE (sau T)",
+        "top-1 trùng PyTorch (%)",
+        "Chênh logits lớn nhất",
+        "ms/ảnh, 1 luồng (trung vị / p95)",
+        "ms/ảnh, 4 luồng"
+      ],
+      "rows": [
+        [
+          "fp32",
+          "106,8",
+          "8,79",
+          "5,96",
+          "0,027",
+          "100,00",
+          "0,0000",
+          "166,4 / 334,6",
+          "186,7 / 277,9"
+        ],
+        [
+          "fp16",
+          "53,5",
+          "8,59",
+          "5,64",
+          "0,025",
+          "99,80",
+          "0,0135",
+          "201,2 / 267,0",
+          "96,1 / 286,7"
+        ],
+        [
+          "int8-dynamic",
+          "32,4",
+          "8,59",
+          "5,54",
+          "0,027",
+          "77,73",
+          "0,7416",
+          "94,1 / 184,5",
+          "32,2 / 347,9"
+        ],
+        [
+          "int8-static-minmax",
+          "27,4",
+          "0,59",
+          "0,20",
+          "0,025",
+          "1,56",
+          "5,3183",
+          "85,4 / 138,5",
+          "37,4 / 223,7"
+        ],
+        [
+          "int8-static-entropy",
+          "27,4",
+          "0,59",
+          "0,20",
+          "0,025",
+          "1,56",
+          "5,3183",
+          "74,5 / 80,9",
+          "33,3 / 55,7"
+        ]
+      ]
+    }
+  },
+  "reproduce": {
+    "commands": [
+      "ml/.venv/Scripts/python ml/scripts/b09_xuat_onnx.py --run \"C:\\Users\\THINKPAD\\WEB_MO_HINH\\ml\\data\\store\\runs\\b06-chay-thu\\convnext_tiny-s42\" --smoke"
+    ],
+    "config": null,
+    "config_hash": null,
+    "seed": 0,
+    "dataset_version": "b04_splits.csv sha256 dff6fdbb77c0"
+  },
+  "duration_s": 0.0
+}

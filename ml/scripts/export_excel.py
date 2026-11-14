@@ -244,7 +244,10 @@ def main() -> None:
     # B02b, B03a: các bảng lấy nguyên từ summary.json của báo cáo ---------------------------------------------------
     for step, title, widths in (("B02b", "B02b Trùng lặp", [52, 16, 40, 16, 22, 18]), ("B03a", "B03a Làm sạch tự động", [52, 28, 16, 16, 18, 18, 22, 20]),
                                ("B04", "B04 Chia tập", [52, 28, 14, 12, 12, 12, 12, 14, 14]), ("B04b", "B04b Tập âm", [44, 12, 12, 12, 12, 18, 22]),
-                               ("B05", "B05 Mô hình nền", [46, 20, 16, 22, 22, 22, 14, 14, 14, 14])):
+                               ("B05", "B05 Mô hình nền", [46, 20, 16, 22, 22, 22, 14, 14, 14, 14]),
+                               ("B08a", "B08a Đánh giá mốc B5", [40, 22, 22, 18, 18, 18, 18, 18, 18, 18]),
+                               ("B08", "B08 Đánh giá toàn diện", [40, 22, 22, 18, 18, 18, 18, 18, 18, 18]),
+                               ("B09", "B09 Xuất ONNX", [22, 14, 14, 14, 14, 18, 16, 22, 18])):
         path = REPORTS / step / "summary.json"
         if path.exists():
             tables = json.loads(path.read_text(encoding="utf-8")).get("tables", {})
@@ -320,6 +323,8 @@ def main() -> None:
         ("B04 Chia tập", "Kích thước train / val / test, 35 lớp không biết, nhóm ảnh, kiểm tra rò rỉ, số ảnh từng tập của từng lớp (báo cáo B04)"),
         ("B04b Tập âm", "Ảnh không phải robot (COCO, đồ chơi, xe) để đo khả năng từ chối (báo cáo B04b)"),
         ("B05 Mô hình nền", "Zero-shot, linear probe, k-NN trên 5 bộ đặc trưng đóng băng: top-1, top-5, macro-F1 kèm khoảng tin cậy; so sánh McNemar (báo cáo B05)"),
+        ("B08a Đánh giá mốc B5", "Tập đóng, theo cấp, hiệu chỉnh độ tin, tập mở, luật trả lời theo cấp của mốc B5 (báo cáo B08a)"),
+        ("B08 / B09", "Đánh giá toàn diện mô hình chính và xuất ONNX (khi đã chạy)"),
     ]
     for offset, (sheet, text) in enumerate(guide, 1):
         ws.cell(row=row + offset, column=1, value=sheet).font = NORMAL

@@ -80,9 +80,11 @@ def training_notebook() -> nbformat.NotebookNode:
             "**Trước khi chạy**\n"
             "1. Runtime → Change runtime type → **T4 GPU** → Save.\n"
             "2. Trong Google Drive phải có thư mục `robotica-ml` chứa `images-raw.zip` (ảnh của bộ dữ liệu).\n\n"
-            "**Cách chạy**: Runtime → Run all. Ô huấn luyện chạy cả 9 lần (3 kiến trúc × 3 hạt giống), mất nhiều giờ. "
+            "**Cách chạy**: Runtime → Run all, rồi **để nguyên tab này mở** (Colab miễn phí ngắt khi đóng tab hoặc lâu không tương tác). "
+            "Colab chỉ làm phần việc được giao trong ô `ARCH, SEEDS` (mặc định ViT-B/16 hạt giống 43, khoảng 3 giờ); máy nhà và Kaggle làm phần còn lại "
+            "(`ml/scripts/dieu_phoi.py` tự chép kết quả từ Drive về máy nhà). Đừng đổi sang `--all`: sẽ chạy trùng việc của máy khác.\n\n"
             "Mỗi epoch lưu checkpoint vào Drive `robotica-ml/runs/b06/`. **Nếu Colab ngắt giữa chừng**: mở lại notebook, Run all lần nữa, "
-            "việc huấn luyện chạy tiếp từ epoch đã xong; lần chạy đã xong được bỏ qua.\n\n"
+            "việc huấn luyện chạy tiếp từ epoch đã xong. Nếu không chạy lại được, máy nhà tự chạy tiếp từ checkpoint trên Drive.\n\n"
             "Ảnh chỉ dùng cho nghiên cứu, không chia sẻ notebook kèm dữ liệu."
         ),
         new_code_cell(
@@ -114,23 +116,21 @@ def training_notebook() -> nbformat.NotebookNode:
             "miss=[f for f in s.file if not os.path.exists('/content/data/images/raw/'+f)]; print('ảnh của bộ chia tập:', len(s), '| thiếu:', len(miss))\""
         ),
         new_code_cell(
-            "# Chạy thử 2 epoch trên một phần nhỏ dữ liệu (khoảng 5 phút) để chắc mọi thứ chạy được trên Colab. Có thể bỏ qua ô này.\n"
-            "!python ml/scripts/b06_huan_luyen.py --smoke --arch convnext_tiny"
+            "# Phần việc của máy Colab này (chia việc: ml/scripts/dieu_phoi.py). Chạy tiếp được nếu bị ngắt; lần chạy đã xong được bỏ qua.\n"
+            "ARCH, SEEDS = 'vit_b16_clip', [43]\n"
+            "for seed in SEEDS:\n"
+            "    !python ml/scripts/b06_huan_luyen.py --arch {ARCH} --seed {seed}"
         ),
         new_code_cell(
-            "# Huấn luyện chính: 9 lần chạy, chạy tiếp được nếu bị ngắt\n"
-            "!python ml/scripts/b06_huan_luyen.py --all"
-        ),
-        new_code_cell(
-            "# Tổng hợp báo cáo B06 (chạy được cả khi mới xong một phần) và chép về Drive\n"
-            "!python ml/scripts/b06_bao_cao.py\n"
-            "import shutil\n"
-            "out = f'{DRIVE}/reports/B06'\n"
-            "shutil.rmtree(out, ignore_errors=True)\n"
-            "shutil.copytree('ml/reports/B06', out)\n"
-            "shutil.copy('docs/nhan-dang-robot/bao-cao/B06-huan-luyen.md', out)\n"
-            "from IPython.display import Markdown, display\n"
-            "display(Markdown(open('docs/nhan-dang-robot/bao-cao/B06-huan-luyen.md', encoding='utf-8').read()))"
+            "# Kết quả (máy nhà tự chép từ Drive về và làm báo cáo B06)\n"
+            "import json\n"
+            "for seed in SEEDS:\n"
+            "    path = f\"{os.environ['ROBOTREC_RUNS']}/b06/{ARCH}-s{seed}/result.json\"\n"
+            "    if os.path.exists(path):\n"
+            "        best = json.load(open(path, encoding='utf-8'))['best']\n"
+            "        print(f\"{ARCH} hạt giống {seed}: xong, epoch tốt nhất {best['epoch']}, val top-1 {100 * best['val_top1']:.2f}%, macro-F1 {100 * best['val_macro_f1']:.2f}%\")\n"
+            "    else:\n"
+            "        print(f'{ARCH} hạt giống {seed}: chưa xong')"
         ),
     ]
     nb = new_notebook(cells=cells)

@@ -1,0 +1,55 @@
+{
+ "id": "robotrec-convnext-tiny-dff6fdbb-s42-thu",
+ "label": "ConvNeXt-Tiny (hạt giống 42)",
+ "arch": "convnext_tiny",
+ "timm": "convnext_tiny.fb_in22k_ft_in1k",
+ "dataset_version": "dff6fdbb77c03329f102e15fa326bb9a1780c4432e0de7e5e40eb51eb535cf69",
+ "classes": 195,
+ "input": {
+  "name": "pixel_values",
+  "layout": "NCHW",
+  "size": 224,
+  "resize_short_side": 256,
+  "interpolation": "bilinear",
+  "crop": "center",
+  "scale": "0..1 rồi chuẩn hoá",
+  "mean": [
+   0.485,
+   0.456,
+   0.406
+  ],
+  "std": [
+   0.229,
+   0.224,
+   0.225
+  ]
+ },
+ "output": {
+  "name": "logits",
+  "probabilities": "softmax(logits / temperature)"
+ },
+ "temperature": 0.8475213482557111,
+ "thresholds": null,
+ "variant": "fp16",
+ "files": [
+  {
+   "name": "model.part00.onnx",
+   "bytes": 47185920,
+   "sha256": "dee4194b04d426131b1b7a8555d84bbfc1500e776208a49a300ba91241059622"
+  },
+  {
+   "name": "model.part01.onnx",
+   "bytes": 8861289,
+   "sha256": "90bf8e2d14e8c7563a04332b321891c81daef1543b86d84feaabfed638e38768"
+  }
+ ],
+ "mb": 53.45,
+ "metrics": {
+  "top1": 0.0859375,
+  "macro_f1": 0.056402762186880215,
+  "ece": 0.02508606651930478,
+  "agree": 0.998046875
+ },
+ "smoke": true,
+ "created_at": "2026-11-12T04:51:55+00:00"
+}
