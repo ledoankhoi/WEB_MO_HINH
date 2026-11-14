@@ -13,5 +13,7 @@ experiments:
   A5: {label: "Khởi tạo ImageNet-21k thay cho CLIP (chỉ ViT)", timm: {vit_b16_clip: vit_base_patch16_224.augreg_in21k_ft_in1k}, only: [vit_b16_clip], seeds: one}
   A6: {label: "Lượng dữ liệu: 10%, 25%, 50% ảnh mỗi lớp (100% là cấu hình chính của B6)", fractions: [0.1, 0.25, 0.5], seeds: all}
   # A7 (suy luận thêm ảnh lật ngang) không cần huấn luyện lại: đo trên checkpoint của B6 trong b07_bao_cao.py.
+  # E7 của B8 (không nằm trong `order`, không phải ablation của B7): outlier exposure, thêm ảnh âm-train/âm-val của B4b làm lớp thứ 196.
+  E7: {label: "Outlier exposure: thêm lớp \"không phải robot\" (ảnh âm của B4b)", outlier: true, outlier_class: "khong-phai-robot", seeds: one}
 
 order: [A6, A1, A2, A3, A4, A5]   # A6 trước vì cần 3 hạt giống cho đường học theo lượng dữ liệu

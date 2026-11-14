@@ -123,6 +123,7 @@ class Report:
             ("CUDA của PyTorch", gpu.get("torch_cuda_version")),
             ("Driver (nvidia-smi)", "; ".join(gpu.get("nvidia_smi", [])) or None),
             ("Google Colab", env.get("colab")),
+            ("Kaggle", env.get("kaggle")),
             ("Commit git", f"{git.get('short')}{' (có thay đổi chưa commit)' if git.get('dirty') else ''}"),
         ]
         self.table(rows, ["Mục", "Giá trị"], caption="Môi trường")

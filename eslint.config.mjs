@@ -17,6 +17,7 @@ const eslintConfig = defineConfig([
     "public/image-search/ort/**",
     // Môi trường Python (ví dụ ml/.venv) chứa JavaScript của thư viện bên ngoài (matplotlib, torch).
     "**/.venv/**",
+    "**/.venv-*/**",
   ]),
 ]);
 

@@ -2,12 +2,13 @@
   "step": "B06",
   "title": "Huấn luyện chính: tinh chỉnh ba kiến trúc (thí nghiệm E2)",
   "environment": {
-    "time_utc": "2026-11-14T03:36:06+00:00",
+    "time_utc": "2026-11-14T11:44:20+00:00",
     "python": "3.11.9",
     "os": "Windows 11 (build 10.0.26300, AMD64)",
     "cpu": "12th Gen Intel(R) Core(TM) i7-12800H",
     "cpu_count": 20,
     "ram_gb": 31.7,
+    "kaggle": false,
     "colab": false,
     "gpu": {
       "torch_cuda": true,
@@ -44,8 +45,8 @@
       "onnxruntime": "1.31.1"
     },
     "git": {
-      "commit": "e0d7aa7c36ea3cb20d6287c1cc0a4733ac2890a3",
-      "short": "e0d7aa7",
+      "commit": "c063837d0abf30eaea59e5060c8231505b245e4a",
+      "short": "c063837",
       "dirty": true
     },
     "data_root_env": null
@@ -108,27 +109,67 @@
     {
       "arch": "efficientnetv2_s",
       "seed": 43,
-      "status": "đang chạy"
+      "status": "xong",
+      "best": {
+        "epoch": 30,
+        "val_top1": 0.7408695652173913,
+        "val_top5": 0.854703557312253,
+        "val_macro_f1": 0.7167242527480446,
+        "val_loss": 1.4829102754592896
+      },
+      "epochs": 30
     },
     {
       "arch": "efficientnetv2_s",
       "seed": 44,
-      "status": "chưa chạy"
+      "status": "xong",
+      "best": {
+        "epoch": 24,
+        "val_top1": 0.7359683794466403,
+        "val_top5": 0.8564426877470356,
+        "val_macro_f1": 0.7113443309216733,
+        "val_loss": 1.4881629943847656
+      },
+      "epochs": 29
     },
     {
       "arch": "vit_b16_clip",
       "seed": 42,
-      "status": "chưa chạy"
+      "status": "xong",
+      "best": {
+        "epoch": 17,
+        "val_top1": 0.7840316205533597,
+        "val_top5": 0.8877470355731225,
+        "val_macro_f1": 0.7614967274263624,
+        "val_loss": 1.2050206661224365
+      },
+      "epochs": 22
     },
     {
       "arch": "vit_b16_clip",
       "seed": 43,
-      "status": "chưa chạy"
+      "status": "xong",
+      "best": {
+        "epoch": 27,
+        "val_top1": 0.7903557312252965,
+        "val_top5": 0.8962845849802371,
+        "val_macro_f1": 0.7689939853439164,
+        "val_loss": 1.1858420372009277
+      },
+      "epochs": 30
     },
     {
       "arch": "vit_b16_clip",
       "seed": 44,
-      "status": "chưa chạy"
+      "status": "xong",
+      "best": {
+        "epoch": 28,
+        "val_top1": 0.7911462450592885,
+        "val_top5": 0.8945454545454545,
+        "val_macro_f1": 0.7687619943505559,
+        "val_loss": 1.1803375482559204
+      },
+      "epochs": 30
     }
   ],
   "by_arch": {
@@ -159,29 +200,63 @@
     },
     "efficientnetv2_s": {
       "top1": [
-        0.743399209486166
+        0.743399209486166,
+        0.7408695652173913,
+        0.7359683794466403
       ],
       "top5": [
-        0.854703557312253
+        0.854703557312253,
+        0.854703557312253,
+        0.8564426877470356
       ],
       "macro_f1": [
-        0.7196280082934211
+        0.7196280082934211,
+        0.7167242527480446,
+        0.7113443309216733
       ],
       "seeds": [
-        42
+        42,
+        43,
+        44
       ],
       "params": 20427283,
       "gflops": 5.697730944,
       "layers": 171
+    },
+    "vit_b16_clip": {
+      "top1": [
+        0.7840316205533597,
+        0.7903557312252965,
+        0.7911462450592885
+      ],
+      "top5": [
+        0.8877470355731225,
+        0.8962845849802371,
+        0.8945454545454545
+      ],
+      "macro_f1": [
+        0.7614967274263624,
+        0.7689939853439164,
+        0.7687619943505559
+      ],
+      "seeds": [
+        42,
+        43,
+        44
+      ],
+      "params": 85949379,
+      "gflops": 33.695764992,
+      "layers": 50
     }
   },
-  "choice": "convnext_tiny",
+  "choice": "vit_b16_clip",
   "tables": {
     "Bảng 1. Các lần chạy": {
       "columns": [
         "Kiến trúc",
         "Hạt giống",
         "Trạng thái",
+        "Máy (GPU)",
         "Số epoch đã chạy",
         "Epoch tốt nhất",
         "macro-F1 val tốt nhất (%)",
@@ -194,6 +269,7 @@
           "ConvNeXt-Tiny",
           42,
           "xong",
+          "máy nhà (RTX A2000 Laptop)",
           30,
           29,
           "73,44",
@@ -205,6 +281,7 @@
           "ConvNeXt-Tiny",
           43,
           "xong",
+          "máy nhà (RTX A2000 Laptop)",
           30,
           30,
           "73,32",
@@ -216,6 +293,7 @@
           "ConvNeXt-Tiny",
           44,
           "xong",
+          "máy nhà (RTX A2000 Laptop)",
           30,
           30,
           "73,00",
@@ -227,6 +305,7 @@
           "EfficientNetV2-S",
           42,
           "xong",
+          "máy nhà (RTX A2000 Laptop)",
           30,
           28,
           "71,96",
@@ -237,57 +316,62 @@
         [
           "EfficientNetV2-S",
           43,
-          "đang chạy",
-          12,
-          12,
-          "69,16",
-          "0,84",
+          "xong",
+          "máy nhà (RTX A2000 Laptop)",
+          30,
+          30,
+          "71,67",
+          "2,15",
           2,
           "không"
         ],
         [
           "EfficientNetV2-S",
           44,
-          "chưa chạy",
-          "—",
-          "—",
-          "—",
-          "—",
-          "—",
-          "—"
+          "xong",
+          "máy nhà (RTX A2000 Laptop)",
+          29,
+          24,
+          "71,13",
+          "2,01",
+          0,
+          "có"
         ],
         [
           "ViT-B/16 (CLIP)",
           42,
-          "chưa chạy",
-          "—",
-          "—",
-          "—",
-          "—",
-          "—",
-          "—"
+          "xong",
+          "Kaggle (T4)",
+          22,
+          17,
+          "76,15",
+          "1,71",
+          0,
+          "có"
         ],
         [
           "ViT-B/16 (CLIP)",
           43,
-          "chưa chạy",
-          "—",
-          "—",
-          "—",
-          "—",
-          "—",
-          "—"
+          "xong",
+          "Kaggle (T4)",
+          30,
+          27,
+          "76,90",
+          "2,36",
+          0,
+          "không"
         ],
         [
           "ViT-B/16 (CLIP)",
           44,
-          "chưa chạy",
-          "—",
-          "—",
-          "—",
-          "—",
-          "—",
-          "—"
+          "xong",
+          "máy nhà (RTX A2000 Laptop)",
+          30,
+          28,
+          "76,88",
+          "4,00",
+          0,
+          "không"
         ]
       ]
     },
@@ -317,14 +401,25 @@
         ],
         [
           "EfficientNetV2-S",
-          1,
-          "74,34 (1 lần chạy)",
-          "85,47 (1 lần chạy)",
-          "71,96 (1 lần chạy)",
+          3,
+          "74,01 ± 0,38",
+          "85,53 ± 0,10",
+          "71,59 ± 0,42",
           "20,4",
           "5,70",
           171,
-          "28,0"
+          "27,3"
+        ],
+        [
+          "ViT-B/16 (CLIP)",
+          3,
+          "78,85 ± 0,39",
+          "89,29 ± 0,45",
+          "76,64 ± 0,43",
+          "85,9",
+          "33,70",
+          50,
+          "24,0"
         ]
       ]
     },
@@ -369,6 +464,46 @@
           "85,47",
           "71,96",
           28
+        ],
+        [
+          "EfficientNetV2-S",
+          43,
+          "74,09",
+          "85,47",
+          "71,67",
+          30
+        ],
+        [
+          "EfficientNetV2-S",
+          44,
+          "73,60",
+          "85,64",
+          "71,13",
+          24
+        ],
+        [
+          "ViT-B/16 (CLIP)",
+          42,
+          "78,40",
+          "88,77",
+          "76,15",
+          17
+        ],
+        [
+          "ViT-B/16 (CLIP)",
+          43,
+          "79,04",
+          "89,63",
+          "76,90",
+          27
+        ],
+        [
+          "ViT-B/16 (CLIP)",
+          44,
+          "79,11",
+          "89,45",
+          "76,88",
+          28
         ]
       ]
     },
@@ -383,34 +518,50 @@
       ],
       "rows": [
         [
-          "ConvNeXt-Tiny so với EfficientNetV2-S, hạt giống 42",
-          "1,4 [0,6; 2,2]",
-          378,
-          290,
+          "ViT-B/16 (CLIP) so với ConvNeXt-Tiny, hạt giống 42",
+          "2,7 [1,9; 3,5]",
+          420,
+          251,
           "< 0,001",
           "< 0,001"
         ],
         [
-          "ConvNeXt-Tiny (hạt giống 42) so với linear probe CLIP ViT-L/14 của B5",
-          "10,3 [9,2; 11,4]",
-          972,
-          322,
+          "ViT-B/16 (CLIP) so với ConvNeXt-Tiny, hạt giống 43",
+          "3,3 [2,6; 4,0]",
+          419,
+          210,
           "< 0,001",
           "< 0,001"
         ],
         [
-          "ConvNeXt-Tiny (hạt giống 43) so với linear probe CLIP ViT-L/14 của B5",
-          "10,3 [9,2; 11,4]",
-          969,
-          319,
+          "ViT-B/16 (CLIP) so với ConvNeXt-Tiny, hạt giống 44",
+          "3,6 [2,9; 4,4]",
+          427,
+          198,
           "< 0,001",
           "< 0,001"
         ],
         [
-          "ConvNeXt-Tiny (hạt giống 44) so với linear probe CLIP ViT-L/14 của B5",
-          "10,0 [9,0; 11,1]",
-          966,
-          331,
+          "ViT-B/16 (CLIP) (hạt giống 42) so với linear probe CLIP ViT-L/14 của B5",
+          "12,9 [12,0; 14,0]",
+          1036,
+          217,
+          "< 0,001",
+          "< 0,001"
+        ],
+        [
+          "ViT-B/16 (CLIP) (hạt giống 43) so với linear probe CLIP ViT-L/14 của B5",
+          "13,6 [12,6; 14,6]",
+          1069,
+          210,
+          "< 0,001",
+          "< 0,001"
+        ],
+        [
+          "ViT-B/16 (CLIP) (hạt giống 44) so với linear probe CLIP ViT-L/14 của B5",
+          "13,7 [12,6; 14,7]",
+          1052,
+          188,
           "< 0,001",
           "< 0,001"
         ]
@@ -427,5 +578,5 @@
     "seed": null,
     "dataset_version": "b04_splits.csv sha256 dff6fdbb77c0"
   },
-  "duration_s": 3.0
+  "duration_s": 8.0
 }

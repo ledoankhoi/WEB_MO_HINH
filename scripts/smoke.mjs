@@ -45,6 +45,7 @@ const PAGES = [
   { path: "/admin/thuong-hieu" },
   { path: "/admin/series" },
   { path: "/admin/tim-bang-anh" },
+  { path: "/admin/nhan-dien" },
   { path: "/admin/noi-dung/banner" },
   { path: "/admin/ma-giam-gia" },
   { path: "/admin/bao-cao" },

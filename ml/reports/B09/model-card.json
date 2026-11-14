@@ -1,0 +1,153 @@
+{
+ "id": "robotrec-vit-b16-clip-dff6fdbb-s43",
+ "label": "ViT-B/16 (CLIP) (hạt giống 43)",
+ "arch": "vit_b16_clip",
+ "timm": "vit_base_patch16_clip_224.openai",
+ "dataset_version": "dff6fdbb77c03329f102e15fa326bb9a1780c4432e0de7e5e40eb51eb535cf69",
+ "classes": 195,
+ "input": {
+  "name": "pixel_values",
+  "layout": "NCHW",
+  "size": 224,
+  "resize_short_side": 256,
+  "interpolation": "bilinear",
+  "crop": "center",
+  "scale": "0..1 rồi chuẩn hoá",
+  "mean": [
+   0.48145466,
+   0.4578275,
+   0.40821073
+  ],
+  "std": [
+   0.26862954,
+   0.26130258,
+   0.27577711
+  ]
+ },
+ "output": {
+  "name": "logits",
+  "probabilities": "softmax(logits / temperature)"
+ },
+ "temperature": 0.7579230870208662,
+ "thresholds": [
+  0.96,
+  0.96,
+  0.88
+ ],
+ "variant": "fp16",
+ "files": [
+  {
+   "name": "model.part00.onnx",
+   "bytes": 20971520,
+   "sha256": "9e0922940c7bd2c0f589fe3ad47ffd1ea77f372476d1361233fcaeb86f0dfa4b"
+  },
+  {
+   "name": "model.part01.onnx",
+   "bytes": 20971520,
+   "sha256": "14c4fdedc4bd9beabb2090924a61fb1688b8624b347d2931d8f6e2e73ab679b0"
+  },
+  {
+   "name": "model.part02.onnx",
+   "bytes": 20971520,
+   "sha256": "4137778f289df813507f188def7bc6e79b113ec9cf01fb95fd9dcd38b3f823a5"
+  },
+  {
+   "name": "model.part03.onnx",
+   "bytes": 20971520,
+   "sha256": "acd04e235e96e047537bbc769d93f828987553dd60fa7563e0e3cef433382222"
+  },
+  {
+   "name": "model.part04.onnx",
+   "bytes": 20971520,
+   "sha256": "48b208f10ce774a2d73e199c69e8ee794e18eafdfacf2e827c172ebca2ad7425"
+  },
+  {
+   "name": "model.part05.onnx",
+   "bytes": 20971520,
+   "sha256": "2419bc9bd25dfb822390bd992f0102089531e6886026615ab001c80c6031e290"
+  },
+  {
+   "name": "model.part06.onnx",
+   "bytes": 20971520,
+   "sha256": "c785fb50a194691aa37a6c2482487018bd5e2e914bcb86dd5e3718510c66440a"
+  },
+  {
+   "name": "model.part07.onnx",
+   "bytes": 20971520,
+   "sha256": "138f31ac5b9a8f2dd94b182c6220e50be797d601d8e9bf2bf87dad65ca3c1d4e"
+  },
+  {
+   "name": "model.part08.onnx",
+   "bytes": 4315986,
+   "sha256": "3fbde355022437e176bb104071e5dd07c97c1f3bf37d3b39b51019b68b404cdd"
+  }
+ ],
+ "mb": 164.12,
+ "metrics": {
+  "top1": 0.7879556259904913,
+  "macro_f1": 0.7686370551954818,
+  "ece": 0.01745303341490052,
+  "agree": 0.9993660855784469,
+  "steps": {
+   "data": {
+    "classes_collected": 230,
+    "images_raw": 75792,
+    "images_clean": 53523,
+    "classes_known": 195,
+    "classes_unknown": 35,
+    "sizes": {
+     "train": 29513,
+     "val": 6325,
+     "test": 6310,
+     "unknown_val": 3794,
+     "unknown_test": 3413
+    }
+   },
+   "b06": {
+    "choice": "vit_b16_clip",
+    "by_arch": {
+     "convnext_tiny": {
+      "runs": 3,
+      "top1": 0.7565217391304347,
+      "top1_std": 0.0013692101245603694,
+      "macro_f1": 0.7325078381393711
+     },
+     "efficientnetv2_s": {
+      "runs": 3,
+      "top1": 0.7400790513833991,
+      "top1_std": 0.003777961468884924,
+      "macro_f1": 0.715898863987713
+     },
+     "vit_b16_clip": {
+      "runs": 3,
+      "top1": 0.7885111989459815,
+      "top1_std": 0.0038995121441234935,
+      "macro_f1": 0.7664175690402782
+     }
+    }
+   },
+   "b08": {
+    "top1": 0.7882725832012678,
+    "top5": 0.8916006339144216,
+    "macro_f1": 0.7689492677543796,
+    "character": 0.8064976228209192,
+    "franchise": 0.9735340729001585,
+    "temperature": 0.7579230870208662,
+    "ece_before": 0.1604239201915437,
+    "ece_after": 0.017485750058545663,
+    "auroc_unknown": 0.8241092717645732,
+    "auroc_negative": 0.9278705641313008,
+    "rule_test": {
+     "known_correct_class": 0.4248811410459588,
+     "known_correct_any": 0.755784469096672,
+     "known_wrong": 0.011885895404120444,
+     "known_reject": 0.2323296354992076,
+     "unknown_false_accept": 0.04453559917960739,
+     "negative_false_accept": 0.026243093922651933
+    }
+   }
+  }
+ },
+ "smoke": false,
+ "created_at": "2026-11-14T17:57:10+00:00"
+}

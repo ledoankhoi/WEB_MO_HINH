@@ -1376,4 +1376,76 @@ export const MIGRATIONS: Migration[] = [
       "ALTER TABLE order_invoices ENABLE ROW LEVEL SECURITY",
     ],
   },
+  {
+    // Nhận dạng robot từ ảnh (docs/nhan-dang-robot/00-ke-hoach.md, B10; truy vấn ở src/server/repo/recognition.ts).
+    // Đã kiểm trên CSDL thật (14/11/2026): chưa có bảng robots, robot_products, recognition_models, recognition_logs.
+    // Khác bảng của kế hoạch: robots thêm `character` (nhân vật, cấp giữa của câu trả lời) và `store_products` (gợi ý ghép của B1).
+    // recognition_logs không lưu ảnh, không lưu người dùng.
+    id: "nd_01_nhan_dang_robot",
+    statements: [
+      `CREATE TABLE IF NOT EXISTS robots (
+        id TEXT PRIMARY KEY,
+        slug TEXT NOT NULL UNIQUE,
+        name TEXT NOT NULL,
+        character TEXT NOT NULL,
+        franchise TEXT NOT NULL,
+        franchise_label TEXT NOT NULL DEFAULT '',
+        series TEXT NOT NULL DEFAULT '',
+        faction TEXT NOT NULL DEFAULT '',
+        alt_mode TEXT NOT NULL DEFAULT '',
+        description TEXT NOT NULL DEFAULT '',
+        aliases TEXT NOT NULL DEFAULT '[]',
+        image TEXT,
+        source_url TEXT,
+        store_products TEXT NOT NULL DEFAULT '[]',
+        created_at BIGINT NOT NULL,
+        updated_at BIGINT NOT NULL
+      )`,
+      "CREATE INDEX IF NOT EXISTS idx_robots_franchise ON robots (franchise, character)",
+      `CREATE TABLE IF NOT EXISTS robot_products (
+        robot_id TEXT NOT NULL REFERENCES robots (id) ON DELETE CASCADE,
+        product_id TEXT NOT NULL REFERENCES products (id) ON DELETE CASCADE,
+        created_at BIGINT NOT NULL,
+        PRIMARY KEY (robot_id, product_id)
+      )`,
+      "CREATE INDEX IF NOT EXISTS idx_robot_products_product ON robot_products (product_id)",
+      `CREATE TABLE IF NOT EXISTS recognition_models (
+        id TEXT PRIMARY KEY,
+        label TEXT NOT NULL,
+        arch TEXT NOT NULL,
+        variant TEXT NOT NULL DEFAULT '',
+        files TEXT NOT NULL,
+        mb DOUBLE PRECISION NOT NULL,
+        input TEXT NOT NULL,
+        temperature DOUBLE PRECISION NOT NULL,
+        thresholds TEXT NOT NULL,
+        labels TEXT NOT NULL,
+        metrics TEXT NOT NULL DEFAULT '{}',
+        dataset_version TEXT NOT NULL,
+        is_smoke BOOLEAN NOT NULL DEFAULT false,
+        is_active BOOLEAN NOT NULL DEFAULT false,
+        created_by TEXT REFERENCES users (id) ON DELETE SET NULL,
+        created_at BIGINT NOT NULL,
+        CONSTRAINT recognition_temperature_positive CHECK (temperature > 0)
+      )`,
+      // Mỗi lúc chỉ một mô hình được bật
+      "CREATE UNIQUE INDEX IF NOT EXISTS idx_recognition_models_one_active ON recognition_models (is_active) WHERE is_active",
+      `CREATE TABLE IF NOT EXISTS recognition_logs (
+        id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+        model TEXT NOT NULL,
+        top_robot_id TEXT REFERENCES robots (id) ON DELETE SET NULL,
+        top_prob DOUBLE PRECISION NOT NULL,
+        level TEXT NOT NULL,
+        client_ms INTEGER,
+        created_at BIGINT NOT NULL,
+        CONSTRAINT recognition_level_valid CHECK (level IN ('class', 'character', 'franchise', 'none')),
+        CONSTRAINT recognition_prob_range CHECK (top_prob >= 0 AND top_prob <= 1)
+      )`,
+      "CREATE INDEX IF NOT EXISTS idx_recognition_logs_created ON recognition_logs (created_at)",
+      "ALTER TABLE robots ENABLE ROW LEVEL SECURITY",
+      "ALTER TABLE robot_products ENABLE ROW LEVEL SECURITY",
+      "ALTER TABLE recognition_models ENABLE ROW LEVEL SECURITY",
+      "ALTER TABLE recognition_logs ENABLE ROW LEVEL SECURITY",
+    ],
+  },
 ];

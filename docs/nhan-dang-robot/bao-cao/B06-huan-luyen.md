@@ -1,6 +1,6 @@
 # B06. Huấn luyện chính: tinh chỉnh ba kiến trúc (thí nghiệm E2)
 
-Báo cáo sinh tự động bởi `ml/` (mẫu ở `docs/nhan-dang-robot/00-ke-hoach.md` mục 6). Thời gian chạy: 3.0 giây. Số liệu máy đọc: `ml/reports/B06/summary.json`.
+Báo cáo sinh tự động bởi `ml/` (mẫu ở `docs/nhan-dang-robot/00-ke-hoach.md` mục 6). Thời gian chạy: 8.0 giây. Số liệu máy đọc: `ml/reports/B06/summary.json`.
 
 ## 1. Mục tiêu
 
@@ -20,7 +20,7 @@ Tinh chỉnh toàn bộ ba mạng đã huấn luyện sẵn (hai CNN và một T
 
 | Mục | Giá trị |
 | --- | --- |
-| Thời điểm chạy (UTC) | 2026-11-14T03:36:06+00:00 |
+| Thời điểm chạy (UTC) | 2026-11-14T11:44:20+00:00 |
 | Hệ điều hành | Windows 11 (build 10.0.26300, AMD64) |
 | Python | 3.11.9 |
 | CPU | 12th Gen Intel(R) Core(TM) i7-12800H (20 luồng) |
@@ -29,7 +29,8 @@ Tinh chỉnh toàn bộ ba mạng đã huấn luyện sẵn (hai CNN và một T
 | CUDA của PyTorch | 12.8 |
 | Driver (nvidia-smi) | NVIDIA RTX A2000 Laptop GPU, 4096 MiB, 596.52 |
 | Google Colab | không |
-| Commit git | e0d7aa7 (có thay đổi chưa commit) |
+| Kaggle | không |
+| Commit git | c063837 (có thay đổi chưa commit) |
 
 **Phiên bản thư viện**
 
@@ -53,7 +54,7 @@ Tinh chỉnh toàn bộ ba mạng đã huấn luyện sẵn (hai CNN và một T
 | torch | 2.11.0+cu128 |
 | torchvision | 0.26.0+cu128 |
 
-GPU của các lần chạy: NVIDIA RTX A2000 Laptop GPU. Bảng môi trường ở trên là của máy sinh báo cáo.
+GPU của các lần chạy: NVIDIA RTX A2000 Laptop GPU, Tesla T4. Bảng môi trường ở trên là của máy sinh báo cáo.
 
 ## 4. Phương pháp
 
@@ -82,26 +83,29 @@ GPU của các lần chạy: NVIDIA RTX A2000 Laptop GPU. Bảng môi trường 
 
 **Bảng 1. Các lần chạy**
 
-| Kiến trúc | Hạt giống | Trạng thái | Số epoch đã chạy | Epoch tốt nhất | macro-F1 val tốt nhất (%) | Giờ GPU | Epoch bị máy ngủ cắt ngang | Dừng sớm |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| ConvNeXt-Tiny | 42 | xong | 30 | 29 | 73,44 | 2,01 | 1 | không |
-| ConvNeXt-Tiny | 43 | xong | 30 | 30 | 73,32 | 1,83 | 2 | không |
-| ConvNeXt-Tiny | 44 | xong | 30 | 30 | 73,00 | 1,82 | 0 | không |
-| EfficientNetV2-S | 42 | xong | 30 | 28 | 71,96 | 2,20 | 3 | không |
-| EfficientNetV2-S | 43 | đang chạy | 12 | 12 | 69,16 | 0,84 | 2 | không |
-| EfficientNetV2-S | 44 | chưa chạy | — | — | — | — | — | — |
-| ViT-B/16 (CLIP) | 42 | chưa chạy | — | — | — | — | — | — |
-| ViT-B/16 (CLIP) | 43 | chưa chạy | — | — | — | — | — | — |
-| ViT-B/16 (CLIP) | 44 | chưa chạy | — | — | — | — | — | — |
+| Kiến trúc | Hạt giống | Trạng thái | Máy (GPU) | Số epoch đã chạy | Epoch tốt nhất | macro-F1 val tốt nhất (%) | Giờ GPU | Epoch bị máy ngủ cắt ngang | Dừng sớm |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| ConvNeXt-Tiny | 42 | xong | máy nhà (RTX A2000 Laptop) | 30 | 29 | 73,44 | 2,01 | 1 | không |
+| ConvNeXt-Tiny | 43 | xong | máy nhà (RTX A2000 Laptop) | 30 | 30 | 73,32 | 1,83 | 2 | không |
+| ConvNeXt-Tiny | 44 | xong | máy nhà (RTX A2000 Laptop) | 30 | 30 | 73,00 | 1,82 | 0 | không |
+| EfficientNetV2-S | 42 | xong | máy nhà (RTX A2000 Laptop) | 30 | 28 | 71,96 | 2,20 | 3 | không |
+| EfficientNetV2-S | 43 | xong | máy nhà (RTX A2000 Laptop) | 30 | 30 | 71,67 | 2,15 | 2 | không |
+| EfficientNetV2-S | 44 | xong | máy nhà (RTX A2000 Laptop) | 29 | 24 | 71,13 | 2,01 | 0 | có |
+| ViT-B/16 (CLIP) | 42 | xong | Kaggle (T4) | 22 | 17 | 76,15 | 1,71 | 0 | có |
+| ViT-B/16 (CLIP) | 43 | xong | Kaggle (T4) | 30 | 27 | 76,90 | 2,36 | 0 | không |
+| ViT-B/16 (CLIP) | 44 | xong | máy nhà (RTX A2000 Laptop) | 30 | 28 | 76,88 | 4,00 | 0 | không |
 
-Tổng thời gian huấn luyện (cả đánh giá val mỗi epoch): 8,69 giờ GPU. Thời gian đồng hồ đo được là 25,81 giờ, vì máy vào Modern Standby (Windows tạm dừng tiến trình) giữa một số epoch. Epoch nào dài hơn 2 lần trung vị cùng pha của lần chạy đó được tính bằng trung vị; số epoch bị thay ghi ở bảng 1. Máy ngủ chỉ làm chậm, không đổi kết quả: trọng số và thứ tự dữ liệu không phụ thuộc thời gian.
+Các lần chạy nằm trên nhiều máy để rút ngắn thời gian (ml/scripts/dieu_phoi.py): cùng mã, cùng cấu hình, cùng thứ tự dữ liệu theo hạt giống. Trên GPU 16 GB mỗi bước tối ưu lan truyền một lần 64 ảnh, trên GPU 4 GB của máy nhà là 2 lần 32 ảnh rồi cộng dồn gradient: về toán học như nhau (ConvNeXt và ViT dùng LayerNorm, không phụ thuộc cỡ lô), chỉ lệch ở sai số làm tròn. EfficientNetV2-S dùng BatchNorm nên chỉ chạy ở máy nhà. Giờ GPU của các máy khác nhau không so trực tiếp được.
+
+Tổng thời gian huấn luyện (cả đánh giá val mỗi epoch): 20,09 giờ GPU. Thời gian đồng hồ đo được là 37,21 giờ, vì máy vào Modern Standby (Windows tạm dừng tiến trình) giữa một số epoch. Epoch nào dài hơn 2 lần trung vị cùng pha của lần chạy đó được tính bằng trung vị; số epoch bị thay ghi ở bảng 1. Máy ngủ chỉ làm chậm, không đổi kết quả: trọng số và thứ tự dữ liệu không phụ thuộc thời gian.
 
 **Bảng 2. So sánh kiến trúc trên val (trung bình ± độ lệch chuẩn qua các hạt giống)**
 
 | Kiến trúc | Số lần chạy xong | top-1 val (%) | top-5 val (%) | macro-F1 val (%) | Tham số (triệu) | GFLOPs / ảnh | Số tầng có trọng số | Epoch tốt nhất (TB) |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | ConvNeXt-Tiny | 3 | 75,65 ± 0,14 | 86,28 ± 0,10 | 73,25 ± 0,23 | 28,0 | 8,91 | 59 | 29,7 |
-| EfficientNetV2-S | 1 | 74,34 (1 lần chạy) | 85,47 (1 lần chạy) | 71,96 (1 lần chạy) | 20,4 | 5,70 | 171 | 28,0 |
+| EfficientNetV2-S | 3 | 74,01 ± 0,38 | 85,53 ± 0,10 | 71,59 ± 0,42 | 20,4 | 5,70 | 171 | 27,3 |
+| ViT-B/16 (CLIP) | 3 | 78,85 ± 0,39 | 89,29 ± 0,45 | 76,64 ± 0,43 | 85,9 | 33,70 | 50 | 24,0 |
 
 **Bảng 3. Từng lần chạy (trọng số của epoch tốt nhất)**
 
@@ -111,6 +115,11 @@ Tổng thời gian huấn luyện (cả đánh giá val mỗi epoch): 8,69 giờ
 | ConvNeXt-Tiny | 43 | 75,73 | 86,17 | 73,32 | 30 |
 | ConvNeXt-Tiny | 44 | 75,49 | 86,36 | 73,00 | 30 |
 | EfficientNetV2-S | 42 | 74,34 | 85,47 | 71,96 | 28 |
+| EfficientNetV2-S | 43 | 74,09 | 85,47 | 71,67 | 30 |
+| EfficientNetV2-S | 44 | 73,60 | 85,64 | 71,13 | 24 |
+| ViT-B/16 (CLIP) | 42 | 78,40 | 88,77 | 76,15 | 17 |
+| ViT-B/16 (CLIP) | 43 | 79,04 | 89,63 | 76,90 | 27 |
+| ViT-B/16 (CLIP) | 44 | 79,11 | 89,45 | 76,88 | 28 |
 
 ![Đường học: đường là trung bình qua các hạt giống, dải là ± 1 độ lệch chuẩn; vạch chấm: hết pha 1 (chỉ học đầu phân loại)](../../../ml/reports/B06/duong-hoc.png)
 
@@ -120,21 +129,25 @@ Tổng thời gian huấn luyện (cả đánh giá val mỗi epoch): 8,69 giờ
 
 | So sánh trên val (A so với B) | Hiệu top-1, điểm % [KTC 95%] | A đúng, B sai | A sai, B đúng | p (McNemar) | p sau Holm |
 | --- | --- | --- | --- | --- | --- |
-| ConvNeXt-Tiny so với EfficientNetV2-S, hạt giống 42 | 1,4 [0,6; 2,2] | 378 | 290 | < 0,001 | < 0,001 |
-| ConvNeXt-Tiny (hạt giống 42) so với linear probe CLIP ViT-L/14 của B5 | 10,3 [9,2; 11,4] | 972 | 322 | < 0,001 | < 0,001 |
-| ConvNeXt-Tiny (hạt giống 43) so với linear probe CLIP ViT-L/14 của B5 | 10,3 [9,2; 11,4] | 969 | 319 | < 0,001 | < 0,001 |
-| ConvNeXt-Tiny (hạt giống 44) so với linear probe CLIP ViT-L/14 của B5 | 10,0 [9,0; 11,1] | 966 | 331 | < 0,001 | < 0,001 |
+| ViT-B/16 (CLIP) so với ConvNeXt-Tiny, hạt giống 42 | 2,7 [1,9; 3,5] | 420 | 251 | < 0,001 | < 0,001 |
+| ViT-B/16 (CLIP) so với ConvNeXt-Tiny, hạt giống 43 | 3,3 [2,6; 4,0] | 419 | 210 | < 0,001 | < 0,001 |
+| ViT-B/16 (CLIP) so với ConvNeXt-Tiny, hạt giống 44 | 3,6 [2,9; 4,4] | 427 | 198 | < 0,001 | < 0,001 |
+| ViT-B/16 (CLIP) (hạt giống 42) so với linear probe CLIP ViT-L/14 của B5 | 12,9 [12,0; 14,0] | 1036 | 217 | < 0,001 | < 0,001 |
+| ViT-B/16 (CLIP) (hạt giống 43) so với linear probe CLIP ViT-L/14 của B5 | 13,6 [12,6; 14,6] | 1069 | 210 | < 0,001 | < 0,001 |
+| ViT-B/16 (CLIP) (hạt giống 44) so với linear probe CLIP ViT-L/14 của B5 | 13,7 [12,6; 14,7] | 1052 | 188 | < 0,001 | < 0,001 |
 
-**Mô hình chính đề xuất: ConvNeXt-Tiny** (macro-F1 trung bình trên val cao nhất). Luật chọn: lấy kiến trúc có macro-F1 val trung bình cao nhất; nếu kiến trúc đứng thứ hai nhẹ hơn và không kém có ý nghĩa thống kê ở mọi cặp cùng hạt giống thì chọn kiến trúc nhẹ hơn, vì mô hình chạy trong trình duyệt (RQ3). Quyết định cuối do chủ dự án duyệt.
+**Mô hình chính đề xuất: ViT-B/16 (CLIP)** (macro-F1 trung bình trên val cao nhất). Luật chọn: lấy kiến trúc có macro-F1 val trung bình cao nhất; nếu kiến trúc đứng thứ hai nhẹ hơn và không kém có ý nghĩa thống kê ở mọi cặp cùng hạt giống thì chọn kiến trúc nhẹ hơn, vì mô hình chạy trong trình duyệt (RQ3). Quyết định cuối do chủ dự án duyệt.
 
 ## 6. Phân tích
 
-- Đã xong 4/9 lần chạy, tổng 8,69 giờ GPU.
+- Đã xong 9/9 lần chạy, tổng 20,09 giờ GPU.
+- ViT-B/16 (CLIP): macro-F1 val 76,64 ± 0,43%, top-1 78,85 ± 0,39%; 85,9 triệu tham số, 33,70 GFLOPs.
 - ConvNeXt-Tiny: macro-F1 val 73,25 ± 0,23%, top-1 75,65 ± 0,14%; 28,0 triệu tham số, 8,91 GFLOPs.
-- EfficientNetV2-S: macro-F1 val 71,96 (1 lần chạy)%, top-1 74,34 (1 lần chạy)%; 20,4 triệu tham số, 5,70 GFLOPs.
+- EfficientNetV2-S: macro-F1 val 71,59 ± 0,42%, top-1 74,01 ± 0,38%; 20,4 triệu tham số, 5,70 GFLOPs.
 - Mốc của B5 (linear probe trên đặc trưng CLIP ViT-L/14 đóng băng) đạt top-1 val 65,45%; hiệu so với mô hình tinh chỉnh tốt nhất ở bảng 4.
 - ConvNeXt-Tiny: top-1 trên ảnh train đã tăng cường trừ top-1 val ở epoch tốt nhất = 23,8 điểm (dương lớn là dấu hiệu quá khớp; ảnh train bị tăng cường nên khó hơn ảnh val, khoảng này thường nhỏ hơn khoảng thật).
-- EfficientNetV2-S: top-1 trên ảnh train đã tăng cường trừ top-1 val ở epoch tốt nhất = 22,9 điểm (dương lớn là dấu hiệu quá khớp; ảnh train bị tăng cường nên khó hơn ảnh val, khoảng này thường nhỏ hơn khoảng thật).
+- EfficientNetV2-S: top-1 trên ảnh train đã tăng cường trừ top-1 val ở epoch tốt nhất = 23,1 điểm (dương lớn là dấu hiệu quá khớp; ảnh train bị tăng cường nên khó hơn ảnh val, khoảng này thường nhỏ hơn khoảng thật).
+- ViT-B/16 (CLIP): top-1 trên ảnh train đã tăng cường trừ top-1 val ở epoch tốt nhất = 19,3 điểm (dương lớn là dấu hiệu quá khớp; ảnh train bị tăng cường nên khó hơn ảnh val, khoảng này thường nhỏ hơn khoảng thật).
 
 ## 7. Hạn chế và rủi ro
 

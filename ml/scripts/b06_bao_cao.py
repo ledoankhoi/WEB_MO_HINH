@@ -66,7 +66,9 @@ def machine_of(meta: dict) -> str:
     env = meta.get("environment", {})
     devices = env.get("gpu", {}).get("devices") or [{}]
     gpu = str(devices[0].get("name", "CPU")).replace("NVIDIA ", "").replace("Tesla ", "").replace(" GPU", "")
-    where = "Colab" if env.get("colab") else "Kaggle" if str(env.get("data_root_env") or "").startswith("/tmp/robotica") else "máy nhà"
+    # Kaggle trước: ảnh máy Kaggle có gói google.colab nên cờ colab của các lần chạy cũ bị bật nhầm
+    kaggle = env.get("kaggle") or str(env.get("data_root_env") or "").startswith("/tmp/robotica")
+    where = "Kaggle" if kaggle else "Colab" if env.get("colab") else "máy nhà"
     return f"{where} ({gpu})"
 
 

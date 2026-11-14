@@ -134,7 +134,8 @@ def models_from_b06(arch: str, sets: dict[str, pd.DataFrame], classes: list[str]
         assert meta["classes"] == classes, "thứ tự lớp của mô hình khác thứ tự lớp đang đánh giá"
         logits = {}
         model = None
-        for name, rows in sets.items():
+        for name in SETS:  # neg_train chỉ dùng khi huấn luyện E7, không cần suy luận
+            rows = sets[name]
             cache = run / f"logits_{name}.npy"
             if cache.exists():
                 logits[name] = np.load(cache).astype(np.float64)
@@ -153,6 +154,64 @@ def models_from_b06(arch: str, sets: dict[str, pd.DataFrame], classes: list[str]
     if not models:
         raise SystemExit(f"Chưa có lần chạy B6 nào của {arch} xong.")
     return models
+
+
+def outlier_exposure(arch: str, sets: dict[str, pd.DataFrame], classes: list[str], models: list[dict], results: list[dict]) -> dict | None:
+    """E7: mô hình huấn luyện lại có thêm lớp "không phải robot" (ảnh âm-train của B4b; b07_thi_nghiem_phu.py --exp E7), so với mô hình chính
+    cùng hạt giống. Phân loại 195 lớp dùng logits của 195 lớp đầu; điểm "đã biết": MSP trên 195 lớp, 1 − p(không phải robot), −năng lượng."""
+    import timm
+    import torch
+
+    from b06_huan_luyen import runs_root
+    from robotrec.train import ImageFiles, predict, transforms_for
+
+    run = runs_root() / "b07" / f"E7-{arch}-s42"
+    base_i = next((i for i, m in enumerate(models) if m["seed"] == 42), None)
+    if base_i is None or not (run / "result.json").exists() or not json.loads((run / "result.json").read_text(encoding="utf-8")).get("finished"):
+        return None
+    meta = json.loads((run / "config.json").read_text(encoding="utf-8"))
+    assert meta["classes"][: len(classes)] == classes and len(meta["classes"]) == len(classes) + 1
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model, logits = None, {}
+    for name in ("test", "unknown_test", "neg_test"):
+        cache = run / f"logits_{name}.npy"
+        if not cache.exists():
+            if model is None:
+                model = timm.create_model(meta["timm"], pretrained=False, num_classes=len(meta["classes"]))
+                model.load_state_dict(torch.load(run / "best.pt", map_location="cpu", weights_only=True))
+                model.to(device).eval()
+            folder = "negatives" if name.startswith("neg") else "raw"
+            dataset = ImageFiles([data_root() / "images" / folder / f for f in sets[name]["file"]], np.zeros(len(sets[name]), dtype=int),
+                                 transforms_for(meta["mean"], meta["std"], False, meta["image"]["size"], meta["image"]["resize"]))
+            np.save(cache, predict(model, dataset, device, 128, 4, True).astype(np.float32))
+        logits[name] = np.load(cache).astype(np.float64)
+    c = len(classes)
+    y = sets["test"]["label"].to_numpy()
+    oe_scores = {}
+    for name, z in logits.items():
+        p = softmax(z, 1.0)
+        oe_scores[name] = {"msp": p[:, :c].max(1), "p_robot": 1 - p[:, c], "energy": ood_scores(z[:, :c])["energy"]}
+    base = results[base_i]["scores"]
+    rng = np.random.default_rng(SEED)
+
+    def row(label: str, top1: float, scores: dict, key: str) -> dict:
+        out = {"label": label, "top1": top1}
+        for target in ("unknown_test", "neg_test"):
+            m = ood_metrics(scores["test"][key], scores[target][key])
+            known, ood = scores["test"][key], scores[target][key]
+            boots = [ood_metrics(known[rng.integers(0, len(known), len(known))], ood[rng.integers(0, len(ood), len(ood))])["auroc"] for _ in range(300)]
+            out[target] = {"auroc": m["auroc"], "auroc_ci": tuple(np.quantile(boots, [0.025, 0.975])), "fpr95": m["fpr95"]}
+        return out
+
+    base_top1 = float((models[base_i]["logits"]["test"].argmax(1) == y).mean())
+    oe_top1 = float((logits["test"][:, :c].argmax(1) == y).mean())
+    rows = [row(f"Mô hình chính (hạt giống 42), {SCORE_LABEL['msp']}", base_top1, base, "msp"),
+            row(f"Mô hình chính (hạt giống 42), {SCORE_LABEL['energy']}", base_top1, base, "energy"),
+            row("E7, MSP trên 195 lớp", oe_top1, oe_scores, "msp"),
+            row("E7, 1 − p(không phải robot)", oe_top1, oe_scores, "p_robot"),
+            row("E7, −năng lượng trên 195 lớp", oe_top1, oe_scores, "energy")]
+    rejected = float((logits["test"].argmax(1) == c).mean())
+    return {"rows": rows, "known_as_negative": rejected, "best_epoch": json.loads((run / "result.json").read_text(encoding="utf-8"))["best"]["epoch"]}
 
 
 def explain_and_errors(arch: str, seed: int, sets: dict[str, pd.DataFrame], logits_test: np.ndarray, classes: list[str], robots: dict, report: Report) -> dict:
@@ -605,6 +664,17 @@ def main() -> None:
         extra = explain_and_errors(args.arch, models[0]["seed"], sets, first["logits"]["test"], classes, robots, report)
         report.p(f"Trang để chủ dự án phân loại nguyên nhân của 100 ảnh đoán sai (nhãn sai, hai robot giống nhau, ảnh khó, sai dòng, kiểu ảnh lạ): `{extra['error_page']}`. "
                  "Tỉ lệ từng nguyên nhân sẽ được thêm vào báo cáo khi có kết quả.")
+        oe = outlier_exposure(args.arch, sets, classes, models, results)
+        if oe:
+            report.h3("Outlier exposure (E7)")
+            report.p("Huấn luyện lại một lần (hạt giống 42, cùng công thức B6) có thêm lớp thứ 196 \"không phải robot\" gồm ảnh âm-train của B4b; ảnh âm-val vào val. "
+                     "Lúc dùng, 195 lớp đầu cho câu trả lời, xác suất của lớp thêm là một điểm \"lạ\" mới. Robot lạ **không** có trong dữ liệu huấn luyện của E7.")
+            report.table([[r["label"], vn(100 * r["top1"]), f"{vn(r['unknown_test']['auroc'], 3)} [{vn(r['unknown_test']['auroc_ci'][0], 3)}; {vn(r['unknown_test']['auroc_ci'][1], 3)}]",
+                           vn(100 * r["unknown_test"]["fpr95"]), f"{vn(r['neg_test']['auroc'], 3)} [{vn(r['neg_test']['auroc_ci'][0], 3)}; {vn(r['neg_test']['auroc_ci'][1], 3)}]",
+                           vn(100 * r["neg_test"]["fpr95"])] for r in oe["rows"]],
+                         ["Mô hình, điểm", "Top-1 test (%)", "AUROC robot lạ [KTC 95%]", "FPR@95 robot lạ (%)", "AUROC không phải robot [KTC 95%]", "FPR@95 không phải robot (%)"],
+                         caption=f"Bảng 13. Outlier exposure so với mô hình chính cùng hạt giống (E7). Ảnh đã biết bị E7 xếp vào \"không phải robot\": {vn(100 * oe['known_as_negative'])}%")
+            report.set("oe", oe)
 
     # summary.json
     report.set("dataset_version", b04["dataset_version"])
@@ -631,6 +701,8 @@ def main() -> None:
 
     # Phân tích
     report.section(6)
+    if many:
+        report.p(f"Các số dưới đây là của **{first['name']}** (mô hình đầu, có khoảng tin cậy); trung bình ± độ lệch chuẩn qua {len(models)} hạt giống ở các bảng trên.")
     cb, ca = r0["cal_before"], r0["cal_after"]
     best_near = max(SCORE_LABEL, key=lambda s: r0["ood"][(s, "unknown_test")]["auroc"])
     best_far = max(SCORE_LABEL, key=lambda s: r0["ood"][(s, "neg_test")]["auroc"])
@@ -652,6 +724,15 @@ def main() -> None:
         f"trả lời sai {pct(k['wrong'].sum(), len(k['level']))}, từ chối oan {pct(k['reject'].sum(), len(k['level']))}; nhận nhầm {pct(u['false_accept'].sum(), len(u['level']))} "
         f"robot lạ và {pct(n['false_accept'].sum(), len(n['level']))} ảnh không phải robot. Tỉ lệ nhận nhầm trên test có thể vượt 5% một chút vì ngưỡng chọn trên val.",
     ]
+    oe_result = report.summary.get("oe")
+    if oe_result:
+        base_far = max(oe_result["rows"][:2], key=lambda r: r["neg_test"]["auroc"])
+        oe_far = max(oe_result["rows"][2:], key=lambda r: r["neg_test"]["auroc"])
+        base_near = max(oe_result["rows"][:2], key=lambda r: r["unknown_test"]["auroc"])
+        oe_near = max(oe_result["rows"][2:], key=lambda r: r["unknown_test"]["auroc"])
+        analysis.append(f"Outlier exposure (bảng 13): ảnh không phải robot AUROC {vn(base_far['neg_test']['auroc'], 3)} → {vn(oe_far['neg_test']['auroc'], 3)} ({oe_far['label']}); "
+                        f"robot lạ {vn(base_near['unknown_test']['auroc'], 3)} → {vn(oe_near['unknown_test']['auroc'], 3)}; top-1 {vn(100 * oe_result['rows'][0]['top1'])}% → "
+                        f"{vn(100 * oe_result['rows'][2]['top1'])}%. Khoảng tin cậy chồng nhau thì chưa coi là khác biệt thật.")
     if compare_rows:
         analysis.append("So với mốc B5 (bảng 12): " + "; ".join(f"{row[0].split(' so với')[0]}: {row[1]} điểm, p sau Holm {row[5]}" for row in compare_rows) + ".")
     report.bullets(analysis)
@@ -662,7 +743,7 @@ def main() -> None:
             "Lớp không biết và tập âm cùng nguồn web với dữ liệu huấn luyện; robot lạ hay ảnh khách gửi ngoài đời có thể khác (thử nghiệm thực địa ở B13).",
             "Nhóm đồ chơi của tập âm chưa duyệt tay từng ảnh nên có thể lẫn vài ảnh robot, làm tỉ lệ nhận nhầm trên nhóm này cao hơn thật.",
             "Ngưỡng chọn trên một lưới bước 0,02 và trên cỡ mẫu val hữu hạn; tỉ lệ nhận nhầm trên test dao động quanh α.",
-            "Chưa đánh giá ảnh dạng biến hình (xe, thú) riêng vì chưa có nhãn dạng; chưa thử outlier exposure (E7, cần huấn luyện lại).",
+            "Chưa đánh giá ảnh dạng biến hình (xe, thú) riêng vì chưa có nhãn dạng." + ("" if report.summary.get("oe") else " Chưa có lần chạy outlier exposure (E7) xong nên bảng 13 chưa có."),
             "Miền ảnh do CLIP gán, chưa kiểm định; bảng theo miền chỉ để tham khảo.",
         ]
     )

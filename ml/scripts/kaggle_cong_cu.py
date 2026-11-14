@@ -40,7 +40,7 @@ def main() -> None:
     push = sub.add_parser("push")
     push.add_argument("--folder", required=True)
     push.add_argument("--acc", default="NvidiaTeslaT4")  # "GPU T4 x2"
-    for name in ("status", "output"):
+    for name in ("status", "output", "delete"):
         p = sub.add_parser(name)
         p.add_argument("--kernel", required=True, help="tên kernel (không cần tên người dùng)")
         if name == "output":
@@ -75,12 +75,19 @@ def main() -> None:
     elif args.cmd == "output":
         files, _ = api.kernels_output(f"{user}/{args.kernel}", args.path, force=True, quiet=True)
         out["files"] = len(files)
+    elif args.cmd == "delete":  # xoá kernel (dừng phiên đang xếp hàng hoặc đang chạy)
+        api.kernels_delete(f"{user}/{args.kernel}", no_confirm=True)
+        out["deleted"] = True
     print(json.dumps(out, ensure_ascii=False, default=str))
 
 
 if __name__ == "__main__":
     try:
         main()
+    except SystemExit as error:  # thư viện kaggle thoát thẳng khi chưa đăng nhập
+        if error.code not in (0, None):
+            print(json.dumps({"error": "chưa đăng nhập Kaggle (ml/.venv-cloud/Scripts/kaggle auth login)"}, ensure_ascii=False))
+        raise
     except Exception as error:  # noqa: BLE001 - trả lỗi dạng JSON cho dieu_phoi.py
         print(json.dumps({"error": f"{type(error).__name__}: {error}"}, ensure_ascii=False))
         sys.exit(1)

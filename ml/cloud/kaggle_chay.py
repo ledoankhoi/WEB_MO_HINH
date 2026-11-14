@@ -63,6 +63,17 @@ def find_images() -> Path:
 
 def main() -> None:
     say(f"{len(JOBS)} việc, mã {COMMIT[:10]}")
+    import torch
+
+    if not torch.cuda.is_available():  # tài khoản chưa xác minh số điện thoại thì Kaggle chạy không có GPU: dừng ngay để máy nhà nhận việc
+        try:
+            smi = subprocess.run(["nvidia-smi", "-L"], capture_output=True, text=True, timeout=30)
+            smi_text = (smi.stdout or smi.stderr).strip()[:300]
+        except (OSError, subprocess.SubprocessError) as error:
+            smi_text = f"không chạy được ({error})"
+        say(f"chẩn đoán: torch {torch.__version__}, CUDA {torch.version.cuda}, CUDA_VISIBLE_DEVICES={os.environ.get('CUDA_VISIBLE_DEVICES')!r}, "
+            f"nvidia-smi: {smi_text!r}")
+        raise SystemExit("Không có GPU (cần xác minh số điện thoại trên Kaggle và chọn GPU T4 x2)")
     subprocess.run(["nvidia-smi", "--query-gpu=name,memory.total", "--format=csv"])
     get_code()
     sh([sys.executable, "-m", "pip", "install", "-q", f"timm=={TIMM_VERSION}"])
@@ -76,11 +87,11 @@ def main() -> None:
     for name in sorted({j["timm"] for j in JOBS if j.get("timm")}):  # tải trước một lần, tránh hai tiến trình cùng tải
         sh([sys.executable, "-c", f"import timm; timm.create_model({name!r}, pretrained=True)"], cwd=CODE, env=env)
 
-    import torch
-
-    gpus = max(1, torch.cuda.device_count())
+    # Máy Kaggle có 2 GPU nhưng chỉ 4 CPU: đọc và tăng cường ảnh là nút thắt (đo 14/11: hai việc chung một phiên, mỗi việc 2 tiến trình,
+    # epoch đầu quá 12 phút). Phiên một việc thì việc đó dùng cả 4 CPU.
+    gpus = min(max(1, torch.cuda.device_count()), len(JOBS))
     workers = max(1, (os.cpu_count() or 2) // gpus)
-    say(f"{gpus} GPU, {os.cpu_count()} CPU: mỗi việc {workers} tiến trình đọc ảnh")
+    say(f"{torch.cuda.device_count()} GPU, {os.cpu_count()} CPU, {len(JOBS)} việc: chạy {gpus} việc song song, mỗi việc {workers} tiến trình đọc ảnh")
     (WORK / "logs").mkdir(parents=True, exist_ok=True)
     todo: "queue.Queue[dict]" = queue.Queue()
     for job in sorted(JOBS, key=lambda j: -(j.get("fraction") or 1.0)):
@@ -120,6 +131,6 @@ def main() -> None:
 
 try:
     main()
-except Exception as error:  # vẫn lưu tóm tắt để máy nhà biết lô này hỏng ở đâu
+except BaseException as error:  # vẫn lưu tóm tắt để máy nhà biết lô này hỏng ở đâu
     (WORK / "tom-tat.json").write_text(json.dumps({"commit": COMMIT, "error": repr(error)}, ensure_ascii=False), encoding="utf-8")
     raise

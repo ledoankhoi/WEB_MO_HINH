@@ -141,7 +141,7 @@ def main() -> None:
     report.section(3)
     report.environment(env)
     report.section(4)
-    report.table([[k, e["label"], "1 (42)" if e.get("seeds") != "all" else "3 (42, 43, 44)"] for k, e in cfg7["experiments"].items()]
+    report.table([[k, e["label"], "1 (42)" if e.get("seeds") != "all" else "3 (42, 43, 44)"] for k, e in cfg7["experiments"].items() if k in cfg7["order"]]
                  + [["A7", "Suy luận thêm ảnh lật ngang rồi lấy trung bình logits (TTA), trên checkpoint của B6", "3 (42, 43, 44)"]],
                  ["Mã", "Thay đổi so với cấu hình chính", "Số hạt giống"], caption="Bảng 1. Các thí nghiệm")
     report.bullets([

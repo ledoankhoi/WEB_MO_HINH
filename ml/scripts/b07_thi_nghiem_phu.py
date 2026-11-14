@@ -76,18 +76,34 @@ def run_experiment(exp_id: str, arch: str, seed: int, fraction: float | None, cf
         train_rows = train_rows.sample(min(limits[0], len(train_rows)), random_state=seed).reset_index(drop=True)
     val_rows = load_split("val", classes, limits[1], seed)
     image_root = data_root() / "images" / "raw"
+    train_rows["path"] = [str(image_root / f) for f in train_rows["file"]]
+    val_rows["path"] = [str(image_root / f) for f in val_rows["file"]]
+    class_names = list(known)
+    if exp.get("outlier"):  # E7 (outlier exposure): ảnh âm-train, âm-val của B4b thành một lớp "không phải robot" thêm vào cuối
+        negatives = pd.read_csv(MANIFESTS / "b04b_negatives.csv.gz", dtype=str, keep_default_na=False)
+        outlier = len(classes)
+        class_names.append(exp["outlier_class"])
+        extra = {}
+        for split, limit in (("train", limits[0]), ("val", limits[1])):
+            part = negatives[negatives["split"] == split]
+            if limit:
+                part = part.sample(min(limit // 4, len(part)), random_state=seed)
+            extra[split] = pd.DataFrame({"key": part["key"].to_numpy(), "file": part["file"].to_numpy(), "label": outlier,
+                                         "path": [str(data_root() / "images" / "negatives" / f) for f in part["file"]]})
+        train_rows = pd.concat([train_rows, extra["train"]], ignore_index=True)
+        val_rows = pd.concat([val_rows, extra["val"]], ignore_index=True)
 
     set_seed(seed, deterministic=True)
-    model = timm.create_model(timm_name, pretrained=True, num_classes=len(classes))
+    model = timm.create_model(timm_name, pretrained=True, num_classes=len(class_names))
     mean, std = model.pretrained_cfg["mean"], model.pretrained_cfg["std"]
     eval_transform = transforms_for(mean, std, False, cfg6["image"]["size"], cfg6["image"]["resize"])
-    train_set = ImageFiles([image_root / f for f in train_rows["file"]], train_rows["label"].to_numpy(),
+    train_set = ImageFiles([Path(p) for p in train_rows["path"]], train_rows["label"].to_numpy(),
                            transforms_for(mean, std, True, cfg6["image"]["size"], cfg6["image"]["resize"], aug))
-    val_set = ImageFiles([image_root / f for f in val_rows["file"]], val_rows["label"].to_numpy(), eval_transform)
+    val_set = ImageFiles([Path(p) for p in val_rows["path"]], val_rows["label"].to_numpy(), eval_transform)
     out_dir.mkdir(parents=True, exist_ok=True)
     b04 = json.loads((REPORTS / "B04" / "summary.json").read_text(encoding="utf-8"))
     meta = {"experiment": exp_id, "label": exp["label"], "arch": arch, "arch_label": spec["label"], "timm": timm_name, "seed": seed, "fraction": fraction,
-            "train": train_cfg, "aug": aug, "image": cfg6["image"], "mean": list(mean), "std": list(std), "classes": known,
+            "train": train_cfg, "aug": aug, "image": cfg6["image"], "mean": list(mean), "std": list(std), "classes": class_names,
             "dataset_version": b04["dataset_version"], "splits_sha256": file_sha256(MANIFESTS / "b04_splits.csv.gz"),
             "config_hash": config_hash({"b06": cfg6, "b07": cfg7}), "smoke": bool(args.smoke), "train_images": len(train_rows), "val_images": len(val_rows),
             "params": sum(p.numel() for p in model.parameters()), "environment": environment()}
@@ -97,9 +113,9 @@ def run_experiment(exp_id: str, arch: str, seed: int, fraction: float | None, cf
     print(f"\n=== {exp_id} {exp['label']}" + (f" ({int(round(100 * fraction))}%)" if fraction else "") + f" | {spec['label']} | hạt giống {seed} | "
           f"train {len(train_rows)} ảnh, val {len(val_rows)} ảnh | {device} | {out_dir}")
     started = time.monotonic()
-    result = fit(model, train_set, train_rows["label"].to_numpy(), val_set, val_rows["label"].to_numpy(), len(classes), train_cfg, out_dir, device)
+    result = fit(model, train_set, train_rows["label"].to_numpy(), val_set, val_rows["label"].to_numpy(), len(class_names), train_cfg, out_dir, device)
     if fraction and not (out_dir / "train_logits.npy").exists():  # lỗi trên chính ảnh train (không tăng cường) cho đường học theo lượng dữ liệu
-        clean = ImageFiles([image_root / f for f in train_rows["file"]], train_rows["label"].to_numpy(), eval_transform)
+        clean = ImageFiles([Path(p) for p in train_rows["path"]], train_rows["label"].to_numpy(), eval_transform)
         np.save(out_dir / "train_logits.npy", predict(model, clean, device, 128, train_cfg["workers"], device == "cuda"))
         (out_dir / "train_keys.json").write_text(json.dumps(train_rows["key"].tolist()), encoding="utf-8")
     best = result["best"]
@@ -123,7 +139,7 @@ def jobs_for(exp_id: str, arch: str, cfg7: dict) -> list[tuple[str, int, float |
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--arch", required=True, help="kiến trúc được chọn ở B6")
-    parser.add_argument("--exp", help="A1 | A2 | A3 | A4 | A5 | A6")
+    parser.add_argument("--exp", help="A1 | A2 | A3 | A4 | A5 | A6 | E7 (outlier exposure, dùng ở B8)")
     parser.add_argument("--all", action="store_true", help="mọi thí nghiệm theo thứ tự của cấu hình")
     parser.add_argument("--seed", type=int, help="chỉ chạy hạt giống này (chia việc giữa nhiều máy)")
     parser.add_argument("--fraction", type=float, help="A6: chỉ chạy tỉ lệ dữ liệu này")

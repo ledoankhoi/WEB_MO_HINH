@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { IMAGE_SEARCH_MODEL } from "@/lib/image-search";
 import { getAddOnProducts, getMegaMenu, getNavigation, getSiteSettings } from "@/server/catalog";
 import { getImageSearchStatus } from "@/server/image-search";
+import { getActiveRecognitionModel } from "@/server/recognition";
 import { AccountButton, AccountButtonFallback } from "./AccountButton";
 import { CartButton } from "./CartButton";
 import { Logo } from "./Logo";
@@ -18,16 +19,17 @@ import { AiSearchLink } from "./AiSearchLink";
 // Danh mục và bộ lọc nằm ở khối "Tùy chọn sản phẩm" của /san-pham. Trên điện thoại: dải danh mục vuốt ngang và
 // thanh điều hướng dưới đáy.
 export async function Header() {
-  const [navigation, imageSearchStatus, settings, megaMenu, addOns] = await Promise.all([
+  const [navigation, imageSearchStatus, recognition, settings, megaMenu, addOns] = await Promise.all([
     getNavigation(),
-    // Nút AI (tìm bằng ảnh) chỉ hiện khi đã có sản phẩm tìm được bằng ảnh (YC-AI-01).
+    // Nút AI (tìm bằng ảnh) chỉ hiện khi đã có sản phẩm tìm được bằng ảnh (YC-AI-01) hoặc có mô hình nhận dạng robot đang bật.
     getImageSearchStatus(IMAGE_SEARCH_MODEL.id),
+    getActiveRecognitionModel(),
     getSiteSettings(),
     getMegaMenu(),
     getAddOnProducts(),
   ]);
   const links: NavLink[] = navigation.header.map((item) => ({ href: item.url, label: item.label }));
-  const imageSearch = imageSearchStatus.products > 0;
+  const imageSearch = imageSearchStatus.products > 0 || recognition !== null;
   const categories = megaMenu.map(({ slug, name, count }) => ({ slug, name, count }));
   const chips = categories.map(({ slug, name }) => ({ slug, name }));
 

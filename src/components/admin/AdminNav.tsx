@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BellRing, Boxes, CalendarClock, FileSpreadsheet, MessagesSquare as ChatIcon, Layers, MessageCircleQuestion, Zap, Mail, Image as ImageIcon, MessagesSquare, Menu, Newspaper, NotebookText, Settings, ClipboardList, FileText, Scale, ShieldAlert, Star, TicketPercent, FolderTree, MapPin, Truck, LayoutDashboard, ChartColumn, Library, Package, PackageOpen, ReceiptText, ScanSearch, ScrollText, Tag, Undo2, UserCog, Users } from "lucide-react";
+import { BellRing, Bot, Boxes, CalendarClock, FileSpreadsheet, MessagesSquare as ChatIcon, Layers, MessageCircleQuestion, Zap, Mail, Image as ImageIcon, MessagesSquare, Menu, Newspaper, NotebookText, Settings, ClipboardList, FileText, Scale, ShieldAlert, Star, TicketPercent, FolderTree, MapPin, Truck, LayoutDashboard, ChartColumn, Library, Package, PackageOpen, ReceiptText, ScanSearch, ScrollText, Tag, Undo2, UserCog, Users } from "lucide-react";
 import { can, type Permission, type Role } from "@/lib/permissions";
 import { CountBadge, navBadge, useAdminAlerts } from "./AdminAlerts";
 
@@ -44,6 +44,7 @@ const GROUPS: { label?: string; links: { href: string; label: string; icon: type
       { href: "/admin/thuong-hieu", label: "Thương hiệu", icon: Tag, permission: "catalog.view" },
       { href: "/admin/series", label: "Series", icon: Library, permission: "catalog.view" },
       { href: "/admin/tim-bang-anh", label: "Tìm bằng ảnh (AI)", icon: ScanSearch, permission: "catalog.view" },
+      { href: "/admin/nhan-dien", label: "Nhận dạng robot (AI)", icon: Bot, permission: "catalog.view" },
       { href: "/admin/nha-cung-cap", label: "Nhà cung cấp", icon: Truck, permission: "inventory.setup" },
     ],
   },

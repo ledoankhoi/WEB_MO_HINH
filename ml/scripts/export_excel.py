@@ -245,6 +245,8 @@ def main() -> None:
     for step, title, widths in (("B02b", "B02b Trùng lặp", [52, 16, 40, 16, 22, 18]), ("B03a", "B03a Làm sạch tự động", [52, 28, 16, 16, 18, 18, 22, 20]),
                                ("B04", "B04 Chia tập", [52, 28, 14, 12, 12, 12, 12, 14, 14]), ("B04b", "B04b Tập âm", [44, 12, 12, 12, 12, 18, 22]),
                                ("B05", "B05 Mô hình nền", [46, 20, 16, 22, 22, 22, 14, 14, 14, 14]),
+                               ("B06", "B06 Huấn luyện chính", [40, 18, 16, 26, 16, 16, 18, 16, 16, 14]),
+                               ("B07", "B07 Thí nghiệm phụ", [46, 22, 22, 18, 18, 18, 18, 18, 18]),
                                ("B08a", "B08a Đánh giá mốc B5", [40, 22, 22, 18, 18, 18, 18, 18, 18, 18]),
                                ("B08", "B08 Đánh giá toàn diện", [40, 22, 22, 18, 18, 18, 18, 18, 18, 18]),
                                ("B09", "B09 Xuất ONNX", [22, 14, 14, 14, 14, 18, 16, 22, 18])):
@@ -323,6 +325,8 @@ def main() -> None:
         ("B04 Chia tập", "Kích thước train / val / test, 35 lớp không biết, nhóm ảnh, kiểm tra rò rỉ, số ảnh từng tập của từng lớp (báo cáo B04)"),
         ("B04b Tập âm", "Ảnh không phải robot (COCO, đồ chơi, xe) để đo khả năng từ chối (báo cáo B04b)"),
         ("B05 Mô hình nền", "Zero-shot, linear probe, k-NN trên 5 bộ đặc trưng đóng băng: top-1, top-5, macro-F1 kèm khoảng tin cậy; so sánh McNemar (báo cáo B05)"),
+        ("B06 Huấn luyện chính", "Các lần chạy, so sánh ba kiến trúc trên val (trung bình ± độ lệch chuẩn qua 3 hạt giống), McNemar có hiệu chỉnh Holm (báo cáo B06)"),
+        ("B07 Thí nghiệm phụ", "Thí nghiệm A1–A6 trên kiến trúc đã chọn (báo cáo B07, khi đã chạy)"),
         ("B08a Đánh giá mốc B5", "Tập đóng, theo cấp, hiệu chỉnh độ tin, tập mở, luật trả lời theo cấp của mốc B5 (báo cáo B08a)"),
         ("B08 / B09", "Đánh giá toàn diện mô hình chính và xuất ONNX (khi đã chạy)"),
     ]

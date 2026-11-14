@@ -138,7 +138,9 @@ def environment() -> dict[str, Any]:
         "cpu": _cpu_name(),
         "cpu_count": os.cpu_count(),
         "ram_gb": _ram_gb(),
-        "colab": "COLAB_RELEASE_TAG" in os.environ or "google.colab" in sys.modules,
+        # Ảnh máy Kaggle cũng cài sẵn gói google.colab, nên xét Kaggle trước
+        "kaggle": "KAGGLE_KERNEL_RUN_TYPE" in os.environ,
+        "colab": "KAGGLE_KERNEL_RUN_TYPE" not in os.environ and ("COLAB_RELEASE_TAG" in os.environ or "google.colab" in sys.modules),
         "gpu": gpu_info(),
         "packages": package_versions(),
         "git": git_info(),

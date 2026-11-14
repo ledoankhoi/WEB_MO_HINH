@@ -12,6 +12,7 @@ import { IMAGE_SEARCH_MODEL } from "@/lib/image-search";
 import { MODEL_FEATURES } from "@/lib/model-features";
 import { getActiveBanners, getFeaturedProducts, getMegaMenu, getProductBySlug, getSiteSettings, searchProducts } from "@/server/catalog";
 import { getImageSearchStatus } from "@/server/image-search";
+import { getActiveRecognitionModel } from "@/server/recognition";
 import { getBankAccount } from "@/server/payment";
 import { SectionHeading } from "@/components/store/StoreKit";
 
@@ -33,13 +34,14 @@ const TILE_COLORS = ["bg-cobalt", "bg-brand", "bg-ink"];
 export default async function Home() {
   const shelf = (filter: Partial<Parameters<typeof searchProducts>[0]>) =>
     searchProducts({ q: "", category: "", sort: "moi-nhat", page: 1, pageSize: 8, ...filter });
-  const [combiner, featured, categories, banners, settings, imageSearchStatus, newest, transformable, underMillion, inStock] = await Promise.all([
+  const [combiner, featured, categories, banners, settings, imageSearchStatus, recognition, newest, transformable, underMillion, inStock] = await Promise.all([
     findCombiner(),
     getFeaturedProducts(8),
     getMegaMenu(),
     getActiveBanners(),
     getSiteSettings(),
     getImageSearchStatus(IMAGE_SEARCH_MODEL.id),
+    getActiveRecognitionModel(),
     shelf({}),
     shelf({ transformable: true }),
     shelf({ maxPrice: 999_999 }),
@@ -50,7 +52,7 @@ export default async function Home() {
   const stripBanners = banners.filter((banner) => banner.placement === "home_strip");
   const heroProduct = combiner?.product ?? (featured[0] ? await getProductBySlug(featured[0].slug) : null);
   const policy = settings.policy ?? site.policy;
-  const imageSearch = imageSearchStatus.products > 0;
+  const imageSearch = imageSearchStatus.products > 0 || recognition !== null;
   // Ví dụ minh hoạ trong dải "Tìm bằng ảnh": một mẫu biến hình được, không có thì mẫu nổi bật.
   const example = transformable.items[0] ?? featured[0];
 
@@ -147,7 +149,9 @@ export default async function Home() {
               Tìm ra.
             </h2>
             <p className="max-w-[44ch] text-lg leading-relaxed font-medium">
-              Có ảnh một mô hình mà chưa biết tên? Tải ảnh lên, {site.name} đối chiếu với ảnh chụp nhiều góc từ mô hình 3D và gợi ý mẫu giống nhất.
+              {recognition
+                ? `Có ảnh một robot mà chưa biết tên? Tải ảnh lên, ${site.name} cho biết đó là robot nào, thuộc dòng nào và mô hình cửa hàng đang bán.`
+                : `Có ảnh một mô hình mà chưa biết tên? Tải ảnh lên, ${site.name} đối chiếu với ảnh chụp nhiều góc từ mô hình 3D và gợi ý mẫu giống nhất.`}
             </p>
             <ButtonLink href="/tim-bang-anh" variant="secondary" size="lg" className="mt-2 self-start">
               <Camera className="size-5" strokeWidth={2.6} aria-hidden />

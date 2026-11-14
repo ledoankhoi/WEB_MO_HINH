@@ -34,7 +34,49 @@ from robotrec.env import environment  # noqa: E402
 from robotrec.evaluate import calibration, fit_temperature, softmax  # noqa: E402
 from robotrec.report import Report  # noqa: E402
 
-PART_BYTES = 45 * 1024 * 1024
+# 20 MB: Storage nhận tới 50 MB/file, nhưng ngày 14/11 lượt tải 40 MB trở lên từ máy nhà bị ngắt giữa chừng (30 MB thì được)
+PART_BYTES = 20 * 1024 * 1024
+
+
+def step_digest(seed: int) -> dict:
+    """Số liệu chính của các bước trước, gói vào model-card để trang quản trị /admin/nhan-dien hiện lại (kế hoạch B11).
+    Bước nào chưa có summary.json hoặc khác cấu trúc thì bỏ qua bước đó."""
+    def load(step: str) -> dict | None:
+        path = REPORTS / step / "summary.json"
+        return json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
+
+    def mean(values) -> float:
+        return float(np.mean(values))
+
+    out: dict = {}
+    try:
+        b02, b03, b04 = load("B02"), load("B03a"), load("B04")
+        out["data"] = {
+            "classes_collected": b02["summary"]["Số lớp"], "images_raw": b02["summary"]["Ảnh tải được"], "images_clean": b03["kept"],
+            "classes_known": b04["classes"]["known"], "classes_unknown": b04["classes"]["unknown"], "sizes": b04["sizes"],
+        }
+    except (TypeError, KeyError):
+        pass
+    try:
+        b06 = load("B06")
+        out["b06"] = {"choice": b06["choice"], "by_arch": {arch: {"runs": len(v["top1"]), "top1": mean(v["top1"]), "top1_std": float(np.std(v["top1"], ddof=1)) if len(v["top1"]) > 1 else 0.0,
+                                                                 "macro_f1": mean(v["macro_f1"])} for arch, v in b06["by_arch"].items()}}
+    except (TypeError, KeyError):
+        pass
+    try:
+        b08 = load("B08")
+        i = next(i for i, m in enumerate(b08["models"]) if f"hạt giống {seed}" in m)
+        closed, levels, calib, rule = b08["closed"][i], b08["levels"][i], b08["calibration"][i], b08["rule"][i]["0.05"]["test"]
+        out["b08"] = {
+            "top1": closed["top1"][0], "top5": closed["top5"][0], "macro_f1": closed["macro_f1"][0], "character": levels["character"], "franchise": levels["franchise"],
+            "temperature": b08["temperature"][i], "ece_before": calib["before"]["ece"], "ece_after": calib["after"]["ece"],
+            "auroc_unknown": max(v["auroc"] for k, v in b08["ood"][i].items() if k.endswith("|unknown_test")),
+            "auroc_negative": max(v["auroc"] for k, v in b08["ood"][i].items() if k.endswith("|neg_test")),
+            "rule_test": rule,
+        }
+    except (TypeError, KeyError, StopIteration, ValueError):
+        pass
+    return out
 
 
 def vn(value: float, digits: int = 1) -> str:
@@ -254,6 +296,7 @@ def main() -> None:
         "variant": chosen, "files": parts, "mb": round(len(data) / 1024**2, 2), "metrics": {k: results[chosen][k] for k in ("top1", "macro_f1", "ece", "agree")},
         "smoke": bool(args.smoke), "created_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
     }
+    card["metrics"]["steps"] = step_digest(meta["seed"])
     (package / "model-card.json").write_text(json.dumps(card, ensure_ascii=False, indent=1), encoding="utf-8")
 
     # Báo cáo
