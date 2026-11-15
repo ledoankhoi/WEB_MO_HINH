@@ -21,7 +21,7 @@
 - Dữ liệu trên CSDL:
   - 230 robot;
   - 76 cặp robot–sản phẩm;
-  - mô hình, **đang bật** từ 15/11/2026 01:10.
+  - mô hình, **đang bật** từ khoảng 01:00 ngày 15/11/2026.
 - Kết quả kiểm tra khớp: `ml/data/store/b11/khop/ket-qua-web.json` (không vào git, vì có ảnh).
 
 ## 3. Công cụ và môi trường

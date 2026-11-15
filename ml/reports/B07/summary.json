@@ -1,0 +1,187 @@
+{
+  "step": "B07",
+  "title": "Thí nghiệm phụ trên ViT-B/16 (CLIP) (thí nghiệm E3, E4)",
+  "environment": {
+    "time_utc": "2026-11-15T01:01:29+00:00",
+    "python": "3.11.9",
+    "os": "Windows 11 (build 10.0.26300, AMD64)",
+    "cpu": "12th Gen Intel(R) Core(TM) i7-12800H",
+    "cpu_count": 20,
+    "ram_gb": 31.7,
+    "kaggle": false,
+    "colab": false,
+    "gpu": {
+      "torch_cuda": true,
+      "devices": [
+        {
+          "name": "NVIDIA RTX A2000 Laptop GPU",
+          "memory_gb": 4.0,
+          "capability": "8.6"
+        }
+      ],
+      "torch_cuda_version": "12.8",
+      "cudnn": 91900,
+      "nvidia_smi": [
+        "NVIDIA RTX A2000 Laptop GPU, 4096 MiB, 596.52"
+      ]
+    },
+    "packages": {
+      "numpy": "2.4.6",
+      "pandas": "3.1.1",
+      "scipy": "1.17.1",
+      "scikit-learn": "1.9.1",
+      "matplotlib": "3.11.2",
+      "torch": "2.11.0+cu128",
+      "torchvision": "0.26.0+cu128",
+      "timm": "1.0.31",
+      "open_clip_torch": "4.2.1",
+      "Pillow": "13.0.0",
+      "ImageHash": "4.3.2",
+      "mwparserfromhell": "0.7.2",
+      "rapidfuzz": "3.14.6",
+      "requests": "2.34.2",
+      "ddgs": "9.16.1",
+      "onnx": "1.23.2",
+      "onnxruntime": "1.31.1"
+    },
+    "git": {
+      "commit": "2a1973c75ea696ae0aaea75ab992033f92abe38c",
+      "short": "2a1973c",
+      "dirty": true
+    },
+    "data_root_env": null
+  },
+  "dataset_version": "dff6fdbb77c03329f102e15fa326bb9a1780c4432e0de7e5e40eb51eb535cf69",
+  "arch": "vit_b16_clip",
+  "tables": {
+    "Bảng 2. Thí nghiệm so với cấu hình chính": {
+      "columns": [
+        "Mã",
+        "Thay đổi",
+        "top-1 val (%)",
+        "Δ top-1, điểm % [KTC 95%]",
+        "Δ macro-F1, điểm % [KTC 95%]",
+        "p (McNemar)",
+        "p sau Holm",
+        "Epoch tốt nhất"
+      ],
+      "rows": [
+        [
+          "A1",
+          "Tăng cường cơ bản (chỉ cắt + lật)",
+          "77,96",
+          "-0,44 [-1,11; 0,22]",
+          "-0,50 [-1,26; 0,20]",
+          "0,220",
+          "0,439",
+          26
+        ],
+        [
+          "A2",
+          "Lấy mẫu thường (không cân bằng lớp)",
+          "79,10",
+          "0,70 [0,03; 1,31]",
+          "0,90 [0,17; 1,59]",
+          "0,043",
+          "0,172",
+          24
+        ],
+        [
+          "A3",
+          "Không làm trơn nhãn (ε = 0)",
+          "79,07",
+          "0,66 [0,05; 1,31]",
+          "0,73 [0,02; 1,45]",
+          "0,050",
+          "0,172",
+          24
+        ],
+        [
+          "A4",
+          "Thêm Mixup (α = 0,2) và CutMix (α = 1,0)",
+          "79,75",
+          "1,34 [0,66; 1,96]",
+          "1,43 [0,70; 2,15]",
+          "< 0,001",
+          "< 0,001",
+          26
+        ],
+        [
+          "A5",
+          "Khởi tạo ImageNet-21k thay cho CLIP (chỉ ViT)",
+          "73,57",
+          "-4,84 [-5,68; -4,03]",
+          "-5,06 [-5,98; -4,21]",
+          "< 0,001",
+          "< 0,001",
+          26
+        ],
+        [
+          "A7",
+          "TTA lật ngang (hạt giống 42; chậm 1,53 lần)",
+          "78,32",
+          "-0,09 [-0,38; 0,21]",
+          "-0,13 [-0,51; 0,23]",
+          "0,594",
+          "0,594",
+          "—"
+        ]
+      ]
+    },
+    "Bảng 4. Đường học theo lượng dữ liệu": {
+      "columns": [
+        "Lượng dữ liệu",
+        "Ảnh train",
+        "Số hạt giống",
+        "Lỗi val (%)",
+        "Lỗi train (%)",
+        "Khoảng cách val − train (điểm %)"
+      ],
+      "rows": [
+        [
+          "10%",
+          3036,
+          3,
+          "40,83 ± 0,40",
+          "0,04",
+          "40,79"
+        ],
+        [
+          "25%",
+          7457,
+          3,
+          "30,09 ± 0,22",
+          "0,05",
+          "30,04"
+        ],
+        [
+          "50%",
+          14806,
+          3,
+          "24,43 ± 0,42",
+          "0,10",
+          "24,33"
+        ],
+        [
+          "100%",
+          29513,
+          3,
+          "21,15 ± 0,39",
+          "0,20",
+          "20,95"
+        ]
+      ]
+    }
+  },
+  "reproduce": {
+    "commands": [
+      "ml/.venv/Scripts/python ml/scripts/b07_thi_nghiem_phu.py --arch vit_b16_clip --all",
+      "ml/.venv/Scripts/python ml/scripts/b07_bao_cao.py --arch vit_b16_clip"
+    ],
+    "config": "ml/configs/b07_thi_nghiem_phu.yaml",
+    "config_hash": "c6662846717e",
+    "seed": 0,
+    "dataset_version": "b04_splits.csv sha256 dff6fdbb77c0"
+  },
+  "duration_s": 2.8
+}

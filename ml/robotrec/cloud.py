@@ -93,6 +93,7 @@ class Job:
     fraction: float | None = None
     timm: str | None = None  # tên trọng số timm, để máy trên mây tải trước một lần
     extra: list[str] = field(default_factory=list)
+    local: bool = False  # chỉ chạy ở máy này (dữ liệu cần dùng không có trên Kaggle, ví dụ ảnh âm của E7)
 
     @property
     def name(self) -> str:
@@ -111,7 +112,7 @@ class Job:
 
     def to_json(self) -> dict:
         return {"step": self.step, "arch": self.arch, "seed": self.seed, "exp": self.exp, "fraction": self.fraction, "timm": self.timm,
-                "name": self.name, "args": self.args()}
+                "local": self.local, "name": self.name, "args": self.args()}
 
 
 def split_b7(jobs: list[Job], cloud_gpus: int) -> tuple[list[Job], list[Job]]:

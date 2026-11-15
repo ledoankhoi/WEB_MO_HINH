@@ -15,5 +15,14 @@ experiments:
   # A7 (suy luận thêm ảnh lật ngang) không cần huấn luyện lại: đo trên checkpoint của B6 trong b07_bao_cao.py.
   # E7 của B8 (không nằm trong `order`, không phải ablation của B7): outlier exposure, thêm ảnh âm-train/âm-val của B4b làm lớp thứ 196.
   E7: {label: "Outlier exposure: thêm lớp \"không phải robot\" (ảnh âm của B4b)", outlier: true, outlier_class: "khong-phai-robot", seeds: one}
+  # F: cấu hình cuối, dùng cho B8–B9 (không nằm trong `order`). Chủ dự án quyết định ngày 14/11/2026: thí nghiệm nào của B7 cải tiến có ý nghĩa
+  # thống kê (p sau Holm < 0,05) thì huấn luyện lại mô hình cuối với nó trên 3 hạt giống. Kết quả B07 ngày 15/11: chỉ A4 (Mixup/CutMix).
+  F: {label: "Cấu hình cuối: cấu hình chính của B6 + Mixup/CutMix (A4)", train: {mixup: {mixup_alpha: 0.2, cutmix_alpha: 1.0, switch_prob: 0.5}}, seeds: all}
 
 order: [A6, A1, A2, A3, A4, A5]   # A6 trước vì cần 3 hạt giống cho đường học theo lượng dữ liệu
+
+# Bước huấn luyện mô hình cuối của dieu_phoi.py, chạy sau báo cáo B07.
+final:
+  experiment: F
+  reuse_seed42: A4   # F hạt giống 42 trùng hẳn cấu hình với A4 hạt giống 42 (đã chạy ở B7): chép lại, không chạy lại
+  local: [E7]        # chỉ chạy ở máy này: ảnh âm của B4b không nằm trong bộ ảnh Kaggle

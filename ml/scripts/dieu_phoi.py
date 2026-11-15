@@ -35,7 +35,7 @@ sys.path.insert(0, str(ML / "scripts"))
 sys.stdout.reconfigure(encoding="utf-8", line_buffering=True)  # type: ignore[attr-defined]
 
 from b06_huan_luyen import runs_root  # noqa: E402
-from robotrec.cloud import Job, copy_run, epochs_done, find_run_dirs, kaggle_script, run_finished  # noqa: E402
+from robotrec.cloud import Job, b7_name, copy_run, epochs_done, find_run_dirs, kaggle_script, run_finished  # noqa: E402
 from robotrec.config import REPORTS, load_config  # noqa: E402
 
 CLOUD_PY = ML / ".venv-cloud" / "Scripts" / "python.exe"
@@ -277,7 +277,7 @@ class Dieuphoi:
                 if speculate is not None and "b07" in self.state:  # việc B7 chạy trước: chép kết quả; việc hỏng để B7 làm lại
                     self.sync_kaggle("b07", "b07")
                 if use_kaggle and now >= self.next_push:
-                    pushable = lambda js: [j for j in js if j.arch not in LOCAL_ONLY_ARCHS and "--micro-batch" not in j.extra]  # noqa: E731
+                    pushable = lambda js: [j for j in js if j.arch not in LOCAL_ONLY_ARCHS and "--micro-batch" not in j.extra and not j.local]  # noqa: E731
                     for job in pushable(waiting()):
                         if self.sessions_in_use() >= self.args.kaggle_sessions:
                             break
@@ -429,7 +429,37 @@ def main() -> None:
         return
     if d.run_script("ml/scripts/b07_bao_cao.py", "--arch", choice, log_name="b07-train.log"):
         return
-    d.note("B7 xong: báo cáo B07 đã sinh. Bước sau (B8) cần chốt cấu hình cuối, làm trong phiên có người theo dõi.")
+    final = cfg7.get("final")
+    if not final:
+        d.note("B7 xong: báo cáo B07 đã sinh. Bước sau (B8) cần chốt cấu hình cuối, làm trong phiên có người theo dõi.")
+        return
+    jobs_f = final_jobs(d, choice, cfg6, cfg7, final)
+    todo_f = [j for j in jobs_f if not run_finished(d.root / "b07" / j.name)]
+    if d.run_phase("b07", "b07", todo_f, [], "cuoi-train.log"):
+        return
+    d.note(f"Huấn luyện mô hình cuối xong: {[j.name for j in jobs_f]}. Bước sau: B8, B9 trên cấu hình cuối, làm trong phiên có người theo dõi.")
+
+
+def final_jobs(d: Dieuphoi, arch: str, cfg6: dict, cfg7: dict, final: dict) -> list[Job]:
+    """Bước huấn luyện mô hình cuối (khoá `final` của configs/b07_thi_nghiem_phu.yaml): cấu hình cuối trên mọi hạt giống, cộng các
+    lần chạy chỉ làm ở máy này (E7). Hạt giống 42 trùng cấu hình với một thí nghiệm của B7 (`reuse_seed42`) thì chép lần chạy đó."""
+    from b07_thi_nghiem_phu import jobs_for
+
+    def timm_of(exp: str) -> str:
+        return cfg7["experiments"][exp].get("timm", {}).get(arch, cfg6["architectures"][arch]["timm"])
+
+    exp = final["experiment"]
+    jobs = [Job("b07", arch, s, exp=e, fraction=f, timm=timm_of(e)) for e, s, f in jobs_for(exp, arch, cfg7)]
+    reuse = final.get("reuse_seed42")
+    if reuse:
+        src, dst = d.root / "b07" / b7_name(reuse, arch, 42, None), d.root / "b07" / b7_name(exp, arch, 42, None)
+        if run_finished(src) and not run_finished(dst):
+            copy_run(src, dst)
+            (dst / "nguon.txt").write_text(f"Chép từ {src.name}: cùng cấu hình huấn luyện, cùng hạt giống (dieu_phoi.py, {time.strftime('%d/%m/%Y %H:%M')}).\n",
+                                           encoding="utf-8")
+            d.note(f"{dst.name}: chép từ {src.name} (cùng cấu hình, cùng hạt giống)")
+    local = [Job("b07", arch, s, exp=e, fraction=f, timm=timm_of(e), local=True) for e in final.get("local", []) for e, s, f in jobs_for(e, arch, cfg7)]
+    return longest_first(jobs) + local  # việc chạy được trên Kaggle đứng trước để Kaggle nhận, máy này nhận việc chỉ chạy ở đây
 
 
 if __name__ == "__main__":
