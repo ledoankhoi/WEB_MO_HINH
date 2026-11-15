@@ -2,7 +2,7 @@
   "step": "B06",
   "title": "Huấn luyện chính: tinh chỉnh ba kiến trúc (thí nghiệm E2)",
   "environment": {
-    "time_utc": "2026-11-14T11:44:20+00:00",
+    "time_utc": "2026-11-15T03:07:27+00:00",
     "python": "3.11.9",
     "os": "Windows 11 (build 10.0.26300, AMD64)",
     "cpu": "12th Gen Intel(R) Core(TM) i7-12800H",
@@ -45,8 +45,8 @@
       "onnxruntime": "1.31.1"
     },
     "git": {
-      "commit": "c063837d0abf30eaea59e5060c8231505b245e4a",
-      "short": "c063837",
+      "commit": "be385241726cc01c1b2c0c2e5aedb0128d24ced7",
+      "short": "be38524",
       "dirty": true
     },
     "data_root_env": null
@@ -578,5 +578,5 @@
     "seed": null,
     "dataset_version": "b04_splits.csv sha256 dff6fdbb77c0"
   },
-  "duration_s": 8.0
+  "duration_s": 3.1
 }

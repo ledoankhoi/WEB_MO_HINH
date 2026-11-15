@@ -2,7 +2,7 @@
   "step": "B07",
   "title": "Thí nghiệm phụ trên ViT-B/16 (CLIP) (thí nghiệm E3, E4)",
   "environment": {
-    "time_utc": "2026-11-15T01:01:29+00:00",
+    "time_utc": "2026-11-15T03:07:39+00:00",
     "python": "3.11.9",
     "os": "Windows 11 (build 10.0.26300, AMD64)",
     "cpu": "12th Gen Intel(R) Core(TM) i7-12800H",
@@ -45,8 +45,8 @@
       "onnxruntime": "1.31.1"
     },
     "git": {
-      "commit": "2a1973c75ea696ae0aaea75ab992033f92abe38c",
-      "short": "2a1973c",
+      "commit": "be385241726cc01c1b2c0c2e5aedb0128d24ced7",
+      "short": "be38524",
       "dirty": true
     },
     "data_root_env": null
@@ -179,9 +179,9 @@
       "ml/.venv/Scripts/python ml/scripts/b07_bao_cao.py --arch vit_b16_clip"
     ],
     "config": "ml/configs/b07_thi_nghiem_phu.yaml",
-    "config_hash": "c6662846717e",
+    "config_hash": "d558c47c8212",
     "seed": 0,
     "dataset_version": "b04_splits.csv sha256 dff6fdbb77c0"
   },
-  "duration_s": 2.8
+  "duration_s": 1.5
 }

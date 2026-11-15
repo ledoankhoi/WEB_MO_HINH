@@ -1,6 +1,6 @@
 {
- "id": "robotrec-vit-b16-clip-dff6fdbb-s43",
- "label": "ViT-B/16 (CLIP) (hạt giống 43)",
+ "id": "robotrec-vit-b16-clip-dff6fdbb-s44",
+ "label": "Cấu hình cuối: cấu hình chính của B6 + Mixup/CutMix (A4) (hạt giống 44)",
  "arch": "vit_b16_clip",
  "timm": "vit_base_patch16_clip_224.openai",
  "dataset_version": "dff6fdbb77c03329f102e15fa326bb9a1780c4432e0de7e5e40eb51eb535cf69",
@@ -28,7 +28,7 @@
   "name": "logits",
   "probabilities": "softmax(logits / temperature)"
  },
- "temperature": 0.7579230870208662,
+ "temperature": 0.775847462264689,
  "thresholds": [
   0.96,
   0.96,
@@ -39,55 +39,55 @@
   {
    "name": "model.part00.onnx",
    "bytes": 20971520,
-   "sha256": "9e0922940c7bd2c0f589fe3ad47ffd1ea77f372476d1361233fcaeb86f0dfa4b"
+   "sha256": "8f4d25bc92128848cf00a71fa6a2a7832d10b899e85e3af864783ea1c0bb539c"
   },
   {
    "name": "model.part01.onnx",
    "bytes": 20971520,
-   "sha256": "14c4fdedc4bd9beabb2090924a61fb1688b8624b347d2931d8f6e2e73ab679b0"
+   "sha256": "d0235e79fcff15715150169bd15ecb999eaefbcaab68f353fa2123b30f38a694"
   },
   {
    "name": "model.part02.onnx",
    "bytes": 20971520,
-   "sha256": "4137778f289df813507f188def7bc6e79b113ec9cf01fb95fd9dcd38b3f823a5"
+   "sha256": "70b31b60e13129385d9fd2065e89241b9a9237e0242e616898664fc199d2f533"
   },
   {
    "name": "model.part03.onnx",
    "bytes": 20971520,
-   "sha256": "acd04e235e96e047537bbc769d93f828987553dd60fa7563e0e3cef433382222"
+   "sha256": "d0abbc769ac1510d896b8a69010df29ed46fe75e69130ed5511b7fb5bb2a20ee"
   },
   {
    "name": "model.part04.onnx",
    "bytes": 20971520,
-   "sha256": "48b208f10ce774a2d73e199c69e8ee794e18eafdfacf2e827c172ebca2ad7425"
+   "sha256": "09de890aaffb51f65c7e023034bc3a829c75510270458ebf5a1a3993caad390c"
   },
   {
    "name": "model.part05.onnx",
    "bytes": 20971520,
-   "sha256": "2419bc9bd25dfb822390bd992f0102089531e6886026615ab001c80c6031e290"
+   "sha256": "bd3a1f3e77a86c8687addccc57d5f989c57cd2eb760a5cf70eeddded1d740451"
   },
   {
    "name": "model.part06.onnx",
    "bytes": 20971520,
-   "sha256": "c785fb50a194691aa37a6c2482487018bd5e2e914bcb86dd5e3718510c66440a"
+   "sha256": "698c7865242eb4a80291f3643a04ff78e95f8665276ef8b711c0ff9867fae8a3"
   },
   {
    "name": "model.part07.onnx",
    "bytes": 20971520,
-   "sha256": "138f31ac5b9a8f2dd94b182c6220e50be797d601d8e9bf2bf87dad65ca3c1d4e"
+   "sha256": "18afc6d5e20a0b59fbdc897a4fbeb4a96a86b90b661984e7695eb384c7ede415"
   },
   {
    "name": "model.part08.onnx",
    "bytes": 4315986,
-   "sha256": "3fbde355022437e176bb104071e5dd07c97c1f3bf37d3b39b51019b68b404cdd"
+   "sha256": "17fcf7a26231f60eb629b04a3f15d617a42d9e66aff3ef54666ec93cee4cba88"
   }
  ],
  "mb": 164.12,
  "metrics": {
-  "top1": 0.7879556259904913,
-  "macro_f1": 0.7686370551954818,
-  "ece": 0.01745303341490052,
-  "agree": 0.9993660855784469,
+  "top1": 0.7996830427892234,
+  "macro_f1": 0.7809553635182175,
+  "ece": 0.011562147527866967,
+  "agree": 0.9998415213946117,
   "steps": {
    "data": {
     "classes_collected": 230,
@@ -127,27 +127,27 @@
     }
    },
    "b08": {
-    "top1": 0.7882725832012678,
-    "top5": 0.8916006339144216,
-    "macro_f1": 0.7689492677543796,
-    "character": 0.8064976228209192,
-    "franchise": 0.9735340729001585,
-    "temperature": 0.7579230870208662,
-    "ece_before": 0.1604239201915437,
-    "ece_after": 0.017485750058545663,
-    "auroc_unknown": 0.8241092717645732,
-    "auroc_negative": 0.9278705641313008,
+    "top1": 0.7998415213946117,
+    "top5": 0.9039619651347068,
+    "macro_f1": 0.781089909696286,
+    "character": 0.8179080824088748,
+    "franchise": 0.9771790808240888,
+    "temperature": 0.775847462264689,
+    "ece_before": 0.1440382181507511,
+    "ece_after": 0.011859846852569038,
+    "auroc_unknown": 0.8250987763297135,
+    "auroc_negative": 0.9367852045774925,
     "rule_test": {
-     "known_correct_class": 0.4248811410459588,
-     "known_correct_any": 0.755784469096672,
-     "known_wrong": 0.011885895404120444,
-     "known_reject": 0.2323296354992076,
-     "unknown_false_accept": 0.04453559917960739,
-     "negative_false_accept": 0.026243093922651933
+     "known_correct_class": 0.4177496038034865,
+     "known_correct_any": 0.8194928684627575,
+     "known_wrong": 0.010459587955625991,
+     "known_reject": 0.17004754358161647,
+     "unknown_false_accept": 0.04101963082332259,
+     "negative_false_accept": 0.04419889502762431
     }
    }
   }
  },
  "smoke": false,
- "created_at": "2026-11-14T17:57:10+00:00"
+ "created_at": "2026-11-15T12:18:06+00:00"
 }
