@@ -52,17 +52,44 @@ ml/.venv/Scripts/python ml/scripts/b06_bao_cao.py                               
 
 Đặt `ROBOTREC_RUNS="G:/My Drive/robotica-ml/runs"` để đọc kết quả Colab ngay trên máy qua Google Drive cho máy tính.
 
-## B8, B9: đánh giá và xuất mô hình
+## B7: thí nghiệm phụ, mô hình cuối
 
 ```bash
-ml/.venv/Scripts/python ml/scripts/b08_danh_gia.py --source b05                       # đánh giá toàn diện mốc B5 → báo cáo B08a
-ml/.venv/Scripts/python ml/scripts/b08_danh_gia.py --source b06 --arch convnext_tiny  # mô hình chính (đủ hạt giống) → báo cáo B08
-ml/.venv/Scripts/python ml/scripts/b09_xuat_onnx.py --run <ROBOTREC_RUNS>/b06/<kiến trúc>-s<hạt giống>   # ONNX, nén, gói cho web
+ml/.venv/Scripts/python ml/scripts/b07_thi_nghiem_phu.py --arch vit_b16_clip --all        # A1–A6, E7 theo configs/b07_thi_nghiem_phu.yaml
+ml/.venv/Scripts/python ml/scripts/b07_thi_nghiem_phu.py --arch vit_b16_clip --exp F --seed 43   # một lần chạy (chia việc giữa nhiều máy)
+ml/.venv/Scripts/python ml/scripts/b07_bao_cao.py                                          # báo cáo B07
 ```
 
-B8 chọn nhiệt độ T và ngưỡng t₁–t₃ trên val; tập test chỉ để báo số liệu. B9 ghi gói vào `<ROBOTREC_DATA>/b09/<mã mô hình>/goi/`
-(các phần `model.partNN.onnx` ≤ 45 MB, `labels.json`, `model-card.json` có T và ngưỡng của B8). Các bước chạy nặng CPU (B9, trích đặc trưng)
-nên chạy khi không huấn luyện, nếu không sẽ làm chậm huấn luyện.
+Cấu hình cuối F (B6 + Mixup/CutMix) và E7 (outlier exposure) khai báo trong `configs/b07_thi_nghiem_phu.yaml`; lần chạy ghi vào
+`<ROBOTREC_RUNS>/b07/<thí nghiệm>-<kiến trúc>-s<hạt giống>/`.
+
+**Bộ điều phối** `ml/scripts/dieu_phoi.py` chia các lần chạy B6, B7 giữa máy này, Kaggle (`--kaggle-sessions N`) và Colab (`--colab`),
+đồng bộ qua Google Drive (`--drive`), chạy tiếp được khi bị ngắt. Nhật ký: `<ROBOTREC_DATA>/runs/dieu-phoi.log`. Chạy trong cửa sổ riêng,
+có người theo dõi.
+
+## B8, B9, B11: đánh giá, xuất mô hình, kiểm tra khớp với web
+
+```bash
+ml/.venv/Scripts/python ml/scripts/b08_danh_gia.py --source b05                       # mốc B5 → báo cáo B08a
+ml/.venv/Scripts/python ml/scripts/b08_danh_gia.py --source b06 --arch vit_b16_clip   # mô hình B6 (đủ hạt giống), kèm bảng E7 → báo cáo B08b
+ml/.venv/Scripts/python ml/scripts/b08_danh_gia.py --source cuoi --arch vit_b16_clip  # mô hình cuối F, so với B6 → báo cáo B08
+ml/.venv/Scripts/python ml/scripts/b09_xuat_onnx.py --run <ROBOTREC_RUNS>/b07/F-vit_b16_clip-s44   # ONNX, nén, gói cho web
+ml/.venv/Scripts/python ml/scripts/b11_kiem_tra_khop.py --run <lần chạy> --package <gói> --out <ROBOTREC_DATA>/b11/<tên>
+RECOGNITION_PARITY_DIR=<ROBOTREC_DATA>/b11/<tên> npx vitest run test/recognition-parity.test.ts   # top-1 phải trùng 20/20
+```
+
+B8 chọn nhiệt độ T và ngưỡng t₁–t₃ trên val; tập test chỉ để báo số liệu. Lần đầu B8 tính logits của mỗi lần chạy rồi lưu
+`logits_*.npy` cạnh checkpoint (ViT trên CPU khoảng 1,5 giờ mỗi lần chạy), các lần sau đọc lại. B9 ghi gói vào
+`<ROBOTREC_DATA>/b09/<mã mô hình>/goi/`: các phần `model.partNN.onnx` 20 MB (`PART_BYTES`; lượt tải lên Storage từ 40 MB trở lên bị
+ngắt), `labels.json`, `model-card.json` có T và ngưỡng của B8. Các bước nặng CPU (B8 lần đầu, B9) nên chạy khi không huấn luyện.
+
+Đưa lên web (tải lên Storage, nhập, bật): [docs/chuan/08-tich-hop-ai.md](../docs/chuan/08-tich-hop-ai.md) mục 10.
+
+## Báo cáo
+
+Mỗi script ghi `reports/BXX/summary.json` và báo cáo Markdown ở `docs/nhan-dang-robot/bao-cao/`. `scripts/export_excel.py` gom số liệu
+vào `ket-qua-cac-buoc.xlsx`; `scripts/export_drive.py` (không cần tham số) chép báo cáo và hình lên Google Drive. Bảng tổng hợp:
+[docs/nhan-dang-robot/README.md](../docs/nhan-dang-robot/README.md).
 
 ## Quy ước
 

@@ -100,3 +100,19 @@ Mã giảm giá; đổi trả và hoàn tiền; cổng thanh toán; hàng đặt
 | Cách làm AI | Dùng bộ mã hoá ảnh CLIP ViT-B/32 đã huấn luyện sẵn, **đóng băng**, làm bộ trích đặc trưng. Phần dự án tự xây dựng: dựng thư viện ảnh đa góc nhìn từ mô hình 3D, gộp góc nhìn, xếp hạng theo dạng, luật từ chối hàng không bán và cách hiệu chỉnh ngưỡng (ảnh giả lập, bỏ một sản phẩm), giao thức đánh giá | Mục 1 "Cách làm AI" (không dùng mô hình có sẵn của bên thứ ba) |
 | Nơi chạy mô hình | Trình duyệt của khách và của quản trị (ONNX Runtime Web). Máy chủ chỉ nhận vector 512 số, không nhận ảnh, không lưu ảnh | |
 | Dữ liệu hành vi | Tìm bằng ảnh không cần dữ liệu hành vi để chạy; nhật ký lượt tìm chỉ ghi điểm và quyết định | Mục 4 "Ghi nhận hành vi" vẫn giữ cho các hướng AI sau |
+
+## 8. Thay đổi từ ngày 07/11/2026: nhận dạng robot (đề tài luận văn)
+
+Kế hoạch [../nhan-dang-robot/00-ke-hoach.md](../nhan-dang-robot/00-ke-hoach.md), nhật ký quyết định ở mục 4 của [../nhan-dang-robot/nhat-ky.md](../nhan-dang-robot/nhat-ky.md), đặc tả [08-tich-hop-ai.md](08-tich-hop-ai.md).
+
+| Chủ đề | Quyết định mới | Thay cho |
+| --- | --- | --- |
+| Tính năng AI chính | **Nhận dạng robot từ ảnh bằng học có giám sát**: tự thu thập bộ dữ liệu 230 robot, tinh chỉnh mô hình (ViT-B/16 khởi tạo từ CLIP), chạy trong trình duyệt. Trang `/tim-bang-anh` dùng mô hình đang bật | Mục 7: tìm bằng ảnh dựng 3D với CLIP đóng băng |
+| Cách cũ | **Giữ lại, chưa gỡ** (15/11/2026): mã và bảng `image_search_*` còn nguyên, chạy khi không có mô hình nhận dạng nào bật. Chỉ viết hướng dẫn gỡ ([../nhan-dang-robot/huong-dan-go-cach-cu.md](../nhan-dang-robot/huong-dan-go-cach-cu.md)) | Kế hoạch B14: xoá mã và bảng của cách cũ |
+| Cách làm AI | Tự xây dựng: bộ dữ liệu, huấn luyện, đánh giá, xuất mô hình. Trọng số CLIP đã huấn luyện sẵn chỉ dùng làm điểm khởi đầu, rồi tinh chỉnh toàn bộ trên dữ liệu của dự án (B5 cho thấy dùng đóng băng chỉ đạt 65,6%, tinh chỉnh đạt gần 80%) | Mục 7 "Cách làm AI": CLIP đóng băng |
+| Nơi chạy mô hình | Trình duyệt (ONNX Runtime Web, fp16 164 MB). Máy chủ chỉ nhận xác suất của 195 lớp, không nhận ảnh | |
+| Hiển thị | Trang khách tạm thời chỉ hiện bảng xếp hạng 5 robot kèm % và sản phẩm của các robot đó (15/11/2026). Luật trả lời theo cấp vẫn chạy để ghi nhật ký | Kế hoạch B11: câu trả lời theo cấp lớp, nhân vật, franchise |
+| Kiểm định nhãn | Không chấm tay 500 ảnh: Claude chấm, chủ dự án kiểm tra mù 50 ảnh; không đổi dữ liệu, không huấn luyện lại; luận văn ghi rõ (15/11/2026) | Kế hoạch B3: chủ dự án chấm tay 500 ảnh |
+| Mô hình cuối | Công thức B6 + Mixup/CutMix (cải tiến có ý nghĩa duy nhất của B7), 3 hạt giống; đưa lên web hạt giống 44 (test 79,97%) | Mô hình B6 hạt giống 43 (bật tạm 15/11 01:00 – 20:57) |
+| Dữ liệu ảnh | Chỉ dùng nghiên cứu: không vào git, không công bố lại; bản trên Google Drive và Kaggle chỉ để huấn luyện, để riêng tư | |
+| Cách làm | Huấn luyện trên Colab, Kaggle và máy nhà qua bộ điều phối, trong phiên có người theo dõi; không chạy tự động theo vòng lặp | |
