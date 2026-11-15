@@ -27,7 +27,7 @@ Mô hình cuối (ViT-B/16 khởi tạo từ CLIP, tinh chỉnh với Mixup/CutM
 | B5 | Mốc so sánh (E1) | CLIP ViT-L/14 đóng băng + linear probe: test 65,6% [64,5; 66,8]; zero-shot 23,4%; k-NN 49,0% | [B05](bao-cao/B05-mo-hinh-nen.md), [B08a](bao-cao/B08a-danh-gia-moc-b05.md) |
 | B6 | Huấn luyện chính (E2) | 3 kiến trúc × 3 hạt giống; chọn ViT-B/16 (CLIP): val 78,85 ± 0,39%, hơn ConvNeXt-Tiny 2,7–3,6 điểm (p < 0,001) | [B06](bao-cao/B06-huan-luyen.md), [tổng hợp B0–B6](bao-cao/B00-B06-tong-hop.md) |
 | B7 | Thí nghiệm phụ (E3, E4) | 14 lần chạy; chỉ Mixup/CutMix có ý nghĩa (+1,34 điểm val, p < 0,001); ImageNet-21k thay CLIP kém 4,84 điểm; thêm dữ liệu từ 50% lên 100% giảm lỗi 3,28 điểm | [B07](bao-cao/B07-thi-nghiem-phu.md) |
-| B8 | Đánh giá (E5–E7) | Mô hình cuối: test 79,56 / 79,67 / 79,98%, hơn B6 cùng hạt giống 0,8–2,2 điểm (p ≤ 0,006); ECE 1,2–1,8%; AUROC robot lạ 0,82, ảnh âm 0,93; E7 nâng AUROC ảnh âm lên 0,994 | [B08](bao-cao/B08-danh-gia.md), [B08b](bao-cao/B08b-danh-gia-mo-hinh-b06.md) |
+| B8 | Đánh giá (E5–E7) | Mô hình cuối: test 79,56 / 79,67 / 79,98%, hơn B6 cùng hạt giống 0,8–2,2 điểm (p ≤ 0,006); ECE 1,2–1,8%; AUROC robot lạ 0,82, ảnh âm 0,93; E7 nâng AUROC ảnh âm lên 0,994. Phân tích 100 ảnh sai: 44% do nhãn sai; trên ảnh nhãn đúng top-1 ≈ 87,7% | [B08](bao-cao/B08-danh-gia.md), [B08b](bao-cao/B08b-danh-gia-mo-hinh-b06.md), [B08c](bao-cao/B08c-phan-tich-loi.md) |
 | B9 | Xuất ONNX (E8) | fp16 164 MB, top-1 79,97%, trùng PyTorch 99,98%; int8 không đạt (trùng 91%) | [B09](bao-cao/B09-xuat-onnx.md) |
 | B10 | CSDL, quản trị | Bảng `robots`, `robot_products`, `recognition_models`, `recognition_logs`; trang `/admin/nhan-dien` | [B11-B12](bao-cao/B11-B12-web.md) |
 | B11 | Chạy trong trình duyệt | Tiền xử lý trùng từng byte; 20/20 ảnh trùng top-1; khoảng 1 s mỗi ảnh (WASM 1 luồng) | [B11-B12](bao-cao/B11-B12-web.md) |
@@ -46,5 +46,4 @@ Mô hình cuối (ViT-B/16 khởi tạo từ CLIP, tinh chỉnh với Mixup/CutM
 ## Việc còn lại
 
 - B13: thử nghiệm với ảnh chụp thật.
-- B8: gán loại lỗi cho 100 ảnh sai.
 - Hướng tiếp: huấn luyện lại cấu hình cuối kèm outlier exposure (E7) đủ 3 hạt giống; làm sạch nhãn thêm; WebGPU; lượng tử hoá int8 có huấn luyện.

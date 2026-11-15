@@ -68,7 +68,9 @@ Công thức B6: hai pha (2 epoch chỉ đầu phân loại, rồi tinh chỉnh 
 
 Bản đưa lên web: hạt giống 44, fp16 164,1 MB (9 phần 20 MB), top-1 79,97%, trùng PyTorch 99,98% (B9). Bản int8 nhỏ hơn một nửa nhưng chỉ trùng 91% nên không đạt tiêu chí. Trình duyệt (B11): 20/20 ảnh trùng top-1 với Python, khoảng 0,8–1,5 s một ảnh trên CPU một luồng.
 
-Outlier exposure (E7, chỉ một hạt giống, công thức B6): AUROC ảnh âm 0,931 → 0,994. Chưa dùng cho mô hình cuối; là hướng tiếp (mục 11).
+Outlier exposure (E7, chỉ một hạt giống, công thức B6): AUROC ảnh âm 0,931 → 0,994. Chưa dùng cho mô hình cuối; là hướng tiếp (mục 12).
+
+Phân tích 100 ảnh đoán sai (B08c, AI chấm): 44% do nhãn của tập test sai, 24% kiểu ảnh lạ (tranh, hộp, dạng xe), 19% ảnh khó, 8% hai robot giống nhau, 3% sai dòng. Trên ảnh nhãn đúng, top-1 ước khoảng 87,7% [86,0; 89,7], nên 79,98% là cận dưới.
 
 ## 6. Luật trả lời và tập mở
 
@@ -152,7 +154,7 @@ flowchart LR
 ## 12. Hạn chế, hướng tiếp
 
 - **Chưa đo trên ảnh chụp thật của khách** (B13). Ảnh dựng 3D và ảnh chụp màn hình khác miền ảnh huấn luyện, mô hình kém chắc chắn.
-- **Nhãn có nhiễu** khoảng 10–25% (B3); làm sạch thêm có thể nâng độ chính xác.
+- **Nhãn có nhiễu** khoảng 10–25% (B3); 44% số lỗi trên test do nhãn sai (B08c). Làm sạch thêm (nhất là các lớp cùng tên khác dòng, ảnh không có robot) sẽ nâng độ chính xác và làm số đo đáng tin hơn.
 - **Nhận biết ảnh không phải robot còn yếu** (AUROC 0,93); outlier exposure (E7) cho 0,994, nên huấn luyện lại cấu hình cuối với E7 và đủ 3 hạt giống.
 - **Tải 164 MB lần đầu, khoảng 1 s mỗi ảnh**; chưa bật WebGPU; int8 chưa đạt tiêu chí (có thể thử lượng tử hoá có huấn luyện).
 - Tìm theo mô tả chữ: chưa làm.
