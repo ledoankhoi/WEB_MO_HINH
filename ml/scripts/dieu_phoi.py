@@ -246,6 +246,7 @@ class Dieuphoi:
         `speculate`: khi Kaggle còn chỗ mà bước này không còn việc để đẩy, lấy việc của bước sau (B7) để chạy trước.
         Trả tên các lần chạy hỏng hẳn (rỗng nếu ổn)."""
         st = self.state.setdefault(phase, {"started_at": time.time(), "taken": []})
+        self.next_cloud_check = 0.0  # hỏi Kaggle ngay khi vào bước mới, để Kaggle nhận việc trước khi máy này lấy việc đầu hàng đợi
         jobs = {j.name: j for j in jobs_in_order + colab}
         failures: dict[str, int] = {}
         proc: subprocess.Popen | None = None

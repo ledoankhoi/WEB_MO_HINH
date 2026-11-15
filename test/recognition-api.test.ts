@@ -47,39 +47,39 @@ describe("POST /api/nhan-dien: kiểm tra đầu vào", () => {
   });
 });
 
-describe("POST /api/nhan-dien: câu trả lời theo cấp", () => {
-  it("chắc chắn lớp: trả robot, sản phẩm của robot trước rồi tới các dòng cùng nhân vật", () => {
-    const { response } = buildRecognitionResponse(model, hierarchy, [0.7, 0.1, 0.1, 0.05, 0.05], catalog);
-    expect(response.level).toBe("class");
-    expect(response.robot).toMatchObject({ slug: "tf-optimus-g1", faction: "Autobot", franchiseLabel: "Transformers" });
-    expect(response.products.map((p) => p.id)).toEqual(["p1", "p2", "p3"]);
-    expect(response.alternatives.map((a) => a.slug)).toEqual(["tf-optimus-movie", "tf-megatron-g1", "gd-rx78", "gd-zaku"]);
-    expect(response.character).toEqual({ name: "Optimus Prime", p: 0.8 });
+describe("POST /api/nhan-dien: bảng xếp hạng", () => {
+  it("5 robot giảm dần theo xác suất, tên và thương hiệu lấy từ CSDL, thiếu thì từ labels", () => {
+    const { response } = buildRecognitionResponse(model, hierarchy, [0.05, 0.1, 0.6, 0.15, 0.1], catalog);
+    expect(response.model).toBe("m1");
+    expect(response.ranking.map((r) => r.slug)).toEqual(["tf-megatron-g1", "gd-rx78", "tf-optimus-movie", "gd-zaku", "tf-optimus-g1"]);
+    expect(response.ranking.map((r) => r.p)).toEqual([0.6, 0.15, 0.1, 0.1, 0.05]);
+    // Megatron chưa có trong CSDL: tên, dòng lấy từ labels; nhãn thương hiệu lấy từ robot khác cùng thương hiệu trong CSDL
+    expect(response.ranking[0]).toEqual({ slug: "tf-megatron-g1", name: "Megatron (G1)", series: "Generation 1", franchiseLabel: "Transformers", image: null, p: 0.6 });
+    expect(response.ranking[1]).toMatchObject({ name: "RX-78-2 Gundam", franchiseLabel: "Gundam" });
   });
 
-  it("chỉ chắc nhân vật: sản phẩm của mọi dòng cùng nhân vật", () => {
-    const { response } = buildRecognitionResponse(model, hierarchy, [0.4, 0.35, 0.15, 0.05, 0.05], catalog);
-    expect(response.level).toBe("character");
-    expect(response.character.name).toBe("Optimus Prime");
-    expect(response.products.map((p) => p.id)).toEqual(["p1", "p2", "p3"]);
+  it("hạng 1 luôn có trong bảng, kể cả khi xác suất thấp (trước đây bị bỏ mất ở cấp \"chưa nhận ra\")", () => {
+    const { response, result } = buildRecognitionResponse(model, hierarchy, [0.25, 0.1, 0.24, 0.21, 0.2], catalog);
+    expect(result.level).toBe("none");
+    expect(response.ranking[0]).toMatchObject({ slug: "tf-optimus-g1", p: 0.25 });
+    expect(response.ranking).toHaveLength(5);
   });
 
-  it("chỉ chắc thương hiệu: không gợi ý sản phẩm, nhãn thương hiệu lấy từ CSDL", () => {
-    const { response } = buildRecognitionResponse(model, hierarchy, [0.05, 0.05, 0.05, 0.45, 0.4], catalog);
-    expect(response.level).toBe("franchise");
-    expect(response.franchise).toEqual({ key: "gundam", label: "Gundam", p: 0.85 });
-    expect(response.products).toEqual([]);
+  it("sản phẩm của các robot trong bảng theo thứ hạng, bỏ trùng; robot không có sản phẩm thì bỏ qua", () => {
+    const { response } = buildRecognitionResponse(model, hierarchy, [0.1, 0.3, 0.05, 0.05, 0.5], catalog);
+    expect(response.ranking.map((r) => r.slug)).toEqual(["gd-zaku", "tf-optimus-movie", "tf-optimus-g1", "tf-megatron-g1", "gd-rx78"]);
+    expect(response.products.map((p) => p.id)).toEqual(["p9", "p2", "p3", "p1"]);
   });
 
-  it("không nhận ra: vẫn trả lớp gần nhất để hiện 'gần giống nhất', không sản phẩm", () => {
-    const { response } = buildRecognitionResponse(model, hierarchy, [0.25, 0.1, 0.25, 0.2, 0.2], catalog);
-    expect(response.level).toBe("none");
-    expect(response.robot.slug).toBe("tf-optimus-g1");
-    expect(response.products).toEqual([]);
+  it("vẫn tính luật theo cấp để ghi nhật ký, không gửi về trình duyệt", () => {
+    const { response, result } = buildRecognitionResponse(model, hierarchy, [0.7, 0.1, 0.1, 0.05, 0.05], catalog);
+    expect(result.level).toBe("class");
+    expect(result.classIndex).toBe(0);
+    expect(Object.keys(response).sort()).toEqual(["model", "products", "ranking"]);
   });
 
-  it("robot chưa có trong CSDL: lấy tên và dòng từ labels của mô hình", () => {
-    const { response } = buildRecognitionResponse(model, hierarchy, [0.02, 0.02, 0.9, 0.03, 0.03], catalog);
-    expect(response.robot).toMatchObject({ slug: "tf-megatron-g1", name: "Megatron (G1)", series: "Generation 1", franchiseLabel: "Transformers", image: null });
+  it("bảng ngắn hơn khi yêu cầu", () => {
+    const { response } = buildRecognitionResponse(model, hierarchy, [0.7, 0.1, 0.1, 0.05, 0.05], catalog, 3);
+    expect(response.ranking.map((r) => r.slug)).toEqual(["tf-optimus-g1", "tf-optimus-movie", "tf-megatron-g1"]);
   });
 });

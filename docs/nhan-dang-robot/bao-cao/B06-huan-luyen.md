@@ -1,6 +1,6 @@
 # B06. Huấn luyện chính: tinh chỉnh ba kiến trúc (thí nghiệm E2)
 
-Báo cáo sinh tự động bởi `ml/` (mẫu ở `docs/nhan-dang-robot/00-ke-hoach.md` mục 6). Thời gian chạy: 8.0 giây. Số liệu máy đọc: `ml/reports/B06/summary.json`.
+Báo cáo sinh tự động bởi `ml/` (mẫu ở `docs/nhan-dang-robot/00-ke-hoach.md` mục 6). Thời gian chạy: 3.1 giây. Số liệu máy đọc: `ml/reports/B06/summary.json`.
 
 ## 1. Mục tiêu
 
@@ -20,7 +20,7 @@ Tinh chỉnh toàn bộ ba mạng đã huấn luyện sẵn (hai CNN và một T
 
 | Mục | Giá trị |
 | --- | --- |
-| Thời điểm chạy (UTC) | 2026-11-14T11:44:20+00:00 |
+| Thời điểm chạy (UTC) | 2026-11-15T03:07:27+00:00 |
 | Hệ điều hành | Windows 11 (build 10.0.26300, AMD64) |
 | Python | 3.11.9 |
 | CPU | 12th Gen Intel(R) Core(TM) i7-12800H (20 luồng) |
@@ -30,7 +30,7 @@ Tinh chỉnh toàn bộ ba mạng đã huấn luyện sẵn (hai CNN và một T
 | Driver (nvidia-smi) | NVIDIA RTX A2000 Laptop GPU, 4096 MiB, 596.52 |
 | Google Colab | không |
 | Kaggle | không |
-| Commit git | c063837 (có thay đổi chưa commit) |
+| Commit git | be38524 (có thay đổi chưa commit) |
 
 **Phiên bản thư viện**
 

@@ -84,7 +84,7 @@ Mô hình học trên ảnh đã được Python thu nhỏ và cắt theo một 
 | `npm run smoke` | mọi trang đều ổn, kể cả `/tim-bang-anh` và `/admin/nhan-dien` | 116 s |
 | Test Python `ml/tests` | 69 đạt | 28 s |
 
-**Kiểm tra API.** Gửi một vector xác suất dồn hết vào "Optimus Prime (G1)". API trả cấp "lớp", đúng robot, kèm 3 sản phẩm Optimus Prime của cửa hàng.
+**Kiểm tra API.** Gửi một vector xác suất dồn hết vào "Optimus Prime (G1)". API trả cấp "lớp", đúng robot, kèm 3 sản phẩm Optimus Prime của cửa hàng. (Từ 15/11 API trả bảng xếp hạng thay cho cấp trả lời, xem mục 6.)
 
 ## 6. Phân tích
 
@@ -93,6 +93,21 @@ Mô hình học trên ảnh đã được Python thu nhỏ và cắt theo một 
   - ViT-B/16 nặng gấp 4 lần ConvNeXt-Tiny về phép tính; ConvNeXt bản thử đo được khoảng 0,5 s.
   - Điện thoại có thể chậm hơn 2–4 lần.
 - **Lần đầu tải 164 MB là gánh nặng lớn nhất.** Sau đó trình duyệt lưu đệm. Bản int8 (85 MB) không đạt tiêu chí trùng ≥ 99% ở B9, nên chưa dùng được.
+
+### Cập nhật sau khi chủ dự án thử trên web (15/11/2026)
+
+**Ảnh thử của chủ dự án và kiểm tra lại bằng Python** (cùng file ONNX, cùng tiền xử lý):
+
+| Ảnh đưa vào | Hạng 1 | Xác suất của Ironhide (G1) |
+| --- | --- | --- |
+| 4 ảnh thật của sản phẩm Ironhide (ảnh cửa hàng bán lẻ) | Ironhide (G1), 4/4 | 77,5–98,0% |
+| Ảnh đại diện dựng từ mô hình 3D của sản phẩm, 640×640 | Ironhide (G1) | 57,7% |
+| Vùng cắt từ ảnh chụp màn hình khung xem 3D | sai (Drivemax Megazord, Ratchet) | 12,8–20,5% cho hạng 1 |
+
+- Ảnh dựng 3D và ảnh chụp màn hình có giao diện khác xa ảnh huấn luyện (ảnh đồ chơi thật, hoạt hình, hộp), nên mô hình không chắc. Đây là lệch miền ảnh, không phải lỗi chạy trên web.
+- **Lỗi giao diện tìm thấy:** ô "Gần giống nhất" luôn bỏ robot hạng 1 (code coi hạng 1 là câu trả lời chính), nên khi trang trả lời "chưa nhận ra" thì robot hạng 1 không hiện ở đâu. Test của B12 có ca "chưa nhận ra" nhưng không kiểm tra danh sách này.
+- **Luật theo cấp quá chặt khi hiển thị:** ảnh Optimus Prime (G1) 95,7% vẫn bị trả lời ở cấp thương hiệu vì ngưỡng nhân vật 0,96. Với α = 5%, mô hình đang bật chỉ trả lời đến tên robot cho 42,5% ảnh test đã biết (B8).
+- **Chủ dự án quyết định:** trang tạm thời chỉ hiện bảng xếp hạng 5 robot kèm %, sản phẩm của các robot trong bảng theo thứ hạng, một dòng nhắc về % thấp. API trả `{ model, ranking, products }`. Luật theo cấp vẫn chạy ở máy chủ để ghi `level` vào `recognition_logs`, nên số liệu của luật cho luận văn và B13 không mất.
 
 ## 7. Hạn chế và rủi ro
 

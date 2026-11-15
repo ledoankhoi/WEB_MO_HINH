@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore, type DragEvent } from "react";
-import { Box, Camera, Crop, ExternalLink, ImageUp, LoaderCircle, RotateCcw, ScanSearch, ShieldCheck, Sparkles } from "lucide-react";
+import { Box, Camera, Crop, ImageUp, LoaderCircle, RotateCcw, ScanSearch, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Notice } from "@/components/ui/Notice";
 import { ProductGrid } from "@/components/product/ProductCard";
@@ -13,8 +13,9 @@ import { roundProbability, type RecognitionResponse } from "@/lib/recognition-ap
 import type { ModelInput } from "@/lib/recognition-import";
 import { getClassifier, isClassifierCached, prepareFromCanvas, preparedToDataUrl, type ClassifierModel } from "./classifier";
 
-// B11: khách gửi ảnh robot; trình duyệt chạy mô hình phân loại (ảnh không rời máy), gửi xác suất lên /api/nhan-dien để lấy thông tin
-// robot và sản phẩm đang bán. Luật trả lời theo cấp chạy ở cả hai phía bằng cùng một hàm (src/lib/recognition.ts).
+// B11: khách gửi ảnh robot; trình duyệt chạy mô hình phân loại (ảnh không rời máy), gửi xác suất lên /api/nhan-dien để lấy bảng xếp hạng
+// 5 robot và sản phẩm đang bán của chúng. Trang tạm thời chỉ hiện bảng xếp hạng (chủ dự án quyết định ngày 15/11/2026, khi mới xong một
+// phần đề tài); luật trả lời theo cấp (src/lib/recognition.ts) vẫn chạy ở máy chủ để ghi nhật ký.
 
 export type RecognitionModelProps = {
   id: string;
@@ -76,76 +77,37 @@ function Progress({ stage, mb }: { stage: Stage; mb: number }) {
   );
 }
 
-function Headline({ response }: { response: RecognitionResponse }) {
-  const { level, robot, character, franchise, pClass } = response;
-  if (level === "none") {
-    return (
-      <div className="space-y-2 rounded-2xl border border-line bg-surface p-5">
-        <p className="text-xl font-bold">Chưa nhận ra robot trong ảnh</p>
-        <p className="text-sm text-muted">
-          Có thể robot này chưa có trong danh sách của hệ thống, hoặc ảnh chưa rõ. Thử khoanh vùng sát con robot, chụp thẳng mặt, đủ sáng, rồi gửi lại.
-        </p>
-      </div>
-    );
-  }
-  const [title, detail, p] =
-    level === "class"
-      ? [robot.name, [robot.series, robot.faction, robot.franchiseLabel].filter(Boolean).join(" · "), pClass]
-      : level === "character"
-        ? [character.name, `${franchise.label} · chưa chắc là dòng nào`, character.p]
-        : [`một robot ${franchise.label}`, "Chưa nhận ra là nhân vật nào", franchise.p];
+function Ranking({ response, classes }: { response: RecognitionResponse; classes: number }) {
   return (
-    <div className="space-y-1 rounded-2xl border border-brand/40 bg-brand/5 p-5">
-      <p className="text-sm font-semibold text-brand-strong">{level === "class" ? "Đây là" : "Có vẻ là"}</p>
-      <p className="text-2xl font-bold tracking-tight">{title}</p>
-      <p className="text-sm text-muted">{detail}</p>
-      <p className="pt-1 text-sm">
-        Độ tin: <span className="font-semibold">{percent(p)}</span>
+    <div className="space-y-4 rounded-2xl border border-line bg-surface p-5">
+      <h2 className="text-lg font-bold">Kết quả nhận dạng</h2>
+      <ol className="space-y-3">
+        {response.ranking.map((row, index) => (
+          <li key={row.slug} className="space-y-1.5">
+            <div className="flex items-start justify-between gap-3 text-sm">
+              <span className="min-w-0">
+                <span className={`block truncate ${index === 0 ? "font-bold" : "font-medium"}`}>
+                  {index + 1}. {row.name}
+                </span>
+                <span className="block truncate text-xs text-muted">{[row.series, row.franchiseLabel].filter(Boolean).join(" · ")}</span>
+              </span>
+              <span className={`shrink-0 tabular-nums ${index === 0 ? "font-bold" : "text-muted"}`}>{percent(row.p)}</span>
+            </div>
+            <div className="h-2 overflow-hidden rounded-full bg-raised" aria-hidden>
+              <div className={`h-full rounded-full ${index === 0 ? "bg-brand" : "bg-brand/35"}`} style={{ width: `${Math.max(0.5, row.p * 100)}%` }} />
+            </div>
+          </li>
+        ))}
+      </ol>
+      <p className="text-xs text-muted">
+        Hệ thống mới học {classes} robot Transformers, Gundam, Super Sentai. % thấp nghĩa là ảnh chưa rõ hoặc robot chưa có trong danh sách; khoanh vùng sát con robot
+        thường cho kết quả tốt hơn.
       </p>
     </div>
   );
 }
 
-function RobotInfo({ response }: { response: RecognitionResponse }) {
-  const { robot, level } = response;
-  if (level !== "class" && level !== "character") return null;
-  const rows = [
-    ["Dòng", robot.series],
-    ["Phe", robot.faction],
-    ["Dạng biến hình", robot.altMode],
-  ].filter(([, value]) => value);
-  return (
-    <div className="flex gap-4 rounded-2xl border border-line bg-surface p-4">
-      {robot.image && (
-        // Ảnh lấy từ trang wiki nguồn (ghi ở B1), không qua máy chủ của cửa hàng.
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={robot.image} alt={robot.name} loading="lazy" referrerPolicy="no-referrer" className="size-28 shrink-0 rounded-xl bg-raised object-contain" />
-      )}
-      <div className="min-w-0 space-y-2 text-sm">
-        {level === "character" && <p className="font-semibold">Dòng giống nhất: {robot.name}</p>}
-        {rows.length > 0 && (
-          <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
-            {rows.map(([key, value]) => (
-              <div key={key} className="contents">
-                <dt className="text-muted">{key}</dt>
-                <dd>{value}</dd>
-              </div>
-            ))}
-          </dl>
-        )}
-        {robot.description && <p className="line-clamp-4 text-muted">{robot.description}</p>}
-        {robot.sourceUrl && (
-          <a href={robot.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 font-medium text-brand-strong underline">
-            Xem trên wiki nguồn <ExternalLink className="size-3.5" aria-hidden />
-          </a>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function Explain({ response, trace, labels }: { response: RecognitionResponse; trace: Trace; labels: RecognitionLabel[] }) {
-  const [t1, t2, t3] = response.thresholds;
+function Explain({ trace }: { trace: Trace }) {
   return (
     <details className="group rounded-2xl border border-line bg-surface">
       <summary className="flex cursor-pointer list-none items-center gap-2 px-4 py-3 text-sm font-semibold select-none [&::-webkit-details-marker]:hidden">
@@ -161,31 +123,10 @@ function Explain({ response, trace, labels }: { response: RecognitionResponse; t
             huấn luyện. Mô hình cho mỗi robot một xác suất; chỉ các xác suất này được gửi lên cửa hàng, ảnh thì không.
           </p>
         </div>
-        <table className="w-full text-left">
-          <thead className="text-muted">
-            <tr>
-              <th className="py-1 font-medium">5 robot có xác suất cao nhất</th>
-              <th className="py-1 text-right font-medium">Xác suất</th>
-            </tr>
-          </thead>
-          <tbody>
-            {trace.local.alternatives.map(({ index, p }) => (
-              <tr key={index} className="border-t border-line">
-                <td className="py-1">{labels[index]?.name}</td>
-                <td className="py-1 text-right tabular-nums">{percent(p)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
         <ul className="space-y-1 text-muted">
           <li>
-            Trả lời đúng tên và dòng khi xác suất của robot ≥ {percent(t1)} (ở đây {percent(response.pClass)}).
-          </li>
-          <li>
-            Không thì trả lời tên nhân vật khi tổng xác suất các dòng của nhân vật đó ≥ {percent(t2)} (ở đây {percent(response.character.p)}).
-          </li>
-          <li>
-            Không thì trả lời thương hiệu khi tổng xác suất của thương hiệu ≥ {percent(t3)} (ở đây {percent(response.franchise.p)}); còn lại là &quot;chưa nhận ra&quot;.
+            Xác suất đã được hiệu chỉnh để gần với tỉ lệ đúng thực tế: trên ảnh kiểm tra, những lần mô hình cho khoảng 80% thì khoảng 80% là đoán đúng (lệch trung bình
+            khoảng 2 điểm %).
           </li>
           <li>
             Thời gian: tải mô hình {trace.modelCached ? "(đã có sẵn) " : ""}
@@ -197,34 +138,17 @@ function Explain({ response, trace, labels }: { response: RecognitionResponse; t
   );
 }
 
-function Results({ response, trace, labels }: { response: RecognitionResponse; trace: Trace; labels: RecognitionLabel[] }) {
+function Results({ response, trace, classes }: { response: RecognitionResponse; trace: Trace; classes: number }) {
   return (
     <div className="space-y-4">
-      <Headline response={response} />
-      <RobotInfo response={response} />
-      {response.alternatives.length > 0 && (
-        <div className="space-y-2">
-          <h2 className="font-semibold">{response.level === "none" ? "Gần giống nhất" : "Có thể là"}</h2>
-          <ul className="grid gap-2 sm:grid-cols-2">
-            {response.alternatives.map((alt) => (
-              <li key={alt.slug} className="flex items-center justify-between gap-3 rounded-xl border border-line bg-surface px-3 py-2 text-sm">
-                <span className="min-w-0">
-                  <span className="block truncate font-medium">{alt.name}</span>
-                  <span className="block truncate text-xs text-muted">{alt.franchiseLabel}</span>
-                </span>
-                <span className="shrink-0 tabular-nums text-muted">{percent(alt.p)}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      <Ranking response={response} classes={classes} />
       {response.products.length > 0 && (
         <div className="space-y-3">
           <h2 className="font-semibold">Cửa hàng có bán</h2>
           <ProductGrid products={response.products} columns={3} />
         </div>
       )}
-      <Explain response={response} trace={trace} labels={labels} />
+      <Explain trace={trace} />
     </div>
   );
 }
@@ -233,7 +157,7 @@ function HowItWorks({ classes }: { classes: number }) {
   const steps = [
     { icon: ImageUp, title: "Bạn gửi một ảnh robot", text: "Ảnh chụp mô hình, ảnh trên mạng hay ảnh chụp màn hình phim đều được." },
     { icon: ScanSearch, title: "AI nhận dạng ngay trên máy bạn", text: `Mô hình được huấn luyện trên hàng chục nghìn ảnh của ${classes} robot Transformers, Gundam, Super Sentai.` },
-    { icon: Box, title: "Cho biết robot nào và gợi ý mô hình", text: "Không chắc thì hệ thống nói ở mức chắc chắn nhất (nhân vật, thương hiệu) thay vì đoán bừa." },
+    { icon: Box, title: "Xếp hạng các robot giống nhất", text: "Kèm % cho từng robot và mô hình cửa hàng đang bán của các robot đó." },
   ];
   return (
     <ol className="grid gap-3">
@@ -461,7 +385,7 @@ export function RobotRecognition({ model }: { model: RecognitionModelProps }) {
             )}
           </div>
         )}
-        {stage.kind === "done" && <Results response={stage.response} trace={stage.trace} labels={model.labels} />}
+        {stage.kind === "done" && <Results response={stage.response} trace={stage.trace} classes={model.labels.length} />}
       </section>
     </div>
   );

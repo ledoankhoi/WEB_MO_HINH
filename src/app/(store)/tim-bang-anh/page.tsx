@@ -22,8 +22,8 @@ export default async function ImageSearchPage() {
           <p className="text-xs font-bold tracking-wider text-brand-strong uppercase">Nhận dạng bằng AI</p>
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Đây là robot nào?</h1>
           <p className="text-muted">
-            Có ảnh một con robot nhưng không biết tên? Gửi ảnh, AI cho biết đó là robot nào, thuộc dòng nào, kèm thông tin về robot và mô hình cửa hàng
-            đang bán.
+            Có ảnh một con robot nhưng không biết tên? Gửi ảnh, AI xếp hạng những robot giống nhất kèm % cho từng robot, và gợi ý mô hình cửa hàng đang
+            bán.
           </p>
         </div>
         <RobotRecognition model={{ id, label, files, mb, input, temperature, thresholds, labels }} />

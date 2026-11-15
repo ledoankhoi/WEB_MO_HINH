@@ -2,7 +2,9 @@
 
 Nguồn mô hình:
   --source b05             mốc B5: linear probe trên đặc trưng CLIP ViT-L/14 đóng băng → báo cáo B08a
-  --source b06 --arch X    mô hình tinh chỉnh của B6, đủ các hạt giống đã xong → báo cáo B08
+  --source b06 --arch X    mô hình tinh chỉnh của B6, đủ các hạt giống đã xong → báo cáo B08b
+  --source cuoi --arch X   mô hình cuối (cấu hình F của configs/b07_thi_nghiem_phu.yaml: B6 + cải tiến có ý nghĩa của B7) → báo cáo B08,
+                           kèm bảng so với mô hình B6 cùng hạt giống
 
 Ngưỡng và nhiệt độ chỉ chọn trên val (đã biết, lạ-val, âm-val); tập test (đã biết, lạ-test, âm-test) chỉ để báo số liệu.
 
@@ -114,12 +116,21 @@ def models_from_b05(sets: dict[str, pd.DataFrame]) -> list[dict]:
     return [{"name": "Linear probe CLIP ViT-L/14 (B5)", "seed": None, "logits": logits}]
 
 
-def models_from_b06(arch: str, sets: dict[str, pd.DataFrame], classes: list[str]) -> list[dict]:
+def run_dir(source: str, arch: str, seed: int) -> Path:
+    """Thư mục lần chạy: B6 (`b06/<kiến trúc>-s<hạt giống>`) hoặc mô hình cuối (`b07/<mã cấu hình cuối>-<kiến trúc>-s<hạt giống>`)."""
+    from b06_huan_luyen import runs_root
+    from robotrec.config import load_config
+
+    if source == "b06":
+        return runs_root() / "b06" / f"{arch}-s{seed}"
+    return runs_root() / "b07" / f"{load_config('b07_thi_nghiem_phu')['final']['experiment']}-{arch}-s{seed}"
+
+
+def models_from_b06(arch: str, sets: dict[str, pd.DataFrame], classes: list[str], source: str = "b06") -> list[dict]:
     """Nạp best.pt của từng hạt giống đã xong, suy luận trên mọi tập (lưu cache logits_<tập>.npy cạnh best.pt)."""
     import timm
     import torch
 
-    from b06_huan_luyen import runs_root
     from robotrec.config import load_config
     from robotrec.train import ImageFiles, predict, transforms_for
 
@@ -127,7 +138,7 @@ def models_from_b06(arch: str, sets: dict[str, pd.DataFrame], classes: list[str]
     device = "cuda" if torch.cuda.is_available() else "cpu"
     models = []
     for seed in cfg["seeds"]:
-        run = runs_root() / "b06" / f"{arch}-s{seed}"
+        run = run_dir(source, arch, seed)
         if not (run / "result.json").exists():
             continue
         meta = json.loads((run / "config.json").read_text(encoding="utf-8"))
@@ -152,7 +163,7 @@ def models_from_b06(arch: str, sets: dict[str, pd.DataFrame], classes: list[str]
             logits[name] = out.astype(np.float64)
         models.append({"name": f"{meta['label']} (hạt giống {seed})", "seed": seed, "logits": logits, "label": meta["label"]})
     if not models:
-        raise SystemExit(f"Chưa có lần chạy B6 nào của {arch} xong.")
+        raise SystemExit(f"Chưa có lần chạy {'B6' if source == 'b06' else 'mô hình cuối'} nào của {arch} xong.")
     return models
 
 
@@ -214,18 +225,18 @@ def outlier_exposure(arch: str, sets: dict[str, pd.DataFrame], classes: list[str
     return {"rows": rows, "known_as_negative": rejected, "best_epoch": json.loads((run / "result.json").read_text(encoding="utf-8"))["best"]["epoch"]}
 
 
-def explain_and_errors(arch: str, seed: int, sets: dict[str, pd.DataFrame], logits_test: np.ndarray, classes: list[str], robots: dict, report: Report) -> dict:
+def explain_and_errors(arch: str, seed: int, sets: dict[str, pd.DataFrame], logits_test: np.ndarray, classes: list[str], robots: dict, report: Report,
+                       source: str = "b06") -> dict:
     """Grad-CAM cho 20 ảnh đúng và 20 ảnh sai, UMAP đặc trưng tầng áp chót trên val, trang phân tích 100 ảnh đoán sai cho chủ dự án."""
     import timm
     import torch
     from PIL import Image
 
-    from b06_huan_luyen import runs_root
     from robotrec.explain import gradcam, target_layer
     from robotrec.review_html import write_audit
     from robotrec.train import ImageFiles, predict, transforms_for
 
-    run = runs_root() / "b06" / f"{arch}-s{seed}"
+    run = run_dir(source, arch, seed)
     meta = json.loads((run / "config.json").read_text(encoding="utf-8"))
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model = timm.create_model(meta["timm"], pretrained=False, num_classes=len(classes))
@@ -390,8 +401,8 @@ def evaluate_model(model: dict, sets: dict[str, pd.DataFrame], h, classes: list[
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--source", choices=["b05", "b06"], required=True)
-    parser.add_argument("--arch", help="kiến trúc của B6 (khi --source b06)")
+    parser.add_argument("--source", choices=["b05", "b06", "cuoi"], required=True)
+    parser.add_argument("--arch", help="kiến trúc của B6 (khi --source b06 hoặc cuoi)")
     args = parser.parse_args()
     env = environment()
     robots = {r["slug"]: r for r in json.loads((MANIFESTS / "robots.json").read_text(encoding="utf-8"))["classes"]}
@@ -400,7 +411,7 @@ def main() -> None:
     sets = load_sets(classes)
     h = hierarchy(classes, robots)
     b04 = json.loads((Path(__file__).resolve().parents[1] / "reports" / "B04" / "summary.json").read_text(encoding="utf-8"))
-    models = models_from_b05(sets) if args.source == "b05" else models_from_b06(args.arch, sets, classes)
+    models = models_from_b05(sets) if args.source == "b05" else models_from_b06(args.arch, sets, classes, args.source)
     results = [evaluate_model(m, sets, h, classes, robots) for m in models]
     first, r0 = models[0], results[0]
     many = len(models) > 1
@@ -408,8 +419,10 @@ def main() -> None:
 
     if args.source == "b05":
         report = Report("B08a", "danh-gia-moc-b05", "Đánh giá toàn diện mốc B5 (linear probe trên đặc trưng CLIP ViT-L/14)")
+    elif args.source == "b06":
+        report = Report("B08b", "danh-gia-mo-hinh-b06", f"Đánh giá toàn diện mô hình chính của B6 ({models[0]['label']})")
     else:
-        report = Report("B08", "danh-gia", f"Đánh giá toàn diện mô hình chính ({models[0]['label']})")
+        report = Report("B08", "danh-gia", f"Đánh giá toàn diện mô hình cuối ({models[0]['label']})")
     report.section(1)
     report.p(
         "Đo đủ các mặt của một mô hình nhận dạng theo kế hoạch B8: độ chính xác trên ảnh của lớp đã biết (tổng thể, từng lớp, theo cấp nhân vật và franchise, "
@@ -422,6 +435,13 @@ def main() -> None:
             "mô hình tinh chỉnh và (2) có số liệu tập mở của mốc để so sánh ở B8. Mốc không được chọn hay chỉnh theo tập test nên dùng test ở đây không làm sai "
             "nguyên tắc \"test chỉ dùng một lần\" cho mô hình chính."
         )
+    if args.source == "b06":
+        report.p("Báo cáo này chạy trên mô hình chính của **B6**, trước khi B7 cho thấy Mixup/CutMix cải tiến có ý nghĩa. Mô hình cuối (B6 + Mixup/CutMix) "
+                 "đánh giá ở báo cáo B08.")
+    if args.source == "cuoi":
+        report.p("Mô hình cuối là cấu hình chính của B6 cộng thêm cải tiến có ý nghĩa thống kê của B7 (Mixup α = 0,2 và CutMix α = 1,0, thí nghiệm A4), "
+                 "huấn luyện lại trên 3 hạt giống. Hạt giống 42 dùng chính lần chạy A4 của B7 (cùng cấu hình, cùng hạt giống). Bảng 14 so với mô hình B6 "
+                 "cùng hạt giống trên test.")
     report.p(f"**Số liệu tạm**: dữ liệu là bản tạm `{b04['dataset_version'][:12]}` của B4 (chưa có nhãn tay của B3).")
     report.section(2)
     sizes = {name: len(rows) for name, rows in sets.items()}
@@ -650,7 +670,7 @@ def main() -> None:
 
     # So sánh với mốc B5 (chỉ khi đánh giá mô hình tinh chỉnh)
     compare_rows = []
-    if args.source == "b06":
+    if args.source in ("b06", "cuoi"):
         base = models_from_b05(sets)[0]
         base_ok = base["logits"]["test"].argmax(1) == y_test
         tests = [mcnemar(r["correct_test"], base_ok) for r in results]
@@ -661,10 +681,28 @@ def main() -> None:
         report.table(compare_rows, ["So sánh trên test", "Hiệu top-1, điểm % [KTC 95%]", "A đúng, B sai", "A sai, B đúng", "p (McNemar)", "p sau Holm"],
                      caption="Bảng 12. Mô hình tinh chỉnh so với mốc B5 (RQ2)")
         report.h3("Giải thích mô hình và phân tích lỗi")
-        extra = explain_and_errors(args.arch, models[0]["seed"], sets, first["logits"]["test"], classes, robots, report)
+        extra = explain_and_errors(args.arch, models[0]["seed"], sets, first["logits"]["test"], classes, robots, report, args.source)
         report.p(f"Trang để chủ dự án phân loại nguyên nhân của 100 ảnh đoán sai (nhãn sai, hai robot giống nhau, ảnh khó, sai dòng, kiểu ảnh lạ): `{extra['error_page']}`. "
                  "Tỉ lệ từng nguyên nhân sẽ được thêm vào báo cáo khi có kết quả.")
-        oe = outlier_exposure(args.arch, sets, classes, models, results)
+        if args.source == "cuoi":
+            b6_models = models_from_b06(args.arch, sets, classes, "b06")
+            b6_by_seed = {m["seed"]: m for m in b6_models}
+            pairs = [(m, r, b6_by_seed[m["seed"]]) for m, r in zip(models, results) if m["seed"] in b6_by_seed]
+            tests = [mcnemar(r["correct_test"], b6["logits"]["test"].argmax(1) == y_test) for _, r, b6 in pairs]
+            adjusted = holm([t.p_value for t in tests])
+            final_rows, final_diffs = [], []
+            for (m, r, b6), t, p_adj in zip(pairs, tests, adjusted):
+                b6_ok = b6["logits"]["test"].argmax(1) == y_test
+                diff = paired_bootstrap_diff(r["correct_test"], b6_ok, 1000, seed=SEED)
+                final_diffs.append(diff.estimate)
+                final_rows.append([f"Hạt giống {m['seed']}", vn(100 * float(b6_ok.mean())), vn(100 * float(r["correct_test"].mean())),
+                                   f"{vn(100 * diff.estimate)} [{vn(100 * diff.low)}; {vn(100 * diff.high)}]", t.b, t.c, pv(t.p_value), pv(p_adj)])
+            report.table(final_rows, ["Cặp so sánh", "top-1 test B6 (%)", "top-1 test mô hình cuối (%)", "Hiệu, điểm % [KTC 95%]", "Cuối đúng, B6 sai",
+                                      "Cuối sai, B6 đúng", "p (McNemar)", "p sau Holm"],
+                         caption="Bảng 14. Mô hình cuối so với mô hình chính của B6 cùng hạt giống, trên test")
+            report.set("vs_b06", {"diff_top1": final_diffs, "p_holm": adjusted})
+            report.p("Outlier exposure (E7) dùng đúng công thức của B6 nên được so với mô hình B6 cùng hạt giống, ở báo cáo B08b (bảng 13).")
+        oe = outlier_exposure(args.arch, sets, classes, models, results) if args.source == "b06" else None
         if oe:
             report.h3("Outlier exposure (E7)")
             report.p("Huấn luyện lại một lần (hạt giống 42, cùng công thức B6) có thêm lớp thứ 196 \"không phải robot\" gồm ảnh âm-train của B4b; ảnh âm-val vào val. "
@@ -743,7 +781,7 @@ def main() -> None:
             "Lớp không biết và tập âm cùng nguồn web với dữ liệu huấn luyện; robot lạ hay ảnh khách gửi ngoài đời có thể khác (thử nghiệm thực địa ở B13).",
             "Nhóm đồ chơi của tập âm chưa duyệt tay từng ảnh nên có thể lẫn vài ảnh robot, làm tỉ lệ nhận nhầm trên nhóm này cao hơn thật.",
             "Ngưỡng chọn trên một lưới bước 0,02 và trên cỡ mẫu val hữu hạn; tỉ lệ nhận nhầm trên test dao động quanh α.",
-            "Chưa đánh giá ảnh dạng biến hình (xe, thú) riêng vì chưa có nhãn dạng." + ("" if report.summary.get("oe") else " Chưa có lần chạy outlier exposure (E7) xong nên bảng 13 chưa có."),
+            "Chưa đánh giá ảnh dạng biến hình (xe, thú) riêng vì chưa có nhãn dạng." + ("" if report.summary.get("oe") or args.source != "b06" else " Chưa có lần chạy outlier exposure (E7) xong nên bảng 13 chưa có."),
             "Miền ảnh do CLIP gán, chưa kiểm định; bảng theo miền chỉ để tham khảo.",
         ]
     )

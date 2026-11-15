@@ -3,7 +3,7 @@
 // Gửi đủ mọi lớp (khoảng 200 số, vài KB) chứ không chỉ top-10 như bản kế hoạch: luật theo cấp cộng xác suất mọi lớp cùng
 // nhân vật hoặc cùng franchise, chỉ có top-10 thì máy chủ không tính lại đúng được.
 import type { ProductSummary } from "./types";
-import { decide, type Hierarchy, type RecognitionLabel, type RecognitionLevel, type RecognitionResult } from "./recognition";
+import { decide, type Hierarchy, type RecognitionLabel, type RecognitionResult } from "./recognition";
 
 export const RECOGNITION_ROUND = 1e6;
 // Tổng xác suất sau khi làm tròn 6 chữ số lệch tối đa n · 5e-7; cho thêm biên rộng hơn nhiều để không từ chối oan.
@@ -23,21 +23,17 @@ export type RecognitionRobotInfo = {
   sourceUrl: string | null;
 };
 
-export type RecognitionAlternative = { slug: string; name: string; series: string; franchiseLabel: string; image: string | null; p: number };
+// Một dòng của bảng xếp hạng: robot và xác suất mô hình cho (đã hiệu chỉnh nhiệt độ T).
+export type RecognitionRankEntry = { slug: string; name: string; series: string; franchiseLabel: string; image: string | null; p: number };
 
+// Trang khách tạm thời chỉ hiện bảng xếp hạng (chủ dự án quyết định ngày 15/11/2026, khi mới xong một phần đề tài): luật trả lời
+// theo cấp (`decide`, src/lib/recognition.ts) vẫn chạy ở máy chủ để ghi nhật ký `recognition_logs`, nhưng không gửi về trình duyệt.
 export type RecognitionResponse = {
   model: string;
-  level: RecognitionLevel;
-  // Lớp có xác suất cao nhất (luôn có, kể cả khi level là "none"; giao diện chỉ khẳng định theo level).
-  robot: RecognitionRobotInfo;
-  character: { name: string; p: number };
-  franchise: { key: string; label: string; p: number };
-  pClass: number;
-  alternatives: RecognitionAlternative[];
-  // Sản phẩm đang bán: của đúng robot (level "class") hoặc của mọi dòng cùng nhân vật (level "character").
+  // Các robot có xác suất cao nhất, giảm dần.
+  ranking: RecognitionRankEntry[];
+  // Sản phẩm đang bán của các robot trong bảng, theo thứ hạng (hạng 1 trước), bỏ trùng.
   products: ProductSummary[];
-  thresholds: [number, number, number];
-  temperature: number;
 };
 
 // Kiểm tra mảng xác suất trình duyệt gửi lên: đúng số lớp, mỗi số trong [0; 1], tổng gần 1.
@@ -80,56 +76,43 @@ export type RecognitionModelView = {
   temperature: number;
 };
 
-// Dựng câu trả lời từ xác suất đã kiểm tra: áp luật theo cấp (cùng hàm decide() với trình duyệt), kèm thông tin robot từ CSDL
-// (thiếu thì lấy từ labels của mô hình) và sản phẩm đang bán theo cấp trả lời.
+export const RECOGNITION_RANKING = 5;
+export const RECOGNITION_PRODUCTS = 9;
+
+// Dựng câu trả lời từ xác suất đã kiểm tra: bảng xếp hạng `size` robot (tên, dòng từ CSDL, thiếu thì lấy từ labels của mô hình)
+// và sản phẩm đang bán của chúng. `result` là kết quả của luật theo cấp, chỉ để ghi nhật ký.
 export function buildRecognitionResponse(
   model: RecognitionModelView,
   hierarchy: Hierarchy,
   probs: number[],
   catalog: { robots: Record<string, Partial<RecognitionRobotInfo>>; products: Record<string, readonly ProductSummary[]> },
-  alternatives = 4,
+  size = RECOGNITION_RANKING,
 ): { response: RecognitionResponse; result: RecognitionResult } {
-  const result = decide(probs, hierarchy, model.thresholds, alternatives + 1);
+  const result = decide(probs, hierarchy, model.thresholds, size);
   const { robots, products } = catalog;
-  const top = model.labels[result.classIndex];
-  const info = robots[top.slug] ?? {};
-  const franchiseKey = hierarchy.franchises[result.franchiseIndex];
-  const franchiseLabel = Object.values(robots).find((robot) => robot.franchise === franchiseKey)?.franchiseLabel ?? franchiseKey;
-  const character = hierarchy.characters[result.characterIndex];
-  const sameCharacter = model.labels.filter((_, i) => hierarchy.classCharacter[i] === result.characterIndex).map((label) => label.slug);
-  const shown =
-    result.level === "class"
-      ? mergeProducts([products[top.slug], ...sameCharacter.map((slug) => products[slug])])
-      : result.level === "character"
-        ? mergeProducts(sameCharacter.map((slug) => products[slug]))
-        : [];
+  const franchiseLabels = new Map<string, string>();
+  for (const robot of Object.values(robots)) {
+    if (robot.franchise && robot.franchiseLabel && !franchiseLabels.has(robot.franchise)) franchiseLabels.set(robot.franchise, robot.franchiseLabel);
+  }
+  const ranking = result.alternatives.map(({ index, p }): RecognitionRankEntry => {
+    const label = model.labels[index];
+    const robot = robots[label.slug] ?? {};
+    return {
+      slug: label.slug,
+      name: robot.name ?? label.name,
+      series: robot.series ?? label.series,
+      franchiseLabel: robot.franchiseLabel ?? franchiseLabels.get(label.franchise) ?? label.franchise,
+      image: robot.image ?? null,
+      p: roundProbability(p),
+    };
+  });
   const response: RecognitionResponse = {
     model: model.id,
-    level: result.level,
-    robot: {
-      slug: top.slug,
-      name: info.name ?? top.name,
-      character: info.character ?? top.character,
-      franchise: info.franchise ?? top.franchise,
-      franchiseLabel: info.franchiseLabel ?? franchiseLabel,
-      series: info.series ?? top.series,
-      faction: info.faction ?? "",
-      altMode: info.altMode ?? "",
-      description: info.description ?? "",
-      image: info.image ?? null,
-      sourceUrl: info.sourceUrl ?? null,
-    },
-    character: { name: character.name, p: roundProbability(result.pCharacter) },
-    franchise: { key: franchiseKey, label: franchiseLabel, p: roundProbability(result.pFranchise) },
-    pClass: roundProbability(result.pClass),
-    alternatives: result.alternatives.slice(1).map(({ index, p }) => {
-      const label = model.labels[index];
-      const robot = robots[label.slug] ?? {};
-      return { slug: label.slug, name: robot.name ?? label.name, series: robot.series ?? label.series, franchiseLabel: robot.franchiseLabel ?? label.franchise, image: robot.image ?? null, p: roundProbability(p) };
-    }),
-    products: shown,
-    thresholds: model.thresholds,
-    temperature: model.temperature,
+    ranking,
+    products: mergeProducts(
+      ranking.map((row) => products[row.slug]),
+      RECOGNITION_PRODUCTS,
+    ),
   };
   return { response, result };
 }

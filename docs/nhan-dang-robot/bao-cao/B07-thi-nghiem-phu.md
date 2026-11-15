@@ -1,6 +1,6 @@
 # B07. Thí nghiệm phụ trên ViT-B/16 (CLIP) (thí nghiệm E3, E4)
 
-Báo cáo sinh tự động bởi `ml/` (mẫu ở `docs/nhan-dang-robot/00-ke-hoach.md` mục 6). Thời gian chạy: 2.8 giây. Số liệu máy đọc: `ml/reports/B07/summary.json`.
+Báo cáo sinh tự động bởi `ml/` (mẫu ở `docs/nhan-dang-robot/00-ke-hoach.md` mục 6). Thời gian chạy: 1.5 giây. Số liệu máy đọc: `ml/reports/B07/summary.json`.
 
 ## 1. Mục tiêu
 
@@ -19,7 +19,7 @@ Báo cáo sinh tự động bởi `ml/` (mẫu ở `docs/nhan-dang-robot/00-ke-h
 
 | Mục | Giá trị |
 | --- | --- |
-| Thời điểm chạy (UTC) | 2026-11-15T01:01:29+00:00 |
+| Thời điểm chạy (UTC) | 2026-11-15T03:07:39+00:00 |
 | Hệ điều hành | Windows 11 (build 10.0.26300, AMD64) |
 | Python | 3.11.9 |
 | CPU | 12th Gen Intel(R) Core(TM) i7-12800H (20 luồng) |
@@ -29,7 +29,7 @@ Báo cáo sinh tự động bởi `ml/` (mẫu ở `docs/nhan-dang-robot/00-ke-h
 | Driver (nvidia-smi) | NVIDIA RTX A2000 Laptop GPU, 4096 MiB, 596.52 |
 | Google Colab | không |
 | Kaggle | không |
-| Commit git | 2a1973c (có thay đổi chưa commit) |
+| Commit git | be38524 (có thay đổi chưa commit) |
 
 **Phiên bản thư viện**
 
@@ -99,8 +99,8 @@ Cấu hình chính (ViT-B/16 (CLIP), hạt giống 42): top-1 val 78,40%. Qua 3 
 | Hạt giống | Δ top-1 của TTA, điểm % | Δ macro-F1 | p (McNemar) | Thời gian suy luận (lần) |
 | --- | --- | --- | --- | --- |
 | 42 | -0,09 [-0,38; 0,21] | -0,13 | 0,594 | 1,53 |
-| 43 | 0,09 [-0,17; 0,36] | 0,18 | 0,571 | 1,51 |
-| 44 | -0,08 [-0,33; 0,19] | -0,09 | 0,653 | 1,60 |
+| 43 | 0,09 [-0,17; 0,36] | 0,18 | 0,571 | 1,60 |
+| 44 | -0,08 [-0,33; 0,19] | -0,09 | 0,653 | 1,61 |
 
 **Bảng 4. A6: đường học theo lượng dữ liệu**
 
@@ -126,7 +126,7 @@ Cấu hình chính (ViT-B/16 (CLIP), hạt giống 42): top-1 val 78,40%. Qua 3 
 - A3 (Không làm trơn nhãn (ε = 0)): Δ top-1 0,66 điểm, Δ macro-F1 0,73 điểm; chưa có ý nghĩa thống kê (p sau Holm 0,172).
 - A4 (Thêm Mixup (α = 0,2) và CutMix (α = 1,0)): Δ top-1 1,34 điểm, Δ macro-F1 1,43 điểm; có ý nghĩa thống kê (p sau Holm < 0,001).
 - A5 (Khởi tạo ImageNet-21k thay cho CLIP (chỉ ViT)): Δ top-1 -4,84 điểm, Δ macro-F1 -5,06 điểm; có ý nghĩa thống kê (p sau Holm < 0,001).
-- A7 (TTA): trung bình qua 3 hạt giống Δ top-1 -0,03 điểm, thời gian suy luận gấp 1,55 lần.
+- A7 (TTA): trung bình qua 3 hạt giống Δ top-1 -0,03 điểm, thời gian suy luận gấp 1,58 lần.
 - Độ lệch chuẩn top-1 giữa 3 hạt giống của cấu hình chính là 0,39 điểm: các Δ của A1–A5 (một hạt giống) nhỏ hơn mức này chỉ nên coi là gợi ý.
 - Từ 50% lên 100% dữ liệu, lỗi val giảm 3,28 điểm: mô hình vẫn còn hưởng lợi khi thêm ảnh, thu thêm dữ liệu có ích.
 
@@ -141,7 +141,7 @@ Cấu hình chính (ViT-B/16 (CLIP), hạt giống 42): top-1 val 78,40%. Qua 3 
 | Mục | Giá trị |
 | --- | --- |
 | Cấu hình | ml/configs/b07_thi_nghiem_phu.yaml |
-| Mã cấu hình | c6662846717e |
+| Mã cấu hình | d558c47c8212 |
 | Hạt giống | 0 |
 | Phiên bản dữ liệu | b04_splits.csv sha256 dff6fdbb77c0 |
 

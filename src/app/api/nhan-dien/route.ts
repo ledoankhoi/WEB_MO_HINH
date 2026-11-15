@@ -7,12 +7,11 @@ import { consumeRateLimit } from "@/server/repo/rate-limit";
 import { getClientIp } from "@/server/request";
 
 // B11: nhận dạng robot từ xác suất trình duyệt tính được (docs/nhan-dang-robot/00-ke-hoach.md). Ảnh không rời trình duyệt:
-// worker ONNX chạy mô hình, trình duyệt gửi lên softmax(z / T) của mọi lớp. Máy chủ áp lại luật theo cấp (cùng hàm với trình duyệt),
-// trả thông tin robot, các khả năng khác và sản phẩm đang bán, ghi nhật ký (không có ảnh).
+// worker ONNX chạy mô hình, trình duyệt gửi lên softmax(z / T) của mọi lớp. Máy chủ trả bảng xếp hạng 5 robot và sản phẩm đang bán
+// của chúng; luật theo cấp (cùng hàm với trình duyệt) vẫn chạy để ghi nhật ký (không có ảnh), giao diện tạm thời không hiện.
 const MAX_BODY_BYTES = 32 * 1024;
 const LIMIT = 30;
 const WINDOW_MS = 60 * 1000;
-const ALTERNATIVES = 4;
 
 const error = (status: number, code: string, message: string, headers?: Record<string, string>) =>
   Response.json({ error: code, message }, { status, headers: { "Cache-Control": "no-store", ...headers } });
@@ -47,7 +46,7 @@ export async function POST(request: Request) {
     hierarchy = buildHierarchy(model.labels);
     hierarchies.set(model.id, hierarchy);
   }
-  const { response, result } = buildRecognitionResponse(model, hierarchy, probs, await getRecognitionCatalog(), ALTERNATIVES);
+  const { response, result } = buildRecognitionResponse(model, hierarchy, probs, await getRecognitionCatalog());
   const top = model.labels[result.classIndex];
 
   const clientMs = parseClientMs(body.clientMs);
