@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { AnimatedNumber, AnimatedVnd } from "@/components/animate/AnimatedNumber";
 import { AnimateIcon, Minus, Plus } from "@/components/animate/icons";
 import { RadioGroup, RadioGroupItem, radioCardClass } from "@/components/animate/RadioGroup";
@@ -9,6 +10,7 @@ import { formatDate, formatVnd } from "@/lib/format";
 import { canPreorder, lineDeposit, orderableQty, type PreorderOffer } from "@/lib/preorder";
 import type { ProductVariant } from "@/lib/types";
 import { AddToCartButton, BuyNowButton } from "./AddToCartButton";
+import { ArrivalCountdown } from "./ArrivalCountdown";
 import { StockAlertButton } from "./StockAlertButton";
 import { useNow } from "./FlashPrice";
 import { flashLimit, flashState } from "@/lib/flash-sale";
@@ -21,6 +23,9 @@ function PreorderBox({ preorder, unitPrice, quantity }: { preorder: PreorderOffe
       <p className="flex flex-wrap items-center gap-2">
         <span className="border-2 border-ink bg-ink px-2 py-px font-condensed text-base font-extrabold text-white uppercase">Hàng đặt trước</span>
         <span className="font-semibold">Dự kiến về {formatDate(preorder.expectedAt)}</span>
+        <span className="border-2 border-ink bg-surface px-1.5 py-px text-xs font-semibold empty:hidden">
+          <ArrivalCountdown expectedAt={preorder.expectedAt} />
+        </span>
       </p>
       {canPreorder(preorder) ? (
         <p className="text-muted">
@@ -35,7 +40,12 @@ function PreorderBox({ preorder, unitPrice, quantity }: { preorder: PreorderOffe
         <p className="font-semibold text-brand-strong">Đợt đặt trước đã ngừng nhận hoặc hết suất.</p>
       )}
       {preorder.note && <p className="whitespace-pre-line text-muted">{preorder.note}</p>}
-      <p className="text-xs text-muted">Hàng về là được giữ riêng theo thứ tự đặt; cửa hàng báo qua email khi hàng về hoặc khi lịch về thay đổi.</p>
+      <p className="text-xs text-muted">
+        Hàng về là được giữ riêng theo thứ tự đặt; cửa hàng báo qua email khi hàng về hoặc khi lịch về thay đổi.{" "}
+        <Link href="/hang-sap-ve#luat-dat-truoc" className="font-semibold text-fg underline">
+          Xem luật đặt trước
+        </Link>
+      </p>
     </div>
   );
 }

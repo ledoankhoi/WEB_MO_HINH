@@ -1,13 +1,13 @@
 import "server-only";
 import { confirmableSql } from "@/lib/order-flow";
 import { isOfferStatus, parsePreorder, type OfferStatus, type PreorderOffer } from "@/lib/preorder";
-import type { OrderStatus, PaymentStatus } from "@/lib/catalog";
+import type { OrderStatus, PaymentStatus, ProductSpec } from "@/lib/catalog";
 import type { ProductSummary } from "@/lib/types";
 import { getDb, isConstraintError, type InStatement, type Row } from "../db";
 import { newId } from "../ids";
 import { withAudit, type AuditEntry } from "./audit";
 import { movementStatements } from "./inventory";
-import { preorderJson, summaryColumns, toSummary } from "./products";
+import { parseSpecs, preorderJson, summaryColumns, toSummary } from "./products";
 
 // Hàng sắp về và đặt trước (src/lib/preorder.ts, docs/ke-hoach/nghiep-vu-ban-hang.md mục 10).
 
@@ -291,17 +291,46 @@ export async function listWaitingOrders(offerId: string): Promise<string[]> {
   return result.rows.map((row) => String(row.id));
 }
 
-export type ComingProduct = { product: ProductSummary; variantName: string; isDefaultVariant: boolean; offer: PreorderOffer };
+export type ComingProduct = {
+  product: ProductSummary;
+  variantName: string;
+  isDefaultVariant: boolean;
+  offer: PreorderOffer;
+  // Số suất của đợt (null: không giới hạn) và số đã đặt ở các đơn chưa huỷ.
+  maxQty: number | null;
+  taken: number;
+  // Chi tiết cho thẻ ở trang "Hàng sắp về". `photoCount`: số ảnh thật trong thư viện; ảnh thật chỉ hiện ở trang chi tiết,
+  // thẻ dùng ảnh dựng từ mô hình 3D như mọi thẻ sản phẩm.
+  brand: string | null;
+  series: string | null;
+  specs: ProductSpec[];
+  photoCount: number;
+};
+
+// Số suất và số đã đặt, đọc từ cùng cột JSON với parsePreorder (preorderJson).
+function offerSlots(value: unknown): { maxQty: number | null; taken: number } {
+  try {
+    const raw = (typeof value === "string" ? JSON.parse(value) : value) as { maxQty?: unknown; taken?: unknown } | null;
+    const maxQty = raw?.maxQty === null || raw?.maxQty === undefined ? null : Number(raw.maxQty);
+    return { maxQty, taken: Number(raw?.taken ?? 0) };
+  } catch {
+    return { maxQty: null, taken: 0 };
+  }
+}
 
 // Trang "Hàng sắp về": phiên bản đang trong đợt đặt trước của sản phẩm đang bán, về sớm trước.
 export async function listComingProducts(): Promise<ComingProduct[]> {
   const db = await getDb();
   const result = await db.execute(
     `SELECT ${summaryColumns("p")}, v.id AS offer_variant_id, v.name AS offer_variant_name, v.is_default AS offer_is_default,
-            v.price AS offer_price, v.compare_at_price AS offer_compare_at_price, ${preorderJson("v.id")} AS offer
+            v.price AS offer_price, v.compare_at_price AS offer_compare_at_price, ${preorderJson("v.id")} AS offer,
+            p.specs AS offer_specs, b.name AS brand_name, s.name AS series_name,
+            (SELECT COUNT(*) FROM product_media m WHERE m.product_id = p.id AND m.kind = 'image')::int AS photo_count
      FROM preorder_offers po
      JOIN product_variants v ON v.id = po.variant_id AND v.is_active
      JOIN product_list p ON p.id = v.product_id AND p.is_active
+     LEFT JOIN brands b ON b.id = p.brand_id
+     LEFT JOIN series s ON s.id = p.series_id
      WHERE po.status <> 'ended'
      ORDER BY po.status = 'open' DESC, po.expected_at, p.name`,
   );
@@ -316,6 +345,18 @@ export async function listComingProducts(): Promise<ComingProduct[]> {
       compareAtPrice: row.offer_compare_at_price === null ? null : Number(row.offer_compare_at_price),
       preorder: offer,
     };
-    return [{ product: { ...product, ...variant }, variantName: String(row.offer_variant_name), isDefaultVariant: Boolean(row.offer_is_default), offer }];
+    return [
+      {
+        product: { ...product, ...variant },
+        variantName: String(row.offer_variant_name),
+        isDefaultVariant: Boolean(row.offer_is_default),
+        offer,
+        ...offerSlots(row.offer),
+        brand: row.brand_name === null ? null : String(row.brand_name),
+        series: row.series_name === null ? null : String(row.series_name),
+        specs: parseSpecs(row.offer_specs),
+        photoCount: Number(row.photo_count),
+      },
+    ];
   });
 }

@@ -82,6 +82,16 @@ export function orderableQty(stock: number, preorder: PreorderOffer | null, maxP
   return Math.max(0, Math.min(maxPerItem, Math.floor(stock)));
 }
 
+const VN_OFFSET_MS = 7 * 3600 * 1000;
+const DAY_MS = 24 * 3600 * 1000;
+
+// Số ngày lịch (giờ Việt Nam) từ `now` tới ngày dự kiến về: 1 là ngày mai, 0 là hôm nay, âm là đã qua ngày dự kiến. Gọi ở
+// trình duyệt: trang "Hàng sắp về" được cache, máy chủ không gọi Date.now() lúc dựng trang.
+export function daysUntil(target: number, now: number): number {
+  const day = (ms: number) => Math.floor((ms + VN_OFFSET_MS) / DAY_MS);
+  return day(target) - day(now);
+}
+
 // Tiền cọc của một dòng: đơn giá × số lượng × % cọc, làm tròn lên tới nghìn đồng.
 export function lineDeposit(unitPrice: number, quantity: number, depositPercent: number): number {
   if (depositPercent <= 0) return 0;

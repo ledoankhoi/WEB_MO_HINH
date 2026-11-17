@@ -14,7 +14,7 @@ const warehouse = await import("@/server/repo/warehouse");
 const { attemptCovers } = await import("@/server/repo/payment-attempts");
 const { orderStage } = await import("@/lib/order-stage");
 const { canApply } = await import("@/lib/order-flow");
-const { amountDue, lineDeposit, orderDeposit, orderableQty, parsePreorder } = await import("@/lib/preorder");
+const { amountDue, daysUntil, lineDeposit, orderDeposit, orderableQty, parsePreorder } = await import("@/lib/preorder");
 
 const DAY = 24 * 3600 * 1000;
 type Entry = Parameters<typeof documents.postDocument>[1];
@@ -95,6 +95,14 @@ describe("tính tiền cọc và suất", () => {
     expect(orderDeposit(1_000_000, 1_000_000, "deposit")).toBe(0);
   });
 
+  it("số ngày tới ngày dự kiến về tính theo ngày lịch giờ Việt Nam", () => {
+    const at = Date.UTC(2026, 11, 5, 5); // 12:00 ngày 05/12 giờ Việt Nam
+    expect(daysUntil(at, Date.UTC(2026, 10, 12, 4))).toBe(23);
+    expect(daysUntil(at, Date.UTC(2026, 11, 4, 16, 59))).toBe(1); // 23:59 ngày 04/12
+    expect(daysUntil(at, Date.UTC(2026, 11, 4, 17, 0))).toBe(0); // 00:00 ngày 05/12
+    expect(daysUntil(at, Date.UTC(2026, 11, 6, 0))).toBe(-1);
+  });
+
   it("số tiền cần trả kế tiếp và số lượng đặt được", () => {
     expect(amountDue({ total: 1_000_000, depositAmount: 300_000, paymentStatus: "unpaid" })).toBe(300_000);
     expect(amountDue({ total: 1_000_000, depositAmount: 300_000, paymentStatus: "deposit_paid" })).toBe(700_000);
@@ -130,7 +138,9 @@ describe("đợt đặt trước", () => {
     const detail = (await products.findProductBySlug("bruticus"))!;
     expect(detail.variants[0].preorder?.id).toBe(offerId);
     expect((await stockOf(product.variantId))!.preorder?.id).toBe(offerId);
-    expect((await preorders.listComingProducts()).map((item) => item.product.slug)).toContain("bruticus");
+    const coming = (await preorders.listComingProducts()).find((item) => item.product.slug === "bruticus");
+    expect(coming).toMatchObject({ offer: { id: offerId }, maxQty: 5, taken: 0 });
+    expect(coming!.specs).toContainEqual({ label: "Chiều cao", value: "Khoảng 30 cm (dạng hợp thể)" });
   });
 
   it("đặt trước không giữ tồn kho, chiếm suất; hết suất thì từ chối; đang có đợt thì không bán thường", async () => {
