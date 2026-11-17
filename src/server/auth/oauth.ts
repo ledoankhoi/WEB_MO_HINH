@@ -26,7 +26,7 @@ export function enabledProviders(env: Record<string, string | undefined> = proce
   return OAUTH_PROVIDERS.filter((provider) => oauthConfig(provider, env));
 }
 
-const FACEBOOK_GRAPH = "https://graph.facebook.com/v19.0";
+const FACEBOOK_GRAPH = "https://graph.facebook.com/v23.0";
 
 const base64url = (buffer: Buffer) => buffer.toString("base64url");
 
@@ -57,7 +57,7 @@ export function authorizationUrl(provider: OAuthProvider, config: Config, reques
     }).toString();
     return url.toString();
   }
-  const url = new URL("https://www.facebook.com/v19.0/dialog/oauth");
+  const url = new URL("https://www.facebook.com/v23.0/dialog/oauth");
   url.search = new URLSearchParams({
     client_id: config.clientId,
     redirect_uri: request.redirectUri,
