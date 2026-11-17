@@ -14,7 +14,8 @@ import {
 } from "react";
 import { OrbitControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import { Combine, Minus, Pause, Play, Plus, Repeat, RotateCcw } from "lucide-react";
+import { Combine, Maximize, Minimize, Minus, Pause, Play, Plus, Repeat, RotateCcw } from "lucide-react";
+import { Vector3 } from "three";
 import type { ModelPose } from "@/lib/model-features";
 import { RobotSubject, StudioLights, type ModelControl, type ModelInfo, type ModelSource } from "./Stage";
 
@@ -32,6 +33,26 @@ function dolly(controls: Controls | null, factor: number) {
   controls.object.position.copy(controls.target).add(offset);
   controls.update();
 }
+
+// Góc nhìn cố định (YC-3D-03): hướng từ tâm tới camera, mô hình quay mặt về +Z. "Trên" bị OrbitControls giữ ở góc cực
+// tối thiểu (minPolarAngle) nên hơi chếch về phía trước.
+const VIEWS = [
+  { label: "Trước", dir: [0, 0, 1] },
+  { label: "Sau", dir: [0, 0, -1] },
+  { label: "Trái", dir: [-1, 0, 0] },
+  { label: "Phải", dir: [1, 0, 0] },
+  { label: "Trên", dir: [0, 1, 0] },
+] as const;
+
+// Đặt camera theo hướng `dir`, giữ khoảng cách hiện tại tới điểm đang nhìn.
+function lookFrom(controls: Controls | null, [x, y, z]: readonly [number, number, number]) {
+  if (!controls) return;
+  const distance = controls.object.position.distanceTo(controls.target);
+  controls.object.position.copy(controls.target).add(new Vector3(x, y, z).setLength(distance));
+  controls.update();
+}
+
+const noSubscribe = () => () => {};
 
 function subscribeReducedMotion(onChange: () => void) {
   const query = window.matchMedia(REDUCED_MOTION);
@@ -78,6 +99,23 @@ export default function RobotViewer({ label, bare = false, onReady, ...source }:
   const [spinChoice, setSpinChoice] = useState<boolean | null>(null);
   const [inView, setInView] = useState(true);
   const [touched, setTouched] = useState(false);
+  // Toàn màn hình (YC-3D-03). iPhone không cho phần tử vào toàn màn hình (fullscreenEnabled = false) nên ẩn nút.
+  const canFullscreen = useSyncExternalStore(noSubscribe, () => document.fullscreenEnabled, () => false);
+  const [fullscreen, setFullscreen] = useState(false);
+  useEffect(() => {
+    const onChange = () => setFullscreen(document.fullscreenElement !== null && document.fullscreenElement === container.current);
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, []);
+  const toggleFullscreen = () => {
+    if (document.fullscreenElement) void document.exitFullscreen();
+    else container.current?.requestFullscreen().catch(() => {});
+  };
+  const chooseView = (dir: readonly [number, number, number]) => {
+    setTouched(true);
+    setSpinChoice(false);
+    lookFrom(controls.current, dir);
+  };
   // Next.js giữ lại trang cũ ở trạng thái ẩn khi điều hướng. Đổi key để dựng khung vẽ mới khi trang
   // hiện trở lại, vì ngữ cảnh WebGL cũ đã được giải phóng lúc ẩn.
   const [epoch, setEpoch] = useState(0);
@@ -178,7 +216,7 @@ export default function RobotViewer({ label, bare = false, onReady, ...source }:
       : "Biến thành robot";
 
   return (
-    <div ref={container} role="group" aria-label={label} className="viewer-surface relative size-full select-none">
+    <div ref={container} role="group" aria-label={label} className={`viewer-surface relative size-full select-none ${fullscreen ? "bg-bg" : ""}`}>
       <WebGLBoundary
         fallback={
           <p className="grid size-full place-items-center p-6 text-center text-sm text-muted">
@@ -249,6 +287,13 @@ export default function RobotViewer({ label, bare = false, onReady, ...source }:
           >
             Kéo để xoay mô hình
           </p>
+          <div role="group" aria-label="Góc nhìn" className="absolute bottom-14 left-3 flex flex-col gap-1.5">
+            {VIEWS.map((view) => (
+              <button key={view.label} type="button" className={`${chipOff} h-7 justify-center px-2.5`} onClick={() => chooseView(view.dir)}>
+                {view.label}
+              </button>
+            ))}
+          </div>
           <div className="absolute right-3 bottom-3 flex gap-1.5">
             <button type="button" className={roundButton} onClick={() => dolly(controls.current, 1.2)} aria-label="Thu nhỏ">
               <Minus className="size-4" aria-hidden />
@@ -273,6 +318,17 @@ export default function RobotViewer({ label, bare = false, onReady, ...source }:
             >
               <RotateCcw className="size-4" aria-hidden />
             </button>
+            {canFullscreen && (
+              <button
+                type="button"
+                className={roundButton}
+                onClick={toggleFullscreen}
+                aria-label={fullscreen ? "Thoát toàn màn hình" : "Toàn màn hình"}
+                aria-pressed={fullscreen}
+              >
+                {fullscreen ? <Minimize className="size-4" aria-hidden /> : <Maximize className="size-4" aria-hidden />}
+              </button>
+            )}
           </div>
         </>
       )}
