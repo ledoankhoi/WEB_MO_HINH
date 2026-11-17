@@ -82,7 +82,7 @@ Mọi nhánh (quản trị và kho T00–T26, tìm kiếm bằng ảnh, giao di�
 Cổng thanh toán chạy thật (VNPay mới ở sandbox; MoMo chưa làm), phí ship theo địa chỉ, trả góp, OTP qua SMS, ghi nhận hành vi người dùng và phần AI tìm theo mô tả chữ (`docs/chuan/00-quyet-dinh-nen-tang.md`; gợi ý sản phẩm dựa trên tương tác 3D: nghiên cứu, phương pháp và kế hoạch ở `docs/AI/`). Tìm kiếm bằng ảnh đã chạy (76/76 sản phẩm đã lập chỉ mục); cần bộ ảnh chụp thật để đo lại và hiệu chỉnh lại ngưỡng (`docs/chuan/08-tich-hop-ai.md` mục 11). Việc cần người thật làm trước khi mở bán: `docs/chuan/10-quan-tri-va-kho.md` mục 8.
 
 Để sau (chủ dự án đã quyết định ngày 06/11/2026):
-- 21 mô hình không có clip hoạt ảnh nào (các Gundam, Bumblebee, Optimus ROTB/G1, Megazord, Muteki Shogun...): muốn có biến hình/dáng thì phải thay file. Grimlock (`grimlock`) có 4 clip dạng khủng long, có thể khai báo thành dáng.
+- 21 mô hình không có clip hoạt ảnh nào (các Gundam, Bumblebee, Optimus ROTB/G1, Megazord, Muteki Shogun...): muốn có biến hình/dáng thì phải thay file. Grimlock (`grimlock`) đã khai báo 4 dáng từ clip của file (17/11/2026).
 - 9 sản phẩm chưa có ảnh thật: Bruticus, Defensor, Predacon Megatron, Slag, Soundwave Prime, Star Saber, Wild Force Megazord, pháo tay Bumblebee, súng máy Zaku.
 - Biến môi trường khi đưa lên mạng: `BANK_*` (chưa có thì chỉ có thanh toán khi nhận hàng), `NEXT_PUBLIC_SITE_URL`, `ADMIN_HOST`. `npm run smoke` cần `ADMIN_EMAIL` (CSDL đã có tài khoản quản trị; có thể truyền tạm khi chạy).
 - `npm audit` chỉ báo lỗ hổng ở công cụ phát triển, không ở gói chạy production: không xử lý.
