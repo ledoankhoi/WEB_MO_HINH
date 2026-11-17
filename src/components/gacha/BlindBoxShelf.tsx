@@ -5,16 +5,19 @@ import Link from "next/link";
 import type { BoxActionResult, BoxBatchActionResult } from "@/app/actions/gacha";
 import { BOX, BOX_LG } from "@/components/store/StoreKit";
 import { BOX_COST, DUPLICATE_SHARDS, RARITY_INFO, type GachaSeries, type PullResult } from "@/lib/gacha";
-import { Celebration, RarityBurst } from "./Fx";
+import { runCharge } from "@/lib/gacha-fx";
+import { Celebration, Charge, RarityBurst } from "./Fx";
 import { RevealStage } from "./RevealStage";
 import { BoxArt } from "./BoxArt";
 import { CardFace, type CardView } from "./GachaCard";
 
 // Hộp mù: kệ 12 hộp (3 tầng × 4), kệ chứa đủ 12 thẻ của series theo thứ tự máy chủ xếp sẵn. Chọn một hộp: hộp phóng to
-// trên nền tối, "Lắc thử" cho vui (không lộ gì), "Mở hộp" thì nắp bật tung và thẻ trồi lên kèm hiệu ứng theo độ hiếm.
-// Hộp đã mở hiện thẻ đứng trên kệ.
+// trên nền tối, "Lắc thử" cho vui (không lộ gì), "Mở hộp" thì hộp "nạp năng lượng" (nắp nảy, ánh sáng lọt qua khe đổi
+// màu tới đúng độ hiếm; thẻ Thường bỏ qua), nắp bật tung và thẻ trồi lên kèm hiệu ứng theo độ hiếm. Hộp đã mở hiện thẻ
+// đứng trên kệ.
 
-type Stage = { slot: number; phase: "pick" | "shaking" | "opening" | "open"; result: PullResult | null };
+// tier: cấp sáng trong lúc nạp năng lượng (phase "charging"), 0 ở các phase khác.
+type Stage = { slot: number; phase: "pick" | "shaking" | "charging" | "opening" | "open"; result: PullResult | null; tier: number };
 
 export function BlindBoxShelf({
   series,
@@ -46,6 +49,7 @@ export function BlindBoxShelf({
   const [finished, setFinished] = useState(false);
   const [pending, startTransition] = useTransition();
   const dialog = useRef<HTMLDivElement>(null);
+  const timers = useRef<number[]>([]);
   const opened = slots.filter(Boolean).length;
   const sealed = slots.length - opened;
   // Mọi thẻ khách chưa có đều nằm trong các hộp chưa mở của kệ (hộp đã mở thì thẻ đã vào bộ sưu tập).
@@ -67,10 +71,17 @@ export function BlindBoxShelf({
   useEffect(() => {
     if (stage) dialog.current?.focus();
   }, [stage]);
+  useEffect(() => {
+    const list = timers.current;
+    return () => list.forEach((timer) => window.clearTimeout(timer));
+  }, []);
+  const later = (fn: () => void, ms: number) => {
+    timers.current.push(window.setTimeout(fn, ms));
+  };
 
   const pick = (slot: number) => {
     setMessage("");
-    setStage({ slot, phase: "pick", result: null });
+    setStage({ slot, phase: "pick", result: null, tier: 0 });
   };
   const shake = () => {
     if (!stage || stage.phase !== "pick") return;
@@ -88,8 +99,19 @@ export function BlindBoxShelf({
         return;
       }
       setFinished(outcome.finished);
-      setStage({ slot, phase: "opening", result: outcome.result });
-      window.setTimeout(() => setStage((current) => (current?.slot === slot ? { ...current, phase: "open" } : current)), 620);
+      const result = outcome.result;
+      // Chỉ đổi màn của đúng hộp này (khách có thể đã đóng màn trong lúc nạp).
+      const update = (patch: Partial<Stage>) => setStage((current) => (current?.slot === slot ? { ...current, ...patch } : current));
+      setStage({ slot, phase: "pick", result, tier: 0 });
+      runCharge(
+        result.rarity,
+        later,
+        (tier) => update({ phase: "charging", tier }),
+        () => {
+          update({ phase: "opening", tier: 0 });
+          later(() => update({ phase: "open" }), 620);
+        },
+      );
     });
   const close = () => {
     const wasOpened = stage?.result !== null;
@@ -214,12 +236,13 @@ export function BlindBoxShelf({
           aria-modal="true"
           aria-label={`Hộp số ${stage.slot + 1}`}
           onKeyDown={(event) => {
-            if (event.key === "Escape" && !pending && stage.phase !== "opening") close();
+            if (event.key === "Escape" && !pending && stage.phase !== "opening" && stage.phase !== "charging") close();
           }}
           className="fixed inset-0 z-[60] overflow-y-auto bg-ink/92 text-white outline-none"
           style={{ backgroundImage: "radial-gradient(circle at 50% 40%, rgb(255 255 255 / 0.16), transparent 62%)" }}
         >
-          <div className="mx-auto flex min-h-full max-w-md flex-col items-center justify-center gap-6 px-4 py-10">
+          {stage.tier >= 2 && <div aria-hidden className="gx-dim" data-tier={stage.tier} />}
+          <div className="relative mx-auto flex min-h-full max-w-md flex-col items-center justify-center gap-6 px-4 py-10">
             <p className="font-condensed text-3xl font-black uppercase italic">
               {stage.phase === "open" ? "Bạn mở được" : `Hộp số ${stage.slot + 1}`}
             </p>
@@ -233,7 +256,9 @@ export function BlindBoxShelf({
                 </div>
               )}
               <div className={stage.phase === "shaking" ? "gx-box-shake" : ""}>
-                <BoxArt slot={stage.slot} label={series.short} lidOpen={stage.phase === "opening" || stage.phase === "open"} faded={stage.phase === "open"} />
+                <Charge tier={stage.tier} square className="block">
+                  <BoxArt slot={stage.slot} label={series.short} lidOpen={stage.phase === "opening" || stage.phase === "open"} faded={stage.phase === "open"} />
+                </Charge>
               </div>
             </div>
             {stage.phase === "open" && result && card ? (
@@ -272,7 +297,7 @@ export function BlindBoxShelf({
                     <button
                       type="button"
                       onClick={open}
-                      disabled={pending || stage.phase === "opening" || !enough}
+                      disabled={pending || stage.phase === "opening" || stage.phase === "charging" || !enough}
                       className="flex h-14 flex-[1.4] flex-col items-center justify-center border-3 border-ink bg-brand font-condensed text-white uppercase italic shadow-[4px_4px_0_#000] disabled:opacity-55"
                     >
                       <span className="text-xl leading-none font-black">Mở hộp</span>
@@ -287,13 +312,13 @@ export function BlindBoxShelf({
                     </Link>
                   )}
                 </div>
-                <button type="button" onClick={close} disabled={pending} className="text-sm text-white/70 underline">
+                <button type="button" onClick={close} disabled={pending || stage.phase === "charging" || stage.phase === "opening"} className="text-sm text-white/70 underline">
                   Chọn hộp khác
                 </button>
               </div>
             )}
           </div>
-          {stage.phase === "open" && big && result && <Celebration key={stage.slot} rarity={result.rarity as "super" | "secret"} />}
+          {stage.phase === "open" && big && result && <Celebration key={stage.slot} rarity={result.rarity as "super" | "secret"} name={card?.name} />}
         </div>
       )}
     </div>

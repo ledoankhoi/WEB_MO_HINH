@@ -1,6 +1,7 @@
 /* Gacha (/gacha): hoạt ảnh máy quay viên nang, mở viên nang, lật thẻ, xé gói thẻ và hiệu ứng theo độ hiếm. Chạy cả khi
    hệ điều hành bật "giảm chuyển động" (như nút đổi dạng của khung 3D): đây là nội dung khách tự bấm để xem. Không có
-   hiệu ứng nhấp nháy lặp lại; chỉ một lần chớp sáng ngắn khi ra thẻ Bí mật. Tiền tố gx-. */
+   hiệu ứng nhấp nháy lặp lại; chỉ một lần chớp sáng ngắn khi ra thẻ Bí mật, và đoạn rung "nạp năng lượng" dài nhất
+   1,6 giây trước khi mở thẻ hiếm. Tiền tố gx-. */
 
 /* ---------- Máy quay ---------- */
 .gx-dome.is-spinning {
@@ -529,5 +530,207 @@ button:not(:disabled):hover > .gx-box {
   to {
     transform: none;
     opacity: 1;
+  }
+}
+
+/* ---------- Nạp năng lượng trước khi mở (src/lib/gacha-fx.ts) ----------
+   Bọc vật sắp mở (viên nang, hộp, mặt sau thẻ) bằng .gx-charge[data-tier]. Mỗi cấp rung mạnh hơn, phóng to hơn và đổi
+   màu sáng: 1 xanh, 2 đỏ, 3 cầu vồng. Dài nhất 1,6 giây (thẻ Bí mật). Viên nang đã lộ màu nên đặt --tc ngay trên phần tử. */
+.gx-charge,
+.gx-dim {
+  --tc: #4f7dff;
+}
+.gx-charge[data-tier="2"],
+.gx-dim[data-tier="2"] {
+  --tc: #ff4a3d;
+}
+.gx-charge[data-tier="3"],
+.gx-dim[data-tier="3"] {
+  --tc: #ffd23f;
+}
+.gx-charge {
+  --amp: 2px;
+  --sc: 1.05;
+  --lift: 12%;
+  position: relative;
+  animation:
+    gx-charge-shake 0.13s linear infinite,
+    gx-charge-glow 0.45s ease-in-out infinite alternate;
+}
+.gx-charge[data-tier="2"] {
+  --amp: 4px;
+  --sc: 1.11;
+  --lift: 26%;
+  animation-duration: 0.1s, 0.35s;
+}
+.gx-charge[data-tier="3"] {
+  --amp: 6px;
+  --sc: 1.18;
+  --lift: 42%;
+  animation:
+    gx-charge-shake 0.08s linear infinite,
+    gx-charge-rainbow 0.8s linear infinite;
+}
+/* Vòng sóng mỗi lần lên cấp (gắn key theo cấp để chạy lại). */
+.gx-tier-ring {
+  position: absolute;
+  inset: 0;
+  border: 5px solid var(--tc);
+  border-radius: var(--ring-radius, 9999px);
+  pointer-events: none;
+  animation: gx-tier-ring 0.45s ease-out both;
+}
+/* Viên nang: khe sáng giữa hai nửa, hai nửa hé dần. */
+.gx-charge .gx-capsule::after {
+  content: "";
+  position: absolute;
+  left: -14%;
+  right: -14%;
+  top: calc(50% - 3px);
+  height: 6px;
+  border-radius: 9999px;
+  background: #fff;
+  box-shadow: 0 0 14px 5px var(--tc);
+  animation: gx-seam 0.28s ease-in-out infinite alternate;
+}
+.gx-charge[data-tier="2"] .gx-capsule-top {
+  transform: translateY(-6%);
+}
+.gx-charge[data-tier="3"] .gx-capsule-top {
+  transform: translateY(-11%);
+}
+.gx-charge[data-tier="3"] .gx-capsule-bottom {
+  transform: translateY(5%);
+}
+/* Hộp mù: nắp nảy lên, ánh sáng lọt qua khe nắp. */
+.gx-charge .gx-lid {
+  animation: gx-lid-rattle 0.16s ease-in-out infinite alternate;
+}
+.gx-charge .gx-box::after {
+  content: "";
+  position: absolute;
+  left: 3%;
+  right: 3%;
+  top: 15%;
+  height: 5px;
+  z-index: 9;
+  border-radius: 9999px;
+  background: #fff;
+  box-shadow: 0 -3px 18px 7px var(--tc);
+  animation: gx-seam 0.28s ease-in-out infinite alternate;
+}
+/* Mặt sau thẻ: viền sáng đổi theo màu của cấp thay cho viền vàng. */
+.gx-charge .gx-back-glow {
+  animation: none;
+  box-shadow:
+    0 0 0 3px var(--tc),
+    0 0 24px 9px var(--tc);
+}
+/* Phòng tối lại, chỉ còn quầng sáng màu của cấp (từ cấp 2). Đặt trước nội dung, nội dung cần `relative`. */
+.gx-dim {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--tc) 30%, transparent) 0%, rgb(0 0 0 / 0.78) 58%);
+  animation: gx-fade-in 0.3s ease-out both;
+}
+
+/* Dấu tên thẻ đóng xuống khi ra thẻ Siêu hiếm, Bí mật. */
+.gx-stamp-layer {
+  position: fixed;
+  inset: 9vh 0 auto;
+  z-index: 82;
+  display: flex;
+  justify-content: center;
+  padding: 0 1rem;
+  pointer-events: none;
+}
+.gx-stamp {
+  animation: gx-stamp 2.5s 0.45s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+
+@keyframes gx-charge-shake {
+  0%,
+  100% {
+    transform: scale(var(--sc)) translate(0, 0) rotate(0deg);
+  }
+  25% {
+    transform: scale(var(--sc)) translate(calc(-1 * var(--amp)), calc(0.5 * var(--amp))) rotate(-1.5deg);
+  }
+  75% {
+    transform: scale(var(--sc)) translate(var(--amp), calc(-0.5 * var(--amp))) rotate(1.5deg);
+  }
+}
+@keyframes gx-charge-glow {
+  from {
+    filter: drop-shadow(0 0 5px var(--tc));
+  }
+  to {
+    filter: drop-shadow(0 0 20px var(--tc)) drop-shadow(0 0 5px #fff);
+  }
+}
+@keyframes gx-charge-rainbow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 24px #ff3ea5) drop-shadow(0 0 6px #fff);
+  }
+  25% {
+    filter: drop-shadow(0 0 24px #ffd23f) drop-shadow(0 0 6px #fff);
+  }
+  50% {
+    filter: drop-shadow(0 0 24px #1fb6ff) drop-shadow(0 0 6px #fff);
+  }
+  75% {
+    filter: drop-shadow(0 0 24px #2bd86f) drop-shadow(0 0 6px #fff);
+  }
+}
+@keyframes gx-tier-ring {
+  from {
+    transform: scale(0.7);
+    opacity: 1;
+  }
+  to {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+}
+@keyframes gx-seam {
+  from {
+    transform: scaleX(0.55);
+    opacity: 0.65;
+  }
+  to {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+@keyframes gx-lid-rattle {
+  from {
+    transform: translateY(calc(-1 * var(--lift))) rotate(-2deg);
+  }
+  to {
+    transform: translateY(calc(-0.35 * var(--lift))) rotate(1.5deg);
+  }
+}
+@keyframes gx-stamp {
+  0% {
+    transform: scale(3.2) rotate(-16deg);
+    opacity: 0;
+  }
+  9% {
+    transform: scale(0.9) rotate(-5deg);
+    opacity: 1;
+  }
+  14% {
+    transform: scale(1.06) rotate(-5deg);
+  }
+  19%,
+  82% {
+    transform: scale(1) rotate(-5deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) translateY(-22px) rotate(-5deg);
+    opacity: 0;
   }
 }

@@ -6,12 +6,14 @@ import { Hand, Ticket } from "lucide-react";
 import { ProductImage } from "@/components/product/ProductCard";
 import { BOX, BOX_LG, SectionHeading } from "@/components/store/StoreKit";
 import { DUPLICATE_SHARDS, PACK_COST, PACK_SIZE, RARITY_INFO, guaranteedRate, type GachaSeries, type PullResult, type Rarity } from "@/lib/gacha";
-import { Celebration, RarityBurst } from "./Fx";
+import { runCharge } from "@/lib/gacha-fx";
+import { Celebration, Charge, RarityBurst } from "./Fx";
 import { CardBack, CardFace, type CardView } from "./GachaCard";
 
 // Mở gói thẻ kiểu TCG: mua gói (máy chủ quay sẵn 5 thẻ), kéo ngang dọc mép trên để xé gói (hoặc bấm "Xé gói ngay",
 // phím mũi tên, Enter), mép gói bay đi, 5 thẻ úp được chia ra; khách chạm từng thẻ để lật (hoặc "Lật tất cả"). Thẻ từ
-// Hiếm trở lên có viền vàng lấp lánh trước khi lật.
+// Hiếm trở lên có viền vàng lấp lánh trước khi lật; khi chạm, thẻ "nạp năng lượng" (viền đổi xanh, đỏ, cầu vồng tới
+// đúng độ hiếm của nó) rồi mới lật.
 
 const vars = (values: Record<string, string>) => values as CSSProperties;
 type Phase = "shop" | "sealed" | "torn" | "dealt";
@@ -42,6 +44,8 @@ export function PackOpener({
   const [results, setResults] = useState<PullResult[]>([]);
   const [progress, setProgress] = useState(0);
   const [flipped, setFlipped] = useState<boolean[]>([]);
+  // Cấp sáng của từng thẻ trong lúc nạp năng lượng (0: không nạp).
+  const [tiers, setTiers] = useState<number[]>([]);
   const [celebration, setCelebration] = useState<{ rarity: "super" | "secret"; key: number } | null>(null);
   const [announcement, setAnnouncement] = useState("");
   const [pending, startTransition] = useTransition();
@@ -76,6 +80,7 @@ export function PackOpener({
       flippedSet.current = new Set();
       setResults(outcome);
       setFlipped(outcome.map(() => false));
+      setTiers(outcome.map(() => 0));
       setProgress(0);
       setCelebration(null);
       setPhase("sealed");
@@ -151,22 +156,28 @@ export function PackOpener({
   const flip = (index: number) => {
     if (flippedSet.current.has(index)) return;
     flippedSet.current.add(index);
-    setFlipped((current) => current.map((value, i) => (i === index ? true : value)));
     const result = results[index];
-    later(() => {
-      setAnnouncement(`${RARITY_INFO[result.rarity].label}: ${cards[result.card]?.name ?? result.card}`);
-      const rarity = result.rarity;
-      if (rarity === "super" || rarity === "secret") {
-        setCelebration((current) => (current && RANK[current.rarity] > RANK[rarity] ? current : { rarity, key: index }));
-        later(() => setCelebration((current) => (current?.key === index ? null : current)), 3600);
-      }
-    }, 380);
+    const setTier = (tier: number) => setTiers((current) => current.map((value, i) => (i === index ? tier : value)));
+    runCharge(result.rarity, later, setTier, () => {
+      setTier(0);
+      setFlipped((current) => current.map((value, i) => (i === index ? true : value)));
+      later(() => {
+        setAnnouncement(`${RARITY_INFO[result.rarity].label}: ${cards[result.card]?.name ?? result.card}`);
+        const rarity = result.rarity;
+        if (rarity === "super" || rarity === "secret") {
+          setCelebration((current) => (current && RANK[current.rarity] > RANK[rarity] ? current : { rarity, key: index }));
+          later(() => setCelebration((current) => (current?.key === index ? null : current)), 3600);
+        }
+      }, 380);
+    });
   };
   const flipAll = () => results.forEach((_, index) => later(() => flip(index), index * 230));
 
   const enough = coins !== null && coins >= PACK_COST;
   const shardTotal = results.reduce((sum, result) => sum + result.shards, 0);
   const fresh = results.filter((result) => !result.duplicate).length;
+  // Cấp sáng cao nhất đang nạp: từ cấp 2 thì các thẻ khác mờ đi.
+  const focus = Math.max(0, ...tiers);
   const instruction =
     phase === "sealed"
       ? "Kéo ngang dọc đường đứt ở mép trên để xé gói."
@@ -265,19 +276,21 @@ export function PackOpener({
               const card = cards[result.card];
               const isFlipped = flipped[index];
               return (
-                <li key={index} className="relative isolate">
+                <li key={index} className={`relative isolate transition-opacity duration-300 ${tiers[index] > 0 ? "z-10" : focus >= 2 ? "opacity-30" : ""}`}>
                   {isFlipped && <RarityBurst rarity={result.rarity} />}
                   <button
                     type="button"
                     onClick={() => flip(index)}
-                    disabled={isFlipped}
+                    disabled={isFlipped || tiers[index] > 0}
                     className={`gx-flip gx-deal block aspect-[5/7] w-full disabled:cursor-default ${isFlipped ? "is-flipped" : ""}`}
                     style={vars({ "--d": `${index * 0.09}s`, "--fx": `${(2 - index) * 46}px` })}
                     aria-label={isFlipped && card ? `${card.name}, ${RARITY_INFO[result.rarity].label}` : `Lật thẻ ${index + 1}`}
                   >
                     <span className="gx-flip-inner block size-full">
                       <span className="gx-face block">
-                        <CardBack glow={result.rarity !== "common"} />
+                        <Charge tier={tiers[index]} square className="block size-full">
+                          <CardBack glow={result.rarity !== "common"} />
+                        </Charge>
                       </span>
                       <span className="gx-face gx-face-front block">{card && <CardFace card={card} size="md" />}</span>
                     </span>
@@ -306,7 +319,7 @@ export function PackOpener({
       <p className="sr-only" aria-live="polite">
         {announcement}
       </p>
-      {celebration && <Celebration key={celebration.key} rarity={celebration.rarity} />}
+      {celebration && <Celebration key={celebration.key} rarity={celebration.rarity} name={cards[results[celebration.key]?.card]?.name} />}
     </div>
   );
 }

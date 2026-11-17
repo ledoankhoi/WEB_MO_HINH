@@ -3,15 +3,17 @@
 import { useEffect, useRef, useState } from "react";
 import { Ticket } from "lucide-react";
 import { RARITY_INFO, type PullResult, type Rarity } from "@/lib/gacha";
+import { runCharge } from "@/lib/gacha-fx";
 import { BoxArt } from "./BoxArt";
-import { Capsule } from "./CapsuleMachine";
-import { Celebration, RarityBurst } from "./Fx";
+import { AURA, Capsule } from "./CapsuleMachine";
+import { Celebration, Charge, RarityBurst } from "./Fx";
 import { CardFace, type CardView } from "./GachaCard";
 
-// Màn mở viên nang sau khi máy quay: nền tối, khách chạm từng viên nang (hoặc "Mở tất cả"), viên nang tách đôi, thẻ bay
-// ra và lật lên kèm hiệu ứng theo độ hiếm. Esc: chưa mở hết thì mở hết, đã mở hết thì đóng.
+// Màn mở viên nang sau khi máy quay: nền tối, khách chạm từng viên nang (hoặc "Mở tất cả"), viên nang "nạp năng lượng"
+// (rung và sáng dần theo độ hiếm, thẻ Thường bỏ qua), tách đôi, thẻ bay ra và lật lên kèm hiệu ứng theo độ hiếm.
+// Esc: chưa mở hết thì mở hết, đã mở hết thì đóng.
 
-type SlotState = "closed" | "opening" | "open";
+type SlotState = "closed" | "charging" | "opening" | "open";
 const RANK: Record<Rarity, number> = { common: 0, rare: 1, super: 2, secret: 3 };
 const OPEN_MS = 420;
 
@@ -28,6 +30,8 @@ export function RevealStage({
   kind?: "capsule" | "box";
 }) {
   const [slots, setSlots] = useState<SlotState[]>(() => results.map(() => "closed"));
+  // Cấp sáng của từng ô trong lúc nạp năng lượng (0: không nạp).
+  const [tiers, setTiers] = useState<number[]>(() => results.map(() => 0));
   const [celebration, setCelebration] = useState<{ rarity: "super" | "secret"; key: number } | null>(null);
   const [announcement, setAnnouncement] = useState("");
   const dialog = useRef<HTMLDivElement>(null);
@@ -49,10 +53,11 @@ export function RevealStage({
   const open = (index: number) => {
     if (started.current.has(index)) return;
     started.current.add(index);
-    setSlots((current) => current.map((slot, i) => (i === index ? "opening" : slot)));
-    later(() => {
-      setSlots((current) => current.map((slot, i) => (i === index ? "open" : slot)));
-      const result = results[index];
+    const result = results[index];
+    const setSlot = (value: SlotState) => setSlots((current) => current.map((slot, i) => (i === index ? value : slot)));
+    const setTier = (tier: number) => setTiers((current) => current.map((value, i) => (i === index ? tier : value)));
+    const burst = () => {
+      setSlot("open");
       setAnnouncement(`${RARITY_INFO[result.rarity].label}: ${cards[result.card]?.name ?? result.card}${result.duplicate ? ", thẻ trùng" : ", thẻ mới"}`);
       const rarity = result.rarity;
       if (rarity === "super" || rarity === "secret") {
@@ -60,7 +65,20 @@ export function RevealStage({
         setCelebration((current) => (current && RANK[current.rarity] > RANK[rarity] ? current : { rarity, key: index }));
         later(() => setCelebration((current) => (current?.key === index ? null : current)), 3600);
       }
-    }, OPEN_MS);
+    };
+    runCharge(
+      result.rarity,
+      later,
+      (tier) => {
+        setSlot("charging");
+        setTier(tier);
+      },
+      () => {
+        setTier(0);
+        setSlot("opening");
+        later(burst, OPEN_MS);
+      },
+    );
   };
 
   const openAll = () => results.forEach((_, index) => later(() => open(index), index * 170));
@@ -68,6 +86,8 @@ export function RevealStage({
   const shards = results.reduce((sum, result) => sum + result.shards, 0);
   const fresh = results.filter((result) => !result.duplicate).length;
   const coupons = results.filter((result) => result.couponCode);
+  // Cấp sáng cao nhất đang nạp: từ cấp 2 thì phòng tối lại và các ô khác mờ đi.
+  const focus = Math.max(0, ...tiers);
 
   return (
     <div
@@ -84,7 +104,8 @@ export function RevealStage({
       className="fixed inset-0 z-[60] overflow-y-auto bg-ink/92 text-white outline-none"
       style={{ backgroundImage: "radial-gradient(circle at 50% 38%, rgb(255 255 255 / 0.16), transparent 62%)" }}
     >
-      <div className="mx-auto flex min-h-full max-w-5xl flex-col items-center justify-center gap-7 px-4 py-10">
+      {focus >= 2 && <div aria-hidden className="gx-dim" data-tier={focus} />}
+      <div className="relative mx-auto flex min-h-full max-w-5xl flex-col items-center justify-center gap-7 px-4 py-10">
         <p className="text-center font-condensed text-3xl font-black uppercase italic sm:text-4xl">
           {allOpen ? "Bạn nhận được" : kind === "box" ? "Chạm từng hộp, hoặc mở tất cả" : single ? "Chạm vào viên nang để mở" : "Chạm từng viên nang, hoặc mở tất cả"}
         </p>
@@ -95,7 +116,7 @@ export function RevealStage({
             const state = slots[index];
             const big = result.rarity === "super" || result.rarity === "secret";
             return (
-              <li key={index} className="relative isolate">
+              <li key={index} className={`relative isolate transition-opacity duration-300 ${tiers[index] > 0 ? "z-10" : focus >= 2 ? "opacity-25" : ""}`}>
                 <button
                   type="button"
                   onClick={() => open(index)}
@@ -115,11 +136,13 @@ export function RevealStage({
                   ) : (
                     <span className="absolute inset-0 grid place-items-center">
                       {kind === "box" ? (
-                        <span className="block w-[86%]">
+                        <Charge tier={tiers[index]} square className="block w-[86%]">
                           <BoxArt slot={result.slot ?? index} label={card?.series ?? ""} small={!single} lidOpen={state === "opening"} />
-                        </span>
+                        </Charge>
                       ) : (
-                        <Capsule rarity={result.rarity} size={single ? 180 : 80} open={state === "opening"} waiting={state === "closed"} />
+                        <Charge tier={tiers[index]} color={AURA[result.rarity]} className="grid">
+                          <Capsule rarity={result.rarity} size={single ? 180 : 80} open={state === "opening"} waiting={state === "closed"} />
+                        </Charge>
                       )}
                     </span>
                   )}
@@ -173,7 +196,7 @@ export function RevealStage({
           {announcement}
         </p>
       </div>
-      {celebration && <Celebration key={celebration.key} rarity={celebration.rarity} />}
+      {celebration && <Celebration key={celebration.key} rarity={celebration.rarity} name={cards[results[celebration.key].card]?.name} />}
     </div>
   );
 }
