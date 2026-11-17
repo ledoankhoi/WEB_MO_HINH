@@ -19,6 +19,8 @@ const COUNT_SQL: Record<AlertKey, InStatement> = {
     sql: `SELECT COUNT(*) AS n FROM orders WHERE payment_method = 'bank' AND status = 'pending' AND payment_status = 'unpaid' AND created_at < ${NOW} - ?`,
     args: [48 * HOUR],
   },
+  transferClaims: `SELECT COUNT(*) AS n FROM orders o WHERE o.status = 'pending' AND o.payment_status = 'unpaid' AND o.payment_method <> 'vnpay'
+                     AND EXISTS (SELECT 1 FROM transfer_claims t WHERE t.order_id = o.id)`,
   refunds: "SELECT COUNT(*) AS n FROM orders WHERE status = 'cancelled' AND payment_status IN ('paid', 'deposit_paid')",
   returns: "SELECT COUNT(*) AS n FROM return_requests WHERE status = 'requested'",
   returnRefunds: `SELECT COUNT(*) AS n FROM return_requests r JOIN stock_documents d ON d.id = r.document_id

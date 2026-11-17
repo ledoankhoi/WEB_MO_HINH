@@ -1377,6 +1377,22 @@ export const MIGRATIONS: Migration[] = [
     ],
   },
   {
+    // Chuyển khoản: khách báo "đã chuyển khoản" (docs/ke-hoach/thanh-toan-va-van-chuyen.md). Đã kiểm trên CSDL thật
+    // (12/11/2026): chưa có bảng tên transfer_claims. Một đơn có thể báo nhiều lần (lần mới nhất được hiển thị).
+    // Đơn đã báo thì tác vụ định kỳ không tự huỷ khi quá hạn: kế toán đối chiếu sổ ngân hàng rồi ghi nhận hoặc huỷ.
+    id: "sale_13_chuyen_khoan",
+    statements: [
+      `CREATE TABLE IF NOT EXISTS transfer_claims (
+        id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+        order_id TEXT NOT NULL REFERENCES orders (id),
+        note TEXT NOT NULL DEFAULT '',
+        created_at BIGINT NOT NULL
+      )`,
+      "CREATE INDEX IF NOT EXISTS idx_transfer_claims_order ON transfer_claims (order_id, created_at)",
+      "ALTER TABLE transfer_claims ENABLE ROW LEVEL SECURITY",
+    ],
+  },
+  {
     // Nhận dạng robot từ ảnh (docs/nhan-dang-robot/00-ke-hoach.md, B10; truy vấn ở src/server/repo/recognition.ts).
     // Đã kiểm trên CSDL thật (14/11/2026): chưa có bảng robots, robot_products, recognition_models, recognition_logs.
     // Khác bảng của kế hoạch: robots thêm `character` (nhân vật, cấp giữa của câu trả lời) và `store_products` (gợi ý ghép của B1).

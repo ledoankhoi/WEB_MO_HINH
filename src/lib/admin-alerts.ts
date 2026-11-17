@@ -22,6 +22,14 @@ export const ALERT_KINDS = {
     permission: "orders.process",
     tone: "warn",
   },
+  transferClaims: {
+    label: "Khách báo đã chuyển khoản, chờ đối chiếu",
+    href: "/admin/don-hang/chuyen-khoan",
+    nav: "/admin/don-hang/chuyen-khoan",
+    permission: "payments.manage",
+    tone: "urgent",
+    within: "orders",
+  },
   refunds: {
     label: "Đơn huỷ chờ hoàn tiền",
     href: "/admin/don-hang/cho-hoan-tien",

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BellRing, Bot, Boxes, CalendarClock, FileSpreadsheet, MessagesSquare as ChatIcon, Layers, MessageCircleQuestion, Zap, Mail, Image as ImageIcon, MessagesSquare, Menu, Newspaper, NotebookText, Settings, ClipboardList, FileText, Scale, ShieldAlert, Star, TicketPercent, FolderTree, MapPin, Truck, LayoutDashboard, ChartColumn, Library, Package, PackageOpen, ReceiptText, ScanSearch, ScrollText, Tag, Undo2, UserCog, Users } from "lucide-react";
+import { BellRing, Bot, Boxes, CalendarClock, FileSpreadsheet, MessagesSquare as ChatIcon, Layers, MessageCircleQuestion, Zap, Mail, Image as ImageIcon, Landmark, MessagesSquare, Menu, Newspaper, NotebookText, Settings, ClipboardList, FileText, Scale, ShieldAlert, Star, TicketPercent, FolderTree, MapPin, Truck, LayoutDashboard, ChartColumn, Library, Package, PackageOpen, ReceiptText, ScanSearch, ScrollText, Tag, Undo2, UserCog, Users } from "lucide-react";
 import { can, type Permission, type Role } from "@/lib/permissions";
 import { CountBadge, navBadge, useAdminAlerts } from "./AdminAlerts";
 
@@ -20,6 +20,7 @@ const GROUPS: { label?: string; links: { href: string; label: string; icon: type
     links: [
       { href: "/admin/don-hang", label: "Đơn hàng", icon: ReceiptText, permission: "orders.view" },
       { href: "/admin/don-hang/tra-hang", label: "Trả hàng", icon: PackageOpen, permission: "orders.view" },
+      { href: "/admin/don-hang/chuyen-khoan", label: "Chờ chuyển khoản", icon: Landmark, permission: "payments.manage" },
       { href: "/admin/don-hang/cho-hoan-tien", label: "Chờ hoàn tiền", icon: Undo2, permission: "payments.manage" },
       { href: "/admin/dat-truoc", label: "Đặt trước", icon: CalendarClock, permission: "catalog.view" },
       { href: "/admin/hoa-don", label: "Hoá đơn VAT", icon: FileSpreadsheet, permission: "payments.manage" },

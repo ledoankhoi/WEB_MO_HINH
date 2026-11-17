@@ -11,6 +11,7 @@ import { ORDER_STATUS_LABELS, PAYMENT_METHOD_LABELS, PAYMENT_STATUS_LABELS, SHIP
 import { OrderHistory } from "@/components/order/OrderHistory";
 import { OrderProgress } from "@/components/order/OrderProgress";
 import { OrderReturns } from "@/components/order/OrderReturns";
+import { TransferClaim } from "@/components/order/TransferClaim";
 import { VnpayPanel } from "@/components/order/VnpayPanel";
 import { RESPONSE_MESSAGES, vnpayConfig } from "@/server/payments/vnpay";
 import { formatDate, formatDateTime, formatVnd } from "@/lib/format";
@@ -20,6 +21,8 @@ import { buildVietQrPayload } from "@/lib/vietqr";
 import { getBankAccount } from "@/server/payment";
 import { OrderOptions } from "@/components/cart/WorkshopLines";
 import { findOrderByToken } from "@/server/repo/orders";
+import { latestClaim } from "@/server/repo/bank-transfers";
+import { awaitsPrepayment, prepaymentDeadline } from "@/lib/bank-transfer";
 
 // Liên kết đơn hàng chứa token bí mật: không cho công cụ tìm kiếm lập chỉ mục, không gửi Referer ra ngoài.
 export const metadata: Metadata = { title: "Đơn hàng", robots: { index: false }, referrer: "no-referrer" };
@@ -28,6 +31,18 @@ export const metadata: Metadata = { title: "Đơn hàng", robots: { index: false
 function dueLabel(order: Order): string {
   if (order.paymentStatus === "deposit_paid") return "phần còn lại";
   return order.depositAmount > 0 ? "tiền cọc" : "";
+}
+
+// Hạn giữ hàng (chỉ khi đơn đang chờ khoản trả trước đầu tiên) và lần khách báo đã chuyển gần nhất.
+async function TransferStatus({ order }: { order: Order }) {
+  const claim = await latestClaim(order.id);
+  return (
+    <TransferClaim
+      token={order.token}
+      deadlineText={awaitsPrepayment(order) ? formatDateTime(prepaymentDeadline(order)) : null}
+      claimedText={claim ? formatDateTime(claim.createdAt) : null}
+    />
+  );
 }
 
 async function BankTransfer({ order }: { order: Order }) {
@@ -141,6 +156,7 @@ async function OrderDetail({ params, searchParams }: PageProps<"/don-hang/[token
       )}
 
       {bankDue && <BankTransfer order={order} />}
+      {bankDue && getBankAccount() && <TransferStatus order={order} />}
 
       <div className="grid gap-8 lg:grid-cols-[1fr_22rem]">
         <div className="space-y-6">

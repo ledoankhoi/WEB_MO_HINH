@@ -581,6 +581,8 @@ export type OrderActionOptions = {
   tracking?: { carrier: string; code: string };
   // L2, L14: mã giao dịch ngân hàng, ghi chú đối soát.
   reference?: string;
+  // Thư gửi khách sau khi đổi trạng thái: mặc định theo thao tác; tác vụ tự huỷ đơn quá hạn gửi "expired" thay cho "cancel".
+  mail?: "expired";
 };
 
 // Thực hiện một thao tác L2–L14 trong một giao dịch: khoá dòng đơn, mọi lệnh ghi (kho, thanh toán, lịch sử,
@@ -683,7 +685,7 @@ export async function applyOrderAction(id: string, key: OrderActionKey, audit?: 
   }
   // Báo khách qua email (nghiep-vu-ban-hang mục 3). Nạp động để tránh vòng lặp import (order-mails đọc đơn từ file này);
   // hàm không ném lỗi nên thư lỗi không làm hỏng thao tác trên đơn.
-  if (changed) await (await import("../email/order-mails")).notifyOrderEvent(id, key);
+  if (changed) await (await import("../email/order-mails")).notifyOrderEvent(id, options.mail ?? key);
   return changed;
 }
 

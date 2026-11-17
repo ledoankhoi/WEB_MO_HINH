@@ -1,7 +1,9 @@
 import "server-only";
 import { site } from "@/config/site";
 import { PAYMENT_METHOD_LABELS } from "@/lib/catalog";
-import { formatDate, formatVnd } from "@/lib/format";
+import { formatDate, formatDateTime, formatVnd } from "@/lib/format";
+import { prepaymentDeadline } from "@/lib/bank-transfer";
+import { amountDue } from "@/lib/preorder";
 import type { OrderActionKey } from "@/lib/order-flow";
 import type { Order } from "@/lib/types";
 import { findOrderById } from "../repo/orders";
@@ -25,11 +27,32 @@ function preorderLines(order: Order): string[] {
 // Email báo đơn hàng (docs/ke-hoach/nghiep-vu-ban-hang.md, mục 3). Thư giao dịch: luôn gửi, không phụ thuộc lựa chọn
 // nhận tin khuyến mãi. Bước nào không có trong MESSAGES (đóng gói, đóng gói xong...) thì không gửi để khách khỏi bị làm phiền.
 
-export type OrderMailEvent = "placed" | OrderActionKey;
+// "transfer_reminder": nhắc chuyển khoản khi gần hết hạn giữ hàng; "expired": đơn tự huỷ vì quá hạn trả trước
+// (src/server/repo/bank-transfers.ts).
+export type OrderMailEvent = "placed" | OrderActionKey | "transfer_reminder" | "expired";
 
 type Message = { subject: (code: string) => string; title: string; lines: (order: Order) => string[] };
 
 const MESSAGES: Partial<Record<OrderMailEvent, Message>> = {
+  transfer_reminder: {
+    subject: (code) => `Nhắc thanh toán đơn ${code}`,
+    title: "Đơn hàng đang chờ thanh toán",
+    lines: (order) => [
+      `Cửa hàng chưa nhận được ${formatVnd(amountDue(order))} cho đơn ${order.code}.`,
+      `Hàng đang được giữ cho bạn tới ${formatDateTime(prepaymentDeadline(order))}; quá hạn đơn sẽ tự huỷ.`,
+      order.paymentMethod === "vnpay"
+        ? "Bạn có thể thanh toán lại qua VNPay ở trang đơn hàng."
+        : `Mã VietQR và thông tin chuyển khoản có ở trang đơn hàng; nhớ ghi nội dung ${order.code}. Đã chuyển rồi thì bấm "Tôi đã chuyển khoản" ở trang đơn để cửa hàng kiểm tra.`,
+    ],
+  },
+  expired: {
+    subject: (code) => `Đơn ${code} đã huỷ vì quá hạn thanh toán`,
+    title: "Đơn hàng đã huỷ",
+    lines: (order) => [
+      `Đơn ${order.code} đã tự huỷ vì cửa hàng chưa nhận được thanh toán trong thời hạn giữ hàng.`,
+      `Nếu bạn đã chuyển khoản, hãy trả lời thư này hoặc liên hệ ${site.contact.email}, ${site.contact.phone} kèm ảnh biên lai: cửa hàng sẽ hoàn tiền hoặc khôi phục đơn.`,
+    ],
+  },
   placed: {
     subject: (code) => `Đã nhận đơn hàng ${code}`,
     title: "Cảm ơn bạn đã đặt hàng",

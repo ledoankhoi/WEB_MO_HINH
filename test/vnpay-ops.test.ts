@@ -22,7 +22,7 @@ const attempts = await import("@/server/repo/payment-attempts");
 const vnpay = await import("@/server/payments/vnpay");
 const ops = await import("@/server/payments/vnpay-ops");
 const { startVnpayPayment } = await import("@/server/payments/checkout");
-const { GET: reconcileRoute } = await import("@/app/api/thanh-toan/vnpay/doi-soat/route");
+const { GET: cronRoute } = await import("@/app/api/cron/dinh-ky/route");
 
 type Call = { url: string; body: Record<string, string> };
 // fetch giả: ghi lại yêu cầu, trả lời theo hàm `reply`.
@@ -128,8 +128,8 @@ describe("đối soát lượt treo", () => {
     for (const item of [failed, unknown]) expect(await orders.applyOrderAction(item.order.id, "customer_cancel")).toBe(true);
   });
 
-  it("route đối soát chỉ chạy khi đúng CRON_SECRET", async () => {
-    expect((await reconcileRoute(new Request("http://localhost/api/thanh-toan/vnpay/doi-soat"))).status).toBe(404);
-    expect((await reconcileRoute(new Request("http://localhost/api/thanh-toan/vnpay/doi-soat", { headers: { Authorization: "Bearer sai-khoa-0123456789" } }))).status).toBe(404);
+  it("route việc định kỳ chỉ chạy khi đúng CRON_SECRET", async () => {
+    expect((await cronRoute(new Request("http://localhost/api/cron/dinh-ky"))).status).toBe(404);
+    expect((await cronRoute(new Request("http://localhost/api/cron/dinh-ky", { headers: { Authorization: "Bearer sai-khoa-0123456789" } }))).status).toBe(404);
   });
 });

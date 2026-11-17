@@ -21,6 +21,14 @@ export const site = {
     returnDays: 7,
     warrantyMonths: 12,
   },
+  // Đơn phải trả trước (chuyển khoản, VNPay, cọc đặt trước): giữ hàng trong thời hạn này kể từ lúc đặt, quá hạn chưa
+  // trả thì tự huỷ và trả hàng về kho (tác vụ định kỳ, src/server/repo/bank-transfers.ts). Nhắc khách qua email ở mốc nhắc.
+  // Đơn khách đã báo "đã chuyển khoản" không tự huỷ: kế toán kiểm tra sổ ngân hàng rồi quyết định.
+  payment: {
+    transferHoldHours: 48,
+    transferRemindHours: 24,
+    onlineHoldHours: 24,
+  },
   // Số lượng tối đa của một sản phẩm trong một đơn hàng.
   maxQtyPerItem: 10,
   // Đơn thanh toán khi nhận hàng (COD) từ mức này cần mã OTP gửi tới email của đơn (nghiep-vu-ban-hang mục 15).
