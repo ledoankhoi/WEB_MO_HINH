@@ -1,6 +1,9 @@
 # 07. Kiểm thử
 
-Kế hoạch và kết quả kiểm thử phần quản trị website và quản lý kho, chạy ngày 16/10/2026 trên nhánh `auto/quan-tri-kho` (commit T25 `5f8ce01`). Kịch bản nghiệm thu lấy từ [10](10-quan-tri-va-kho.md) mục 7. Phần tìm kiếm bằng ảnh kiểm thử ngày 04/11/2026 trên nhánh `feat/tim-bang-anh` (mục 2, cuối).
+Kế hoạch và kết quả kiểm thử. **Kết quả mới nhất: toàn dự án, ngày 17/11/2026 (mục 2.0).**
+- Phần quản trị và kho chạy ngày 16/10/2026 trên nhánh `auto/quan-tri-kho` (commit T25 `5f8ce01`); kịch bản nghiệm thu lấy từ [10](10-quan-tri-va-kho.md) mục 7.
+- Phần tìm kiếm bằng ảnh (cách cũ) kiểm thử ngày 04/11/2026.
+- Phần học máy của nhận dạng robot có kiểm thử riêng trong `ml/tests`, báo cáo ở `docs/nhan-dang-robot/bao-cao/`.
 
 ## 1. Cách kiểm thử
 
@@ -20,6 +23,45 @@ Quy ước:
 - Sau mỗi test trong `orders.test.ts`, `findInventoryDiscrepancies()` phải trả rỗng (sổ kho khớp số dư).
 
 ## 2. Kết quả tổng
+
+### 2.0. Toàn dự án (17/11/2026, `main`, sau commit `1e4b0db`)
+
+| Hạng mục | Kết quả |
+| --- | --- |
+| `npm run typecheck` | Qua, không lỗi |
+| `npm run lint` | Qua, không cảnh báo |
+| `npx vitest run --maxWorkers=4` | **62 file, 404 test qua**. 1 test bỏ qua: `recognition-parity`, chỉ chạy khi có thư mục mô hình trên máy |
+| `pytest ml/tests` (đường ống học máy) | 69 test qua |
+| `npm run build` | Qua, dựng sẵn 178 trang |
+| `npm run smoke` cùng bản bổ sung 19 trang | **105 đường dẫn** (cửa hàng, quản trị, chặn chéo tên miền) trả đúng mã, không có dấu hiệu lỗi |
+| Trình duyệt thật (Edge, puppeteer) | Trang sản phẩm: dòng thương hiệu/series, 5 góc nhìn, nút toàn màn hình, 4 dáng Grimlock, không lỗi JavaScript; kiểm cả ở màn hình 390 px |
+| CSDL thật (chỉ đọc) | Không có dòng tồn âm hay giữ hàng vượt tồn |
+| Chưa chạy lần này | `npm run test:pg` (khoảng 20 phút trên Supabase), `npm run models:audit` |
+
+**Số test theo nhóm chức năng (Vitest)**
+
+| Nhóm | File test | Số test |
+|---|---|---|
+| Đơn hàng, khuyến mãi, đặt trước, trả hàng | `orders`, `order-stage`, `coupons`, `bundles`, `flash-sale`, `preorder`, `returns`, `invoices` | 66 |
+| Thanh toán | `vnpay`, `vnpay-ops`, `bank-transfer`, `vietqr` | 29 |
+| Kho | `stock-documents`, `warehouse`, `stock-reports` | 25 |
+| Sản phẩm, danh mục, cửa hàng | `products-admin`, `taxonomy`, `media`, `model-upload`, `product-photos`, `retire-seed`, `storefront`, `shop-url`, `showcase`, `seo`, `structured-data`, `workshop`, `landing` | 52 |
+| Tài khoản, phân quyền, bảo mật | `account-settings`, `password-reset`, `oauth`, `otp`, `users`, `customers`, `staff`, `permissions`, `proxy` | 51 |
+| Tương tác | `reviews`, `questions`, `wishlist`, `recently-viewed`, `chat`, `community` | 15 |
+| Xu, nhiệm vụ, gacha | `gamification`, `gacha-fx` | 19 |
+| Nội dung, thông báo, báo cáo | `content`, `news`, `admin-alerts`, `dashboard`, `sales-reports` | 21 |
+| AI: tìm bằng ảnh cũ, nhận dạng robot | `image-search`, `recognition`, `recognition-api`, `recognition-import`, `recognition-preprocess`, `recognition-repo` | 108 |
+| Hạ tầng | `db-batch`, `db-init`, `backup`, `demo-data`, `format` | 18 |
+| **Tổng** | | **404** |
+
+**Những chỗ có test chặn lỗi đáng kể**
+- Hai khách cùng đặt món cuối cùng, chỉ một đơn thành công; sổ kho phải khớp số dư sau mỗi test đơn hàng (`orders`).
+- IPN của VNPay: đúng, lặp lại, sai chữ ký, sai số tiền, đơn đã huỷ (`vnpay`, `vnpay-ops`).
+- Lượt gacha miễn phí khi bấm đồng thời; thưởng không nhận hai lần (`gamification`).
+- Tiền xử lý ảnh trong trình duyệt trùng từng byte với Python; luật trả lời theo cấp trùng 48 ca mẫu sinh từ mã Python (`recognition-preprocess`, `recognition`).
+- Ô tìm khớp thương hiệu, series, SKU; `%` và `_` không thành ký tự đại diện (`orders`, thêm 17/11/2026).
+
+### 2.1. Phần quản trị và kho (16/10/2026)
 
 | Hạng mục | Kết quả |
 | --- | --- |

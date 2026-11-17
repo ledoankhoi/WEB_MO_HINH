@@ -1,6 +1,6 @@
 # 05. Kiến trúc, phân quyền và bảo mật
 
-Mô tả hệ thống như mã nguồn ngày 16/10/2026 (nhánh `auto/quan-tri-kho`); bổ sung tìm kiếm bằng ảnh ngày 04/11/2026 (mục 10). Tên bảng, hàm và đường dẫn giữ nguyên như trong mã. Danh sách Server Action và Route Handler ở [06](06-api.md), kết quả kiểm thử ở [07](07-kiem-thu.md).
+Mô tả hệ thống như mã nguồn ngày 16/10/2026 (nhánh `auto/quan-tri-kho`); bổ sung tìm kiếm bằng ảnh ngày 04/11/2026 (mục 10); thanh toán, email, việc định kỳ, xu và gacha, nhận dạng robot ngày 17/11/2026 (mục 12–16). Tên bảng, hàm và đường dẫn giữ nguyên như trong mã. Danh sách Server Action và Route Handler ở [06](06-api.md), kết quả kiểm thử ở [07](07-kiem-thu.md).
 
 ## 1. Tổng quan
 
@@ -11,7 +11,12 @@ Mô tả hệ thống như mã nguồn ngày 16/10/2026 (nhánh `auto/quan-tri-k
 | Xem 3D | Three.js qua `@react-three/fiber`, `@react-three/drei` | Chỉ chạy ở trình duyệt (`RobotViewerLoader`, `ssr: false`) |
 | Cơ sở dữ liệu | PostgreSQL trên Supabase, thư viện `pg` | Test dùng PGlite (PostgreSQL trong bộ nhớ) |
 | Lưu file | Supabase Storage, bucket công khai `media` | Ảnh sản phẩm, ảnh banner, mô hình `.glb` |
-| Tìm kiếm bằng ảnh (AI) | CLIP ViT-B/32 (ONNX, nén 8 bit) chạy bằng ONNX Runtime Web trong Web Worker ở trình duyệt | Máy chủ chỉ xếp hạng vector, không chạy mô hình; chi tiết ở [08](08-tich-hop-ai.md) và mục 11 |
+| Nhận dạng robot (AI, đề tài luận văn) | ViT-B/16 tinh chỉnh từ CLIP (ONNX fp16, 164 MB) chạy bằng ONNX Runtime Web trong Web Worker | Máy chủ chỉ nhận 195 xác suất, không nhận ảnh; mục 16 và [08](08-tich-hop-ai.md) |
+| Tìm kiếm bằng ảnh, cách cũ | CLIP ViT-B/32 (ONNX, nén 8 bit) chạy trong Web Worker | Chỉ dùng khi không có mô hình nhận dạng nào bật; mục 10 |
+| Thanh toán | COD; chuyển khoản VietQR (kế toán ghi nhận); VNPay (đang ở sandbox) | Mục 12 |
+| Email | SMTP qua `nodemailer`; mọi thư ghi vào `email_outbox` | Mục 13 |
+| Việc định kỳ | Netlify Scheduled Function gọi Route Handler có khoá | Mục 14 |
+| Hiệu ứng động | Animate UI (`@animate-ui/react`) trên `motion` | |
 
 Ứng dụng chạy trên một tiến trình Node.js. Lần truy vấn đầu tiên chạy mọi migration còn thiếu trong `src/server/db/migrations.ts` và nạp dữ liệu mẫu, dưới một khoá tư vấn (`pg_advisory_xact_lock`) để nhiều tiến trình khởi động cùng lúc không chạy trùng.
 
@@ -131,3 +136,49 @@ Phân tách nhiệm vụ trong kho: người tạo phiếu điều chỉnh khôn
 - `npm run backup`: sao lưu mọi bảng thành JSON trong `data/backups/<thời điểm>/`, đọc trong một giao dịch `REPEATABLE READ` chỉ đọc. Khôi phục chỉ được diễn tập trong test (OPS-01), không có lệnh khôi phục vào CSDL thật.
 - `npm run smoke`: bật máy chủ phát triển ở cổng 3100, mở mọi trang với phiên quản trị tạm, kiểm tra mã trả về và dấu hiệu lỗi.
 - Migration chỉ thêm ở cuối mảng, không sửa migration đã chạy.
+
+## 12. Thanh toán
+
+**Ba phương thức**
+- **COD:** đơn được xác nhận ngay (L3). Kế toán ghi nhận tiền (L2) khi hãng vận chuyển chuyển tiền về. Đơn từ mức `site.codOtpFrom` cần mã OTP gửi qua email.
+- **Chuyển khoản VietQR:** trang đơn dựng mã QR theo chuẩn VietQR (`src/lib/vietqr.ts`) với số tiền và nội dung là mã đơn. Khách bấm "Tôi đã chuyển khoản" chỉ để báo (`transfer_claims`); kế toán đối chiếu với sổ ngân hàng rồi ghi nhận ở `/admin/don-hang/chuyen-khoan`. Thiếu biến `BANK_*` thì không có phương thức này.
+- **VNPay** (`src/server/payments/`):
+  - Mỗi lần chuyển khách sang cổng là một dòng `payment_attempts` có hạn.
+  - URL ký bằng HMAC-SHA512 với `VNPAY_HASH_SECRET`.
+  - **Chỉ hai nguồn được ghi nhận tiền:** IPN có chữ ký đúng (`/api/thanh-toan/vnpay/ipn`), hoặc kết quả tra cứu `querydr`.
+  - Trang khách quay về không tin tham số URL.
+  - Mọi lời gọi của cổng được ghi nguyên văn vào `payment_callbacks`.
+  - Hoàn tiền qua API (`refundTransaction`) cho đơn huỷ hoặc trả hàng.
+
+**Luật chung**
+- Tiền luôn đi qua luật L2 (thu đủ), L15 (nhận cọc), L14 (hoàn tiền) của `src/lib/order-flow.ts`. Đơn đã huỷ mà tiền vẫn về thì vẫn ghi nhận, rồi nằm trong danh sách chờ hoàn tiền.
+- Hạn giữ hàng của đơn trả trước nằm ở `site.payment`: chuyển khoản và cọc 48 giờ, nhắc ở mốc 24 giờ; VNPay 24 giờ.
+
+## 13. Email
+
+- **Ghi trước, gửi sau:** `sendMail` (`src/server/email/mailer.ts`) ghi mọi thư vào `email_outbox`, rồi gửi qua SMTP nếu có cấu hình (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM`). Chưa cấu hình thì thư ở trạng thái `logged` và đọc được ở `/admin/hop-thu`. Gửi lỗi thì ghi `failed` kèm lỗi, cho phép gửi lại.
+- **Mẫu thư** ở `src/server/email/templates.ts`: mọi giá trị đều qua `escapeHtml`. Liên kết tuyệt đối lấy từ `NEXT_PUBLIC_SITE_URL` (`getBaseUrl`), không tin header `Host`.
+- **Các loại thư:** xác nhận đơn và từng lần đổi trạng thái (`src/server/email/order-mails.ts`), đặt lại mật khẩu, OTP, nhắc chuyển khoản, huỷ đơn quá hạn, hàng đặt trước đã về hoặc đổi lịch.
+
+## 14. Việc định kỳ
+
+- **Cách gọi:** `netlify/functions/dinh-ky.mts` chạy 15 phút một lần, gọi `GET /api/cron/dinh-ky` với khoá `CRON_SECRET`. Route so sánh khoá trong thời gian hằng; sai khoá thì trả 404.
+- **Thứ tự bước:**
+  1. Đối soát lượt VNPay còn treo. Bước này chạy trước, để đơn vừa trả xong không bị huỷ nhầm.
+  2. Nhắc chuyển khoản một lần.
+  3. Tự huỷ đơn trả trước quá hạn (L13, kèm thư `expired`). Không huỷ đơn khách đã báo chuyển khoản, hay đơn còn lượt VNPay chưa hết hạn.
+- **Chạy lặp an toàn:** mỗi bước chỉ chọn các dòng còn đủ điều kiện ngay trong câu lệnh ghi, nên hai lần chạy chồng nhau không làm hỏng dữ liệu.
+
+## 15. Tính đúng khi nhiều yêu cầu cùng lúc
+
+- **Đặt hàng:** một giao dịch khoá dòng tồn và suất flash sale. Hai khách tranh món cuối thì chỉ một người được. Khoá `idempotency_key` chống bấm đặt nhiều lần.
+- **Xu và thưởng:** xu là sổ cái `coin_ledger`, số dư bằng tổng sổ. Khoá duy nhất `(user_id, reason, ref)` chặn nhận thưởng hai lần. Mọi lần cộng, trừ xu chạy kèm `userLock` (khoá tư vấn theo người dùng) để hai tab không tiêu cùng một khoản.
+- **Gacha:** mọi câu ghi của một lượt phụ thuộc "vé", tức dòng trừ xu hoặc dòng lượt miễn phí có khoá duy nhất theo ngày. Không có vé thì không ghi gì.
+- **Trả hàng, đặt trước, chuyển khoản:** dùng chỉ mục duy nhất có điều kiện. Ví dụ: mỗi đơn chỉ một yêu cầu trả hàng đang mở; mỗi biến thể chỉ một đợt đặt trước chưa kết thúc.
+
+## 16. Nhận dạng robot
+
+- **Huấn luyện ở ngoài web:** mô hình huấn luyện bằng Python trong `ml/` (tài liệu ở `docs/nhan-dang-robot/`), xuất ONNX fp16, chia phần 20 MB rồi đưa lên Storage `media/ml/<mã mô hình>/` (`scripts/recognition-upload.mjs`). Model card, nhãn, nhiệt độ hiệu chỉnh và ngưỡng được nhập vào `recognition_models` (`scripts/recognition-import.mjs` hoặc `/admin/nhan-dien`). Tại mỗi thời điểm chỉ một mô hình được bật.
+- **Trong trình duyệt:** dùng chung worker `public/image-search/worker.js` với cách cũ. Tiền xử lý (`src/lib/recognition-preprocess.ts`) trùng từng byte với Pillow và torchvision của Python, có test. Mô hình chạy WebAssembly một luồng, khoảng 1 giây mỗi ảnh. File mô hình được lưu trong Cache Storage sau lần tải đầu.
+- **Ở máy chủ:** `POST /api/nhan-dien` chỉ nhận 195 xác suất. Máy chủ dựng bảng 5 robot kèm sản phẩm đang bán (`src/lib/recognition-api.ts`), áp luật trả lời theo cấp để ghi nhật ký (`src/lib/recognition.ts`), rồi ghi `recognition_logs` sau khi đã trả lời. Không lưu ảnh, IP hay tài khoản.
+- **Đường lui:** không có mô hình nào bật thì `/tim-bang-anh` dùng cách cũ (mục 10). Mã và bảng của cách cũ chưa gỡ; hướng dẫn gỡ ở `docs/nhan-dang-robot/huong-dan-go-cach-cu.md`.

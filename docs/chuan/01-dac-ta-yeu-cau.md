@@ -4,7 +4,7 @@ Yêu cầu của **bước 1**: trang thương mại điện tử cốt lõi. Ph
 
 Căn cứ: [00-quyet-dinh-nen-tang.md](00-quyet-dinh-nen-tang.md). Dữ liệu: [03-co-so-du-lieu.md](03-co-so-du-lieu.md). Trạng thái: [04-trang-thai.md](04-trang-thai.md).
 
-Cột **Hiện trạng** so với mã nguồn ngày 12/10/2026, các mục đánh giá, yêu thích và quản trị cập nhật lại ngày 16/10/2026: *Có* (đã chạy), *Sửa* (có nhưng phải đổi theo thiết kế mới), *Chưa*.
+Cột **Hiện trạng** so với mã nguồn, đối chiếu lại toàn bộ ngày 17/11/2026: *Có* (đã chạy), *Khác* (mã làm khác yêu cầu, chờ quyết định), *Chưa*. Use case ứng với từng nhóm yêu cầu: [02-use-case.md](02-use-case.md) mục 3.
 
 ## 1. Mục tiêu và phạm vi
 
@@ -37,10 +37,10 @@ Ngoài phạm vi bước 1: cổng thanh toán trực tuyến, tích hợp hãng
 
 | Mã | Yêu cầu | Hiện trạng |
 | --- | --- | --- |
-| YC-DM-01 | Sản phẩm thuộc một danh mục (tối đa 2 cấp), có thể có thương hiệu, series, loại, tỷ lệ, cấp độ | Sửa |
+| YC-DM-01 | Sản phẩm thuộc một danh mục (tối đa 2 cấp), có thể có thương hiệu, series, loại, tỷ lệ, cấp độ | Có |
 | YC-DM-02 | Sản phẩm có một hoặc nhiều biến thể; mỗi biến thể có SKU, tên, tình trạng (mới, đã qua sử dụng), giá riêng | Có |
 | YC-DM-03 | Chỉ sản phẩm `published` và biến thể đang bật hiện cho khách | Có |
-| YC-DM-04 | Trang sản phẩm hiện tên, thương hiệu, series, giá và tình trạng hàng của biến thể đang chọn, mô tả, thông số, đánh giá, sản phẩm liên quan | Sửa (đã có đánh giá; chưa hiện thương hiệu, series) |
+| YC-DM-04 | Trang sản phẩm hiện tên, thương hiệu, series, giá và tình trạng hàng của biến thể đang chọn, mô tả, thông số, đánh giá, sản phẩm liên quan | Có (17/11/2026: thương hiệu, series có liên kết lọc) |
 | YC-DM-05 | Khách đổi biến thể trên trang sản phẩm; giá, tồn kho và màu mô hình 3D đổi theo | Có (trừ màu mô hình 3D dựng sẵn) |
 | YC-DM-06 | Trang chủ hiện sản phẩm nổi bật, hàng mới và các danh mục | Có |
 
@@ -48,8 +48,8 @@ Ngoài phạm vi bước 1: cổng thanh toán trực tuyến, tích hợp hãng
 
 | Mã | Yêu cầu | Hiện trạng |
 | --- | --- | --- |
-| YC-TK-01 | Tìm theo tên, mô tả, thương hiệu, series, SKU; không phân biệt dấu tiếng Việt | Sửa |
-| YC-TK-02 | Lọc theo danh mục, thương hiệu, series, loại, tình trạng, khoảng giá, còn hàng | Sửa |
+| YC-TK-01 | Tìm theo tên, mô tả, thương hiệu, series, SKU; không phân biệt dấu tiếng Việt | Có (17/11/2026: tìm cả thương hiệu, series, SKU của mọi biến thể) |
+| YC-TK-02 | Lọc theo danh mục, thương hiệu, series, loại, tình trạng, khoảng giá, còn hàng | Có, trừ lọc theo tình trạng mới/đã dùng |
 | YC-TK-03 | Sắp xếp theo mới nhất, nổi bật, giá tăng, giá giảm, tên | Có |
 | YC-TK-04 | Bộ lọc nằm trên URL, giữ nguyên khi chuyển trang; có nút xoá bộ lọc và trạng thái không có kết quả | Có |
 
@@ -59,8 +59,8 @@ Ngoài phạm vi bước 1: cổng thanh toán trực tuyến, tích hợp hãng
 | --- | --- | --- |
 | YC-3D-01 | Xoay bằng chuột và cảm ứng; phóng to, thu nhỏ trong giới hạn; về góc nhìn ban đầu | Có |
 | YC-3D-02 | Không tự xoay theo mặc định; khách tự bật | Có |
-| YC-3D-03 | Chế độ toàn màn hình và các góc nhìn cố định (trước, sau, trái, phải, trên) | Chưa |
-| YC-3D-04 | Hiển thị file `.glb` nếu sản phẩm có; lỗi tải hoặc không có WebGL thì hiện ảnh thay thế, không làm hỏng trang | Sửa (chưa thử với file thật) |
+| YC-3D-03 | Chế độ toàn màn hình và các góc nhìn cố định (trước, sau, trái, phải, trên) | Có (17/11/2026: 5 góc nhìn cố định, nút toàn màn hình; ẩn nút khi trình duyệt không hỗ trợ, ví dụ iPhone) |
+| YC-3D-04 | Hiển thị file `.glb` nếu sản phẩm có; lỗi tải hoặc không có WebGL thì hiện ảnh thay thế, không làm hỏng trang | Có |
 | YC-3D-05 | Thư viện 3D chỉ tải ở trang có khung xem; ngừng vẽ khi khung nằm ngoài màn hình | Có |
 
 ### 3.4. Tài khoản (TKH)
@@ -70,7 +70,7 @@ Ngoài phạm vi bước 1: cổng thanh toán trực tuyến, tích hợp hãng
 | YC-TKH-01 | Đăng ký bằng email và mật khẩu; đăng nhập; đăng xuất | Có |
 | YC-TKH-02 | Sửa họ tên, số điện thoại; đổi mật khẩu (đăng xuất các thiết bị khác) | Có |
 | YC-TKH-03 | Sổ địa chỉ: thêm, sửa, xoá, chọn địa chỉ mặc định | Có (07/11/2026: Cài đặt > Sổ địa chỉ, bảng `customer_addresses`, tối đa 10 địa chỉ, nhãn Nhà riêng/Văn phòng; trang thanh toán điền sẵn địa chỉ mặc định, chọn được địa chỉ khác) |
-| YC-TKH-04 | Tài khoản bị khoá không đăng nhập được | Có một phần (chặn đăng nhập và phiên; chưa có nút khoá) |
+| YC-TKH-04 | Tài khoản bị khoá không đăng nhập được | Có (nút khoá tài khoản khách và nhân viên; bị khoá thì mất phiên ngay) |
 
 ### 3.5. Giỏ hàng và đặt hàng (GH)
 
@@ -78,8 +78,8 @@ Ngoài phạm vi bước 1: cổng thanh toán trực tuyến, tích hợp hãng
 | --- | --- | --- |
 | YC-GH-01 | Thêm biến thể vào giỏ, đổi số lượng, xoá; giỏ lưu ở trình duyệt và còn sau khi tải lại | Có |
 | YC-GH-02 | Giỏ luôn hiện giá và tồn kho mới nhất từ máy chủ; cảnh báo khi hết hàng hoặc vượt tồn | Có |
-| YC-GH-03 | Phải đăng nhập mới vào được trang đặt hàng; sau khi đăng nhập quay lại đúng trang đó | Sửa |
-| YC-GH-04 | Chọn địa chỉ từ sổ địa chỉ hoặc nhập mới; chọn COD hoặc chuyển khoản | Sửa |
+| YC-GH-03 | Phải đăng nhập mới vào được trang đặt hàng; sau khi đăng nhập quay lại đúng trang đó | Khác: khách vãng lai vẫn đặt được (tra cứu đơn bằng mã và số điện thoại); chờ chủ dự án quyết giữ hay bắt đăng nhập |
+| YC-GH-04 | Chọn địa chỉ từ sổ địa chỉ hoặc nhập mới; chọn COD hoặc chuyển khoản | Có (sổ địa chỉ; COD, chuyển khoản VietQR, VNPay) |
 | YC-GH-05 | Máy chủ tính lại toàn bộ giá và tổng tiền; không dùng số do trình duyệt gửi | Có |
 | YC-GH-06 | Đặt hàng giữ hàng trong kho; hai khách đặt món cuối cùng thì chỉ một người thành công | Có |
 | YC-GH-07 | Bấm đặt hàng nhiều lần không tạo đơn trùng | Có |
@@ -89,8 +89,8 @@ Ngoài phạm vi bước 1: cổng thanh toán trực tuyến, tích hợp hãng
 
 | Mã | Yêu cầu | Hiện trạng |
 | --- | --- | --- |
-| YC-DH-01 | Khách xem danh sách và chi tiết đơn của mình: sản phẩm, tiền, ba trạng thái, mã vận đơn, lịch sử | Có (trang đơn theo liên kết; danh sách trong tài khoản chưa hiện ba trạng thái) |
-| YC-DH-02 | Khách không xem được đơn của người khác | Sửa (đang dùng liên kết có token) |
+| YC-DH-01 | Khách xem danh sách và chi tiết đơn của mình: sản phẩm, tiền, ba trạng thái, mã vận đơn, lịch sử | Có (17/11/2026: danh sách đơn ở /tai-khoan hiện đủ ba trạng thái) |
+| YC-DH-02 | Khách không xem được đơn của người khác | Có (trang đơn mở bằng liên kết chứa mã khó đoán; danh sách đơn chỉ hiện cho chủ tài khoản) |
 | YC-DH-03 | Khách huỷ đơn khi đơn còn `pending` | Có |
 | YC-DH-04 | Đơn chuyển khoản chưa thanh toán hiện mã VietQR kèm số tiền và nội dung | Có |
 
@@ -111,7 +111,7 @@ Cập nhật 15/10/2026: phần quản trị và kho được đặc tả chi ti
 | YC-QT-01 | Trang quản trị chỉ mở cho nhân viên; mỗi chức năng kiểm tra vai trò ở máy chủ | Tất cả | Có |
 | YC-QT-02 | Tạo, sửa, xuất bản, lưu trữ sản phẩm; quản lý biến thể | Quản lý sản phẩm | Có |
 | YC-QT-03 | Quản lý danh mục, thương hiệu, series | Quản lý sản phẩm | Có |
-| YC-QT-04 | Chụp ảnh đại diện từ mô hình 3D khi lưu sản phẩm | Quản lý sản phẩm | Chưa (có sẵn phần chụp) |
+| YC-QT-04 | Chụp ảnh đại diện từ mô hình 3D khi lưu sản phẩm | Quản lý sản phẩm | Có |
 | YC-QT-05 | Xem tồn kho, nhập kho, điều chỉnh có lý do, xem lịch sử biến động, danh sách sắp hết | Nhân viên kho | Có |
 | YC-QT-06 | Danh sách đơn lọc theo trạng thái, tìm theo mã đơn; thực hiện các thao tác L2 đến L14 theo đúng vai trò | Theo bảng ở tài liệu 04 | Có |
 | YC-QT-07 | Danh sách các đơn đã huỷ nhưng đã thu tiền, chờ hoàn | Kế toán | Có |

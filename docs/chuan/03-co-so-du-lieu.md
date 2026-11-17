@@ -2,7 +2,12 @@
 
 Thiết kế đích cho **bước 1** (trang thương mại điện tử cốt lõi). Hệ quản trị: PostgreSQL trên Supabase. Trạng thái và luật chuyển trạng thái nằm ở [04-trang-thai.md](04-trang-thai.md).
 
-**Tình trạng:** bản thiết kế, chưa cài đặt. Mã nguồn hiện tại vẫn dùng cấu trúc cũ (bảng `products` không có biến thể).
+**Tình trạng (17/11/2026):** đã cài đặt toàn bộ qua 39 migration trong `src/server/db/migrations.ts`.
+- Mục 1–13 mô tả các bảng đến migration `016`.
+- Mục 14 mô tả 23 migration sau đó: trang mở rộng, nghiệp vụ bán hàng, thanh toán, nhận dạng robot.
+- Khi tài liệu này và `migrations.ts` khác nhau thì `migrations.ts` là cấu trúc thật.
+
+*(Dòng tình trạng cũ: "bản thiết kế, chưa cài đặt" — đã hết đúng từ migration 005.)*
 
 **Cập nhật 04/11/2026:** thêm hai bảng cho tìm kiếm bằng ảnh (mục 13).
 
@@ -597,3 +602,286 @@ Khoá chính `(product_id, model, form)`; chỉ mục `(model)`. Lập lại th�
 Chỉ mục `(created_at)`. **Không lưu ảnh** hay bất kỳ dữ liệu nào nhận ra được người tìm (không có IP, không có tài khoản).
 
 Ngưỡng τ, δ lưu ở `site_settings` (mục 12.3), khoá `image_search`.
+
+## 14. Bảng thêm sau migration 016 (cập nhật 17/11/2026)
+
+Theo quy ước chung (mục 1):
+- Mã là `TEXT` 20 ký tự hex (riêng `payment_callbacks`, `chat_messages`, `transfer_claims`, `recognition_logs` dùng `BIGINT` tự tăng).
+- Thời điểm lưu bằng mili giây kiểu `BIGINT`.
+- Tiền tính bằng đồng, kiểu `BIGINT`.
+
+Mọi bảng mới đều kiểm tên trên CSDL thật trước khi tạo, vì CSDL dùng chung với một nơi khác (mục 14.8).
+
+### 14.1. Migration và bảng
+
+| Migration | Bảng mới | Cột thêm vào bảng có sẵn |
+|---|---|---|
+| `017_stock_alerts` | `stock_alerts` | |
+| `018_customer_addresses` | `customer_addresses` | |
+| `ext_01_xu_nhiem_vu_gacha` | `coin_ledger`, `comic_reads`, `gacha_pulls` | |
+| `ext_02_cong_dong` | `community_posts`, `community_post_images`, `community_comments`, `community_likes`, `community_reports` | |
+| `ext_03_xuong` | | `order_items.options`, `options_price`, `options_config` |
+| `sale_01_email_mat_khau` | `email_outbox`, `password_resets` | |
+| `sale_02_tra_hang` | `return_requests`, `return_request_items` | |
+| `ext_04_gacha_v2` | `gacha_shards`, `gacha_rewards` | `gacha_pulls.source`, `free_day` |
+| `sale_03_vnpay` | `payment_attempts`, `payment_callbacks` | `payments.gateway_txn` |
+| `ext_05_hop_mu` | `gacha_box_cases` | `gacha_pulls.box_case`, `box_slot` |
+| `ext_06_tin_tuc` | `news_posts` | |
+| `ext_07_gacha_series` | (chỉ đổi chỉ mục) | |
+| `sale_04_dat_truoc` | `preorder_offers` | `order_items.preorder_offer_id`, `orders.preorder_status`, `orders.deposit_amount` |
+| `sale_05_da_xem` | `recently_viewed` | |
+| `sale_06_flash_sale` | `flash_sales`, `flash_sale_items` | `order_items.flash_sale_id` |
+| `sale_07_hoi_dap` | `product_questions`, `product_answers` | |
+| `sale_08_combo` | `bundle_deals`, `bundle_deal_items` | `orders.bundle_discount` |
+| `sale_09_oauth` | `oauth_identities` | |
+| `sale_10_otp` | `otp_codes` | `users.email_verified_at` |
+| `sale_11_chat` | `chat_threads`, `chat_messages` | |
+| `sale_12_hoa_don` | `order_invoices` | |
+| `sale_13_chuyen_khoan` | `transfer_claims` | |
+| `nd_01_nhan_dang_robot` | `robots`, `robot_products`, `recognition_models`, `recognition_logs` | |
+
+### 14.2. Khách hàng và tài khoản
+
+```mermaid
+erDiagram
+  users ||--o{ customer_addresses : "sổ địa chỉ"
+  users ||--o{ oauth_identities : "liên kết Google, Facebook"
+  users ||--o{ password_resets : "đặt lại mật khẩu"
+  users ||--o{ recently_viewed : "đã xem"
+  products ||--o{ recently_viewed : ""
+  product_variants ||--o{ stock_alerts : "báo khi có hàng"
+  users |o--o{ stock_alerts : ""
+  customer_addresses {
+    text id PK
+    text user_id FK
+    text label "home hoặc office"
+    boolean is_default
+  }
+  oauth_identities {
+    text provider PK
+    text subject PK
+    text user_id FK
+  }
+  otp_codes {
+    text id PK
+    text purpose "verify_email hoặc cod_order"
+    text target
+    text code_hash
+  }
+  stock_alerts {
+    text id PK
+    text variant_id FK
+    text contact
+    bigint notified_at
+  }
+```
+
+| Bảng | Vai trò | Khoá, ràng buộc chính |
+|---|---|---|
+| `customer_addresses` | Sổ địa chỉ, tối đa 10 địa chỉ mỗi khách | Duy nhất `(user_id)` khi `is_default`, tức một địa chỉ mặc định |
+| `oauth_identities` | Tài khoản Google, Facebook đã liên kết | Khoá chính `(provider, subject)`; duy nhất `(user_id, provider)` |
+| `password_resets` | Token đặt lại mật khẩu | Chỉ lưu SHA-256 của token (khoá chính); hạn 30 phút; dùng một lần (`used_at`) |
+| `otp_codes` | Mã OTP xác thực email và đơn COD lớn | Chỉ lưu băm (`code_hash`); hạn 10 phút; đếm số lần sai |
+| `recently_viewed` | Sản phẩm đã xem gần đây (giữ 30 dòng) | Khoá chính `(user_id, product_id)` |
+| `stock_alerts` | Khách chờ hàng | Duy nhất `(variant_id, contact)` khi chưa báo |
+| `users.email_verified_at` | Thời điểm xác thực email | |
+
+### 14.3. Đơn hàng, thanh toán, khuyến mãi
+
+```mermaid
+erDiagram
+  orders ||--o{ payment_attempts : "lượt thanh toán online"
+  orders ||--o{ transfer_claims : "khách báo đã chuyển"
+  orders ||--o| order_invoices : "hoá đơn VAT"
+  orders ||--o| return_requests : "yêu cầu trả hàng"
+  return_requests ||--|{ return_request_items : ""
+  return_requests |o--o| stock_documents : "phiếu hàng trả"
+  product_variants ||--o{ preorder_offers : "đợt đặt trước"
+  preorder_offers ||--o{ order_items : "dòng đặt trước"
+  flash_sales ||--|{ flash_sale_items : ""
+  product_variants ||--o{ flash_sale_items : ""
+  flash_sales ||--o{ order_items : "giữ suất"
+  bundle_deals ||--|{ bundle_deal_items : ""
+  products ||--o{ bundle_deal_items : ""
+  payment_attempts {
+    text id PK
+    text order_id FK
+    text gateway "vnpay hoặc momo"
+    text ref
+    bigint amount
+    text status "pending, paid, failed"
+    bigint expires_at
+  }
+  payment_callbacks {
+    bigint id PK
+    text gateway
+    text payload "nguyên văn"
+    boolean signature_ok
+  }
+  return_requests {
+    text id PK
+    text order_id FK
+    text status
+    bigint refund_amount
+    text document_id FK
+  }
+  preorder_offers {
+    text id PK
+    text variant_id FK
+    text status "open, closed, ended"
+    bigint expected_at
+    integer deposit_percent
+    integer max_qty
+  }
+  flash_sale_items {
+    text sale_id PK
+    text variant_id PK
+    bigint sale_price
+    integer qty_limit
+  }
+```
+
+| Bảng | Vai trò | Khoá, ràng buộc chính |
+|---|---|---|
+| `payment_attempts` | Mỗi lần khách được chuyển sang cổng thanh toán | `amount > 0`; trạng thái `pending/paid/failed`; `expires_at` dùng cho việc định kỳ |
+| `payment_callbacks` | Nhật ký nguyên văn IPN và trang trả về | Ghi cả lời gọi sai chữ ký (`signature_ok = false`) |
+| `transfer_claims` | Khách bấm "Tôi đã chuyển khoản" | Một đơn báo được nhiều lần; chỉ là lời báo, không đổi trạng thái đơn |
+| `order_invoices` | Thông tin xuất hoá đơn VAT | Khoá chính `order_id`; trạng thái `requested/issued` |
+| `return_requests`, `return_request_items` | Yêu cầu trả hàng và các dòng trả | Chỉ mục duy nhất có điều kiện trên `order_id`: mỗi đơn một yêu cầu đang mở hoặc đã hoàn; `refund_amount >= 0`; số lượng trả > 0 |
+| `preorder_offers` | Đợt đặt trước của một biến thể | Duy nhất `(variant_id)` khi chưa `ended`; cọc 0–100% |
+| `flash_sales`, `flash_sale_items` | Chương trình giờ vàng | `ends_at > starts_at`; giá sale > 0; suất > 0 |
+| `bundle_deals`, `bundle_deal_items` | Combo giảm theo phần trăm khi mua đủ bộ | Giảm 1–50% |
+| Cột thêm vào `orders` | `preorder_status` (`none/waiting/ready`), `deposit_amount`, `bundle_discount` (đã nằm trong `discount`) | |
+| Cột thêm vào `order_items` | `options`, `options_price`, `options_config` (Xưởng), `preorder_offer_id`, `flash_sale_id` | |
+| `payments.gateway_txn` | Mã giao dịch của cổng | |
+
+### 14.4. Tương tác: hỏi đáp, chat, cộng đồng
+
+```mermaid
+erDiagram
+  products ||--o{ product_questions : ""
+  product_questions ||--o{ product_answers : ""
+  users ||--o{ product_questions : ""
+  chat_threads ||--|{ chat_messages : ""
+  users |o--o{ chat_threads : "hoặc khách vãng lai (visitor_hash)"
+  users ||--o{ community_posts : ""
+  community_posts ||--o{ community_post_images : ""
+  community_posts ||--o{ community_comments : ""
+  community_posts ||--o{ community_likes : ""
+  community_posts |o--o{ community_reports : ""
+  community_comments |o--o{ community_reports : ""
+  community_posts {
+    text id PK
+    text user_id FK
+    text topic
+    text status "pending, approved, hidden"
+    text product_id FK
+  }
+  chat_threads {
+    text id PK
+    text user_id FK
+    text visitor_hash
+    text status "open, closed"
+  }
+```
+
+| Bảng | Vai trò | Khoá, ràng buộc chính |
+|---|---|---|
+| `product_questions`, `product_answers` | Hỏi đáp trên trang sản phẩm | Trạng thái duyệt `pending/approved/hidden`; câu trả lời đánh dấu `is_staff`, `is_buyer` |
+| `chat_threads`, `chat_messages` | Chat giữa khách và cửa hàng | Mỗi hội thoại thuộc **hoặc** một tài khoản **hoặc** một khách vãng lai (cookie `rs_chat`), không cả hai; mỗi tài khoản một hội thoại |
+| `community_posts`, `_post_images`, `_comments`, `_likes`, `_reports` | Trang cộng đồng | Bài chờ duyệt mới hiện; một báo cáo nhắm **hoặc** bài **hoặc** bình luận; mỗi người thích một bài một lần |
+
+### 14.5. Xu, nhiệm vụ, truyện, gacha
+
+```mermaid
+erDiagram
+  users ||--o{ coin_ledger : "sổ xu"
+  users ||--o{ comic_reads : "đã đọc chương"
+  users ||--o{ gacha_pulls : "lượt quay, mở"
+  users ||--o{ gacha_shards : "sổ mảnh ghép"
+  users ||--o{ gacha_rewards : "thưởng đủ bộ"
+  users ||--o{ gacha_box_cases : "kệ hộp mù"
+  gacha_box_cases ||--o{ gacha_pulls : "hộp đã mở"
+  coin_ledger {
+    text id PK
+    text user_id FK
+    integer amount "dương: cộng, âm: trừ"
+    text reason
+    text ref
+  }
+  gacha_pulls {
+    text id PK
+    text user_id FK
+    text series
+    text card
+    text rarity
+    text source "machine, pack, craft, box"
+    text free_day
+    text box_case FK
+    integer box_slot
+  }
+```
+
+| Bảng | Vai trò | Khoá, ràng buộc chính |
+|---|---|---|
+| `coin_ledger` | Sổ xu: số dư = tổng `amount` | Duy nhất `(user_id, reason, ref)` để chống nhận thưởng hai lần; `amount <> 0` |
+| `comic_reads` | Chương truyện đã đọc (nhiệm vụ) | Khoá chính `(user_id, chapter)` |
+| `gacha_pulls` | Mọi thẻ nhận được (máy quay, gói, hộp mù, ghép) | Duy nhất `(user_id, free_day)` cho lượt miễn phí mỗi ngày; duy nhất `(box_case, box_slot)` |
+| `gacha_shards` | Sổ mảnh ghép (thẻ trùng đổi thành mảnh) | Duy nhất `(user_id, reason, ref)` |
+| `gacha_rewards` | Mã giảm giá thưởng đủ bộ | Khoá chính `(user_id, series)`: mỗi series nhận một lần |
+| `gacha_box_cases` | Kệ 12 hộp mù đang mở | Duy nhất `(user_id, series)` khi chưa mở hết |
+
+### 14.6. Nội dung và email
+
+| Bảng | Vai trò | Khoá, ràng buộc chính |
+|---|---|---|
+| `news_posts` | Tin tức | `slug` duy nhất; trạng thái `draft/published` |
+| `email_outbox` | Mọi thư hệ thống đã tạo | Trạng thái `queued/sent/failed/logged` (`logged`: chưa cấu hình SMTP, chỉ ghi lại); đếm số lần thử |
+
+### 14.7. Nhận dạng robot
+
+```mermaid
+erDiagram
+  robots ||--o{ robot_products : "ghép sản phẩm đang bán"
+  products ||--o{ robot_products : ""
+  robots |o--o{ recognition_logs : "robot hạng 1"
+  robots {
+    text id PK
+    text slug
+    text name
+    text character
+    text franchise
+    text series
+  }
+  recognition_models {
+    text id PK
+    text arch
+    text files "danh sách phần file ONNX"
+    double temperature
+    text labels "195 lớp"
+    text thresholds
+    text metrics
+    boolean is_active
+  }
+  recognition_logs {
+    bigint id PK
+    text model
+    text top_robot_id FK
+    double top_prob
+    text level
+    integer client_ms
+  }
+```
+
+| Bảng | Vai trò | Khoá, ràng buộc chính |
+|---|---|---|
+| `robots` | Danh mục 230 robot (nhập từ `robots.json` của B1): nhân vật, franchise, dòng, mô tả, ảnh, nguồn | `slug` duy nhất |
+| `robot_products` | Robot nào ứng với sản phẩm nào của cửa hàng | Khoá chính `(robot_id, product_id)` |
+| `recognition_models` | Mô hình đã nhập: file ONNX trên Storage, nhiệt độ hiệu chỉnh, ngưỡng, danh sách lớp, số đo | Chỉ một mô hình `is_active` (chỉ mục duy nhất có điều kiện); `temperature > 0` |
+| `recognition_logs` | Nhật ký mỗi lượt nhận dạng, **không có ảnh**, không có IP hay tài khoản | `top_prob` trong [0; 1]; `level` là `class/character/franchise/...` |
+
+### 14.8. Bảng của nơi khác trên CSDL dùng chung
+
+CSDL Supabase còn có các bảng và cột do một nơi khác tạo, không thuộc repo này: `addresses`, `user_addresses`, `events`, `rec_models`, `rec_similar`, bảng media của đánh giá, cột `users.gender`, `users.birth_date`; cùng các migration `018_recommendations`, `018_review_media_reply`, `019_addresses`, `019_account_settings`.
+- Mã của dự án **không đọc ghi** các bảng này.
+- Khi thêm bảng mới phải tránh trùng tên với chúng.

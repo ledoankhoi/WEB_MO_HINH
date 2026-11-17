@@ -1,6 +1,6 @@
 # 06. Server Action và Route Handler
 
-Danh sách mọi điểm vào máy chủ mà trình duyệt gọi được, như mã nguồn ngày 16/10/2026 (bổ sung tìm kiếm bằng ảnh ngày 04/11/2026; Nhiệm vụ, Gacha, Cộng đồng, Xưởng ngày 07/11/2026). Mọi Server Action là một điểm cuối HTTP công khai (gọi thẳng được, không cần đi qua giao diện), nên mỗi action tự kiểm tra phiên, quyền và dữ liệu đầu vào. Quyền theo ma trận ở [05](05-kien-truc.md) mục 7; `admin` có mọi quyền.
+Danh sách mọi điểm vào máy chủ mà trình duyệt gọi được, như mã nguồn ngày 16/10/2026 (bổ sung tìm kiếm bằng ảnh ngày 04/11/2026; Nhiệm vụ, Gacha, Cộng đồng, Xưởng ngày 07/11/2026; nghiệp vụ bán hàng, thanh toán, nhận dạng robot ngày 17/11/2026 ở mục 2b và mục 3). Mọi Server Action là một điểm cuối HTTP công khai (gọi thẳng được, không cần đi qua giao diện), nên mỗi action tự kiểm tra phiên, quyền và dữ liệu đầu vào. Quyền theo ma trận ở [05](05-kien-truc.md) mục 7; `admin` có mọi quyền.
 
 Ký hiệu cột Phiên: **—** không cần đăng nhập; **Khách** cần phiên cửa hàng (`rs_session`); **NV: quyền** cần phiên quản trị (`rs_admin`) và quyền đó. Cột Nhật ký: có ghi `audit_logs` khi thao tác đổi dữ liệu.
 
@@ -138,6 +138,39 @@ Xu ghi trong sổ `coin_ledger` (mỗi dòng cộng hoặc trừ, duy nhất the
 | `endOfferAction(id)` | NV: `catalog.edit` | Kết thúc đợt (phiên bản bán lại như thường); còn đơn chờ hàng thì từ chối | Có (`preorder.end`) |
 | `allocateOfferAction(id)` | NV: `orders.fulfil` | Phân bổ hàng đã về theo thứ tự đặt (mỗi đơn một giao dịch); báo khách các đơn đã đủ hàng | Có (`preorder.allocate`, mỗi đơn đủ hàng một dòng) |
 
+## 2b. Bổ sung ngày 17/11/2026: nghiệp vụ bán hàng, thanh toán, nhận dạng robot
+
+Quyền đọc từ chính mã nguồn (`staffWith(...)`, `authorize(...)`). Mọi action của nhân viên ghi `audit_logs`. "Token đơn" nghĩa là action nhận mã trong liên kết đơn hàng làm bằng chứng chủ đơn (khách vãng lai cũng dùng được).
+
+| File | Action | Phiên | Việc |
+|---|---|---|---|
+| `orders.ts` | `placeOrderAction` | — (khách vãng lai đặt được) | Đặt hàng (UC05 ở [02](02-use-case.md)); 20 đơn/giờ/IP; COD lớn cần OTP |
+| | `payAgainAction`, `previewCouponAction`, `lookupOrderAction` | — | Tạo lại lượt VNPay; xem trước mã giảm giá; tra cứu đơn bằng mã và số điện thoại (có giới hạn tần suất) |
+| | `cancelOrderAction` | Token đơn | Khách huỷ đơn còn `pending` (L12) |
+| `bank-transfer.ts` | `claimTransferAction(token, note)` | Token đơn | Báo "Tôi đã chuyển khoản" (`transfer_claims`); chỉ là lời báo; có giới hạn tần suất |
+| `account.ts` | `saveAddressAction`, `setDefaultAddressAction`, `deleteAddressAction` | Khách | Sổ địa chỉ (tối đa 10) |
+| | `updateNotificationsAction`, `logoutOtherDevicesAction` | Khách | Nhận tin khuyến mãi; đăng xuất thiết bị khác |
+| | `deleteAccountAction` | Khách | Tự xoá tài khoản (ẩn danh hoá); cần mật khẩu; chặn khi còn đơn đang xử lý |
+| `otp.ts` | `sendVerifyEmailOtpAction`, `verifyEmailAction` | Khách | Xác thực email bằng mã 6 số (hạn 10 phút) |
+| | `sendOrderOtpAction` | — | Gửi mã cho đơn COD từ mức `site.codOtpFrom` |
+| `oauth.ts` | `unlinkIdentityAction` | Khách | Bỏ liên kết Google, Facebook |
+| `questions.ts` | `askQuestionAction`, `answerQuestionAction` | Khách | Hỏi, trả lời trên trang sản phẩm (chờ duyệt) |
+| | `staffAnswerAction`, `moderateQuestionAction`, `moderateAnswerAction` | NV: `reviews.moderate` | Trả lời với tư cách cửa hàng; duyệt, ẩn |
+| `returns.ts` | `cancelReturnAction` | Token đơn | Khách huỷ yêu cầu trả hàng chưa duyệt |
+| | `decideReturnAction` | NV: `orders.process` | Duyệt hoặc từ chối yêu cầu trả hàng |
+| | `createReturnDocumentAction` | NV: `inventory.draft` | Lập phiếu hàng trả gắn đơn (hàng vào cách ly sau khi ghi sổ) |
+| | `refundReturnAction` | NV: `payments.manage` | Ghi nhận hoàn tiền trả hàng |
+| `invoices.ts` | `issueInvoiceAction` | NV: `payments.manage` | Đánh dấu đã xuất hoá đơn VAT (số hoá đơn) |
+| `flash-sales.ts` | `saveFlashSaleAction`, `saveFlashItemAction`, `removeFlashItemAction` | NV: `coupons.manage` | Chương trình giờ vàng và các dòng giá sale, suất |
+| `bundles.ts` | `saveDealAction` | NV: `coupons.manage` | Combo giảm theo phần trăm |
+| `chat.ts` | `staffChatReplyAction`, `setChatStatusAction` | NV: `customers.manage` | Trả lời, đóng, mở lại hội thoại |
+| `email.ts` | `retryMailAction`, `sendTestMailAction` | NV: `customers.manage` | Gửi lại thư lỗi; gửi thư thử (`/admin/hop-thu`) |
+| `news.ts` | `saveNewsAction`, `newsAction` | NV: `content.edit` | Viết tin; xuất bản, gỡ, xoá |
+| `recognition.ts` | `importRobotsAction`, `importModelAction`, `activateModelAction`, `deleteModelAction` | NV: `catalog.edit` | Nhập danh mục robot (`robots.json`), nhập model card, bật hoặc xoá mô hình nhận dạng |
+| | `applySuggestionsAction`, `linkProductAction` | NV: `catalog.edit` | Ghép robot với sản phẩm đang bán |
+
+Ghi nhận thanh toán chuyển khoản, nhận cọc, hoàn tiền đơn huỷ đi qua `orderAction` (L2, L15, L14; quyền `payments.manage`), mô tả ở mục 2.
+
 ## 3. Route Handler
 
 | Đường dẫn | Phiên | Việc | Ghi chú |
@@ -150,6 +183,14 @@ Xu ghi trong sổ `coin_ledger` (mỗi dòng cộng hoặc trừ, duy nhất the
 | `POST /api/tim-bang-anh` | — | Tìm bằng ảnh: thân JSON `{ model, embedding: number[512], clientMs? }`. Trả `{ accepted, reason, s1, s2, tau, delta, candidates, results: [{ product, score, form, label }] }`, tối đa 8 sản phẩm đang bán, xếp giảm dần | 30 lượt/phút/IP (429 kèm `Retry-After`); thân > 64 KB trả 413; vector sai 400; `model` khác mô hình đang dùng 409 `model-mismatch`; chưa có chỉ mục 409 `not-ready`; `no-store`. Ghi `image_search_logs` sau khi trả lời (`after`) |
 | `POST /api/nhan-dien` | — | Nhận dạng robot (docs/nhan-dang-robot, B11): thân JSON `{ model, probs: number[số lớp], clientMs? }`, `probs` là softmax(z / T) của mọi lớp do trình duyệt tính (làm tròn 6 chữ số; không gửi ảnh). Trả `RecognitionResponse` (`src/lib/recognition-api.ts`): `{ model, ranking[5]: { slug, name, series, franchiseLabel, image, p }, products[] }`; `ranking` là 5 robot có xác suất cao nhất, giảm dần; `products` là sản phẩm đang bán của các robot trong `ranking` theo thứ hạng, bỏ trùng, tối đa 9. Từ 15/11/2026 trang khách tạm thời chỉ hiện bảng xếp hạng; máy chủ vẫn áp luật theo cấp t₁–t₃ (`decide`, `src/lib/recognition.ts`) để ghi `level` vào nhật ký, không trả về | 30 lượt/phút/IP (429 kèm `Retry-After`); thân > 32 KB trả 413; sai số phần tử, xác suất ngoài [0; 1] hoặc tổng lệch 1 quá 0,01 trả 400; chưa bật mô hình 409 `not-ready`; `model` khác mô hình đang bật 409 `model-mismatch`; `no-store`. Ghi `recognition_logs` sau khi trả lời (`after`), không có ảnh |
 | `GET /media/[file]` | — | Ảnh đại diện lưu trong CSDL (dữ liệu cũ), cache vĩnh viễn theo phiên bản trong tên | |
+| `GET /api/thanh-toan/vnpay/ipn` | Chữ ký VNPay | VNPay báo kết quả thanh toán. Kiểm chữ ký SHA-512, số tiền, lượt; ghi nguyên văn vào `payment_callbacks`; ghi nhận qua L2; trả `RspCode` theo chuẩn VNPay | Lặp lại thì trả "đã xử lý"; đơn đã huỷ vẫn ghi nhận để chờ hoàn tiền |
+| `GET /api/thanh-toan/vnpay/tra-ve` | — | Khách quay về từ VNPay; không tin tham số URL, đọc trạng thái trong CSDL (tra `querydr` nếu còn treo), chuyển về trang đơn | |
+| `GET /api/cron/dinh-ky` | `Authorization: Bearer CRON_SECRET` | Việc định kỳ (gọi bởi `netlify/functions/dinh-ky.mts`, 15 phút một lần): đối soát lượt VNPay treo, nhắc chuyển khoản một lần ở mốc 24 giờ, tự huỷ đơn trả trước quá hạn (L13) trừ đơn đã báo chuyển hoặc còn lượt VNPay | Sai khoá (so sánh thời gian hằng, khoá ≥ 16 ký tự) trả 404 để không lộ điểm cuối; trả `{ vnpay, reminded, expired }` |
+| `GET /api/dang-nhap/[provider]`, `.../callback` | — | Đăng nhập Google, Facebook: lưu `state` và PKCE verifier vào cookie; callback kiểm `state` (một lần), đổi `code` lấy hồ sơ; chỉ tự liên kết theo email khi nhà cung cấp xác nhận email | Thiếu biến `GOOGLE_*`, `FACEBOOK_*` thì không hiện nút |
+| `GET`, `POST /api/chat` | Khách hoặc cookie `rs_chat` | Đọc, gửi tin nhắn với cửa hàng | Gửi tối đa 30 tin mỗi 10 phút mỗi IP |
+| `GET /api/combo?ids=` | — | Combo đang bật chứa các sản phẩm trong giỏ, kèm thẻ của mọi thành viên | |
+| `POST`, `DELETE /api/da-xem` | — | Đã xem gần đây: đồng bộ danh sách trong trình duyệt với bảng `recently_viewed` khi đã đăng nhập; xoá lịch sử | |
+| `POST /api/don-hang/[token]/tra-hang` | Token đơn | Khách gửi yêu cầu trả hàng (multipart: lý do, ghi chú, tài khoản nhận hoàn, số lượng từng dòng, ảnh lên Storage `returns/`) | Kiểm hạn đổi trả và yêu cầu đang mở |
 | `GET /admin/api/thong-bao` | NV (mọi vai trò) | Thông báo của khu quản trị: `{ counts, events }`. `counts` là số việc đang chờ theo từng loại trong `src/lib/admin-alerts.ts` (đơn cần xử lý, chuyển khoản quá 48 giờ, chờ hoàn tiền, chờ đóng gói, phiếu chờ ghi sổ, hàng cách ly, khách chờ mẫu đã có hàng, đánh giá và bài cộng đồng chờ duyệt, bài bị báo cáo, banner sắp hết lịch), chỉ các loại vai trò đó có quyền xử lý; `events` là đơn, bài, đánh giá chờ duyệt mới nhất | Thanh bên hỏi mỗi 20 giây; chưa đăng nhập 403; `no-store` |
 | `POST /admin/api/anh` | NV: `catalog.edit` (ảnh sản phẩm) hoặc `content.edit` (`target=banner`) | Tải ảnh WebP, PNG, JPEG ≤ 5 MB lên Storage | Kiểm tra chữ ký file; có nhật ký |
 | `GET /admin/xuat/ton-kho` | NV: `inventory.view` | CSV tồn kho theo bộ lọc; cột giá vốn chỉ khi có `cost.view` | Tối đa 20.000 dòng |
