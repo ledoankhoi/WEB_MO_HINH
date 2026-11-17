@@ -136,6 +136,16 @@ export const MODEL_FEATURES: Record<string, ModelFeatures> = {
   waspinator: allianceModel({ from: "Ong bắp cày", stand: "emo_joyful", poses: ["joyful"] }),
   wheeljack: allianceModel({ from: "Dạng xe", stand: "emo_joyful", poses: ["joyful", "rage"] }),
   wildrider: allianceModel({ from: "Dạng xe", stand: null, poses: ["guard", "attack", "joyful", "rage"] }),
+
+  // Grimlock dạng khủng long (file riêng, không có clip biến hình): 4 clip của chính file, kiểm bằng ảnh chụp khung xem.
+  grimlock: {
+    poses: [
+      { label: "Đứng", clip: "idle_skeletal.001", at: 0 },
+      { label: "Gầm", clip: "roar_skeletal.001", at: 0.35 },
+      { label: "Cắn", clip: "bite_skeletal.001", at: 0.3 },
+      { label: "Quật đuôi", clip: "attack_tail_skeletal.001", at: 0.45 },
+    ],
+  },
 };
 
 // Tên file của các mô hình có clip biến hình hoặc hợp thể (bộ lọc "Có biến hình 3D" của cửa hàng).
