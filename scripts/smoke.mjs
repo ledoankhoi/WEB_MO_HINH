@@ -18,7 +18,8 @@ const PAGES = [
   // Slug cũ (dòng tạm trong slug_redirects, xoá khi xong) chuyển hướng 308 qua src/proxy.ts.
   { path: "/san-pham/:oldSlug", status: 308 },
   { path: "/gio-hang" },
-  { path: "/thanh-toan" },
+  // Phải đăng nhập mới đặt hàng (YC-GH-03): phiên quản trị không phải phiên cửa hàng nên bị chuyển sang /dang-nhap.
+  { path: "/thanh-toan", status: 307 },
   { path: "/dang-nhap" },
   { path: "/dang-ky" },
   { path: "/tra-cuu-don-hang" },

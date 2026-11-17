@@ -1,28 +1,28 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { CheckoutForm } from "@/components/cart/CheckoutForm";
-import { getCurrentUser } from "@/server/auth/session";
+import { requireUser } from "@/server/auth/session";
 import { listAddresses } from "@/server/repo/addresses";
 import { getPaymentMethods } from "@/server/payment";
 import { site } from "@/config/site";
 
 export const metadata: Metadata = { title: "Đặt hàng", robots: { index: false } };
 
-// Điền sẵn thông tin của tài khoản đang đăng nhập (nếu có): địa chỉ mặc định trong sổ địa chỉ, chọn được địa chỉ
-// khác trong sổ. Khách vãng lai vẫn đặt hàng được.
+// Phải đăng nhập mới đặt hàng (YC-GH-03): chưa đăng nhập thì sang /dang-nhap rồi quay lại đây (giỏ lưu ở trình duyệt nên
+// không mất). Điền sẵn thông tin tài khoản: địa chỉ mặc định trong sổ địa chỉ, chọn được địa chỉ khác trong sổ.
 async function Checkout() {
-  const user = await getCurrentUser();
-  const addresses = user ? await listAddresses(user.id) : [];
+  const user = await requireUser("/thanh-toan");
+  const addresses = await listAddresses(user.id);
   const saved = addresses.find((item) => item.isDefault) ?? null;
   return (
     <CheckoutForm
       paymentMethods={getPaymentMethods()}
       addresses={addresses}
-      codOtp={{ from: site.codOtpFrom, verifiedEmail: user?.emailVerified ? user.email : null }}
+      codOtp={{ from: site.codOtpFrom, verifiedEmail: user.emailVerified ? user.email : null }}
       defaults={{
-        name: saved?.recipientName ?? user?.name ?? "",
-        phone: saved?.phone ?? user?.phone ?? "",
-        email: user?.email ?? "",
+        name: saved?.recipientName ?? user.name,
+        phone: saved?.phone ?? user.phone ?? "",
+        email: user.email,
         address: saved?.address ?? "",
         city: saved?.city ?? "",
       }}

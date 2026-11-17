@@ -107,7 +107,7 @@ export const DEMO_STEPS: DemoStep[] = [
   { title: "Xoay và biến hình", body: "Mở trang sản phẩm, kéo để xoay, bấm nút đổi dạng và chọn dáng.", href: (links) => links.product },
   { title: "Tìm bằng ảnh", body: "Tải ảnh chụp một mô hình, xem website gợi ý mẫu giống nhất.", href: () => "/tim-bang-anh" },
   { title: "Tuỳ biến ở Xưởng", body: "Chọn sơn, đế LED, đèn mắt, rồi thêm cấu hình vào giỏ.", href: (links) => links.workshop },
-  { title: "Đặt hàng", body: "Đặt đơn từ giỏ hàng, rồi tra cứu đơn bằng mã và số điện thoại.", href: () => "/gio-hang" },
+  { title: "Đặt hàng", body: "Đăng nhập, đặt đơn từ giỏ hàng, rồi theo dõi đơn ở trang tài khoản.", href: () => "/gio-hang" },
   { title: "Xử lý ở quản trị", body: "Đăng nhập trang quản trị, xác nhận đơn, xem sổ kho thay đổi theo đơn.", admin: true },
   { title: "Nhiệm vụ và gacha", body: "Đăng ký tài khoản, nhận xu từ nhiệm vụ, quay thử máy viên nang.", href: () => "/nhiem-vu" },
 ];

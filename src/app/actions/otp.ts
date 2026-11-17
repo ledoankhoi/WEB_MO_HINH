@@ -37,7 +37,7 @@ export async function verifyEmailAction(_prev: FormState, form: FormData): Promi
   redirect(next);
 }
 
-// Gửi mã xác nhận đơn COD giá trị lớn tới email khách nhập ở trang thanh toán (khách vãng lai cũng dùng được).
+// Gửi mã xác nhận đơn COD giá trị lớn tới email khách nhập ở trang thanh toán (khi email đó chưa được xác thực trong tài khoản).
 export async function sendOrderOtpAction(email: string): Promise<FormState> {
   const target = typeof email === "string" ? email.trim().toLowerCase() : "";
   if (!isEmail(target)) return { message: "Nhập email hợp lệ để nhận mã xác nhận." };

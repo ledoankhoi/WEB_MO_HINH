@@ -100,6 +100,11 @@ function describeIssue(issue: CartIssue): string {
 }
 
 export async function placeOrderAction(_prev: CheckoutState, form: FormData): Promise<CheckoutState> {
+  // Phải đăng nhập mới đặt được hàng (YC-GH-03, chủ dự án chốt 17/11/2026). Trang /thanh-toan đã chuyển khách chưa
+  // đăng nhập sang trang đăng nhập; kiểm lại ở đây vì action gọi thẳng được, hoặc phiên hết hạn khi đang ở trang.
+  const user = await getCurrentUser();
+  if (!user) return { message: "Phiên đăng nhập đã hết. Vui lòng đăng nhập lại để đặt hàng." };
+
   const name = readText(form, "name");
   const phoneInput = readText(form, "phone");
   const email = readText(form, "email").toLowerCase();
@@ -147,11 +152,10 @@ export async function placeOrderAction(_prev: CheckoutState, form: FormData): Pr
     return { values, message: "Bạn đã đặt quá nhiều đơn trong thời gian ngắn. Vui lòng thử lại sau." };
   }
 
-  const user = await getCurrentUser();
   // COD giá trị lớn (mục 15): email tài khoản đã xác thực trùng email của đơn, hoặc mã OTP gửi tới email của đơn đúng.
   // Mã chỉ đánh dấu đã dùng khi đơn tạo xong.
   const otp = readText(form, "otp").replace(/\s+/g, "");
-  const trusted = !!user?.emailVerified && !!email && user.email === email;
+  const trusted = user.emailVerified && !!email && user.email === email;
   let otpId: string | null = null;
   if (paymentMethod === "cod" && !trusted && otp) {
     if (!email) return { values, errors: { email: "Nhập email để nhận mã xác nhận." }, message: "Vui lòng kiểm tra lại các thông tin được đánh dấu.", otpRequired: true };
@@ -160,7 +164,7 @@ export async function placeOrderAction(_prev: CheckoutState, form: FormData): Pr
     otpId = check.id;
   }
   const result = await createOrder({
-    userId: user?.id ?? null,
+    userId: user.id,
     paymentMethod: paymentMethod as PaymentMethod,
     customerName: name,
     customerPhone: phone,
