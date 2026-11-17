@@ -194,6 +194,27 @@ export function ProductView({
           <div className="space-y-2">
             <h1 className="text-2xl leading-tight font-extrabold tracking-tight sm:text-3xl">{product.name}</h1>
             <p className="text-muted">{product.tagline}</p>
+            {(product.brand || product.series) && (
+              <p className="text-sm text-muted">
+                {product.brand && (
+                  <>
+                    Thương hiệu{" "}
+                    <Link href={`/san-pham?thuong-hieu=${product.brand.slug}`} className="font-semibold text-fg hover:underline">
+                      {product.brand.name}
+                    </Link>
+                  </>
+                )}
+                {product.brand && product.series && " · "}
+                {product.series && (
+                  <>
+                    Series{" "}
+                    <Link href={`/san-pham?series=${product.series.slug}`} className="font-semibold text-fg hover:underline">
+                      {product.series.name}
+                    </Link>
+                  </>
+                )}
+              </p>
+            )}
             {reviews && reviews.count > 0 && (
               <a href="#danh-gia" className="inline-block text-sm text-muted hover:text-fg">
                 <span aria-hidden="true" className="text-warning">★</span> {reviews.average.toLocaleString("vi-VN")}/5 · {reviews.count} đánh giá

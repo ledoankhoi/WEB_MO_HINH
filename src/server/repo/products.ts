@@ -97,6 +97,8 @@ function toProduct(row: Row, variants: ProductVariant[], images: Product["images
     category: String(row.category),
     brandId: row.brand_id === null || row.brand_id === undefined ? null : String(row.brand_id),
     seriesId: row.series_id === null || row.series_id === undefined ? null : String(row.series_id),
+    brand: row.brand_slug ? { name: String(row.brand_name), slug: String(row.brand_slug) } : null,
+    series: row.series_slug ? { name: String(row.series_name), slug: String(row.series_slug) } : null,
     productType: (String(row.product_type ?? "figure") as Product["productType"]),
     scale: String(row.scale ?? ""),
     grade: String(row.grade ?? ""),
@@ -149,7 +151,12 @@ const VARIANT_STOCK = "COALESCE((SELECT SUM(i.on_hand - i.reserved) FROM invento
 async function loadProduct(where: string, arg: string): Promise<Product | null> {
   const db = await getDb();
   const [product, variants, media] = await db.batch([
-    { sql: `SELECT * FROM product_list WHERE ${where}`, args: [arg] },
+    {
+      sql: `SELECT p.*, b.name AS brand_name, b.slug AS brand_slug, s.name AS series_name, s.slug AS series_slug
+            FROM (SELECT * FROM product_list WHERE ${where}) p
+            LEFT JOIN brands b ON b.id = p.brand_id LEFT JOIN series s ON s.id = p.series_id`,
+      args: [arg],
+    },
     {
       sql: `SELECT v.*, ${VARIANT_STOCK} AS stock, ${VARIANT_USED} AS locked, ${preorderJson("v.id")} AS preorder, ${flashJson("v.id")} AS flash FROM product_variants v
             WHERE v.product_id = (SELECT id FROM products WHERE ${where}) ORDER BY v.sort_order, v.created_at, v.id`,
@@ -223,6 +230,19 @@ export type ProductQuery = {
   includeInactive?: boolean;
 };
 
+// Ô tìm của cửa hàng và quản trị (YC-TK-01): mỗi từ khoá (đã bỏ dấu, nên "robot hinh nguoi" khớp "Robot hình người") phải
+// có trong tên, tagline, mô tả (search_text), hoặc tên/slug của thương hiệu, series, hoặc SKU của một biến thể bất kỳ.
+function addSearchTerms(q: string | undefined, where: string[], args: InValue[]): void {
+  for (const term of foldText(q ?? "").split(" ").filter(Boolean).slice(0, 6)) {
+    const like = `%${term.replace(/[\\%_]/g, "\\$&")}%`;
+    where.push(`(search_text LIKE ? ESCAPE '\\'
+      OR EXISTS (SELECT 1 FROM brands b WHERE b.id = product_list.brand_id AND (lower(b.name) LIKE ? ESCAPE '\\' OR b.slug LIKE ? ESCAPE '\\'))
+      OR EXISTS (SELECT 1 FROM series s WHERE s.id = product_list.series_id AND (lower(s.name) LIKE ? ESCAPE '\\' OR s.slug LIKE ? ESCAPE '\\'))
+      OR EXISTS (SELECT 1 FROM product_variants v WHERE v.product_id = product_list.id AND lower(v.sku) LIKE ? ESCAPE '\\'))`);
+    args.push(like, like, like, like, like, like);
+  }
+}
+
 export async function queryProducts(query: ProductQuery): Promise<{ items: ProductSummary[]; total: number }> {
   const where: string[] = [];
   const args: InValue[] = [];
@@ -253,11 +273,7 @@ export async function queryProducts(query: ProductQuery): Promise<{ items: Produ
     where.push("model_url ~ ?");
     args.push(TRANSFORMABLE_MODEL_URL_PATTERN);
   }
-  // Mỗi từ khoá phải xuất hiện trong search_text (đã bỏ dấu), nên "robot hinh nguoi" vẫn khớp "Robot hình người".
-  for (const term of foldText(query.q ?? "").split(" ").filter(Boolean).slice(0, 6)) {
-    where.push("search_text LIKE ? ESCAPE '\\'");
-    args.push(`%${term.replace(/[\\%_]/g, "\\$&")}%`);
-  }
+  addSearchTerms(query.q, where, args);
 
   const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
   const pageSize = Math.min(Math.max(query.pageSize ?? 12, 1), 100);
@@ -686,11 +702,7 @@ export async function listAdminProducts(query: {
     where.push("brand_id = ?");
     args.push(query.brandId);
   }
-  for (const term of foldText(query.q ?? "").split(" ").filter(Boolean).slice(0, 6)) {
-    where.push("(search_text LIKE ? ESCAPE '\' OR lower(sku) LIKE ? ESCAPE '\')");
-    const like = `%${term.replace(/[\%_]/g, "\$&")}%`;
-    args.push(like, like);
-  }
+  addSearchTerms(query.q, where, args);
   const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
   const pageSize = Math.min(Math.max(query.pageSize ?? 30, 1), 100);
   const page = Math.max(query.page ?? 1, 1);

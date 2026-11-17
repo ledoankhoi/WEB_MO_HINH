@@ -110,6 +110,27 @@ describe("dữ liệu mẫu", () => {
     expect((await products.queryProducts({ brand: "khong-co-thuong-hieu-nay" })).total).toBe(0);
   });
 
+  it("ô tìm khớp cả thương hiệu, series, SKU; trang sản phẩm có tên thương hiệu và series (YC-TK-01, YC-DM-04)", async () => {
+    const db = await getDb();
+    const row = (
+      await db.execute(`SELECT p.slug, b.name AS brand, b.slug AS brand_slug, s.name AS series, s.slug AS series_slug
+                        FROM product_list p JOIN brands b ON b.id = p.brand_id JOIN series s ON s.id = p.series_id WHERE p.is_active LIMIT 1`)
+    ).rows[0];
+    const product = (await products.findProductBySlug(String(row.slug)))!;
+    expect(product.brand).toEqual({ name: row.brand, slug: row.brand_slug });
+    expect(product.series).toEqual({ name: row.series, slug: row.series_slug });
+
+    const slugs = async (q: string) => (await products.queryProducts({ q, pageSize: 100 })).items.map((p) => p.slug);
+    expect(await slugs(String(row.brand_slug))).toContain(row.slug);
+    expect(await slugs(String(row.series).toLowerCase())).toContain(row.slug);
+    expect(await slugs("rb-bruticus")).toEqual(["bruticus"]);
+
+    // "%" và "_" là ký tự thường, không phải ký tự đại diện của LIKE, ở cả cửa hàng lẫn quản trị.
+    expect((await products.queryProducts({ q: "_" })).total).toBe(0);
+    expect((await products.listAdminProducts({ q: "_" })).total).toBe(0);
+    expect((await products.listAdminProducts({ q: "rb-bruticus" })).items.map((p) => p.slug)).toEqual(["bruticus"]);
+  });
+
   it("phân trang đúng tổng số", async () => {
     const page2 = await products.queryProducts({ page: 2, pageSize: 5 });
     expect(page2.total).toBe(34);

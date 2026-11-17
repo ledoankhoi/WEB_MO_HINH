@@ -47,6 +47,9 @@ export type Product = {
   category: string;
   brandId: string | null;
   seriesId: string | null;
+  // Tên và slug để hiện trên trang sản phẩm (YC-DM-04); chỉ có khi đọc một sản phẩm (findProductBySlug, findProductById).
+  brand: { name: string; slug: string } | null;
+  series: { name: string; slug: string } | null;
   productType: "figure" | "model_kit" | "combiner" | "accessory";
   scale: string;
   grade: string;
