@@ -47,7 +47,7 @@ const ORDER_BY: Record<SortValue, string> = {
   ten: "lower(name) ASC, id",
 };
 
-function parseSpecs(value: unknown): ProductSpec[] {
+export function parseSpecs(value: unknown): ProductSpec[] {
   try {
     const parsed: unknown = JSON.parse(String(value ?? "[]"));
     if (!Array.isArray(parsed)) return [];

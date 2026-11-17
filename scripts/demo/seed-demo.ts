@@ -48,14 +48,14 @@ export type SeedOptions = {
   resume?: boolean;
 };
 
-const HOUR = 3_600_000;
-const DAY = 24 * HOUR;
+export const HOUR = 3_600_000;
+export const DAY = 24 * HOUR;
 const VN = 7 * HOUR;
 
 // ---------------------------------------------------------------------------------------------------------
 // Số ngẫu nhiên có hạt giống: chạy lại cho cùng kế hoạch.
 
-function rng(seed: number) {
+export function rng(seed: number) {
   let a = seed >>> 0;
   const next = () => {
     a = (a + 0x6d2b79f5) >>> 0;
@@ -88,7 +88,8 @@ function rng(seed: number) {
     }
     return k;
   };
-  return { next, between, int, pick, chance, weighted, normal, poisson };
+  const shuffle = <T>(items: readonly T[]) => items.map((item) => ({ item, key: next() })).sort((a, b) => a.key - b.key).map((x) => x.item);
+  return { next, between, int, pick, chance, weighted, normal, poisson, shuffle };
 }
 
 // Ngày giờ Việt Nam của một mốc (để chọn giờ trong ngày, nhận ngày lễ).
@@ -122,7 +123,7 @@ type Product = { variantId: string; productId: string; price: number; name: stri
 type Customer = { id: string; name: string; phone: string; email: string; address: string; city: string; createdAt: number; loyalty: number };
 type Staff = Record<"admin" | "order_staff" | "warehouse_manager" | "warehouse" | "accountant" | "support" | "marketing", { id: string; role: string }>;
 
-type Outcome = "complete" | "customer_cancel" | "unpaid_cancel" | "shop_cancel" | "fail_return" | "fail_redeliver";
+export type Outcome = "complete" | "customer_cancel" | "unpaid_cancel" | "shop_cancel" | "fail_return" | "fail_redeliver";
 type PlannedOrder = {
   at: number;
   customer: Customer | null;
@@ -413,7 +414,7 @@ export async function seedDemo(options: SeedOptions): Promise<SeedSummary> {
     const code = (await db.execute({ sql: "SELECT code FROM orders WHERE id = ?", args: [orderId] })).rows[0].code as string;
     count("Đơn hàng");
 
-    const steps = orderSteps(r, order, code);
+    const steps = orderSteps(r, { payment: order.payment, outcome: order.outcome, city: buyer.city }, code);
     let t = order.at;
     let finished = true;
     for (const step of steps) {
@@ -578,11 +579,11 @@ function hash(text: string): number {
   return h;
 }
 
-function phone(r: ReturnType<typeof rng>): string {
+export function phone(r: ReturnType<typeof rng>): string {
   return `${r.pick(["090", "091", "093", "094", "096", "097", "098", "032", "033", "035", "070", "076", "077", "079", "083", "084", "085", "086", "088"])}${String(r.int(0, 9_999_999)).padStart(7, "0")}`;
 }
 
-function randomPerson(r: ReturnType<typeof rng>) {
+export function randomPerson(r: ReturnType<typeof rng>) {
   const male = r.chance(0.78);
   const last = r.pick(LAST_NAMES);
   const first = r.pick(male ? FIRST_NAMES_M : FIRST_NAMES_F);
@@ -590,7 +591,7 @@ function randomPerson(r: ReturnType<typeof rng>) {
   return { first, last, full };
 }
 
-function address(r: ReturnType<typeof rng>) {
+export function address(r: ReturnType<typeof rng>) {
   const city = r.weighted(CITIES, (c) => c.weight);
   const number = r.chance(0.3) ? `${r.int(1, 200)}/${r.int(1, 40)}` : String(r.int(1, 480));
   return { address: `${number} ${r.pick(city.streets)}, ${r.pick(city.wards)}`, city: city.name };
@@ -625,10 +626,12 @@ function planOrder(r: ReturnType<typeof rng>, at: number, products: Product[], c
   return { at, customer, guest, lines, payment, coupon, note: r.chance(0.18) ? r.pick(ORDER_NOTES) : "", outcome };
 }
 
-type Step = { key: OrderActionKey; after: number; who: "order_staff" | "warehouse" | "accountant" | null; label: string; tracking?: { carrier: string; code: string }; reference?: string };
+export type Step = { key: OrderActionKey; after: number; who: "order_staff" | "warehouse" | "accountant" | null; label: string; tracking?: { carrier: string; code: string }; reference?: string };
+// `leadHours`: thời gian Xưởng làm tuỳ chọn (sơn, LED, lắp ráp) giữa lúc xác nhận và lúc đóng gói.
+export type StepInput = { payment: "cod" | "bank"; outcome: Outcome; city: string; leadHours?: number };
 
 // Các bước của một đơn, mỗi bước cách bước trước `after` mili giây.
-function orderSteps(r: ReturnType<typeof rng>, order: PlannedOrder, code: string): Step[] {
+export function orderSteps(r: ReturnType<typeof rng>, order: StepInput, code: string): Step[] {
   const h = (min: number, max: number) => r.between(min, max) * HOUR;
   const steps: Step[] = [];
   const bank = order.payment === "bank";
@@ -644,11 +647,11 @@ function orderSteps(r: ReturnType<typeof rng>, order: PlannedOrder, code: string
   }
   const carrier = r.pick(CARRIERS);
   steps.push(
-    { key: "start_packing", after: h(1, 14), who: "warehouse", label: "L4 Bắt đầu đóng gói" },
+    { key: "start_packing", after: h(1, 14) + (order.leadHours ?? 0) * HOUR, who: "warehouse", label: "L4 Bắt đầu đóng gói" },
     { key: "packed", after: h(0.5, 4), who: "warehouse", label: "L5 Đóng gói xong" },
     { key: "hand_over", after: h(1, 20), who: "warehouse", label: "L6 Bàn giao vận chuyển", tracking: { carrier: carrier.name, code: `${carrier.prefix}${code.slice(2)}${r.int(100, 999)}` } },
   );
-  const far = !["TP. Hồ Chí Minh", "Hà Nội"].includes((order.customer ?? order.guest)!.city);
+  const far = !["TP. Hồ Chí Minh", "Hà Nội"].includes(order.city);
   if (order.outcome === "fail_return" || order.outcome === "fail_redeliver") {
     steps.push({ key: "delivery_failed", after: h(30, 90), who: "order_staff", label: "L9 Giao thất bại (không liên lạc được người nhận)" });
     if (order.outcome === "fail_return") {
