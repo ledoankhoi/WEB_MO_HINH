@@ -176,6 +176,7 @@ const FIXED_PATHS = [
   "/nhiem-vu",
   "/tin-tuc",
   "/hang-sap-ve",
+  "/gioi-thieu",
 ];
 // Trang nhận tham số trên URL (bộ lọc, bảng xếp hạng, chủ đề): liên kết kèm tham số vẫn hợp lệ.
 const QUERY_PATHS = ["/san-pham", "/trung-bay", "/cong-dong"];

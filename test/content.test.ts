@@ -83,7 +83,7 @@ describe("menu, thanh thông báo, liên hệ (T15)", () => {
       "/",
       "/san-pham",
       // Trang mở rộng thêm ngày 07/11/2026 (NAV_LINKS trong src/server/db/index.ts) xen giữa các mục cũ theo thứ tự,
-      // cùng thứ tự thì theo tên. "Hàng sắp về" thêm ngày 08/11/2026 (đặt trước).
+      // cùng thứ tự thì theo tên. "Hàng sắp về" thêm ngày 08/11/2026 (đặt trước), "Giới thiệu" ngày 12/11/2026 (cuối menu).
       "/hang-sap-ve",
       "/san-pham?loai=transformers",
       "/trung-bay",
@@ -95,8 +95,9 @@ describe("menu, thanh thông báo, liên hệ (T15)", () => {
       "/truyen-tranh",
       "/nhiem-vu",
       "/tin-tuc",
+      "/gioi-thieu",
     ]);
-    for (const ok of ["/san-pham/bruticus", "/gio-hang", "/san-pham?loai=figure", "/trung-bay", "/trung-bay?bang=yeu-thich"]) {
+    for (const ok of ["/san-pham/bruticus", "/gio-hang", "/san-pham?loai=figure", "/trung-bay", "/trung-bay?bang=yeu-thich", "/gioi-thieu"]) {
       expect(await content.internalLinkExists(ok)).toBe(true);
     }
     for (const bad of ["/khong-co", "/san-pham/khong-co", "/gio-hang?x=1", "/admin"]) expect(await content.internalLinkExists(bad)).toBe(false);

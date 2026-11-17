@@ -15,14 +15,11 @@ import { hasWorkshop } from "@/lib/workshop";
 import { PRODUCT_PHOTOS } from "@/data/product-photos";
 import { site } from "@/config/site";
 import { getCategory } from "@/lib/catalog";
-import { getModelFeatures, modelKey } from "@/lib/model-features";
+import { getModelFeatures } from "@/lib/model-features";
 import { formatDate, formatVnd } from "@/lib/format";
 import { canPreorder, orderableQty } from "@/lib/preorder";
 import type { Product, ProductSummary } from "@/lib/types";
-import modelCredits from "@/data/model-credits.json";
-
-type ModelCredit = { title: string; author: string; authorUrl: string; license: string; licenseUrl: string; sourceUrl: string };
-const credits: Record<string, ModelCredit | undefined> = modelCredits;
+import { ModelCredit } from "@/components/three/ModelCredit";
 
 // Thân trang sản phẩm. Trang cửa hàng và tab "Xem trước" của quản trị (YC-SP-08) dùng chung để bản xem
 // trước giống hệt trang thật; `preview` thì không cho thêm vào giỏ.
@@ -50,7 +47,6 @@ export function ProductView({
   preview?: boolean;
 }) {
   const category = getCategory(product.category);
-  const credit = credits[modelKey(product.modelUrl) ?? ""];
   const features = getModelFeatures(product.modelUrl);
   // Ghi nguồn khi ảnh đang hiển thị là ảnh của dữ liệu mẫu lấy từ cửa hàng khác.
   const seededPhotos = PRODUCT_PHOTOS[product.slug];
@@ -181,25 +177,7 @@ export function ProductView({
                   : " Bấm nút đổi dạng để chuyển giữa dạng xe và dạng robot."
                 : ""
             }`}
-            credit={
-              credit && (
-                <p className="text-xs text-muted">
-                  Mô hình 3D:{" "}
-                  <a href={credit.sourceUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-fg">
-                    {credit.title}
-                  </a>{" "}
-                  của{" "}
-                  <a href={credit.authorUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-fg">
-                    {credit.author}
-                  </a>
-                  , giấy phép{" "}
-                  <a href={credit.licenseUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-fg">
-                    {credit.license}
-                  </a>
-                  .
-                </p>
-              )
-            }
+            credit={<ModelCredit modelUrl={product.modelUrl} />}
           />
         </div>
 

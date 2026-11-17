@@ -54,6 +54,8 @@ const NAV_LINKS = [
   { label: "Tin tức", url: "/tin-tuc", sortOrder: 7 },
   // Hàng sắp về, đặt trước (nghiep-vu-ban-hang mục 10): ngay sau Cửa hàng.
   { label: "Hàng sắp về", url: "/hang-sap-ve", sortOrder: 2 },
+  // Trang giới thiệu website (đồ án), cuối thanh menu.
+  { label: "Giới thiệu", url: "/gioi-thieu", sortOrder: 8 },
 ];
 
 type DbState = { backend?: Backend; ready?: Promise<Db> };

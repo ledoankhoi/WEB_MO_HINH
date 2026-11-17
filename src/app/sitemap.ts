@@ -8,7 +8,7 @@ import { getProductSlugs, getPublishedNews } from "@/server/catalog";
 // NEXT_PUBLIC_SITE_URL (site.url).
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [products, news] = await Promise.all([getProductSlugs(), getPublishedNews()]);
-  const fixed = ["", "/san-pham", "/hang-sap-ve", "/trung-bay", "/tin-tuc", "/cong-dong", "/truyen-tranh", "/gacha", "/nhiem-vu"];
+  const fixed = ["", "/san-pham", "/hang-sap-ve", "/trung-bay", "/tin-tuc", "/cong-dong", "/truyen-tranh", "/gacha", "/nhiem-vu", "/gioi-thieu"];
   return [
     ...fixed.map((path) => ({ url: `${site.url}${path}`, changeFrequency: "daily" as const, priority: path === "" ? 1 : 0.6 })),
     ...CATEGORIES.map((category) => ({ url: `${site.url}/san-pham?loai=${category.slug}`, changeFrequency: "daily" as const, priority: 0.7 })),
