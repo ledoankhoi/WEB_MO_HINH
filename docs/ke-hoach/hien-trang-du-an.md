@@ -7,9 +7,10 @@ Kiểm tra ngày 17/11/2026 trên bản làm việc của máy THINKPAD (gồm c
 | Việc ở mục 5 | Kết quả |
 |---|---|
 | 1. Commit phần đang dở | **Xong.** 8 commit theo mạch việc, đã quét bí mật, đã đẩy lên GitHub (`f893468` … `33930fe`). Thư mục làm việc sạch |
-| 3. Tài liệu luận văn | **Xong phần chính:** viết mới `02-use-case.md` (33 use case, 3 sơ đồ use case, 8 đặc tả, 4 sơ đồ hoạt động, 4 sơ đồ tuần tự); `03` thêm mục 14 cho 23 migration kèm 5 sơ đồ ERD; `05` thêm mục 12–16; `06` thêm mục 2b và 8 route; `07` có kết quả toàn dự án; `01` đối chiếu lại cột hiện trạng (45/50 có); `README` chuẩn cập nhật. 17 sơ đồ Mermaid đều vẽ được (kiểm bằng `mermaid-cli`) |
+| 3. Tài liệu luận văn | **Xong phần chính:** viết mới `02-use-case.md` (33 use case, 3 sơ đồ use case, 8 đặc tả, 4 sơ đồ hoạt động, 4 sơ đồ tuần tự); `03` thêm mục 14 cho 23 migration kèm 5 sơ đồ ERD; `05` thêm mục 12–16; `06` thêm mục 2b và 8 route; `07` có kết quả toàn dự án; `01` đối chiếu lại cột hiện trạng (46/50 có sau khi chốt YC-GH-03); `README` chuẩn cập nhật. 17 sơ đồ Mermaid đều vẽ được (kiểm bằng `mermaid-cli`) |
 | 4. Chỗ thiếu nhỏ | **Xong:** YC-DM-04 (thương hiệu, series trên trang sản phẩm), YC-TK-01 (tìm theo thương hiệu, series, SKU), YC-DH-01 (ba trạng thái ở danh sách đơn), YC-3D-03 (5 góc nhìn cố định, nút toàn màn hình), sửa ô tìm của quản trị, 4 dáng Grimlock, `.env.example` có biến SMTP. Có test mới; 404 test qua; đã xem trong trình duyệt thật ở cả màn hình 390 px |
-| Còn chờ chủ dự án | Quyết YC-GH-03 (khách vãng lai có được đặt hàng không); ảnh cho B13 (mục 2); cấu hình SMTP và thử VNPay sandbox (mục 5.5); giấy tờ để mở bán (mục 6) |
+| YC-GH-03 | **Chủ dự án chốt: phải đăng nhập mới đặt hàng.** Đã cài đặt (trang `/thanh-toan` chuyển sang đăng nhập rồi quay lại; Server Action từ chối khi không có phiên; `test/checkout-login.test.ts`) |
+| Còn chờ chủ dự án (đang chuẩn bị) | Ảnh cho B13 (mục 2); tài khoản SMTP và VNPay sandbox (mục 5.5); giấy tờ để mở bán (mục 6) |
 
 **Đính chính:** mục 4 trước đây ghi "Tải file `.glb` ngay trong quản trị: chưa làm". Ghi như vậy là **sai**: trang sửa sản phẩm đã có phần tải mô hình (`ModelUpload`, tải thẳng lên Storage bằng URL có chữ ký, có `test/model-upload.test.ts`). Dòng đó đã được bỏ khỏi mục 4.
 

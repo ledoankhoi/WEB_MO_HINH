@@ -21,7 +21,7 @@ Ngoài phạm vi bước 1: cổng thanh toán trực tuyến, tích hợp hãng
 
 | Tác nhân | Mô tả |
 | --- | --- |
-| Khách vãng lai | Chưa đăng nhập. Xem, tìm, dùng giỏ hàng; không đặt hàng được |
+| Khách vãng lai | Chưa đăng nhập. Xem, tìm, dùng giỏ hàng; không đặt hàng được (đã cài đặt 17/11/2026) |
 | Khách hàng | Đã đăng nhập. Đặt hàng, quản lý tài khoản, đánh giá, yêu thích |
 | Quản lý sản phẩm | Sản phẩm, biến thể, danh mục, thương hiệu, series |
 | Nhân viên kho | Nhập kho, kiểm kê, đóng gói, nhận hàng hoàn |
@@ -78,7 +78,7 @@ Ngoài phạm vi bước 1: cổng thanh toán trực tuyến, tích hợp hãng
 | --- | --- | --- |
 | YC-GH-01 | Thêm biến thể vào giỏ, đổi số lượng, xoá; giỏ lưu ở trình duyệt và còn sau khi tải lại | Có |
 | YC-GH-02 | Giỏ luôn hiện giá và tồn kho mới nhất từ máy chủ; cảnh báo khi hết hàng hoặc vượt tồn | Có |
-| YC-GH-03 | Phải đăng nhập mới vào được trang đặt hàng; sau khi đăng nhập quay lại đúng trang đó | Khác: khách vãng lai vẫn đặt được (tra cứu đơn bằng mã và số điện thoại); chờ chủ dự án quyết giữ hay bắt đăng nhập |
+| YC-GH-03 | Phải đăng nhập mới vào được trang đặt hàng; sau khi đăng nhập quay lại đúng trang đó | Có (17/11/2026: chủ dự án chốt bắt đăng nhập; `/thanh-toan` chuyển sang `/dang-nhap?next=/thanh-toan`, Server Action từ chối khi không có phiên) |
 | YC-GH-04 | Chọn địa chỉ từ sổ địa chỉ hoặc nhập mới; chọn COD hoặc chuyển khoản | Có (sổ địa chỉ; COD, chuyển khoản VietQR, VNPay) |
 | YC-GH-05 | Máy chủ tính lại toàn bộ giá và tổng tiền; không dùng số do trình duyệt gửi | Có |
 | YC-GH-06 | Đặt hàng giữ hàng trong kho; hai khách đặt món cuối cùng thì chỉ một người thành công | Có |

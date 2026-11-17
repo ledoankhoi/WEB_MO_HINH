@@ -10,7 +10,7 @@ Viết ngày 17/11/2026, theo mã nguồn hiện tại.
 
 | Tác nhân | Mô tả | Trong mã |
 |---|---|---|
-| Khách vãng lai | Chưa đăng nhập. Xem, tìm, dùng giỏ hàng, xem 3D, tìm bằng ảnh. Mã hiện **vẫn cho đặt hàng** (khác YC-GH-03, chờ chủ dự án quyết) | không có phiên |
+| Khách vãng lai | Chưa đăng nhập. Xem, tìm, dùng giỏ hàng, xem 3D, tìm bằng ảnh, chat, tra cứu đơn cũ. **Không đặt được hàng** (YC-GH-03, chủ dự án chốt 17/11/2026): vào `/thanh-toan` thì bị chuyển sang đăng nhập | không có phiên |
 | Khách hàng | Đã đăng nhập. Mọi việc của khách vãng lai, cộng với tài khoản, đánh giá, yêu thích, xu, gacha, cộng đồng | `customer` |
 | Quản trị viên | Toàn quyền, gồm cả quản lý nhân viên | `admin` |
 | Quản lý sản phẩm | Sản phẩm, biến thể, danh mục, thương hiệu, series, đợt đặt trước, mô hình nhận dạng | `product_manager` |
@@ -63,8 +63,8 @@ flowchart LR
     U16("UC16 Cộng đồng")
     U17("UC17 Xưởng tuỳ biến")
   end
-  KV --- U01 & U02 & U03 & U04 & U05 & U09 & U11 & U14 & U17
-  KH --- U07 & U08 & U10 & U12 & U13 & U15 & U16
+  KV --- U01 & U02 & U03 & U04 & U09 & U11 & U14 & U17
+  KH --- U05 & U07 & U08 & U10 & U12 & U13 & U15 & U16
   U05 -. include .-> U04
   U06 -. extend .-> U05
   U07 -. extend .-> U05
@@ -140,7 +140,7 @@ flowchart LR
 | UC02 | Xem mô hình 3D: xoay, phóng, biến hình, dáng, góc nhìn cố định, toàn màn hình | Khách | YC-3D-01 – 05 | `RobotViewer`, `src/lib/model-features.ts` |
 | UC03 | Nhận dạng robot từ ảnh, gợi ý sản phẩm | Khách | [08](08-tich-hop-ai.md) | `/tim-bang-anh`, `POST /api/nhan-dien` |
 | UC04 | Quản lý giỏ hàng | Khách | YC-GH-01, 02 | `/gio-hang`, `src/lib/cart.ts`, `GET /api/cart` |
-| UC05 | Đặt hàng | Khách | YC-GH-03 – 08 | `/thanh-toan`, `placeOrderAction` → `createOrder` |
+| UC05 | Đặt hàng | Khách hàng (phải đăng nhập) | YC-GH-03 – 08 | `/thanh-toan`, `placeOrderAction` → `createOrder` |
 | UC06 | Thanh toán VNPay | Khách, Cổng VNPay | nghiệp vụ mục 5 | `createAttempt`, `/api/thanh-toan/vnpay/ipn`, `/tra-ve` |
 | UC07 | Báo đã chuyển khoản | Khách hàng | YC-DH-04 | Trang đơn, `claimTransferAction` |
 | UC08 | Đặt trước, đặt cọc | Khách hàng | nghiệp vụ mục 10 | `/hang-sap-ve`, `src/lib/preorder.ts` |
@@ -176,15 +176,15 @@ flowchart LR
 
 | Mục | Nội dung |
 |---|---|
-| Tác nhân | Khách (đã hoặc chưa đăng nhập) |
-| Tiền điều kiện | Giỏ có ít nhất một biến thể đang bán |
+| Tác nhân | Khách hàng |
+| Tiền điều kiện | Đã đăng nhập (chưa đăng nhập thì `/thanh-toan` chuyển sang `/dang-nhap?next=/thanh-toan`, đăng nhập xong quay lại; giỏ lưu ở trình duyệt nên không mất); giỏ có ít nhất một biến thể đang bán |
 | Hậu điều kiện | Có một đơn `pending` / `unpaid` (hoặc chờ cọc) / `not_created`; số lượng đặt được **giữ** trong sổ kho (dòng `reserve`); khách nhận thư xác nhận |
 | Kích hoạt | Bấm "Đặt hàng" ở `/thanh-toan` |
 
 **Luồng chính**
 1. Khách nhập họ tên, điện thoại, địa chỉ (hoặc chọn từ sổ địa chỉ), chọn phương thức (COD, chuyển khoản, VNPay), có thể nhập mã giảm giá và yêu cầu hoá đơn VAT.
 2. Trình duyệt gửi danh sách dòng giỏ (mã biến thể, số lượng, cấu hình Xưởng) và một khoá chống trùng (`idempotency_key`).
-3. Máy chủ kiểm tra giới hạn tần suất (20 đơn mỗi giờ mỗi IP) và dữ liệu đầu vào.
+3. Máy chủ kiểm tra phiên đăng nhập (không có phiên thì từ chối, không tạo đơn), giới hạn tần suất (20 đơn mỗi giờ mỗi IP) và dữ liệu đầu vào.
 4. Máy chủ tính lại toàn bộ giá: giá bán lúc đó (kể cả flash sale), combo, mã giảm giá, phí vận chuyển. Số tiền do trình duyệt gửi không được dùng (YC-GH-05).
 5. Trong **một giao dịch**: khoá dòng tồn và suất flash sale, kiểm tra còn đủ hàng, ghi đơn, các dòng đơn, dòng sổ kho giữ hàng, sự kiện đơn.
 6. Máy chủ gửi thư xác nhận và chuyển khách tới trang đơn `/don-hang/<token>`.
@@ -335,7 +335,9 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-  A([Khách bấm Đặt hàng]) --> B{Dữ liệu hợp lệ,<br/>chưa vượt giới hạn?}
+  A([Khách bấm Đặt hàng]) --> A1{Đã đăng nhập?}
+  A1 -- Không --> A2[Sang trang đăng nhập, xong quay lại /thanh-toan] --> A
+  A1 -- Có --> B{Dữ liệu hợp lệ,<br/>chưa vượt giới hạn?}
   B -- Không --> B1[Báo lỗi từng ô] --> Z([Kết thúc])
   B -- Có --> C{COD từ mức cần OTP?}
   C -- Có --> C1{Mã OTP đúng?}
@@ -431,6 +433,7 @@ sequenceDiagram
   participant M as sendMail
   K->>B: Bấm Đặt hàng
   B->>A: FormData: dòng giỏ, địa chỉ, phương thức, khoá chống trùng
+  A->>DB: getCurrentUser (không có phiên thì từ chối)
   A->>DB: consumeRateLimit(order:IP)
   A->>A: Kiểm dữ liệu, OTP (COD lớn)
   A->>R: createOrder(input)

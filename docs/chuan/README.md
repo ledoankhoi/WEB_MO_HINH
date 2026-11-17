@@ -7,7 +7,7 @@ Nguồn đúng duy nhất cho dự án ROBOTICA (luận văn, đồng thời là
 | File | Nội dung | Tình trạng |
 | --- | --- | --- |
 | [00-quyet-dinh-nen-tang.md](00-quyet-dinh-nen-tang.md) | Mục tiêu, các quyết định đã chốt và thứ tự ưu tiên | Đã chốt |
-| [01-dac-ta-yeu-cau.md](01-dac-ta-yeu-cau.md) | Phạm vi, tác nhân, yêu cầu chức năng và phi chức năng, quy tắc nghiệp vụ | Đã chốt; đối chiếu lại 17/11/2026: 45/50 yêu cầu có, 1 khác, 4 chưa (ghi nhận hành vi) |
+| [01-dac-ta-yeu-cau.md](01-dac-ta-yeu-cau.md) | Phạm vi, tác nhân, yêu cầu chức năng và phi chức năng, quy tắc nghiệp vụ | Đã chốt; đối chiếu lại 17/11/2026: 46/50 yêu cầu có, 4 chưa (ghi nhận hành vi) |
 | [02-use-case.md](02-use-case.md) | Sơ đồ use case, đặc tả từng use case, sơ đồ hoạt động và tuần tự | Đã viết 17/11/2026 (33 use case, sơ đồ use case, hoạt động, tuần tự) |
 | [03-co-so-du-lieu.md](03-co-so-du-lieu.md) | ERD, mô tả bảng, khoá, ràng buộc | Đã cài đặt; mục 14 bổ sung 23 migration sau 016 (17/11/2026) |
 | [04-trang-thai.md](04-trang-thai.md) | Trạng thái đơn hàng, thanh toán, vận chuyển, tồn kho và luật chuyển | Đã chốt, đã cài đặt |

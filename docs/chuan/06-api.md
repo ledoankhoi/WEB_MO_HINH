@@ -144,7 +144,7 @@ Quyền đọc từ chính mã nguồn (`staffWith(...)`, `authorize(...)`). M�
 
 | File | Action | Phiên | Việc |
 |---|---|---|---|
-| `orders.ts` | `placeOrderAction` | — (khách vãng lai đặt được) | Đặt hàng (UC05 ở [02](02-use-case.md)); 20 đơn/giờ/IP; COD lớn cần OTP |
+| `orders.ts` | `placeOrderAction` | Khách | Đặt hàng (UC05 ở [02](02-use-case.md)); không có phiên thì từ chối (YC-GH-03); 20 đơn/giờ/IP; COD lớn cần OTP trừ khi email tài khoản đã xác thực trùng email đơn |
 | | `payAgainAction`, `previewCouponAction`, `lookupOrderAction` | — | Tạo lại lượt VNPay; xem trước mã giảm giá; tra cứu đơn bằng mã và số điện thoại (có giới hạn tần suất) |
 | | `cancelOrderAction` | Token đơn | Khách huỷ đơn còn `pending` (L12) |
 | `bank-transfer.ts` | `claimTransferAction(token, note)` | Token đơn | Báo "Tôi đã chuyển khoản" (`transfer_claims`); chỉ là lời báo; có giới hạn tần suất |
