@@ -7,7 +7,7 @@ import { LogoutButton } from "@/components/account/AccountForms";
 import { ReviewForm } from "@/components/account/ReviewForm";
 import { ProductGrid } from "@/components/product/ProductCard";
 import { ButtonLink } from "@/components/ui/Button";
-import { ORDER_STATUS_LABELS } from "@/lib/catalog";
+import { ORDER_STATUS_LABELS, PAYMENT_STATUS_LABELS, SHIPPING_STATUS_LABELS } from "@/lib/catalog";
 import { formatDate, formatVnd } from "@/lib/format";
 import { requireUser } from "@/server/auth/session";
 import { listOrdersByUser } from "@/server/repo/orders";
@@ -61,7 +61,12 @@ async function Account() {
                   <span className="text-muted">{formatDate(order.createdAt)}</span>
                   <span className="text-muted">{order.itemCount} sản phẩm</span>
                   <span className="ml-auto tabular-nums">{formatVnd(order.total)}</span>
-                  <span className="rounded-full bg-raised px-2.5 py-0.5 text-xs font-medium">{ORDER_STATUS_LABELS[order.status]}</span>
+                  <span className="flex flex-wrap gap-1.5 text-xs font-medium">
+                    {/* Ba trạng thái độc lập: đơn, thanh toán, vận chuyển (YC-DH-01). */}
+                    <span className="rounded-full bg-raised px-2.5 py-0.5">{ORDER_STATUS_LABELS[order.status]}</span>
+                    <span className="rounded-full bg-raised px-2.5 py-0.5">{PAYMENT_STATUS_LABELS[order.paymentStatus]}</span>
+                    <span className="rounded-full bg-raised px-2.5 py-0.5">{SHIPPING_STATUS_LABELS[order.shippingStatus]}</span>
+                  </span>
                 </Link>
               </li>
             ))}
