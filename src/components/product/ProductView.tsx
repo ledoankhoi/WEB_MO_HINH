@@ -15,7 +15,7 @@ import { hasWorkshop } from "@/lib/workshop";
 import { PRODUCT_PHOTOS } from "@/data/product-photos";
 import { site } from "@/config/site";
 import { getCategory } from "@/lib/catalog";
-import { getModelFeatures } from "@/lib/model-features";
+import { getModelFeatures, viewerHint } from "@/lib/model-features";
 import { formatDate, formatVnd } from "@/lib/format";
 import { canPreorder, orderableQty } from "@/lib/preorder";
 import type { Product, ProductSummary } from "@/lib/types";
@@ -170,13 +170,7 @@ export function ProductView({
             photos={media.length > 0 ? media : product.images}
             source={photoSet ? { host: photoSet.source, url: photoSet.sourceUrl } : null}
             viewer={{ model: product.model, colors: product.colors, modelUrl: product.modelUrl, features, label: `Mô hình 3D của ${product.name}` }}
-            hint={`Kéo để xoay, giữ Ctrl và cuộn để phóng to.${
-              features?.transform
-                ? features.transform.kind === "combine"
-                  ? " Bấm Hợp thể để xem các thành viên ghép lại."
-                  : " Bấm nút đổi dạng để chuyển giữa dạng xe và dạng robot."
-                : ""
-            }`}
+            hint={viewerHint(features)}
             credit={<ModelCredit modelUrl={product.modelUrl} />}
           />
         </div>

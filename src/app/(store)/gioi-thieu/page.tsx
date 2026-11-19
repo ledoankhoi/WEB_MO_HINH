@@ -14,7 +14,7 @@ import { site } from "@/config/site";
 import { ADMIN_MODULES, AI_STEPS, ARCHITECTURE, ARCHITECTURE_LINKS, DEMO_STEPS, FEATURES, TECH, type LandingFeature, type LandingLinks } from "@/data/landing";
 import { IMAGE_SEARCH_MODEL } from "@/lib/image-search";
 import { pickShowcaseModel } from "@/lib/landing";
-import { getModelFeatures } from "@/lib/model-features";
+import { getModelFeatures, viewerHint } from "@/lib/model-features";
 import { hasWorkshop } from "@/lib/workshop";
 import { getFeaturedProducts, getProductBySlug, getShowcase, searchProducts } from "@/server/catalog";
 import { getImageSearchStatus } from "@/server/image-search";
@@ -63,13 +63,7 @@ export default async function AboutPage() {
   // Cùng giá trị mặc định với src/proxy.ts.
   const adminHost = process.env.ADMIN_HOST?.trim() || "admin.localhost";
 
-  const hint = `Kéo để xoay, giữ Ctrl và cuộn để phóng to.${
-    features?.transform
-      ? features.transform.kind === "combine"
-        ? " Bấm Hợp thể để xem các thành viên ghép lại."
-        : " Bấm nút đổi dạng để chuyển giữa dạng xe và dạng robot."
-      : ""
-  }${features?.poses?.length ? " Chọn dáng ở hàng nút trên cùng của khung." : ""}`;
+  const hint = `${viewerHint(features)}${features?.poses?.length ? " Chọn dáng ở hàng nút trên cùng của khung." : ""}`;
 
   const tiles = [
     { value: stats.products, label: "Mẫu đang bán" },

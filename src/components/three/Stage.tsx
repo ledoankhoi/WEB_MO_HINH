@@ -2,7 +2,7 @@
 
 import { Component, Suspense, useEffect, useLayoutEffect, useMemo, useRef, type ReactNode } from "react";
 import { ContactShadows, Environment, Html, Lightformer, useGLTF } from "@react-three/drei";
-import { useThree } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import {
   AdditiveBlending,
   AnimationMixer,
@@ -11,18 +11,23 @@ import {
   Color,
   DoubleSide,
   Matrix4,
+  Quaternion,
   Raycaster,
   Vector3,
   type AnimationClip,
+  type Bone,
   type Group,
   type Material,
   type Mesh,
+  type MeshBasicMaterial,
   type Object3D,
   type SkinnedMesh,
+  type Sprite,
 } from "three";
 import { clone as cloneWithSkeleton } from "three/examples/jsm/utils/SkeletonUtils.js";
 import type { RobotColors, RobotModelKey } from "@/lib/catalog";
-import type { ModelFeatures, ModelPose } from "@/lib/model-features";
+import { vehicleKindOf, type ModelFeatures, type ModelPose } from "@/lib/model-features";
+import { VEHICLE_IDLE_CLIPS, pickGuns, pickRotors, pickWheels, vehicleActions, type VehicleAction, type VehicleKind } from "@/lib/vehicle-motion";
 import { Robot } from "./robots";
 
 export type ModelSource = {
@@ -57,11 +62,12 @@ export type WorkshopLook = {
   dark?: boolean;
 };
 
-// Trạng thái do khung xem điều khiển: vị trí trên clip biến hình (0 = dạng đầu, 1 = dạng cuối) và dáng
-// đang chọn (có dáng thì dáng được ưu tiên).
+// Trạng thái do khung xem điều khiển: vị trí trên clip biến hình (0 = dạng đầu, 1 = dạng cuối), dáng đang chọn ở dạng
+// robot và chuyển động đang chọn ở dạng xe (src/lib/vehicle-motion.ts). Có dáng hoặc chuyển động thì được ưu tiên.
 export type ModelControl = {
   progress: number;
   pose: ModelPose | null;
+  action?: VehicleAction | null;
 };
 
 // Những gì file .glb thật sự hỗ trợ, báo lại cho khung xem để hiện đúng các nút.
@@ -70,7 +76,153 @@ export type ModelInfo = {
   poses: ModelPose[];
   // Số khối linh kiện (mesh) bóc tách được.
   parts: number;
+  // Các nút ở dạng xe; null khi mô hình không có dạng xe.
+  vehicle: { kind: VehicleKind; actions: { action: VehicleAction; label: string }[] } | null;
 };
+
+// Dạng xe đã đo: vị trí căn giữa, hướng mũi xe, cỡ (đơn vị của file) và các xương dùng cho chuyển động tự dựng.
+type VehicleRig = {
+  kind: VehicleKind;
+  idleClip: AnimationClip | null;
+  anchor: Anchor;
+  heading: Vector3;
+  lateral: Vector3;
+  size: Vector3;
+  wheels: Spinner[];
+  rotors: Spinner[];
+  guns: Object3D[];
+  // Tư thế dạng xe (khung đầu clip biến hình), làm nền cho clip nghỉ: clip nghỉ của vài file (Shockwave) chỉ điều khiển một
+  // số xương, phần còn lại phải giữ dạng xe chứ không về tư thế gốc (dạng robot).
+  rest: Snapshot;
+};
+
+// Đặt mô hình vào dạng xe: khung đầu clip biến hình, rồi clip nghỉ của dạng xe (nếu có) đè lên các xương nó điều khiển.
+function showVehicle(mixer: AnimationMixer, rest: Snapshot, transformClip: AnimationClip, idleClip: AnimationClip | null): Snapshot {
+  restore(rest);
+  poseAt(mixer, transformClip, 0);
+  const base = snapshot(rest[0][0]);
+  if (idleClip) {
+    mixer.stopAllAction();
+    mixer.clipAction(idleClip).play();
+    mixer.setTime(0);
+  }
+  return base;
+}
+
+// Bộ phận quay (bánh xe, cánh quạt): node và tâm quay (toạ độ trong mô hình). Gốc của xương bánh thường không nằm ở tâm
+// bánh; quay quanh gốc xương thì bánh văng lệch ra ngoài, nên tâm quay lấy theo các đỉnh do xương đó (và xương con) điều
+// khiển nhiều nhất.
+type Spinner = { node: Object3D; pivot: Vector3 };
+
+// Tâm quay và hộp bao (toạ độ thế giới lúc đo) của phần do node điều khiển.
+type PartSample = [SkinnedMesh, number];
+
+function spinPart(object: Object3D, node: Object3D): { pivot: Vector3; box: Box3; samples: PartSample[] } {
+  const targets = new Set<Object3D>();
+  node.traverse((child) => {
+    if ((child as Bone).isBone || child === node) targets.add(child);
+  });
+  const sum = new Vector3();
+  const point = new Vector3();
+  const box = new Box3();
+  const samples: PartSample[] = [];
+  let count = 0;
+  object.traverse((child) => {
+    const mesh = child as SkinnedMesh;
+    if (!mesh.isSkinnedMesh) return;
+    const bones = mesh.skeleton.bones;
+    const index = mesh.geometry.getAttribute("skinIndex");
+    const weight = mesh.geometry.getAttribute("skinWeight");
+    if (!index || !weight) return;
+    for (let i = 0; i < index.count; i++) {
+      let best = 0;
+      for (let k = 1; k < 4; k++) if (weight.getComponent(i, k) > weight.getComponent(i, best)) best = k;
+      if (!targets.has(bones[index.getComponent(i, best)])) continue;
+      sum.add(mesh.getVertexPosition(i, point).applyMatrix4(mesh.matrixWorld));
+      box.expandByPoint(point);
+      samples.push([mesh, i]);
+      count++;
+    }
+  });
+  if (count === 0) box.setFromObject(node, true);
+  const world = count > 0 ? sum.divideScalar(count) : box.getCenter(new Vector3());
+  if (!Number.isFinite(world.x)) node.getWorldPosition(world);
+  return { pivot: object.worldToLocal(world.clone()), box, samples };
+}
+
+// Hộp bao hiện tại của phần do node điều khiển (đỉnh mẫu nếu là lưới có xương, không thì cả node).
+function partBox(node: Object3D, samples: PartSample[]): Box3 {
+  if (samples.length === 0) return new Box3().setFromObject(node, true);
+  const box = new Box3();
+  const point = new Vector3();
+  for (const [mesh, index] of samples) box.expandByPoint(mesh.getVertexPosition(index, point).applyMatrix4(mesh.matrixWorld));
+  return box;
+}
+
+// Quay node quanh trục `axis` (toạ độ thế giới) đi qua điểm `pivot` (toạ độ thế giới): ma trận mới = dời về tâm · quay ·
+// dời ra · ma trận cũ, rồi đổi về toạ độ của node cha. Cần matrixWorld đã cập nhật.
+function turnAbout(node: Object3D, pivot: Vector3, axis: Vector3, angle: number, work: Matrix4, step: Matrix4) {
+  if (!node.parent) return;
+  work.makeTranslation(pivot.x, pivot.y, pivot.z);
+  work.multiply(step.makeRotationAxis(axis, angle));
+  work.multiply(step.makeTranslation(-pivot.x, -pivot.y, -pivot.z));
+  work.multiply(node.matrixWorld);
+  work.premultiply(step.copy(node.parent.matrixWorld).invert());
+  work.decompose(node.position, node.quaternion, node.scale);
+}
+
+// Phần quay được phải là một bánh xe: dẹt theo trục bánh (bề ngang dưới 0,7 lần chiều cao; bánh thật đo được 0,34–0,57),
+// tròn (cao xấp xỉ dài), nhỏ so với xe. Rồi thử quay 90° quanh trục bánh: bánh thật quay tại chỗ nên hộp bao gần như giữ
+// nguyên. Không đạt (xương điều khiển cả cụm vè, cửa xe như Bumblebee Alliance; hoặc trục bánh không trùng trục ngang của
+// xe) thì không quay phần đó.
+function wheelShaped(box: Box3, heading: Vector3, vehicleLength: number) {
+  const size = box.getSize(new Vector3());
+  const sideways = Math.abs(heading.x) > 0.5;
+  const across = sideways ? size.z : size.x;
+  const along = sideways ? size.x : size.z;
+  const round = size.y / Math.max(along, 1e-6);
+  return across < Math.min(size.y, along) * 0.7 && round > 0.8 && round < 1.25 && Math.max(size.y, along) < vehicleLength * 0.4;
+}
+
+function spinsInPlace(object: Object3D, part: { node: Object3D; pivot: Vector3; box: Box3; samples: PartSample[] }, axis: Vector3) {
+  const { node, samples } = part;
+  if (part.box.isEmpty()) return false;
+  const saved = [node.position.clone(), node.quaternion.clone(), node.scale.clone()] as const;
+  const before = partBox(node, samples);
+  turnAbout(node, part.pivot.clone().applyMatrix4(object.matrixWorld), axis, Math.PI / 2, new Matrix4(), new Matrix4());
+  object.updateMatrixWorld(true);
+  const after = partBox(node, samples);
+  node.position.copy(saved[0]);
+  node.quaternion.copy(saved[1]);
+  node.scale.copy(saved[2]);
+  object.updateMatrixWorld(true);
+  const size = before.getSize(new Vector3());
+  const span = Math.max(size.x, size.y, size.z);
+  const moved = before.getCenter(new Vector3()).distanceTo(after.getCenter(new Vector3()));
+  const grown = after.getSize(new Vector3()).sub(size);
+  return moved < span * 0.12 && Math.max(Math.abs(grown.x), Math.abs(grown.y), Math.abs(grown.z)) < span * 0.25;
+}
+
+// Lấy các node theo tên, chỉ giữ node làm chuyển động được (xương hoặc khối hình, hoặc node chứa khối hình) và bỏ node
+// nằm bên trong một node khác đã chọn (quay cả hai thì bánh quay gấp đôi).
+function movableNodes(object: Object3D, names: string[]): Object3D[] {
+  const found: Object3D[] = [];
+  for (const name of names) {
+    const node = object.getObjectByName(name);
+    if (!node || found.includes(node)) continue;
+    let drawable = (node as Bone).isBone || (node as Mesh).isMesh;
+    node.traverse((child) => {
+      if ((child as Mesh).isMesh) drawable = true;
+    });
+    if (drawable) found.push(node);
+  }
+  return found.filter((node) => !found.some((other) => other !== node && isAncestor(other, node)));
+}
+
+function isAncestor(ancestor: Object3D, node: Object3D) {
+  for (let parent = node.parent; parent; parent = parent.parent) if (parent === ancestor) return true;
+  return false;
+}
 
 // Ánh sáng kiểu studio. Môi trường phản chiếu được dựng tại chỗ bằng các tấm sáng, không tải ảnh HDR
 // từ máy chủ bên ngoài.
@@ -198,6 +350,13 @@ function GlbModel({
   const model = useMemo(() => {
     // clone() thường làm mesh có khung xương (skinned) vẫn bám vào xương của bản gốc, nên hiển thị và đo sai.
     const object = cloneWithSkeleton(scene);
+    // Tấm bóng đổ có sẵn trong một số file (cho chế độ AR, ví dụ "Shadow_ARShadowMaterial_0") hiện thành tấm vuông trắng ở
+    // vài clip; khung xem đã tự vẽ bóng (ContactShadows) nên bỏ đi.
+    const shadows: Object3D[] = [];
+    object.traverse((node) => {
+      if ((node as Mesh).isMesh && /shadow/i.test(node.name)) shadows.push(node);
+    });
+    for (const node of shadows) node.removeFromParent();
     // Chất liệu riêng cho bản sao này: phủ màu ở Xưởng không làm đổi màu mô hình ở khung xem khác (useGLTF dùng chung).
     // Kèm độ nhám, độ kim loại gốc (chất liệu PBR) để đổi theo lớp hoàn thiện rồi trả lại khi bỏ chọn.
     const tintable: { material: Material & { color: Color }; base: Color; rough?: number; metal?: number }[] = [];
@@ -324,6 +483,48 @@ function GlbModel({
       transformAnchors.push(anchor(measure(object)));
     }
 
+    // Dạng xe: đo ở clip nghỉ của dạng xe (nếu file có) hoặc khung đầu clip biến hình. Hướng mũi xe lấy từ bánh trước và
+    // bánh sau khi tên xương có ghi; không có thì theo chiều dài nhất của xe (mặc định quay về +Z như dạng robot).
+    let vehicle: VehicleRig | null = null;
+    const kind = vehicleKindOf(features);
+    if (kind && transformClip) {
+      const idleClip = VEHICLE_IDLE_CLIPS.map((name) => findClip(name)).find((clip) => clip !== null) ?? null;
+      const names: string[] = [];
+      object.traverse((node) => {
+        if (node.name && !names.includes(node.name)) names.push(node.name);
+      });
+      const vehicleRest = showVehicle(mixer, rest, transformClip, idleClip);
+      const box = measure(object);
+      const size = box.getSize(new Vector3());
+      object.updateMatrixWorld(true);
+      const wheelParts = movableNodes(object, pickWheels(names)).map((node) => ({ node, ...spinPart(object, node) }));
+      const guns = pickGuns(names)
+        .map((name) => object.getObjectByName(name))
+        .filter((node): node is Object3D => node !== undefined);
+      const rotors = movableNodes(object, pickRotors(names)).map((node) => ({ node, pivot: spinPart(object, node).pivot }));
+      const heading = size.z >= size.x ? new Vector3(0, 0, 1) : new Vector3(1, 0, 0);
+      const average = (list: Object3D[]) =>
+        list.reduce((sum, node) => sum.add(node.getWorldPosition(new Vector3())), new Vector3()).divideScalar(list.length);
+      const front = wheelParts.filter(({ node }) => /front|_f_|_f$|fl$|fr$/i.test(node.name)).map(({ node }) => node);
+      const back = wheelParts.filter(({ node }) => /back|rear|behind|_b_|_b$/i.test(node.name)).map(({ node }) => node);
+      if (front.length > 0 && back.length > 0) {
+        const along = average(front).sub(average(back));
+        along.y = 0;
+        if (along.lengthSq() > 0)
+          heading.copy(Math.abs(along.z) >= Math.abs(along.x) ? new Vector3(0, 0, Math.sign(along.z)) : new Vector3(Math.sign(along.x), 0, 0));
+      }
+      const lateral = new Vector3(0, 1, 0).cross(heading).normalize();
+      const wheels = wheelParts
+        .filter((part) => !part.box.isEmpty() && wheelShaped(part.box, heading, Math.max(size.x, size.z)) && spinsInPlace(object, part, lateral))
+        .map(({ node, pivot }) => ({ node, pivot }));
+      vehicle = { kind, idleClip, anchor: anchor(box), heading, lateral, size, wheels, rotors, guns, rest: vehicleRest };
+      mixer.stopAllAction();
+      restore(rest);
+    }
+    const vehicleInfo = vehicle
+      ? { kind: vehicle.kind, actions: vehicleActions(vehicle.kind, { idle: vehicle.idleClip !== null, guns: vehicle.guns.length }) }
+      : null;
+
     return {
       object,
       mixer,
@@ -335,7 +536,13 @@ function GlbModel({
       transformAnchors,
       poseAnchors,
       tintable,
-      info: { transformSeconds: transformClip?.duration ?? null, poses, parts: offsets.size } satisfies ModelInfo,
+      vehicle,
+      info: {
+        transformSeconds: transformClip?.duration ?? null,
+        poses,
+        parts: offsets.size,
+        vehicle: vehicleInfo && vehicleInfo.actions.length > 0 ? vehicleInfo : null,
+      } satisfies ModelInfo,
     };
   }, [scene, animations, features, interactive]);
 
@@ -353,12 +560,33 @@ function GlbModel({
 
   const progress = control?.progress ?? 1;
   const pose = control?.pose ?? null;
+  const action = model.vehicle ? (control?.action ?? null) : null;
+
+  // Chuyển động đang chạy mỗi khung hình: `loop` phát tiếp clip đang đặt; `base` là vị trí căn giữa để cộng độ nhún, độ
+  // giật; `wheels`, `rotors` là góc xoay gốc của xương (đặt lại mỗi khung trước khi cộng thêm vòng quay).
+  type Rest = [Vector3, Quaternion, Vector3];
+  const motion = useRef<{ loop: boolean; base: Anchor; wheels: Rest[]; rotors: Rest[]; time: number; spin: number } | null>(null);
 
   useLayoutEffect(() => {
-    const { mixer, rest, findClip, transformClip, info } = model;
+    const { mixer, rest, findClip, transformClip, info, vehicle } = model;
     // Về tư thế gốc trước, để khúc xương mà clip mới không điều khiển không giữ giá trị của clip trước.
     mixer.stopAllAction();
     restore(rest);
+    motion.current = null;
+    if (action && vehicle && transformClip) {
+      // Dạng xe: clip nghỉ của file phát lặp làm nền (không có thì đứng yên ở khung đầu clip biến hình).
+      showVehicle(mixer, rest, transformClip, vehicle.idleClip);
+      model.object.position.set(...vehicle.anchor);
+      motion.current = {
+        loop: vehicle.idleClip !== null,
+        base: vehicle.anchor,
+        wheels: vehicle.wheels.map(({ node }) => [node.position.clone(), node.quaternion.clone(), node.scale.clone()]),
+        rotors: vehicle.rotors.map(({ node }) => [node.position.clone(), node.quaternion.clone(), node.scale.clone()]),
+        time: 0,
+        spin: 0,
+      };
+      return;
+    }
     // Dáng mặc định là dáng đứng đầu tiên, trừ khi khung xem đang điều khiển clip biến hình.
     const shown = pose ?? (transformClip && interactive ? null : (info.poses[0] ?? null));
     const poseClip = shown ? findClip(shown.clip) : null;
@@ -372,11 +600,70 @@ function GlbModel({
     if (shown && poseClip) {
       model.showPose(shown);
       place = model.poseAnchors.get(shown.label) ?? anchors[anchors.length - 1];
+      // Dáng có cử động: phát lặp clip của file từ khung hình đã đặt, giữ nguyên vị trí căn giữa của dáng.
+      if (shown.play && interactive) motion.current = { loop: true, base: place, wheels: [], rotors: [], time: 0, spin: 0 };
     } else if (transformClip) {
       poseAt(mixer, transformClip, progress);
     }
     model.object.position.set(...place);
-  }, [model, progress, pose, interactive]);
+  }, [model, progress, pose, interactive, action]);
+
+  // Mỗi khung hình: phát tiếp clip lặp, rồi cộng chuyển động tự dựng của dạng xe (quay bánh, quay cánh quạt, nhún, bay
+  // lơ lửng, giật khi bắn).
+  const scratch = useRef({ turnMatrix: new Matrix4(), stepMatrix: new Matrix4(), pivot: new Vector3(), lift: new Vector3() });
+  useFrame((_, delta) => {
+    const { turnMatrix, stepMatrix, pivot, lift } = scratch.current;
+    const state = motion.current;
+    if (!state) return;
+    const step = Math.min(delta, 0.1);
+    state.time += step;
+    const vehicle = model.vehicle;
+    const moving = action === "move";
+    // Chỉ khi đang ở dạng xe mới có góc gốc của xương (dáng robot lặp thì danh sách rỗng).
+    if (vehicle && action) {
+      const reset = (list: Spinner[], rest: Rest[]) =>
+        list.forEach(({ node }, index) => {
+          node.position.copy(rest[index][0]);
+          node.quaternion.copy(rest[index][1]);
+          node.scale.copy(rest[index][2]);
+        });
+      reset(vehicle.wheels, state.wheels);
+      reset(vehicle.rotors, state.rotors);
+    }
+    // Dạng xe: về tư thế dạng xe trước rồi mới phát tiếp clip nghỉ, để xương clip không điều khiển vẫn ở dạng xe.
+    if (state.loop && vehicle && action) restore(vehicle.rest);
+    if (state.loop) model.mixer.update(step);
+    if (!vehicle || !action) return;
+
+    const { heading, lateral, size } = vehicle;
+    const height = size.y;
+    const length = Math.max(size.x, size.z);
+    model.object.updateMatrixWorld(true);
+    // Quay bộ phận quanh một trục của thế giới, đi qua tâm quay đã đo.
+    const turn = ({ node, pivot: center }: Spinner, axis: Vector3, angle: number) =>
+      turnAbout(node, pivot.copy(center).applyMatrix4(model.object.matrixWorld), axis, angle, turnMatrix, stepMatrix);
+    const air = vehicle.kind === "air" || vehicle.kind === "heli";
+    if (moving && vehicle.kind === "ground") {
+      state.spin += step * 9;
+      for (const wheel of vehicle.wheels) turn(wheel, lateral, state.spin);
+    }
+    if (vehicle.kind === "heli" || (moving && air)) {
+      for (const rotor of vehicle.rotors) turn(rotor, new Vector3(0, 1, 0), state.time * 28);
+    }
+
+    lift.set(...state.base);
+    if (moving && vehicle.kind === "ground") {
+      lift.y += Math.abs(Math.sin(state.time * 17)) * height * 0.012;
+    } else if (moving && air) {
+      lift.y += height * 0.35 + Math.sin(state.time * 2.1) * height * 0.08;
+      model.object.quaternion.setFromAxisAngle(heading, Math.sin(state.time * 1.3) * 0.07);
+    }
+    if (action === "fire") {
+      const phase = (state.time % FIRE_PERIOD) / FIRE_PERIOD;
+      lift.addScaledVector(heading, -length * 0.025 * Math.max(0, 1 - phase * 6));
+    }
+    model.object.position.copy(lift);
+  });
 
   // Vị trí đèn LED mắt, ngực và decal ở vai: bắn tia từ phía trước vào mô hình ở độ cao ước tính theo hộp bao (mắt gần
   // đỉnh, ngực khoảng 1/3 từ trên xuống), lấy điểm chạm bề mặt; không chạm thì dùng mặt trước hộp bao. Tính lại khi đổi
@@ -418,6 +705,7 @@ function GlbModel({
   return (
     <group ref={groupRef} position={[0, -1, 0]} scale={model.scale}>
       <primitive object={model.object} />
+      {action && model.vehicle && action !== "idle" && <VehicleEffects rig={model.vehicle} action={action} group={groupRef} glow={glow} />}
       {showLed && (
         <>
           <group ref={eyeLeft}>
@@ -446,6 +734,143 @@ function GlbModel({
 }
 
 // Nhãn decal tên riêng ở vai mô hình (decal nước thật dán ở vai hoặc chân).
+// Nhịp bắn: mỗi phát cách nhau bao nhiêu giây (độ giật của thân xe dùng cùng nhịp).
+const FIRE_PERIOD = 0.6;
+const DASHES = 7;
+const STREAKS = 10;
+
+// Hiệu ứng của dạng xe, vẽ trong nhóm mô hình (đơn vị của file, sàn ở y = 0, xe căn giữa gốc toạ độ). Chạy: vạch kẻ
+// đường hai bên lùi dần về sau. Bay: vệt gió lướt qua thân. Bắn: lửa loé ở xương súng và vạch đạn bay về phía trước.
+function VehicleEffects({
+  rig,
+  action,
+  group,
+  glow,
+}: {
+  rig: VehicleRig;
+  action: VehicleAction;
+  group: { current: Group | null };
+  glow: CanvasTexture;
+}) {
+  const { heading, lateral, size } = rig;
+  const length = Math.max(size.x, size.z);
+  const width = Math.min(size.x, size.z);
+  const air = rig.kind === "air" || rig.kind === "heli";
+  const dashes = useRef<(Mesh | null)[]>([]);
+  const streaks = useRef<(Mesh | null)[]>([]);
+  const flashes = useRef<(Sprite | null)[]>([]);
+  const tracers = useRef<(Mesh | null)[]>([]);
+  const clock = useRef(0);
+  const scratch = useRef(new Vector3());
+  // Hướng của vạch (dọc theo mũi xe) dưới dạng góc quay quanh trục đứng.
+  const yaw = Math.atan2(heading.x, heading.z);
+  // Vị trí "ngẫu nhiên" cố định cho vệt gió.
+  const streakSeeds = useMemo(
+    () => Array.from({ length: STREAKS }, (_, index) => [((index * 37) % 11) / 10 - 0.5, ((index * 53) % 7) / 6, (index * 0.137) % 1]),
+    [],
+  );
+
+  useFrame((_, delta) => {
+    const muzzle = scratch.current;
+    clock.current += Math.min(delta, 0.1);
+    const t = clock.current;
+    const span = length * 2.6;
+    if (action === "move" && !air) {
+      dashes.current.forEach((mesh, index) => {
+        if (!mesh) return;
+        const row = index % 2 === 0 ? 1 : -1;
+        const slot = Math.floor(index / 2);
+        const along = (((((slot / DASHES) * span - t * length * 2.2) % span) + span) % span) - span / 2;
+        mesh.position
+          .copy(heading)
+          .multiplyScalar(along)
+          .addScaledVector(lateral, row * (width / 2 + length * 0.12));
+        mesh.position.y = length * 0.002;
+        (mesh.material as MeshBasicMaterial).opacity = 0.75 * (1 - (along / (span / 2)) ** 2);
+      });
+    }
+    if (action === "move" && air) {
+      streaks.current.forEach((mesh, index) => {
+        if (!mesh) return;
+        const [side, high, offset] = streakSeeds[index];
+        const along = ((((offset * span - t * length * 3) % span) + span) % span) - span / 2;
+        mesh.position
+          .copy(heading)
+          .multiplyScalar(along)
+          .addScaledVector(lateral, side * width * 1.4);
+        mesh.position.y = size.y * (0.3 + high) + size.y * 0.35;
+        (mesh.material as MeshBasicMaterial).opacity = 0.55 * (1 - (along / (span / 2)) ** 2);
+      });
+    }
+    if (action === "fire") {
+      const shot = Math.floor(t / FIRE_PERIOD);
+      const phase = (t % FIRE_PERIOD) / FIRE_PERIOD;
+      const gun = rig.guns[shot % rig.guns.length];
+      // Xương súng thường nằm trong thân xe ở dạng xe, nên phát bắn đặt ở mặt trước xe, lấy độ cao và lệch trái/phải theo
+      // xương súng (giới hạn trong thân xe). Xe đã căn giữa gốc toạ độ, mũi xe cách tâm nửa chiều dài.
+      const placeMuzzle = () => {
+        if (!group.current || !gun) return false;
+        group.current.worldToLocal(gun.getWorldPosition(muzzle));
+        const side = Math.min(width * 0.35, Math.max(-width * 0.35, muzzle.dot(lateral)));
+        const up = Math.min(size.y * 0.9, Math.max(size.y * 0.3, muzzle.y));
+        muzzle
+          .copy(heading)
+          .multiplyScalar(length * 0.52)
+          .addScaledVector(lateral, side);
+        muzzle.y = up;
+        return true;
+      };
+      flashes.current.forEach((sprite, index) => {
+        if (!sprite) return;
+        sprite.visible = index === shot % rig.guns.length && phase < 0.25 && placeMuzzle();
+        if (!sprite.visible) return;
+        sprite.position.copy(muzzle);
+        sprite.scale.setScalar(length * 0.32 * (1 - phase * 2.5));
+      });
+      tracers.current.forEach((mesh, index) => {
+        if (!mesh) return;
+        const travel = phase / 0.6;
+        mesh.visible = index === shot % rig.guns.length && travel < 1 && placeMuzzle();
+        if (!mesh.visible) return;
+        mesh.position.copy(muzzle).addScaledVector(heading, length * (0.12 + travel * 2.2));
+      });
+    }
+  });
+
+  return (
+    <>
+      {action === "move" &&
+        !air &&
+        Array.from({ length: DASHES * 2 }, (_, index) => (
+          <mesh key={`dash-${index}`} ref={(mesh) => void (dashes.current[index] = mesh)} rotation={[-Math.PI / 2, 0, yaw]}>
+            <planeGeometry args={[length * 0.035, length * 0.16]} />
+            <meshBasicMaterial color="#8b929c" transparent depthWrite={false} />
+          </mesh>
+        ))}
+      {action === "move" &&
+        air &&
+        Array.from({ length: STREAKS }, (_, index) => (
+          <mesh key={`streak-${index}`} ref={(mesh) => void (streaks.current[index] = mesh)} rotation={[0, yaw, 0]}>
+            <boxGeometry args={[length * 0.006, length * 0.006, length * 0.32]} />
+            <meshBasicMaterial color="#ffffff" transparent depthWrite={false} />
+          </mesh>
+        ))}
+      {action === "fire" &&
+        rig.guns.map((_, index) => (
+          <group key={`gun-${index}`}>
+            <sprite ref={(sprite) => void (flashes.current[index] = sprite)} visible={false}>
+              <spriteMaterial map={glow} color="#ffb347" blending={AdditiveBlending} depthWrite={false} transparent />
+            </sprite>
+            <mesh ref={(mesh) => void (tracers.current[index] = mesh)} visible={false} rotation={[0, yaw, 0]}>
+              <boxGeometry args={[length * 0.02, length * 0.02, length * 0.26]} />
+              <meshBasicMaterial color="#ffe08a" />
+            </mesh>
+          </group>
+        ))}
+    </>
+  );
+}
+
 function DecalTag({ text }: { text: string }) {
   return (
     <Html center zIndexRange={[20, 0]} className="pointer-events-none">

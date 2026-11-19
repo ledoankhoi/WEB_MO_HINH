@@ -59,7 +59,7 @@ Ngoài phạm vi bước 1: cổng thanh toán trực tuyến, tích hợp hãng
 | --- | --- | --- |
 | YC-3D-01 | Xoay bằng chuột và cảm ứng; phóng to, thu nhỏ trong giới hạn; về góc nhìn ban đầu | Có |
 | YC-3D-02 | Không tự xoay theo mặc định; khách tự bật | Có |
-| YC-3D-03 | Chế độ toàn màn hình và các góc nhìn cố định (trước, sau, trái, phải, trên) | Có (17/11/2026: 5 góc nhìn cố định, nút toàn màn hình; ẩn nút khi trình duyệt không hỗ trợ, ví dụ iPhone) |
+| YC-3D-03 | Chế độ toàn màn hình và các góc nhìn cố định (trước, sau, trái, phải, trên) | Một phần: có nút toàn màn hình (ẩn khi trình duyệt không hỗ trợ, ví dụ iPhone). 5 nút góc nhìn cố định thêm ngày 17/11/2026 đã bỏ theo quyết định của chủ dự án ngày 19/11/2026: khung 3D chỉ giữ nút đổi dạng, chọn dáng có sẵn của từng mẫu, kéo để xoay |
 | YC-3D-04 | Hiển thị file `.glb` nếu sản phẩm có; lỗi tải hoặc không có WebGL thì hiện ảnh thay thế, không làm hỏng trang | Có |
 | YC-3D-05 | Thư viện 3D chỉ tải ở trang có khung xem; ngừng vẽ khi khung nằm ngoài màn hình | Có |
 

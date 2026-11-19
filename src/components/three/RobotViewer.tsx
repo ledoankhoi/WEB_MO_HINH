@@ -15,8 +15,8 @@ import {
 import { OrbitControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { Combine, Maximize, Minimize, Minus, Pause, Play, Plus, Repeat, RotateCcw } from "lucide-react";
-import { Vector3 } from "three";
 import type { ModelPose } from "@/lib/model-features";
+import type { VehicleAction } from "@/lib/vehicle-motion";
 import { RobotSubject, StudioLights, type ModelControl, type ModelInfo, type ModelSource } from "./Stage";
 
 const MIN_DISTANCE = 3.2;
@@ -31,24 +31,6 @@ function dolly(controls: Controls | null, factor: number) {
   const offset = controls.object.position.clone().sub(controls.target);
   offset.setLength(Math.min(MAX_DISTANCE, Math.max(MIN_DISTANCE, offset.length() * factor)));
   controls.object.position.copy(controls.target).add(offset);
-  controls.update();
-}
-
-// Góc nhìn cố định (YC-3D-03): hướng từ tâm tới camera, mô hình quay mặt về +Z. "Trên" bị OrbitControls giữ ở góc cực
-// tối thiểu (minPolarAngle) nên hơi chếch về phía trước.
-const VIEWS = [
-  { label: "Trước", dir: [0, 0, 1] },
-  { label: "Sau", dir: [0, 0, -1] },
-  { label: "Trái", dir: [-1, 0, 0] },
-  { label: "Phải", dir: [1, 0, 0] },
-  { label: "Trên", dir: [0, 1, 0] },
-] as const;
-
-// Đặt camera theo hướng `dir`, giữ khoảng cách hiện tại tới điểm đang nhìn.
-function lookFrom(controls: Controls | null, [x, y, z]: readonly [number, number, number]) {
-  if (!controls) return;
-  const distance = controls.object.position.distanceTo(controls.target);
-  controls.object.position.copy(controls.target).add(new Vector3(x, y, z).setLength(distance));
   controls.update();
 }
 
@@ -111,11 +93,6 @@ export default function RobotViewer({ label, bare = false, onReady, ...source }:
     if (document.fullscreenElement) void document.exitFullscreen();
     else container.current?.requestFullscreen().catch(() => {});
   };
-  const chooseView = (dir: readonly [number, number, number]) => {
-    setTouched(true);
-    setSpinChoice(false);
-    lookFrom(controls.current, dir);
-  };
   // Next.js giữ lại trang cũ ở trạng thái ẩn khi điều hướng. Đổi key để dựng khung vẽ mới khi trang
   // hiện trở lại, vì ngữ cảnh WebGL cũ đã được giải phóng lúc ẩn.
   const [epoch, setEpoch] = useState(0);
@@ -127,10 +104,13 @@ export default function RobotViewer({ label, bare = false, onReady, ...source }:
   const progressRef = useRef(1);
   const [playTo, setPlayTo] = useState<0 | 1 | null>(null);
   const [pose, setPose] = useState<ModelPose | null>(null);
+  // Chuyển động đang chọn ở dạng xe (Nghỉ, Chạy/Bay, Bắn).
+  const [action, setAction] = useState<VehicleAction | null>(null);
 
   const transform = info?.transformSeconds ? source.features?.transform : undefined;
   const poses = info?.poses ?? [];
-  const control = useMemo<ModelControl>(() => ({ progress, pose }), [progress, pose]);
+  const vehicle = transform ? (info?.vehicle ?? null) : null;
+  const control = useMemo<ModelControl>(() => ({ progress, pose, action }), [progress, pose, action]);
   // Mô hình có dáng có sẵn thì mở đầu ở dáng đầu tiên (dáng đứng).
   const onInfo = useCallback((value: ModelInfo) => {
     setInfo(value);
@@ -170,6 +150,7 @@ export default function RobotViewer({ label, bare = false, onReady, ...source }:
   // không biến hình được.
   const toggleForm = () => {
     setPose(null);
+    setAction(null);
     setPlayTo(atEnd ? 0 : 1);
   };
 
@@ -177,8 +158,22 @@ export default function RobotViewer({ label, bare = false, onReady, ...source }:
   const choosePose = (item: ModelPose) => {
     setPlayTo(null);
     moveTo(1);
+    setAction(null);
     setPose(item);
   };
+
+  // Chuyển động ở dạng xe luôn ở dạng xe hoàn chỉnh.
+  const chooseAction = (item: VehicleAction) => {
+    setPlayTo(null);
+    moveTo(0);
+    setPose(null);
+    setAction(item);
+  };
+
+  // Mỗi dạng chỉ hiện nút của dạng đó; đang biến hình thì ẩn cả hai.
+  const settled = playTo === null;
+  const showPoses = settled && (atEnd || !transform) && poses.length > 0;
+  const showActions = settled && !atEnd && vehicle !== null;
 
   // Mặc định đứng yên; người xem tự bật xoay nếu muốn.
   const spin = spinChoice ?? false;
@@ -254,7 +249,7 @@ export default function RobotViewer({ label, bare = false, onReady, ...source }:
         </Canvas>
       </WebGLBoundary>
 
-      {!bare && (transform || poses.length > 0) && (
+      {!bare && (transform || showPoses) && (
         <div className="absolute inset-x-3 top-3 flex flex-wrap items-center gap-1.5">
           {transform && (
             <button type="button" className={formButton} onClick={toggleForm}>
@@ -262,7 +257,22 @@ export default function RobotViewer({ label, bare = false, onReady, ...source }:
               {formLabel}
             </button>
           )}
-          {poses.length > 0 && (
+          {showActions && (
+            <div role="group" aria-label="Chuyển động dạng xe" className="flex flex-wrap gap-1.5">
+              {vehicle.actions.map((item) => (
+                <button
+                  key={item.action}
+                  type="button"
+                  className={action === item.action ? chipOn : chipOff}
+                  aria-pressed={action === item.action}
+                  onClick={() => chooseAction(item.action)}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          )}
+          {showPoses && (
             <div role="group" aria-label="Chọn dáng" className="flex flex-wrap gap-1.5">
               {poses.map((item) => (
                 <button
@@ -287,13 +297,6 @@ export default function RobotViewer({ label, bare = false, onReady, ...source }:
           >
             Kéo để xoay mô hình
           </p>
-          <div role="group" aria-label="Góc nhìn" className="absolute bottom-14 left-3 flex flex-col gap-1.5">
-            {VIEWS.map((view) => (
-              <button key={view.label} type="button" className={`${chipOff} h-7 justify-center px-2.5`} onClick={() => chooseView(view.dir)}>
-                {view.label}
-              </button>
-            ))}
-          </div>
           <div className="absolute right-3 bottom-3 flex gap-1.5">
             <button type="button" className={roundButton} onClick={() => dolly(controls.current, 1.2)} aria-label="Thu nhỏ">
               <Minus className="size-4" aria-hidden />
