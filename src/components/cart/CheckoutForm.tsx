@@ -46,11 +46,14 @@ export function CheckoutForm({
   paymentMethods,
   addresses = [],
   codOtp = { from: Number.POSITIVE_INFINITY, verifiedEmail: null },
+  bankDemo = false,
 }: {
   defaults: Defaults;
   paymentMethods: PaymentMethod[];
   addresses?: Address[];
   codOtp?: { from: number; verifiedEmail: string | null };
+  // Tài khoản nhận chuyển khoản là tài khoản minh hoạ (BANK_DEMO=1, src/server/payment.ts).
+  bankDemo?: boolean;
 }) {
   // Địa chỉ đang chọn trong sổ địa chỉ (khách đã đăng nhập). Đổi địa chỉ thì dựng lại các ô người nhận với giá trị mới.
   const [picked, setPicked] = useState(() => addresses.find((item) => item.isDefault)?.id ?? "");
@@ -287,6 +290,7 @@ export function CheckoutForm({
               <label key={method} className={radioCardClass}>
                 <RadioGroupItem value={method} />
                 {PAYMENT_METHOD_LABELS[method]}
+                {method === "bank" && bankDemo && <span className="text-xs text-danger">(minh hoạ, không chuyển tiền thật)</span>}
               </label>
             ))}
           </RadioGroup>

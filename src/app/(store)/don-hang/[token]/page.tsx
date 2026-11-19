@@ -91,6 +91,11 @@ async function BankTransfer({ order }: { order: Order }) {
           <dt className="inline text-muted">Nội dung: </dt>
           <dd className="inline font-medium">{order.code}</dd>
         </div>
+        {bank.demo && (
+          <p className="mt-1 text-xs font-medium text-danger">
+            Tài khoản minh hoạ để chạy thử: đừng chuyển tiền thật. Bấm “Tôi đã chuyển khoản” bên dưới để thử luồng xác nhận.
+          </p>
+        )}
       </dl>
     </section>
   );

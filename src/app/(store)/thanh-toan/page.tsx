@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { CheckoutForm } from "@/components/cart/CheckoutForm";
 import { requireUser } from "@/server/auth/session";
 import { listAddresses } from "@/server/repo/addresses";
-import { getPaymentMethods } from "@/server/payment";
+import { getBankAccount, getPaymentMethods } from "@/server/payment";
 import { site } from "@/config/site";
 
 export const metadata: Metadata = { title: "Đặt hàng", robots: { index: false } };
@@ -17,6 +17,7 @@ async function Checkout() {
   return (
     <CheckoutForm
       paymentMethods={getPaymentMethods()}
+      bankDemo={getBankAccount()?.demo ?? false}
       addresses={addresses}
       codOtp={{ from: site.codOtpFrom, verifiedEmail: user.emailVerified ? user.email : null }}
       defaults={{
